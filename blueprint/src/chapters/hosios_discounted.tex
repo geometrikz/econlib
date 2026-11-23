@@ -1,0 +1,185 @@
+% Lean: EconLean/Macro/Labor/HosiosDiscounted.lean
+\chapter{Matching with Discounting: the Hosios Condition for $r > 0$}
+\label{chap:hosios_discounted}
+
+Sources: Pissarides, \emph{Equilibrium Unemployment Theory} (2000), \S8.1; Hosios (1990); Ljungqvist--Sargent
+ch.~28. Chapter~\ref{chap:labor} proves Hosios for the steady-state ($r \to 0$) planner. Here time is discrete,
+payoffs are discounted by $\delta = 1/(1+r) \in (0,1)$, and the planner maximizes the present value of net output
+along the whole transition path. The matching primitives $A, \eta, s, c, y, b$, the rates
+$f(\theta) = A\theta^{1-\eta}$, $q(\theta) = A\theta^{-\eta}$ and the job-creation function $jc$ are those of
+Section~\ref{sec:dmp}.
+
+\begin{definition}[Discrete-time matching economy]
+\label{def:hd_economy}
+\lean{Econ.DMP.Discrete, Econ.DMP.Discrete.rate}
+\leanok
+\uses{def:dmp_economy}
+A DMP economy together with $\delta \in (0,1)$ and $s \le 1$. The implied interest rate is $r = 1/\delta - 1$.
+\end{definition}
+
+\begin{lemma}[Elementary facts]
+\label{lem:hd_basic}
+\lean{Econ.DMP.Discrete.rate_pos, Econ.DMP.Discrete.findRate_nonneg}
+\leanok
+\uses{def:hd_economy}
+$r > 0$, and $f(\theta) \ge 0$ for $\theta \ge 0$.
+\end{lemma}
+\begin{proof}
+\leanok
+$1/\delta > 1$ since $0 < \delta < 1$; $f(\theta) = A\theta^{1-\eta}$ with $A > 0$ and $\theta^{1-\eta} \ge 0$.
+\end{proof}
+
+\begin{definition}[Stationary search equilibrium]
+\label{def:hd_searchEqm}
+\lean{Econ.DMP.Discrete.IsSearchEqm}
+\leanok
+\uses{def:hd_economy}
+$(\theta, J, E, U, w)$ with $\theta > 0$ and
+$J = y - w + \delta(1-s)J$, $E = w + \delta((1-s)E + sU)$, $U = b + \delta(f(\theta)E + (1 - f(\theta))U)$,
+Nash sharing $(1-\beta)(E - U) = \beta J$, and free entry $c = \delta q(\theta) J$.
+\end{definition}
+
+\begin{lemma}[Job creation at $r = 1/\delta - 1$]
+\label{lem:hd_jc_rate}
+\lean{Econ.DMP.Discrete.jc_rate}
+\leanok
+\uses{def:hd_economy, def:dmp_jc}
+For $\theta > 0$: $jc(r, \beta, \theta)\cdot \delta q(\theta) = c\,(1 - \delta(1-s) + \delta\beta f(\theta))$.
+\end{lemma}
+\begin{proof}
+\leanok
+Write $A = q(\theta)\theta^\eta$ and $f(\theta) = \theta q(\theta)$ (Lemma \texttt{findRate\_eq}); substitute into
+$jc = c(r+s)\theta^\eta/A + \beta c\theta$ with $r + s = (1 - \delta(1-s))/\delta$ and clear denominators.
+\end{proof}
+
+\begin{theorem}[Equilibrium is job creation at $r = 1/\delta - 1$]
+\label{thm:hd_isSearchEqm_iff}
+\lean{Econ.DMP.Discrete.isSearchEqm_iff, Econ.DMP.Discrete.existsUnique_searchEqm}
+\leanok
+\uses{def:hd_searchEqm, lem:hd_jc_rate, thm:dmp_existsUnique}
+For $\beta \ge 0$: a search equilibrium exists at $\theta$ iff $\theta$ is a DMP equilibrium with interest rate
+$r = 1/\delta - 1$. Hence for $\beta \in [0,1)$ the equilibrium tightness exists and is unique.
+\end{theorem}
+\begin{proof}
+\leanok
+($\Rightarrow$) Let $S = J + (E - U)$ be the match surplus. Subtracting the $U$ equation from the $E$ equation
+gives $(E-U)(1 - \delta(1 - s - f)) = w - b$; the firm equation gives $(1 - \delta(1-s))J = y - w$; Nash sharing
+gives $E - U = \beta S$. One linear combination of these four equations gives
+$J(1 - \delta(1-s) + \delta\beta f) = (1-\beta)(y-b)$. Multiplying by $\delta q$ and using free entry
+$c = \delta q J$ gives $c(1 - \delta(1-s) + \delta\beta f) = \delta q (1-\beta)(y-b)$, which by
+Lemma~\ref{lem:hd_jc_rate} is $jc = (1-\beta)(y-b)$ after cancelling $\delta q > 0$.
+($\Leftarrow$) Put $K = 1 - \delta(1-s) + \delta\beta f > 0$, $S = (y-b)/K$, $J = (1-\beta)S$, $E - U = \beta S$,
+$U = (b + \delta f\beta S)/(1-\delta)$, $E = U + \beta S$, $w = y - (1 - \delta(1-s))J$, and check each equation;
+free entry follows from Lemma~\ref{lem:hd_jc_rate}. Existence and uniqueness then follow from
+Theorem~\ref{thm:dmp_existsUnique} with $r > 0$.
+\end{proof}
+
+\begin{definition}[The planner's problem]
+\label{def:hd_planner}
+\lean{Econ.DMP.Discrete.next, Econ.DMP.Discrete.upath, Econ.DMP.Discrete.reward, Econ.DMP.Discrete.Feasible, Econ.DMP.Discrete.welfare, Econ.DMP.Discrete.IsOptimal}
+\leanok
+\uses{def:hd_economy}
+Unemployment moves by $u' = u + s(1-u) - f(\theta)u$; period net output is $y(1-u) + bu - c\theta u$. A tightness
+path is feasible if $\theta_t \ge 0$ and $f(\theta_t) \le 1$. Welfare from $u_0$ is
+$\sum_t \delta^t\,\mathrm{reward}(u_t, \theta_t)$, and a path is optimal if it is feasible and no feasible path
+gives more welfare.
+\end{definition}
+
+\begin{lemma}[Feasible paths stay in $[0,1]$, are bounded, and have summable welfare]
+\label{lem:hd_feasible}
+\lean{Econ.DMP.Discrete.upath_mem, Econ.DMP.Discrete.le_bound, Econ.DMP.Discrete.summable_welfare}
+\leanok
+\uses{def:hd_planner, lem:hd_basic}
+If $u_0 \in [0,1]$ and the path is feasible, then $u_t \in [0,1]$, $\theta_t \le (1/A)^{1/(1-\eta)}$, and the
+welfare series converges absolutely.
+\end{lemma}
+\begin{proof}
+\leanok
+$u' = s(1-u) + (1-f)u$ is a convex combination of $s \in (0,1]$ and $1 - f \in [0,1]$, by induction. From
+$A\theta^{1-\eta} \le 1$, raise to the power $1/(1-\eta)$ (\texttt{rpow\_le\_rpow}, \texttt{rpow\_rpow\_inv}).
+Then $|\mathrm{reward}| \le |y| + |b| + c(1/A)^{1/(1-\eta)}$, and the series is dominated by a geometric series
+(\texttt{Summable.of\_norm\_bounded}).
+\end{proof}
+
+\begin{definition}[Shadow value, value function, one-period gap]
+\label{def:hd_value}
+\lean{Econ.DMP.Discrete.shadow, Econ.DMP.Discrete.value, Econ.DMP.Discrete.gap}
+\leanok
+\uses{def:hd_planner}
+Given $\theta_p$, let $\lambda = (y-b)/(1 - \delta(1-s) + \delta\eta f(\theta_p))$, $V(u) = \alpha - \lambda u$ with
+$\alpha = (y - \delta\lambda s)/(1-\delta)$, and $\mathrm{gap}(u, \theta) = \mathrm{reward}(u,\theta) + \delta V(u') - V(u)$.
+\end{definition}
+
+\begin{lemma}[The gap]
+\label{lem:hd_gap}
+\lean{Econ.DMP.Discrete.gap_eq, Econ.DMP.Discrete.findRate_tangent, Econ.DMP.Discrete.shadow_pos, Econ.DMP.Discrete.foc, Econ.DMP.Discrete.gap_le, Econ.DMP.Discrete.gap_lt, Econ.DMP.Discrete.gap_self}
+\leanok
+\uses{def:hd_value, lem:hd_jc_rate}
+Let $\theta_p$ solve job creation at $r$ with $\beta = \eta$. Then
+$\mathrm{gap}(u,\theta) = u\,[(\delta\lambda f(\theta) - c\theta) - (\delta\lambda f(\theta_p) - c\theta_p)]$, $\lambda > 0$,
+and $\delta\lambda(1-\eta)q(\theta_p) = c$. Consequently $\mathrm{gap}(u, \theta) \le 0$ for $u, \theta \ge 0$, with strict
+inequality if $u > 0$ and $\theta \ne \theta_p$, and $\mathrm{gap}(u, \theta_p) = 0$.
+\end{lemma}
+\begin{proof}
+\leanok
+From Lemma~\ref{lem:hd_jc_rate} with $\beta = \eta$, $c\,K = \delta q(1-\eta)(y-b) = \delta q (1-\eta)\lambda K$, so
+$c = \delta\lambda(1-\eta)q(\theta_p)$ and $c\theta_p = \delta\lambda(1-\eta)f(\theta_p)$. Substituting these and the
+definitions of $\lambda$ and $\alpha$ makes the constant term vanish and leaves the stated multiple of $u$
+(\texttt{linear\_combination}). Concavity of $f$: with $x = \theta/\theta_p - 1 \ge -1$,
+Bernoulli's inequality $(1+x)^{1-\eta} \le 1 + (1-\eta)x$ (\texttt{rpow\_one\_add\_le\_one\_add\_mul\_self},
+strict version for $x \ne 0$) gives $f(\theta) \le f(\theta_p) + (1-\eta)q(\theta_p)(\theta - \theta_p)$. Multiply by
+$\delta\lambda > 0$ and use the first-order condition.
+\end{proof}
+
+\begin{lemma}[Telescoping and limits]
+\label{lem:hd_telescope}
+\lean{Econ.DMP.Discrete.telescope, Econ.DMP.Discrete.tendsto_tail, Econ.DMP.Discrete.tendsto_gaps}
+\leanok
+\uses{def:hd_value, lem:hd_feasible}
+$\sum_{t<T}\delta^t \mathrm{reward}_t + \delta^T V(u_T) = V(u_0) + \sum_{t<T}\delta^t\mathrm{gap}_t$; along a feasible path
+$\delta^T V(u_T) \to 0$; hence $V(u_0) + \sum_{t<T}\delta^t \mathrm{gap}_t \to \mathrm{welfare}$.
+\end{lemma}
+\begin{proof}
+\leanok
+Induction on $T$. $V(u_T)$ is bounded since $u_T \in [0,1]$, and $\delta^T \to 0$ (squeeze). Add the two limits.
+\end{proof}
+
+\begin{theorem}[The efficient path]
+\label{thm:hd_optimal}
+\lean{Econ.DMP.Discrete.welfare_stationary, Econ.DMP.Discrete.welfare_le, Econ.DMP.Discrete.welfare_lt_value, Econ.DMP.Discrete.isOptimal_stationary, Econ.DMP.Discrete.welfare_lt}
+\leanok
+\uses{lem:hd_gap, lem:hd_telescope}
+Let $\theta_p$ solve job creation at $r = 1/\delta - 1$ with $\beta = \eta$ and $f(\theta_p) \le 1$. From every
+$u_0 \in [0,1]$ the stationary path $\theta_t = \theta_p$ is optimal, with welfare $V(u_0)$. If $u_0 > 0$, every
+feasible path with $\theta_0 \ne \theta_p$ gives strictly less.
+\end{theorem}
+\begin{proof}
+\leanok
+For the stationary path every gap is $0$, so welfare is $V(u_0)$ by Lemma~\ref{lem:hd_telescope} and uniqueness of
+limits. For any feasible path all gaps are $\le 0$, so welfare $\le V(u_0)$ (\texttt{le\_of\_tendsto\_of\_tendsto'}).
+If $\theta_0 \ne \theta_p$ and $u_0 > 0$, then for $T \ge 1$ the partial sums of gaps are at most
+$\mathrm{gap}_0 < 0$, so welfare $\le V(u_0) + \mathrm{gap}_0 < V(u_0)$.
+\end{proof}
+
+\begin{theorem}[Hosios with discounting]
+\label{thm:hd_hosios}
+\lean{Econ.DMP.Discrete.hosios}
+\leanok
+\uses{thm:hd_optimal, thm:hd_isSearchEqm_iff, thm:dmp_strictAnti_beta}
+Let $\beta \in [0,1)$, $\theta_e$ a search equilibrium tightness, $\theta_p$ the job-creation solution with
+$\beta = \eta$ and $f(\theta_p) \le 1$, and $u_0 \in (0, 1]$. The stationary equilibrium path is optimal iff
+$\beta = \eta$.
+\end{theorem}
+\begin{proof}
+\leanok
+By Theorem~\ref{thm:hd_isSearchEqm_iff}, $\theta_e$ solves job creation at $r$. ($\Rightarrow$) If $\theta_e \ne \theta_p$,
+Theorem~\ref{thm:hd_optimal} gives welfare$(\theta_e) <$ welfare$(\theta_p)$, contradicting optimality; so
+$\theta_e = \theta_p$, and if $\beta \ne \eta$ Theorem~\ref{thm:dmp_strictAnti_beta} makes the two equilibria differ.
+($\Leftarrow$) With $\beta = \eta$, uniqueness gives $\theta_e = \theta_p$, which is optimal.
+\end{proof}
+
+\begin{remark}
+In discrete time $f(\theta)$ is a probability, so the planner is restricted to $f(\theta_t) \le 1$, and the
+theorem assumes $f(\theta_p) \le 1$; the Lean file gives a calibration ($A = 1/4$, $\eta = 1/2$, $s = 1/10$,
+$c = y = 1$, $b = 0$, $\delta = 9/10$) where it holds.
+\end{remark}

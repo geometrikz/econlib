@@ -1,0 +1,139 @@
+% Lean: EconLean/Macro/Misallocation.lean
+\chapter{Misallocation and TFP}
+\label{chap:misallocation}
+
+Sources: Hsieh--Klenow (2009) \S I; Restuccia--Rogerson (2008). An industry has finitely many firms with physical
+productivity $A_i > 0$, output $Y_i = A_i L_i$, and CES aggregate $Y = (\sum_i Y_i^\rho)^{1/\rho}$ with
+$\rho = (\sigma - 1)/\sigma$, $\sigma > 1$. Total labour is $1$ and $s_i = L_i$.
+
+\begin{definition}[Industry, allocations, TFP]
+\label{def:industry}
+\lean{Econ.Misallocation.Industry, Econ.Misallocation.Industry.ρ, Econ.Misallocation.Industry.ρ_pos, Econ.Misallocation.Industry.ρ_lt_one, Econ.Misallocation.Industry.IsAlloc, Econ.Misallocation.Industry.tfp}
+\leanok
+$0 < \rho < 1$. An allocation has $s_i \ge 0$, $\sum_i s_i = 1$. TFP is $\mathrm{TFP}(s) = (\sum_i (A_i s_i)^\rho)^{1/\rho}$.
+\end{definition}
+
+\begin{definition}[Efficient weights and allocation]
+\label{def:effAlloc}
+\lean{Econ.Misallocation.Industry.wt, Econ.Misallocation.Industry.wtSum, Econ.Misallocation.Industry.tfpEfficient, Econ.Misallocation.Industry.effAlloc, Econ.Misallocation.Industry.wt_pos, Econ.Misallocation.Industry.wtSum_pos}
+\leanok
+\uses{def:industry}
+$\pi_i = A_i^{\sigma - 1} > 0$, $\Pi = \sum_i \pi_i > 0$ (for a nonempty industry), efficient TFP
+$\mathrm{TFP}_e = \Pi^{1/(\sigma-1)}$, and the efficient allocation $s^e_i = \pi_i/\Pi$.
+\end{definition}
+
+\begin{lemma}[Jensen form of TFP]
+\label{lem:tfp_jensen_form}
+\lean{Econ.Misallocation.Industry.term_eq, Econ.Misallocation.Industry.sum_eq, Econ.Misallocation.Industry.weights_sum, Econ.Misallocation.Industry.mean_eq, Econ.Misallocation.Industry.tfpEfficient_eq}
+\leanok
+\uses{def:effAlloc}
+$(A_i x)^\rho = \pi_i (x/\pi_i)^\rho$ for $x \ge 0$. Hence, with weights $\pi_i/\Pi$ (summing to $1$),
+$\sum_i (A_i s_i)^\rho = \Pi \sum_i \frac{\pi_i}{\Pi}(s_i/\pi_i)^\rho$, the weighted mean of $s_i/\pi_i$ is $1/\Pi$,
+and $(\Pi (1/\Pi)^\rho)^{1/\rho} = \mathrm{TFP}_e$.
+\end{lemma}
+\begin{proof}
+\leanok
+$\pi_i^{1 - \rho} = A_i^{(\sigma-1)(1 - \rho)} = A_i^{(\sigma-1)/\sigma} = A_i^\rho$, so
+$\pi_i (x/\pi_i)^\rho = \pi_i^{1-\rho} x^\rho = (A_i x)^\rho$. The mean is $\sum_i s_i/\Pi = 1/\Pi$. Finally
+$\Pi(1/\Pi)^\rho = \Pi^{1-\rho}$ and $(1 - \rho)/\rho = 1/(\sigma - 1)$.
+\end{proof}
+
+\begin{theorem}[Misallocation lowers TFP]
+\label{thm:tfp_le_efficient}
+\lean{Econ.Misallocation.Industry.tfp_le_efficient, Econ.Misallocation.Industry.effAlloc_isAlloc}
+\leanok
+\uses{lem:tfp_jensen_form}
+Every allocation has $\mathrm{TFP}(s) \le \mathrm{TFP}_e$; the efficient allocation is an allocation.
+\end{theorem}
+\begin{proof}
+\leanok
+$x \mapsto x^\rho$ is concave on $[0, \infty)$, so by Jensen with weights $\pi_i/\Pi$,
+$\sum_i \frac{\pi_i}{\Pi}(s_i/\pi_i)^\rho \le (1/\Pi)^\rho$. Multiply by $\Pi > 0$ and raise to $1/\rho > 0$
+(monotone), then use Lemma~\ref{lem:tfp_jensen_form}.
+\end{proof}
+
+\begin{theorem}[Equality case]
+\label{thm:tfp_eq_efficient_iff}
+\lean{Econ.Misallocation.Industry.tfp_eq_efficient_iff}
+\leanok
+\uses{thm:tfp_le_efficient}
+$\mathrm{TFP}(s) = \mathrm{TFP}_e$ iff $s = s^e$.
+\end{theorem}
+\begin{proof}
+\leanok
+($\Rightarrow$) If $s \neq s^e$, the ratios $s_i/\pi_i$ are not all equal: if they all equal some $r$, summing
+$s_i = r\pi_i$ gives $r\Pi = 1$, so $s = s^e$. Strict concavity then makes Jensen strict, and strict monotonicity
+of $x \mapsto x^{1/\rho}$ gives $\mathrm{TFP}(s) < \mathrm{TFP}_e$. ($\Leftarrow$) At $s^e$ every ratio is $1/\Pi$,
+so the weighted sum is $(1/\Pi)^\rho$ exactly.
+\end{proof}
+
+\begin{definition}[Revenue productivity]
+\label{def:tfpr}
+\lean{Econ.Misallocation.Industry.tfpr, Econ.Misallocation.Industry.tfpr_eq}
+\leanok
+\uses{lem:tfp_jensen_form}
+$\mathrm{TFPR}_i(s) = (A_i s_i)^\rho / s_i$ (up to a factor common to all firms). For $s_i > 0$,
+$\mathrm{TFPR}_i = (s_i/\pi_i)^{\rho - 1}$.
+\end{definition}
+
+\begin{theorem}[Efficiency iff TFPR is equalized]
+\label{thm:tfpr_equal_iff}
+\lean{Econ.Misallocation.Industry.tfpr_equal_iff}
+\leanok
+\uses{def:tfpr, thm:tfp_eq_efficient_iff}
+If all $s_i > 0$: $\mathrm{TFPR}_i = \mathrm{TFPR}_j$ for all $i, j$ iff $\mathrm{TFP}(s) = \mathrm{TFP}_e$.
+\end{theorem}
+\begin{proof}
+\leanok
+$x \mapsto x^{\rho-1}$ is injective on $(0, \infty)$ since $\rho - 1 < 0$. So equal TFPR means all $s_i/\pi_i$ equal
+some $r$; summing, $r\Pi = 1$ and $s = s^e$. Conversely at $s^e$ every ratio is $1/\Pi$. Conclude by
+Theorem~\ref{thm:tfp_eq_efficient_iff}.
+\end{proof}
+
+\begin{corollary}[TFPR dispersion lowers TFP; Hsieh--Klenow's headline]
+\label{cor:tfp_lt_of_dispersion}
+\lean{Econ.Misallocation.Industry.tfp_lt_of_tfpr_dispersion}
+\leanok
+\uses{thm:tfp_le_efficient, thm:tfpr_equal_iff}
+If all $s_i > 0$ and $\mathrm{TFPR}_i \neq \mathrm{TFPR}_j$ for some $i, j$, then $\mathrm{TFP}(s) < \mathrm{TFP}_e$.
+\end{corollary}
+\begin{proof}
+\leanok
+$\le$ by Theorem~\ref{thm:tfp_le_efficient}; equality would equalize TFPR by Theorem~\ref{thm:tfpr_equal_iff}.
+\end{proof}
+
+\begin{definition}[Wedge allocation]
+\label{def:wedgeAlloc}
+\lean{Econ.Misallocation.Industry.wedgeAlloc, Econ.Misallocation.Industry.wedgeAlloc_isAlloc}
+\leanok
+\uses{def:effAlloc}
+For output wedges $\tau_i < 1$, $s_i = \pi_i(1-\tau_i)^\sigma / Z$ with $Z = \sum_j \pi_j (1-\tau_j)^\sigma > 0$
+(HK eq.~(8)--(9), labour only). It is an allocation with all shares positive.
+\end{definition}
+
+\begin{theorem}[TFPR reflects the wedge]
+\label{thm:tfpr_wedgeAlloc}
+\lean{Econ.Misallocation.Industry.tfpr_wedgeAlloc}
+\leanok
+\uses{def:wedgeAlloc, def:tfpr}
+Under the wedge allocation, $\mathrm{TFPR}_i = Z^{1-\rho}/(1-\tau_i)$.
+\end{theorem}
+\begin{proof}
+\leanok
+$s_i/\pi_i = (1-\tau_i)^\sigma/Z$, so $\mathrm{TFPR}_i = (1-\tau_i)^{\sigma(\rho-1)} Z^{1-\rho}$, and
+$\sigma(\rho - 1) = -1$.
+\end{proof}
+
+\begin{theorem}[Wedges distort iff they differ]
+\label{thm:wedgeAlloc_efficient_iff}
+\lean{Econ.Misallocation.Industry.wedgeAlloc_efficient_iff}
+\leanok
+\uses{thm:tfpr_wedgeAlloc, thm:tfpr_equal_iff}
+The wedge allocation attains $\mathrm{TFP}_e$ iff $\tau_i = \tau_j$ for all $i, j$.
+\end{theorem}
+\begin{proof}
+\leanok
+By Theorem~\ref{thm:tfpr_equal_iff}, efficiency iff TFPR is equalized; by Theorem~\ref{thm:tfpr_wedgeAlloc} and
+$Z^{1-\rho} > 0$, that means $1/(1-\tau_i) = 1/(1-\tau_j)$, i.e.\ $\tau_i = \tau_j$. The Lean file also checks
+a two-firm example ($A = (1, 2)$, $\sigma = 3$, $\tau = (0, 1/2)$) that loses TFP.
+\end{proof}

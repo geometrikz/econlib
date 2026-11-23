@@ -1,0 +1,123 @@
+% Lean: EconLean/BoundedRationality/{LevelK,QRE,BerkNash}.lean
+\chapter{Bounded Rationality in Games}
+\label{chap:bounded-rationality}
+
+Sources: Nagel (1995); Stahl--Wilson (1995); Camerer--Ho--Chong (2004); McKelvey--Palfrey (1995);
+Esponda--Pouzo (2016).
+
+\section{Level-k and cognitive hierarchy}
+\label{sec:br-levelk}
+
+\begin{definition}[Finite game, best response, level-k hierarchy]
+\label{def:br-game}
+\lean{Econ.BoundedRationality.FiniteGame, Econ.BoundedRationality.BestResponse, Econ.BoundedRationality.IsPureNash, Econ.BoundedRationality.IsStrictNash, Econ.BoundedRationality.IsLevelKPath}
+\leanok
+Level-0 is a pure anchor profile (not uniform randomization). A level-k hierarchy is a sequence of pure profiles $L_k$ with $L_{k+1}(i)$ a best response of $i$ to $L_k$.
+\end{definition}
+
+\begin{theorem}[Level-k basics]
+\label{thm:br-levelk}
+\lean{Econ.BoundedRationality.exists_bestResponse, Econ.BoundedRationality.exists_levelKPath, Econ.BoundedRationality.isPureNash_of_levelK_fixed, Econ.BoundedRationality.levelK_eq_of_strictNash}
+\leanok
+\uses{def:br-game}
+A hierarchy exists from any level-0 profile; a stationary hierarchy is at a pure Nash equilibrium; if level-0 is
+a strict Nash equilibrium every level plays it.
+\end{theorem}
+\begin{proof}
+\leanok
+Choose best responses (they exist on finite sets). At a fixed point $L_{k+1}=L_k$ each player's own action is a
+best response. Under strictness any other best response would strictly lose, by induction on $k$.
+\end{proof}
+
+\begin{theorem}[Beauty contest and cognitive hierarchy]
+\label{thm:br-beauty}
+\lean{Econ.BoundedRationality.levelK_guess, Econ.BoundedRationality.levelK_guess_tendsto, Econ.BoundedRationality.beauty_fixed_iff, Econ.BoundedRationality.chGuess_strictAnti, Econ.BoundedRationality.chGuess_pos, Econ.BoundedRationality.chGuess_succ, Econ.BoundedRationality.chAvg_succ_lt}
+\leanok
+In the large-population approximation (best response $px$ to others' mean $x$), level-k guesses are $50p^k\to0$,
+the unique fixed point of $x\mapsto px$ (the finite game itself is not formalized). CH guesses ($p$ times the weighted mean
+of lower levels, positive weights) are positive and strictly decreasing in the level.
+\end{theorem}
+\begin{proof}
+\leanok
+The weighted mean of levels $0..k+1$ averages the mean of $0..k$ with $p$ times that mean, so it falls strictly;
+the next guess is $p$ times that mean.
+\end{proof}
+
+\section{Quantal response equilibrium}
+\label{sec:br-qre}
+
+\begin{definition}[Logit QRE]
+\label{def:br-qre}
+\lean{Econ.BoundedRationality.U, Econ.BoundedRationality.logitResponse, Econ.BoundedRationality.IsLogitQRE, Econ.BoundedRationality.IsMixedNash}
+\leanok
+\uses{def:br-game}
+$\sigma_i(b)=e^{\lambda U_i(b,\sigma_{-i})}/\sum_ce^{\lambda U_i(c,\sigma_{-i})}$ for all $i,b$.
+\end{definition}
+
+\begin{theorem}[McKelvey--Palfrey: limits are Nash]
+\label{thm:br-qre-limit}
+\lean{Econ.BoundedRationality.isNash_of_tendsto_qre, Econ.BoundedRationality.qre_lambda_zero, Econ.BoundedRationality.uniform_isLogitQRE_zero, Econ.BoundedRationality.sum_exp_pos, Econ.BoundedRationality.IsLogitQRE.isMixedProfile, Econ.BoundedRationality.tendsto_U, Econ.BoundedRationality.logitResponse_le}
+\leanok
+\uses{def:br-qre}
+At $\lambda=0$ the QRE is exactly uniform play. If $\lambda_n\to\infty$ and logit QRE $\sigma_n\to\sigma$, then $\sigma$ is a mixed
+Nash equilibrium.
+\end{theorem}
+\begin{proof}
+\leanok
+Expected payoffs are continuous. If $\sigma_i(b)>0$ but $U_i(c,\sigma)>U_i(b,\sigma)$, the gap exceeds $\delta/2>0$
+eventually, so $\sigma_{n,i}(b)\le e^{-\lambda_n\delta/2}\to0$, contradicting $\sigma_i(b)>0$.
+\end{proof}
+
+\begin{theorem}[Existence in 2×2 games]
+\label{thm:br-qre-2x2}
+\lean{Econ.BoundedRationality.qre2x2_exists, Econ.BoundedRationality.isLogitQRE_of_qre2x2, Econ.BoundedRationality.exists_isLogitQRE_2x2, Econ.BoundedRationality.game2x2, Econ.BoundedRationality.profile2x2, Econ.BoundedRationality.U_row, Econ.BoundedRationality.U_col, Econ.BoundedRationality.exp_div_exp_add_exp, Econ.BoundedRationality.exp_div_exp_add_exp', Econ.BoundedRationality.sum_fin2_arrow, Econ.BoundedRationality.logistic, Econ.BoundedRationality.continuous_logistic, Econ.BoundedRationality.rowAdv, Econ.BoundedRationality.colAdv, Econ.BoundedRationality.IsQRE2x2, Econ.BoundedRationality.logistic_pos, Econ.BoundedRationality.logistic_lt_one}
+\leanok
+Every $2\times2$ game has a logit QRE for every $\lambda$, in the general sense of Definition~\ref{def:br-qre}.
+\end{theorem}
+\begin{proof}
+\leanok
+The composite response $p\mapsto F(p)$ is continuous from $[0,1]$ into $(0,1)$, so $F(p)-p$ changes sign;
+apply the intermediate value theorem. With two actions the logit probability of the first is the logistic
+function of the payoff difference, and the payoff differences are \texttt{rowAdv}, \texttt{colAdv}.
+\end{proof}
+
+\section{Berk--Nash equilibrium}
+\label{sec:br-berknash}
+
+\begin{definition}[Berk--Nash equilibrium]
+\label{def:br-bn}
+\lean{Econ.BoundedRationality.SubjectiveProblem, Econ.BoundedRationality.SubjectiveProblem.K, Econ.BoundedRationality.SubjectiveProblem.IsBerkNash}
+\leanok
+$(\sigma,\mu)$: actions in the support of $\sigma$ maximize subjective payoff under $\mu$, and $\mu$ is supported on
+minimizers of $K(\sigma,\theta)=\sum_x\sigma_x\mathrm{KL}(Q_x\|Q_{\theta,x})$.
+\end{definition}
+
+\begin{theorem}[Correct specification]
+\label{thm:br-bn-correct}
+\lean{Econ.BoundedRationality.SubjectiveProblem.K_nonneg, Econ.BoundedRationality.SubjectiveProblem.K_correct, Econ.BoundedRationality.SubjectiveProblem.isBerkNash_of_correct, Econ.BoundedRationality.SubjectiveProblem.optimal_of_isBerkNash, Econ.BoundedRationality.SubjectiveProblem.pointBelief_isProb, Econ.BoundedRationality.SubjectiveProblem.subjEU_pointBelief}
+\leanok
+\uses{def:br-bn, thm:beh-mi}
+$K\ge0$. If $Q_{\theta^*}=Q$, $\theta^*$ minimizes $K$, optimal play with belief $\delta_{\theta^*}$ is Berk--Nash, and
+under identification every Berk--Nash action is optimal.
+\end{theorem}
+\begin{proof}
+\leanok
+Gibbs' inequality. Believed parameters have $K\le K(\theta^*)=0$, so by identification they equal the truth,
+making subjective and true payoffs equal.
+\end{proof}
+
+\begin{theorem}[Misspecification sustains a worse action]
+\label{thm:br-bn-example}
+\lean{Econ.BoundedRationality.SubjectiveProblem.misspecified_example, Econ.BoundedRationality.SubjectiveProblem.example1_misspecified}
+\leanok
+\uses{def:br-bn}
+Two actions with true success probabilities $1/2$ and $7/10$ (the second costs $1/10$). The model says the action
+does not matter and the success probability is $2/5$ or $9/20$, so no parameter is correct. Playing action $0$ with
+belief on $9/20$ (the KL-best fit) is Berk--Nash, although action $1$ is truly better.
+\end{theorem}
+\begin{proof}
+\leanok
+Under $9/20$ the subjective payoffs are $9/20$ and $9/20-1/10$. The fit comparison reduces to
+$\log(2/5)+\log(3/5)\le\log(9/20)+\log(11/20)$, i.e. $0.24\le0.2475$ by \texttt{Real.log\_le\_log}. True payoffs are
+$1/2<3/5$.
+\end{proof}

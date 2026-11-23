@@ -1,0 +1,39 @@
+% Main mathematical content of the EconLean blueprint.
+%
+% Every definition, lemma, proposition and theorem corresponds to a Lean 4
+% declaration in EconLean/, named by \lean{...}. \leanok on a statement means the
+% Lean declaration exists with no sorry; \leanok on a proof means the Lean proof is
+% complete. \uses{...} records the dependency graph. Each human-readable proof
+% follows the corresponding Lean proof step by step.
+%
+% Convention (see CONVENTIONS.md): every new Lean theorem gets a blueprint entry
+% in the matching chapter file, in the same commit.
+
+\chapter*{Introduction}
+This blueprint is the human-readable companion to \texttt{EconLean}, a Lean~4 and Mathlib formalization of
+graduate economic theory. Each result below is stated in ordinary mathematics, linked to the Lean declaration
+that proves it, and given a proof that follows the Lean proof step by step, so that a reader can check the
+argument on paper and then find the exact formal counterpart. The dependency graph shows how results build on
+each other, from preferences and consumer theory through Berge's maximum theorem to dynamic programming and
+macroeconomic models.
+
+\input{chapters/preferences}
+\input{chapters/consumer}
+\input{chapters/foundations}
+\input{chapters/ge}
+\input{chapters/ge_production}
+\input{chapters/aggregation}
+\input{chapters/dp}
+\input{chapters/growth}
+\input{chapters/olg}
+\input{chapters/labor}
+\input{chapters/misallocation}
+\input{chapters/hulten}
+\input{chapters/banking}
+\input{chapters/producer}
+\input{chapters/uncertainty}
+\input{chapters/behavioral}
+\input{chapters/bounded_rationality}
+\input{chapters/hosios_discounted}
+\input{chapters/growth_endogenous}
+\input{chapters/finance}

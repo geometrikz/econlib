@@ -1,0 +1,23 @@
+% Entry point for `leanblueprint pdf` (compiled with xelatex via latexmk).
+\documentclass[a4paper]{report}
+
+\usepackage[margin=1in]{geometry}
+\usepackage{expl3}
+\usepackage{amssymb, amsthm, mathtools}
+\usepackage[unicode,colorlinks=true,linkcolor=blue,urlcolor=magenta,citecolor=blue]{hyperref}
+\usepackage[warnings-off={mathtools-colon,mathtools-overbracket}]{unicode-math}
+% Lean names in \texttt use Unicode (ι, ℝ, ₀); DejaVu Sans Mono has them. Falls back silently if absent.
+\IfFontExistsTF{DejaVu Sans Mono}{\setmonofont{DejaVu Sans Mono}[Scale=MatchLowercase]}{}
+
+\input{macros/common}
+\input{macros/print}
+
+\title{EconLean: Economic Theory in Lean 4}
+\author{Geoffrey Liu}
+\date{\today}
+
+\begin{document}
+\maketitle
+\tableofcontents
+\input{content}
+\end{document}

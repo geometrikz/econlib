@@ -1,0 +1,564 @@
+% Lean: EconLean/Macro/Growth/{Solow,GoldenRule,TechProgress}.lean
+\chapter{Growth}
+\label{chap:growth}
+
+\section{The Solow model}
+\label{sec:solow}
+
+Sources: Acemoglu, \emph{Introduction to Modern Economic Growth}, ch.~2; Barro--Sala-i-Martin ch.~1;
+Romer ch.~1. Capital per worker evolves by $(1 + n) k_{t+1} = s f(k_t) + (1 - \delta) k_t$.
+
+\begin{definition}[Neoclassical production function]
+\label{def:neoclassical}
+\lean{Econ.Solow.NeoclassicalProduction}
+\leanok
+$f : \R \to \R$ is \emph{neoclassical} if $f(0) = 0$; $f$ is right-continuous at $0$ on $[0, \infty)$;
+monotone and strictly concave on $[0, \infty)$; and satisfies the Inada conditions in average-product form:
+$f(k)/k \to \infty$ as $k \downarrow 0$ and $f(k)/k \to 0$ as $k \to \infty$.
+\end{definition}
+
+\begin{lemma}[Continuity on the interior]
+\label{lem:neoclassical_continuousOn}
+\lean{Econ.Solow.NeoclassicalProduction.continuousOn}
+\leanok
+\uses{def:neoclassical}
+A neoclassical $f$ is continuous on $(0, \infty)$.
+\end{lemma}
+\begin{proof}
+\leanok
+A concave function is continuous on the interior of its domain, and the interior of $[0, \infty)$ is $(0, \infty)$.
+\end{proof}
+
+\begin{lemma}[Diminishing average product]
+\label{lem:avg_strictAnti}
+\lean{Econ.Solow.NeoclassicalProduction.avg_strictAntiOn}
+\leanok
+\uses{def:neoclassical}
+$k \mapsto f(k)/k$ is strictly decreasing on $(0, \infty)$.
+\end{lemma}
+\begin{proof}
+\leanok
+For $0 < a < b$ write $a = \frac{a}{b} b + (1 - \frac{a}{b}) \cdot 0$. Strict concavity and $f(0) = 0$
+give $f(a) > \frac{a}{b} f(b)$. Multiplying by $b > 0$ and rearranging, $f(b) a < f(a) b$, i.e.\
+$f(b)/b < f(a)/a$.
+\end{proof}
+
+\begin{lemma}[Positivity and strict monotonicity]
+\label{lem:neoclassical_pos}
+\lean{Econ.Solow.NeoclassicalProduction.avg_pos, Econ.Solow.NeoclassicalProduction.pos, Econ.Solow.NeoclassicalProduction.strictMonoOn}
+\leanok
+\uses{lem:avg_strictAnti}
+For $k > 0$, $f(k)/k > 0$ and $f(k) > 0$; and $f$ is strictly increasing on $[0, \infty)$.
+\end{lemma}
+\begin{proof}
+\leanok
+$f(k)/k > f(2k)/(2k)$ by Lemma~\ref{lem:avg_strictAnti}, and $f(2k)/(2k) \ge 0$ because it is at least
+every later value $f(x)/x$, $x > 2k$, whose limit is $0$. Multiply by $k > 0$ for $f(k) > 0$.
+For strict monotonicity, monotonicity gives $f(a) \le f(b)$ for $a < b$; if $f(a) = f(b)$ then strict
+concavity puts $f$ at the midpoint strictly above $\tfrac12 f(a) + \tfrac12 f(b) = f(b)$, while
+monotonicity puts it at most $f(b)$.
+\end{proof}
+
+\begin{theorem}[Acemoglu's derivative assumptions imply ours]
+\label{thm:neoclassical_of_deriv}
+\lean{Econ.Solow.NeoclassicalProduction.of_deriv}
+\leanok
+\uses{def:neoclassical}
+Suppose $f(0) = 0$, $f$ is right-continuous at $0$, strictly concave on $[0, \infty)$, differentiable at
+each $k > 0$ with $f'(k) > 0$, $f'(k) \to \infty$ as $k \downarrow 0$ and $f'(k) \to 0$ as $k \to \infty$.
+Then $f$ is neoclassical.
+\end{theorem}
+\begin{proof}
+\leanok
+Two concavity facts: (chord) $f'(k) \le f(k)/k$, since the slope of the chord from $0$ to $k$ is at least
+the derivative at the right endpoint; (tangent) $f(k) \le f(K) + f'(K)(k - K)$ for $0 < K < k$.
+Monotonicity: $f$ is strictly increasing on $(0, \infty)$ because $f' > 0$, and $f(k) \ge k f'(k) > 0 = f(0)$
+handles the endpoint. Inada at $0$: $f(k)/k \ge f'(k) \to \infty$. Inada at $\infty$: $f(k)/k > 0$ by the
+chord bound; given $a > 0$, choose $K > 0$ with $f'(K) < a/2$; for $k > K$ large enough that $f(K)/k < a/2$,
+the tangent bound gives $f(k)/k \le f(K)/k + f'(K) < a$.
+\end{proof}
+
+\begin{definition}[Solow economy and law of motion]
+\label{def:solow_economy}
+\lean{Econ.Solow.Economy, Econ.Solow.Economy.next, Econ.Solow.Economy.path, Econ.Solow.Economy.path_zero, Econ.Solow.Economy.path_succ, Econ.Solow.Economy.IsSteadyState}
+\leanok
+\uses{def:neoclassical}
+An economy is a neoclassical $f$ with $s \in (0, 1]$, $\delta \in [0, 1]$, $n > -1$, $n + \delta > 0$.
+The law of motion is $\mathrm{next}(k) = \frac{s f(k) + (1 - \delta) k}{1 + n}$ and the path is
+$k_t = \mathrm{next}^t(k_0)$. A steady state is $k^* > 0$ with $\mathrm{next}(k^*) = k^*$.
+\end{definition}
+
+\begin{lemma}[Growth decomposition]
+\label{lem:solow_next_sub_self}
+\lean{Econ.Solow.Economy.one_add_n_pos, Econ.Solow.Economy.next_zero, Econ.Solow.Economy.next_sub_self, Econ.Solow.Economy.next_eq_self_iff, Econ.Solow.Economy.isSteadyState_iff, Econ.Solow.Economy.le_next_iff, Econ.Solow.Economy.next_le_iff}
+\leanok
+\uses{def:solow_economy}
+$1 + n > 0$ and $\mathrm{next}(0) = 0$. For $k > 0$,
+$\mathrm{next}(k) - k = \frac{k (s f(k)/k - (n + \delta))}{1 + n}$. Hence
+$\mathrm{next}(k) = k \iff s f(k)/k = n + \delta$ (equivalently $s f(k) = (n + \delta) k$), and
+$k \le \mathrm{next}(k) \iff n + \delta \le s f(k)/k$, $\mathrm{next}(k) \le k \iff s f(k)/k \le n + \delta$.
+\end{lemma}
+\begin{proof}
+\leanok
+Field algebra; the sign of $\mathrm{next}(k) - k$ is the sign of $s f(k)/k - (n + \delta)$ since
+$k > 0$ and $1 + n > 0$.
+\end{proof}
+
+\begin{lemma}[The law of motion is increasing, positive and continuous]
+\label{lem:solow_next_mono}
+\lean{Econ.Solow.Economy.next_monotoneOn, Econ.Solow.Economy.next_strictMonoOn, Econ.Solow.Economy.next_pos, Econ.Solow.Economy.path_pos, Econ.Solow.Economy.continuousOn_next}
+\leanok
+\uses{def:solow_economy, lem:neoclassical_pos, lem:neoclassical_continuousOn}
+On $[0, \infty)$, $\mathrm{next}$ is strictly increasing (uses $\delta \le 1$); it maps $(0, \infty)$ into
+itself, so paths from $k_0 > 0$ stay positive; and it is continuous on $(0, \infty)$.
+\end{lemma}
+\begin{proof}
+\leanok
+$s f(k)$ is strictly increasing (Lemma~\ref{lem:neoclassical_pos}, $s > 0$), $(1 - \delta) k$ is
+nondecreasing, and we divide by $1 + n > 0$. Positivity: $f(k) > 0$ and $(1 - \delta) k \ge 0$.
+Continuity from Lemma~\ref{lem:neoclassical_continuousOn}.
+\end{proof}
+
+\begin{theorem}[Existence and uniqueness of the steady state; Acemoglu Prop.~2.2]
+\label{thm:solow_existsUnique}
+\lean{Econ.Solow.Economy.existsUnique_steadyState, Econ.Solow.Economy.IsSteadyState.unique}
+\leanok
+\uses{lem:solow_next_sub_self, lem:avg_strictAnti, lem:neoclassical_continuousOn}
+There is exactly one steady state.
+\end{theorem}
+\begin{proof}
+\leanok
+Let $c = n + \delta > 0$ and $\varphi(k) = s f(k)/k$. By Lemma~\ref{lem:solow_next_sub_self}, steady states
+are the $k > 0$ with $\varphi(k) = c$. $\varphi$ is strictly decreasing on $(0, \infty)$
+(Lemma~\ref{lem:avg_strictAnti}). By the Inada conditions there is $a > 0$ with $\varphi(a) > c$ and then
+$b > a$ with $\varphi(b) < c$. $\varphi$ is continuous on $[a, b]$, so the intermediate value theorem gives
+$k \in [a, b]$ with $\varphi(k) = c$. Any other steady state $k'$ has $\varphi(k') = c = \varphi(k)$, so
+$k' = k$ by strict monotonicity.
+\end{proof}
+
+\begin{lemma}[Direction of motion]
+\label{lem:solow_direction}
+\lean{Econ.Solow.Economy.le_next_of_le, Econ.Solow.Economy.next_le_of_ge, Econ.Solow.Economy.lt_next_of_lt, Econ.Solow.Economy.next_lt_of_gt}
+\leanok
+\uses{lem:solow_next_sub_self, lem:avg_strictAnti}
+If $0 < k \le k^*$ then $k \le \mathrm{next}(k)$; if $k \ge k^*$ then $\mathrm{next}(k) \le k$; and the
+inequalities are strict when $k < k^*$, resp.\ $k > k^*$.
+\end{lemma}
+\begin{proof}
+\leanok
+At $k^*$, $s f(k^*)/k^* = n + \delta$. For $k \le k^*$ the average product is at least its value at $k^*$
+(Lemma~\ref{lem:avg_strictAnti}), so $n + \delta \le s f(k)/k$; conclude by Lemma~\ref{lem:solow_next_sub_self}.
+The other cases are symmetric, with strict inequalities from strict monotonicity.
+\end{proof}
+
+\begin{lemma}[Paths stay on one side of $k^*$]
+\label{lem:solow_path_side}
+\lean{Econ.Solow.Economy.path_le_of_le, Econ.Solow.Economy.le_path_of_ge, Econ.Solow.Economy.path_lt_of_lt, Econ.Solow.Economy.lt_path_of_gt}
+\leanok
+\uses{lem:solow_next_mono}
+If $k_0 \le k^*$ (resp.\ $<$, $\ge$, $>$) then $k_t \le k^*$ (resp.\ $<$, $\ge$, $>$) for all $t$.
+\end{lemma}
+\begin{proof}
+\leanok
+Induction: $k_{t+1} = \mathrm{next}(k_t)$ and $k^* = \mathrm{next}(k^*)$, and $\mathrm{next}$ is (strictly)
+increasing on $[0, \infty)$ (Lemma~\ref{lem:solow_next_mono}).
+\end{proof}
+
+\begin{theorem}[Monotone convergence; Acemoglu Prop.~2.5]
+\label{thm:solow_monotone_paths}
+\lean{Econ.Solow.Economy.path_monotone_of_le, Econ.Solow.Economy.path_antitone_of_ge, Econ.Solow.Economy.path_strictMono_of_lt, Econ.Solow.Economy.path_strictAnti_of_gt}
+\leanok
+\uses{lem:solow_direction, lem:solow_path_side}
+If $0 < k_0 \le k^*$ the path is nondecreasing; if $k_0 \ge k^*$ it is nonincreasing. If $0 < k_0 < k^*$ it
+is strictly increasing and stays below $k^*$; if $k_0 > k^*$ it is strictly decreasing and stays above $k^*$.
+\end{theorem}
+\begin{proof}
+\leanok
+Each step $k_t \mapsto k_{t+1}$: by Lemma~\ref{lem:solow_path_side} $k_t$ is on the same side as $k_0$, so
+Lemma~\ref{lem:solow_direction} gives the direction of the step.
+\end{proof}
+
+\begin{lemma}[Limits are fixed points]
+\label{lem:solow_next_eq_of_tendsto}
+\lean{Econ.Solow.Economy.next_eq_of_tendsto}
+\leanok
+\uses{lem:solow_next_mono}
+If $k_t \to L > 0$ then $\mathrm{next}(L) = L$.
+\end{lemma}
+\begin{proof}
+\leanok
+$k_{t+1} \to L$ (shifted sequence) and $k_{t+1} = \mathrm{next}(k_t) \to \mathrm{next}(L)$ by continuity at $L$;
+limits are unique.
+\end{proof}
+
+\begin{theorem}[Global stability; Acemoglu Prop.~2.5]
+\label{thm:solow_tendsto}
+\lean{Econ.Solow.Economy.tendsto_path, Econ.Solow.Economy.exists_globally_stable_steadyState}
+\leanok
+\uses{thm:solow_monotone_paths, lem:solow_path_side, lem:solow_next_eq_of_tendsto, thm:solow_existsUnique}
+From every $k_0 > 0$, $k_t \to k^*$. Hence there is a unique steady state and it is globally stable.
+\end{theorem}
+\begin{proof}
+\leanok
+If $k_0 \le k^*$ the path is nondecreasing and bounded by $k^*$, so it converges to its supremum
+$L \ge k_0 > 0$. If $k_0 \ge k^*$ it is nonincreasing and bounded below by $k^*$, converging to its infimum
+$L \ge k^* > 0$. In either case $L$ is a positive fixed point (Lemma~\ref{lem:solow_next_eq_of_tendsto}),
+hence a steady state, so $L = k^*$ by uniqueness.
+\end{proof}
+
+\begin{corollary}[Output, growth rates and fixed points]
+\label{cor:solow_consequences}
+\lean{Econ.Solow.Economy.tendsto_output, Econ.Solow.Economy.growthRate, Econ.Solow.Economy.growthRate_eq, Econ.Solow.Economy.growthRate_strictAntiOn, Econ.Solow.Economy.fixedPoint_iff}
+\leanok
+\uses{thm:solow_tendsto, lem:solow_next_sub_self, lem:avg_strictAnti}
+(1) $f(k_t) \to f(k^*)$. (2) The growth rate $\frac{\mathrm{next}(k) - k}{k} = \frac{s f(k)/k - (n+\delta)}{1 + n}$
+is strictly decreasing in $k > 0$ (conditional convergence). (3) On $[0, \infty)$ the fixed points of
+$\mathrm{next}$ are exactly $0$ and $k^*$.
+\end{corollary}
+\begin{proof}
+\leanok
+(1) continuity of $f$ at $k^* > 0$. (2) Lemma~\ref{lem:solow_next_sub_self} and
+Lemma~\ref{lem:avg_strictAnti}. (3) a positive fixed point is a steady state, equal to $k^*$; and
+$\mathrm{next}(0) = 0$.
+\end{proof}
+
+\begin{theorem}[Comparative statics; Acemoglu Prop.~2.3]
+\label{thm:solow_comparative_statics}
+\lean{Econ.Solow.Economy.avg_eq_of_isSteadyState, Econ.Solow.Economy.steadyState_lt_of_ratio_lt, Econ.Solow.Economy.steadyState_strictMono_s, Econ.Solow.Economy.steadyState_strictAnti_n, Econ.Solow.Economy.steadyState_strictAnti_δ}
+\leanok
+\uses{lem:solow_next_sub_self, lem:avg_strictAnti}
+For two economies with the same $f$: if $(n_2 + \delta_2)/s_2 < (n_1 + \delta_1)/s_1$ then $k^*_1 < k^*_2$.
+In particular $k^*$ is strictly increasing in $s$ and strictly decreasing in $n$ and in $\delta$.
+\end{theorem}
+\begin{proof}
+\leanok
+At a steady state $f(k^*)/k^* = (n + \delta)/s$. If $k^*_1 \ge k^*_2$, diminishing average product gives
+$f(k^*_1)/k^*_1 \le f(k^*_2)/k^*_2$, i.e.\ $(n_1 + \delta_1)/s_1 \le (n_2 + \delta_2)/s_2$, a contradiction.
+Changing one parameter at a time moves the ratio $(n + \delta)/s$ in the stated direction.
+\end{proof}
+
+\begin{theorem}[Cobb--Douglas: non-vacuity and closed form]
+\label{thm:solow_cobbDouglas}
+\lean{Econ.Solow.cobbDouglas_neoclassical, Econ.Solow.cobbDouglas, Econ.Solow.cobbDouglas_steadyState, Econ.Solow.cobbDouglas_tendsto}
+\leanok
+\uses{def:neoclassical, lem:solow_next_sub_self, thm:solow_tendsto}
+For $0 < \alpha < 1$, $f(k) = k^\alpha$ is neoclassical. In any economy with $f(k) = k^\alpha$ the steady state is
+$k^* = (s/(n + \delta))^{1/(1-\alpha)}$, and every path from $k_0 > 0$ converges to it.
+\end{theorem}
+\begin{proof}
+\leanok
+Neoclassical: $0^\alpha = 0$, continuity of $k \mapsto k^\alpha$, monotonicity and strict concavity of
+$\mathrm{rpow}$ for $0 < \alpha < 1$, and $k^\alpha / k = k^{\alpha - 1}$ with $\alpha - 1 < 0$ tends to $\infty$
+at $0^+$ and to $0$ at $\infty$. Closed form: with $x = s/(n + \delta)$ and $k = x^{1/(1-\alpha)}$,
+$k^\alpha / k = k^{\alpha - 1} = x^{-1} = (n + \delta)/s$, which is the steady-state condition of
+Lemma~\ref{lem:solow_next_sub_self}. Convergence is Theorem~\ref{thm:solow_tendsto}.
+\end{proof}
+
+\section{The golden rule}
+\label{sec:golden_rule}
+
+Sources: Phelps (1961); Acemoglu ch.~2; Romer \S1.4. Steady-state consumption per worker is
+$c^* = (1 - s) f(k^*) = f(k^*) - (n + \delta) k^*$.
+
+\begin{lemma}[Strict tangent-line inequality]
+\label{lem:lt_tangent}
+\lean{Econ.Solow.lt_tangent}
+\leanok
+If $f$ is strictly concave on $[0, \infty)$, $k_g \ge 0$, $f'(k_g) = c$, $k \ge 0$ and $k \neq k_g$, then
+$f(k) < f(k_g) + c (k - k_g)$.
+\end{lemma}
+\begin{proof}
+\leanok
+If $k < k_g$, the chord slope on $[k, k_g]$ is strictly greater than $f'(k_g)$; if $k > k_g$, the chord slope on
+$[k_g, k]$ is strictly less. Multiply by $k_g - k$ (resp.\ $k - k_g$) $> 0$ and rearrange.
+\end{proof}
+
+\begin{theorem}[The golden rule]
+\label{thm:goldenRule}
+\lean{Econ.Solow.goldenRule_lt, Econ.Solow.goldenRule_le}
+\leanok
+\uses{lem:lt_tangent}
+Under the same hypotheses, $f(k) - c k < f(k_g) - c k_g$ for $k \neq k_g$, and $\le$ for all $k \ge 0$.
+\end{theorem}
+\begin{proof}
+\leanok
+Rearrange Lemma~\ref{lem:lt_tangent}; the case $k = k_g$ is equality.
+\end{proof}
+
+\begin{theorem}[No saving rate beats the golden rule]
+\label{thm:consumption_le_goldenRule}
+\lean{Econ.Solow.Economy.consumption_eq, Econ.Solow.Economy.consumption_le_goldenRule, Econ.Solow.Economy.consumption_lt_goldenRule}
+\leanok
+\uses{thm:goldenRule, lem:solow_next_sub_self}
+In a steady state $(1 - s) f(k^*) = f(k^*) - (n + \delta) k^*$. If $k_g > 0$ has $f'(k_g) = n + \delta$, then
+$(1 - s) f(k^*) \le f(k_g) - (n + \delta) k_g$, strictly if $k^* \neq k_g$.
+\end{theorem}
+\begin{proof}
+\leanok
+The identity is the steady-state condition $s f(k^*) = (n + \delta) k^*$; then apply Theorem~\ref{thm:goldenRule}
+with $c = n + \delta$.
+\end{proof}
+
+\begin{definition}[Golden-rule saving rate]
+\label{def:goldenSavingRate}
+\lean{Econ.Solow.Economy.goldenSavingRate, Econ.Solow.Economy.goldenSavingRate_mem, Econ.Solow.Economy.withGoldenSaving}
+\leanok
+\uses{thm:goldenRule}
+$s_g = (n + \delta) k_g / f(k_g)$. It lies in $(0, 1]$: positivity since $f(k_g) > 0$; and $s_g \le 1$ because
+Theorem~\ref{thm:goldenRule} at $k = 0$ gives $0 = f(0) - c \cdot 0 \le f(k_g) - (n + \delta) k_g$. Replacing
+$s$ by $s_g$ gives a new economy.
+\end{definition}
+
+\begin{theorem}[The golden rule is attainable]
+\label{thm:goldenRule_attainable}
+\lean{Econ.Solow.Economy.isSteadyState_goldenRule, Econ.Solow.Economy.consumption_lt_withGoldenSaving}
+\leanok
+\uses{def:goldenSavingRate, thm:consumption_le_goldenRule}
+With saving rate $s_g$ the steady state is $k_g$; and any economy whose steady state differs from $k_g$ would
+have strictly higher steady-state consumption with $s_g$.
+\end{theorem}
+\begin{proof}
+\leanok
+$s_g f(k_g) = (n + \delta) k_g$ by definition, which is the steady-state condition. The consumption comparison
+is Theorem~\ref{thm:consumption_le_goldenRule} applied with the golden economy's consumption identity.
+\end{proof}
+
+\begin{theorem}[Cobb--Douglas golden rule]
+\label{thm:cobbDouglas_goldenRule}
+\lean{Econ.Solow.cobbDouglas_hasDerivAt_goldenRule, Econ.Solow.cobbDouglas_goldenSavingRate}
+\leanok
+\uses{def:goldenSavingRate}
+For $f(k) = k^\alpha$, $0 < \alpha < 1$: $k_g = (\alpha/(n+\delta))^{1/(1-\alpha)}$ satisfies $f'(k_g) = n + \delta$,
+and $s_g = \alpha$.
+\end{theorem}
+\begin{proof}
+\leanok
+With $x = \alpha/(n + \delta)$: $f'(k_g) = \alpha k_g^{\alpha - 1} = \alpha x^{-1} = n + \delta$. And
+$s_g = (n + \delta) k_g / k_g^\alpha = (n + \delta) k_g^{1 - \alpha} = (n + \delta) x = \alpha$.
+\end{proof}
+
+\section{Labour-augmenting technical progress}
+\label{sec:tech_progress}
+
+Source: Acemoglu \S2.7 (Prop.~2.11). Output is $Y_t = A_t L_t f(K_t/(A_t L_t))$ with
+$L_{t+1} = (1 + n) L_t$, $A_{t+1} = (1 + g) A_t$, $K_{t+1} = s Y_t + (1 - \delta) K_t$.
+
+\begin{definition}[Economy with technical progress]
+\label{def:techEconomy}
+\lean{Econ.Solow.TechEconomy, Econ.Solow.TechEconomy.nEff, Econ.Solow.TechEconomy.toEconomy, Econ.Solow.TechEconomy.labor, Econ.Solow.TechEconomy.tech, Econ.Solow.TechEconomy.capital, Econ.Solow.TechEconomy.output, Econ.Solow.TechEconomy.effective, Econ.Solow.TechEconomy.tech_pos, Econ.Solow.TechEconomy.labor_pos}
+\leanok
+\uses{def:solow_economy}
+Parameters $f, s, \delta$ as before with $n, g > -1$ and $n_{\mathrm{eff}} + \delta > 0$, where
+$n_{\mathrm{eff}} = (1 + n)(1 + g) - 1$. The associated basic economy uses $n_{\mathrm{eff}}$ in place of $n$
+(valid since $n_{\mathrm{eff}} > -1$). $L_t = L_0(1+n)^t$, $A_t = A_0(1+g)^t$ (both positive), $K_t$ as above,
+and $k_t = K_t/(A_t L_t)$ is capital per effective worker.
+\end{definition}
+
+\begin{theorem}[Reduction to the basic model]
+\label{thm:effective_eq_path}
+\lean{Econ.Solow.TechEconomy.effective_eq_path}
+\leanok
+\uses{def:techEconomy}
+For $A_0, L_0 > 0$, $k_t$ equals the basic-model path from $K_0/(A_0 L_0)$ with population growth $n_{\mathrm{eff}}$.
+\end{theorem}
+\begin{proof}
+\leanok
+Induction on $t$. Using $A_{t+1} L_{t+1} = A_t L_t (1 + g)(1 + n)$,
+\[
+  k_{t+1} = \frac{s A_t L_t f(k_t) + (1 - \delta) K_t}{A_t L_t (1 + n)(1 + g)}
+          = \frac{s f(k_t) + (1 - \delta) k_t}{1 + n_{\mathrm{eff}}}.
+\]
+\end{proof}
+
+\begin{theorem}[Convergence with technical progress]
+\label{thm:tech_tendsto}
+\lean{Econ.Solow.TechEconomy.tendsto_effective, Econ.Solow.TechEconomy.tendsto_detrended_output}
+\leanok
+\uses{thm:effective_eq_path, thm:solow_tendsto}
+For $K_0, A_0, L_0 > 0$, $k_t \to k^*$ and $(Y_t / L_t)/A_t \to f(k^*)$.
+\end{theorem}
+\begin{proof}
+\leanok
+Theorems~\ref{thm:effective_eq_path} and~\ref{thm:solow_tendsto}. Detrended output equals $f(k_t)$, and $f$ is
+continuous at $k^* > 0$.
+\end{proof}
+
+\begin{theorem}[Balanced growth; Acemoglu Prop.~2.11]
+\label{thm:balanced_growth}
+\lean{Econ.Solow.TechEconomy.balanced_growth}
+\leanok
+\uses{thm:effective_eq_path}
+If $K_0/(A_0 L_0) = k^*$, then $k_t = k^*$ for all $t$, and $Y_t/L_t$ and $K_t/L_t$ grow at exactly rate $g$.
+\end{theorem}
+\begin{proof}
+\leanok
+By Theorem~\ref{thm:effective_eq_path} and the fixed-point property, $k_t = k^*$ for all $t$, so
+$K_t = k^* A_t L_t$ and $Y_t = A_t L_t f(k^*)$. Dividing by $L_t$, both are constant multiples of $A_t$, and
+$A_{t+1} = (1 + g) A_t$.
+\end{proof}
+
+% Lean: EconLean/Macro/Growth/Ramsey.lean
+\section{The Ramsey--Cass--Koopmans model}
+\label{sec:ramsey}
+
+Sources: SL \S2.1, \S4.2--4.3, \S6.1 (Thms 6.1--6.2); Acemoglu ch.~6 and~8. A planner maximizes
+$\sum_t \beta^t u(c_t)$ subject to $c_t + k_{t+1} \le f(k_t)$, $c_t, k_{t+1} \ge 0$, where $f$ is total resources.
+In recursive form the state is $k$, the choice is $y = k'$ with $0 \le y \le f(k)$, and $F(k, y) = u(f(k) - y)$.
+
+\begin{definition}[RCK model]
+\label{def:rck}
+\lean{Econ.RCKModel, Econ.RCKModel.S, Econ.RCKModel.f_nonneg, Econ.RCKModel.f_mono, Econ.RCKModel.Γ, Econ.RCKModel.F}
+\leanok
+$u, f : \R \to \R$ are continuous, strictly increasing and strictly concave on $[0, \infty)$, $f(0) = 0$,
+$0 < \beta < 1$, and $\bar k > 0$ has $f(k) \le \bar k$ on $[0, \bar k]$. The state space is $S = [0, \bar k]$,
+$\Gamma(k) = \{y \in S : y \le f(k)\}$ and $F(k, y) = u(f(k) - y)$. $f \ge 0$ and $f$ is monotone on $[0, \infty)$.
+$u$ must be finite and continuous at $c = 0$, which excludes log and CRRA with $\sigma \ge 1$.
+\end{definition}
+
+\begin{lemma}[Calculus of strictly concave functions]
+\label{lem:strictConcave_calculus}
+\lean{Econ.StrictConcaveOn.increment_lt, Econ.StrictConcaveOn.slope_lt_of_hasDerivAt_left, Econ.StrictConcaveOn.hasDerivAt_lt_slope_right, Econ.StrictConcaveOn.le_add_deriv}
+\leanok
+Let $f$ be strictly concave on a convex $s \subseteq \R$.
+(i) If $s = [0, \infty)$, $0 \le p < q$ and $d > 0$, then $f(q + d) - f(p + d) < f(q) - f(p)$.
+(ii) If $a < b$ in $s$ and $f'(a)$ exists, then $\frac{f(b) - f(a)}{b - a} < f'(a)$.
+(iii) If $a < b$ in $s$ and $f'(b)$ exists, then $f'(b) < \frac{f(b) - f(a)}{b - a}$.
+(iv) If $f'(a)$ exists, $f(x) \le f(a) + f'(a)(x - a)$ for $x \in s$.
+\end{lemma}
+\begin{proof}
+\leanok
+All use \texttt{StrictConcaveOn.secant\_strict\_mono}: secant slopes from a fixed point strictly decrease. (i) From $p$:
+slope to $q + d$ $<$ slope to $q$. From $q + d$: slope to $p + d$ $<$ slope to $p$. Rewriting both in terms of the
+common length $q - p$ and chaining gives the claim. (ii) With $m = (a + b)/2$, slope$(a, b) <$ slope$(a, m)$. Since secant slopes
+from $a$ decrease, slope$(a, x) \ge$ slope$(a, m)$ for $x \in (a, m)$; letting $x \downarrow a$ gives
+$f'(a) \ge$ slope$(a, m) >$ slope$(a, b)$.
+(iii) Symmetric, from $b$ with $x \uparrow b$. (iv) Split on $x < a$, $x = a$, $x > a$ and multiply (iii) resp.\ (ii) by
+$x - a$.
+\end{proof}
+
+\begin{theorem}[RCK is a dynamic program]
+\label{thm:rck_dynprog}
+\lean{Econ.RCKModel.Γ_isClosed_graph, Econ.RCKModel.Γ_lhc, Econ.RCKModel.toDynProg}
+\leanok
+\uses{def:rck, def:DynProg, thm:uhc_of_closed_graph, def:lhc}
+The RCK model satisfies the assumptions of Definition~\ref{def:DynProg}.
+\end{theorem}
+\begin{proof}
+\leanok
+$\Gamma(k) \ni 0$ is nonempty and closed in the compact $S$. Its graph $\{y \le f(k)\}$ is closed, so $\Gamma$ is UHC
+(Theorem~\ref{thm:uhc_of_closed_graph}). LHC: given $y \in \Gamma(k)$ in an open $U$, the map
+$k' \mapsto \min(y, f(k'))$ is continuous, feasible at $k'$, and equals $y$ at $k$, so it lies in $U$ for $k'$ near $k$.
+$F$ is continuous, and bounded because $f(k) - y \in [0, \bar k]$ and $u$ is bounded on that compact interval.
+\end{proof}
+
+\begin{theorem}[Value strictly increasing, concavity assumptions]
+\label{thm:rck_value}
+\lean{Econ.RCKModel.value_strictMono, Econ.RCKModel.convexGraph, Econ.RCKModel.strictlyConcaveReturn}
+\leanok
+\uses{thm:rck_dynprog, thm:value_monotone, def:dp_concavity}
+$V$ is strictly increasing. $\Gamma$ has convex graph and $F$ is strictly concave in the sense of
+Definition~\ref{def:dp_concavity}.
+\end{theorem}
+\begin{proof}
+\leanok
+Monotonicity (Theorem~\ref{thm:value_monotone}): for $k < k'$, $f(k) < f(k')$, so $u(f(k) - y) < u(f(k') - y)$, and
+$\Gamma(k) \subseteq \Gamma(k')$. Convex graph: by concavity of $f$, $a y + b y' \le a f(k) + b f(k') \le f(a k + b k')$.
+Strict concavity of $F$: concavity of $u$ gives $a u(c) + b u(c') \le u(a c + b c')$, and
+$a c + b c' = a f(k) + b f(k') - w \le f(z) - w$ by concavity of $f$; $u$ is increasing. If $k \neq k'$, strict concavity
+of $f$ makes the last inequality strict, and strict monotonicity of $u$ makes the whole chain strict.
+\end{proof}
+
+\begin{theorem}[Monotone continuous policy, SL Thm 6.1]
+\label{thm:rck_monotone_policy}
+\lean{Econ.RCKModel.exists_monotone_policy}
+\leanok
+\uses{thm:rck_value, thm:exists_continuous_policy, thm:policy_monotone, lem:strictConcave_calculus}
+The optimal policy is a single-valued, continuous, nondecreasing $g : S \to S$.
+\end{theorem}
+\begin{proof}
+\leanok
+Theorem~\ref{thm:exists_continuous_policy} gives a continuous $g$ with $G(k) = \{g(k)\}$. For $k < k'$ apply
+Theorem~\ref{thm:policy_monotone}. Ascending sets: if $y' < y \le f(k)$ then $y' \le f(k)$, and $y \le f(k) \le f(k')$.
+Strictly increasing differences: with $p = f(k) - y$, $q = f(k') - y$ ($p < q$ since $f(k) < f(k')$) and $d = y - y' > 0$,
+Lemma~\ref{lem:strictConcave_calculus}(i) gives $u(f(k') - y') - u(f(k) - y') < u(f(k') - y) - u(f(k) - y)$.
+\end{proof}
+
+\begin{theorem}[Monotone convergence of optimal capital, SL Thm 6.2]
+\label{thm:rck_converges}
+\lean{Econ.RCKModel.optimal_capital_converges}
+\leanok
+\uses{thm:rck_monotone_policy, thm:principle_of_optimality, lem:orbit_monotone, thm:orbit_tendsto_fixedPoint}
+From any $k_0$, the plan $k_{t+1} = g(k_t)$ attains $V(k_0)$ and is the only feasible plan that does; it is monotone and
+converges to a steady state $k_\infty = g(k_\infty)$.
+\end{theorem}
+\begin{proof}
+\leanok
+A feasible plan follows the policy at every date iff it equals $k_{t+1} = g(k_t)$ (induction, since $G = \{g\}$). By the
+principle of optimality (Theorem~\ref{thm:principle_of_optimality}) a feasible plan attains $V(k_0)$ iff it follows the
+policy, which gives both optimality and uniqueness. Monotonicity is Lemma~\ref{lem:orbit_monotone} and convergence to a
+fixed point is Theorem~\ref{thm:orbit_tendsto_fixedPoint}, with $S = [0, \bar k]$ and $g$ monotone and continuous.
+\end{proof}
+
+\begin{theorem}[Modified golden rule]
+\label{thm:modified_golden_rule}
+\lean{Econ.RCKModel.modified_golden_rule}
+\leanok
+\uses{thm:rck_value, thm:benveniste_scheinkman, lem:strictConcave_calculus, lem:tendsto_discounted_value}
+Let $k^* > 0$ be a steady state of the policy with $c^* = f(k^*) - k^* > 0$, $u$ differentiable at $c^*$ and $f$ at
+$k^*$. Then $\beta f'(k^*) = 1$.
+\end{theorem}
+\begin{proof}
+\leanok
+$u'(c^*) > 0$: by Lemma~\ref{lem:strictConcave_calculus}(ii), $u'(c^*) > u(c^* + 1) - u(c^*) > 0$. $k^* < f(k^*) \le \bar k$,
+so $k^*$ is interior. By continuity of $f$, $k^* < f(r)$ for $r$ near $k^*$, so the choice $k^*$ stays feasible near $k^*$,
+and $r \mapsto F(r, k^*) = u(f(r) - k^*)$ has derivative $u'(c^*) f'(k^*)$ (chain rule). Benveniste--Scheinkman
+(Theorem~\ref{thm:benveniste_scheinkman}) gives $V'(k^*) = u'(c^*) f'(k^*)$. The function
+$\varphi(r) = u(f(k^*) - r) + \beta V(r)$ has a local maximum at $r = k^*$ (Bellman inequality \texttt{bellman\_le} for
+feasible $r$ near $k^*$, equality at the optimum), and $\varphi'(k^*) = -u'(c^*) + \beta u'(c^*) f'(k^*)$. Fermat's
+theorem gives $u'(c^*)(\beta f'(k^*) - 1) = 0$; divide by $u'(c^*) \neq 0$.
+\end{proof}
+
+\begin{theorem}[The modified-golden-rule capital is a steady state]
+\label{thm:steady_state_mgr}
+\lean{Econ.RCKModel.steady_state_of_modified_golden_rule}
+\leanok
+\uses{thm:euler_transversality, lem:strictConcave_calculus, thm:payoff_value, thm:principle_of_optimality}
+If $c^* = f(k^*) - k^* > 0$, $u$ is differentiable at $c^*$, $f$ at $k^*$, and $\beta f'(k^*) = 1$, then $g(k^*) = k^*$.
+\end{theorem}
+\begin{proof}
+\leanok
+$u'(c^*) > 0$ as before, and $f'(k^*) = 1/\beta > 0$. Pose the sequence problem on $\R$ with $\Gamma'(x) = \{y : x \in S,
+0 \le y \le f(x)\}$ and $F'(x, y) = u(f(x) - y)$. The stationary plan $x_t = k^*$ satisfies the hypotheses of
+\texttt{euler\_transversality\_along} (Theorem~\ref{thm:euler_transversality}) with $F_x = u'(c^*) f'(k^*)$ and
+$F_y = -u'(c^*)$: the supergradient inequality at $(k^*, k^*)$ follows from Lemma~\ref{lem:strictConcave_calculus}(iv)
+for $u$ and $f$ and $u'(c^*) > 0$; $F_x \ge 0$; the Euler equation is $-u' + \beta u' f' = 0$; transversality is
+$\beta^t u' f' k^* \to 0$. So the stationary plan is optimal in the sequence problem. The policy plan $x^g$ attains
+$V(k^*)$ (Theorem~\ref{thm:payoff_value}) and is feasible for $\Gamma'$, so its partial payoffs are eventually at most
+those of the stationary plan plus $\varepsilon$; in the limit $V(k^*) \le$ payoff of the stationary plan. The reverse
+inequality always holds, so the stationary plan attains $V(k^*)$, and by the principle of optimality
+(Theorem~\ref{thm:principle_of_optimality}) it follows the policy: $k^* \in G(k^*) = \{g(k^*)\}$.
+\end{proof}
+
+\begin{theorem}[Uniqueness of the modified-golden-rule capital]
+\label{thm:mgr_unique}
+\lean{Econ.RCKModel.modified_golden_rule_unique}
+\leanok
+\uses{lem:strictConcave_calculus}
+At most one $k \ge 0$ (where $f$ is differentiable) satisfies $\beta f'(k) = 1$.
+\end{theorem}
+\begin{proof}
+\leanok
+Two solutions have $f'(k_1) = f'(k_2)$ (cancel $\beta > 0$). If $k_1 < k_2$, Lemma~\ref{lem:strictConcave_calculus}(ii)
+and (iii) give $f'(k_2) <$ slope$(k_1, k_2) < f'(k_1)$, a contradiction; symmetrically if $k_2 < k_1$.
+\end{proof}
+
+\begin{remark}[Non-vacuity]
+\label{rem:rck_example}
+\lean{Econ.RCKModel.sqrtExample}
+\leanok
+\uses{thm:rck_converges, thm:steady_state_mgr}
+$u(c) = \sqrt c$, $f(k) = \sqrt k$, $\beta = 1/2$, $\bar k = 1$ satisfies every assumption, so
+Theorem~\ref{thm:rck_converges} applies. Its modified-golden-rule capital is $k^* = 1/16$ ($\beta f'(k^*) =
+\tfrac12 \cdot \tfrac{1}{2 \cdot 1/4} = 1$, $c^* = 1/4 - 1/16 > 0$), which is a steady state by
+Theorem~\ref{thm:steady_state_mgr} and satisfies every hypothesis of Theorem~\ref{thm:modified_golden_rule}.
+\end{remark}

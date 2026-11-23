@@ -1,0 +1,239 @@
+% Lean: EconLean/Bridges/Aggregation/{GrossSubstitutes,LawOfDemand,Gorman,Examples}.lean
+\chapter{Aggregation: Restrictions that Escape SMD (Bridge B0)}
+\label{chap:aggregation}
+
+The Sonnenschein--Mantel--Debreu theorem says that the standard consumer axioms restrict aggregate excess demand
+only by continuity, homogeneity, Walras' law and boundary behaviour. This chapter formalizes micro restrictions that
+(i) survive adding up consumers and (ii) buy an aggregate property (PLAN \S7.2a).
+
+\section{Gross substitutes}
+\label{sec:gross_substitutes}
+
+\begin{definition}[Gross substitutes; MWG Def.~17.F.2]
+\label{def:gross_substitutes}
+\lean{Econ.PositivePrices, Econ.GrossSubstitutes, Econ.HomogeneousZero}
+\leanok
+$z$ has the \emph{gross substitutes} property if for all $p \gg 0$, all goods $l$ and all $t > p_l$, raising $p_l$ to
+$t$ strictly raises $z_k$ for every $k \neq l$. $z$ is \emph{homogeneous of degree zero} if $z(tp) = z(p)$ for
+$p \gg 0$, $t > 0$.
+\end{definition}
+
+\begin{theorem}[Gross substitutes is preserved under aggregation]
+\label{thm:gs_sum}
+\lean{Econ.GrossSubstitutes.add, Econ.GrossSubstitutes.sum}
+\leanok
+\uses{def:gross_substitutes}
+The sum of two gross-substitute functions is gross substitute; so is $\sum_{a \in s} z_a$ for a nonempty finite set
+$s$ of gross-substitute $z_a$.
+\end{theorem}
+\begin{proof}
+\leanok
+Add the strict inequalities (\texttt{linarith}; for a nonempty finite sum, \texttt{Finset.sum\_lt\_sum\_of\_nonempty}).
+Nonemptiness is needed: the empty sum $0$ is not gross substitute.
+\end{proof}
+
+\begin{lemma}[Monotone path]
+\label{lem:gs_path}
+\lean{Econ.mixPrices, Econ.GrossSubstitutes.le_mixPrices, Econ.GrossSubstitutes.lt_of_le}
+\leanok
+\uses{def:gross_substitutes}
+Let $z$ be gross substitute, $0 \ll p \le p'$, $p \ne p'$ and $p_k = p'_k$. Then $z_k(p) < z_k(p')$.
+\end{lemma}
+\begin{proof}
+\leanok
+For a finite set $S \not\ni k$ let $q_S$ equal $p'$ on $S$ and $p$ elsewhere. By induction on $S$
+(\texttt{Finset.induction\_on}) $z_k(p) \le z_k(q_S)$, strictly if some $i \in S$ has $p_i < p'_i$: adding $l$ to $S$
+changes only the $l$-th price, from $p_l$ to $p'_l$; if $p_l < p'_l$ gross substitutes gives a strict increase,
+otherwise nothing changes. Apply this to $S = \iota \setminus \{k\}$, where $q_S = p'$ because $p_k = p'_k$, and some
+$i \ne k$ has $p_i < p'_i$ because $p \neq p'$.
+\end{proof}
+
+\begin{theorem}[Uniqueness under gross substitutes; MWG Prop.~17.F.3]
+\label{thm:gs_unique}
+\lean{Econ.GrossSubstitutes.unique_equilibrium}
+\leanok
+\uses{def:gross_substitutes}
+If $z$ is gross substitute and homogeneous of degree zero, and $z(p) = z(p') = 0$ with $p, p' \gg 0$, then
+$p' = t p$ for some $t > 0$.
+\end{theorem}
+\begin{proof}
+\leanok
+\uses{lem:gs_path}
+Choose $k$ maximizing $p_i/p'_i$ (\texttt{Finset.exists\_max\_image}) and let $\lambda = p_k / p'_k > 0$, $q = \lambda p'$.
+Then $q \ge p$ with $q_k = p_k$, and $z(q) = z(p') = 0$ by homogeneity. If $q = p$ then $p' = \lambda^{-1} p$. Otherwise
+Lemma~\ref{lem:gs_path} gives $0 = z_k(p) < z_k(q) = 0$, a contradiction.
+\end{proof}
+
+\section{The law of demand and the weak axiom}
+\label{sec:law_of_demand}
+
+\begin{definition}[Walras' law, WARP, law of demand; MWG Def.~17.F.1, \S4.C]
+\label{def:law_of_demand}
+\lean{Econ.WalrasLaw, Econ.ExcessWARP, Econ.LawOfDemand, Econ.WeakLawOfDemand}
+\leanok
+On a set of prices $D$: Walras' law is $p \cdot z(p) = 0$; WARP is: $z(p) \ne z(p')$ and $p \cdot z(p') \le 0$ imply
+$p' \cdot z(p) > 0$; the (strict) law of demand is $(p' - p) \cdot (z(p') - z(p)) < 0$ whenever $z(p) \ne z(p')$; the
+weak law has $\le 0$ for all $p, p'$.
+\end{definition}
+
+\begin{theorem}[Law of demand preserved under aggregation; MWG Prop.~4.C.1]
+\label{thm:lod_sum}
+\lean{Econ.LawOfDemand.weak, Econ.LawOfDemand.sum}
+\leanok
+\uses{def:law_of_demand}
+If every $z_a$, $a \in s$, satisfies the strict law of demand on $D$, so does $\sum_{a\in s} z_a$.
+\end{theorem}
+\begin{proof}
+\leanok
+The strict law implies the weak one. If the aggregate differs at $p, p'$, some $z_b$ differs. By linearity
+$(p'-p)\cdot(\sum_a z_a(p') - \sum_a z_a(p)) = \sum_a (p'-p)\cdot(z_a(p') - z_a(p))$; every term is $\le 0$ and the
+$b$-term is $< 0$ (\texttt{Finset.sum\_lt\_sum}).
+\end{proof}
+
+\begin{lemma}[Law of demand implies WARP under Walras' law]
+\label{lem:lod_warp}
+\lean{Econ.LawOfDemand.excessWARP}
+\leanok
+\uses{def:law_of_demand}
+With Walras' law on $D$, the strict law of demand implies WARP. (Caution: on a price cone with homogeneous $z$ these
+hypotheses force $z \equiv 0$; the law of demand is meant for demand at fixed wealth or a normalized slice.)
+\end{lemma}
+\begin{proof}
+\leanok
+Expand $(p'-p)\cdot(z(p') - z(p)) < 0$ by bilinearity and use $p \cdot z(p) = p' \cdot z(p') = 0$:
+$p' \cdot z(p) + p \cdot z(p') > 0$. If $p \cdot z(p') \le 0$ then $p' \cdot z(p) > 0$.
+\end{proof}
+
+\begin{theorem}[WARP makes the equilibrium set convex; MWG Prop.~17.F.1]
+\label{thm:warp_convex}
+\lean{Econ.ExcessWARP.convex_equilibria}
+\leanok
+\uses{def:law_of_demand}
+If $D$ is convex and $z$ satisfies Walras' law and WARP on $D$, then $\{p \in D : z(p) = 0\}$ is convex.
+\end{theorem}
+\begin{proof}
+\leanok
+Let $z(p) = z(p') = 0$ and $q = ap + bp'$ ($a, b \ge 0$, $a + b = 1$), so $q \in D$. Suppose $z(q) \ne 0$. Walras' law
+at $q$ gives $a\, p\cdot z(q) + b\, p' \cdot z(q) = 0$. If $p \cdot z(q) \le 0$, WARP (applied to $p, q$) gives
+$q \cdot z(p) > 0$, impossible since $z(p) = 0$. Otherwise $p \cdot z(q) > 0$ forces $p' \cdot z(q) \le 0$ (else the sum
+is positive; the case $a = 0$ is handled separately), and WARP applied to $p', q$ gives the same contradiction.
+\end{proof}
+
+\section{Gorman aggregation}
+\label{sec:gorman}
+
+Prices are fixed and suppressed; $x_a : \R \to \R^\iota$ is consumer $a$'s demand as a function of wealth.
+
+\begin{definition}[Aggregation through wealth; Gorman form]
+\label{def:gorman}
+\lean{Econ.AggregatesThroughWealth, Econ.AggregatesThroughWealthNonneg, Econ.GormanForm}
+\leanok
+Demand \emph{aggregates through wealth} if there is $X$ with $\sum_a x_a(w_a) = X(\sum_a w_a)$ for all wealth
+distributions $w$ (respectively, all $w \ge 0$). Demands have \emph{Gorman form} if $x_a(w) = x_a(0) + w \beta$ for a
+common $\beta$.
+\end{definition}
+
+\begin{theorem}[Gorman form implies aggregation; MWG Prop.~4.B.1, ``if'']
+\label{thm:gorman_if}
+\lean{Econ.aggregatesThroughWealth_of_gorman}
+\leanok
+\uses{def:gorman}
+Gorman-form demands aggregate through wealth, with $X(W) = \sum_a x_a(0) + W\beta$.
+\end{theorem}
+\begin{proof}
+\leanok
+Substitute and use $\sum_a w_a \beta = (\sum_a w_a)\beta$ (\texttt{Finset.sum\_smul}).
+\end{proof}
+
+\begin{lemma}[Transfer invariance]
+\label{lem:gorman_transfer}
+\lean{Econ.sum_update_apply, Econ.AggregatesThroughWealth.transfer,
+  Econ.AggregatesThroughWealthNonneg.transfer}
+\leanok
+\uses{def:gorman}
+If demand aggregates through wealth and $a \ne b$, then $x_a(u + h) + x_b(v - h) = x_a(u) + x_b(v)$ (for the
+nonnegative version, whenever $u, v, u+h, v-h \ge 0$).
+\end{lemma}
+\begin{proof}
+\leanok
+Compare the distributions $w_0$ (giving $u$ to $a$, $v$ to $b$, $0$ to others) and $w_1$ (giving $u+h$ and $v-h$). They
+have the same total, so the same aggregate demand; expanding both sums with the update identity leaves the claim.
+\end{proof}
+
+\begin{lemma}[Pairwise Gorman lemma]
+\label{lem:gorman_pair}
+\lean{Econ.AggregatesThroughWealth.pair, Econ.AggregatesThroughWealthNonneg.pair}
+\leanok
+\uses{lem:gorman_transfer}
+If demand aggregates through wealth, demands are continuous (on $[0,\infty)$ in the nonnegative version) and $a \ne b$,
+there is $\gamma$ with $x_a(u) = x_a(0) + u\gamma$ and $x_b(u) = x_b(0) + u \gamma$ (for $u \ge 0$ in the nonnegative
+version).
+\end{lemma}
+\begin{proof}
+\leanok
+Put $v = h$ in Lemma~\ref{lem:gorman_transfer}: $x_a(u + h) = x_a(u) + g(h)$ with $g(h) = x_b(h) - x_b(0)$. Then $g$ is
+additive: $g(h_1 + h_2) = g(h_1) + g(h_2)$, by comparing $x_a(h_1 + h_2)$ computed in two ways. $g$ is continuous, so by
+the Cauchy equation (\texttt{map\_real\_smul} for a continuous additive map) $g(h) = h\, g(1)$. In the nonnegative
+version, $g$ is only additive on $[0, \infty)$; extend it by $G(h) = g(h^+) - g(h^-)$, which is additive on $\R$ because
+$(h_1+h_2)^+ + h_1^- + h_2^- = (h_1+h_2)^- + h_1^+ + h_2^+$ (from \texttt{max\_zero\_sub\_max\_neg\_zero\_eq\_self}) and
+continuous, and agrees with $g$ on $[0,\infty)$. Take $\gamma = g(1)$.
+\end{proof}
+
+\begin{theorem}[Gorman's aggregation theorem; MWG Prop.~4.B.1, ``only if'']
+\label{thm:gorman}
+\lean{Econ.gorman_of_aggregatesThroughWealth, Econ.gorman_of_aggregatesThroughWealthNonneg}
+\leanok
+\uses{def:gorman}
+With at least two consumers, if demand aggregates through wealth and each demand is continuous in wealth, demands have
+Gorman form. The nonnegative version assumes aggregation and continuity only for $w \ge 0$ and concludes the Gorman form on
+$[0, \infty)$. MWG assumes differentiability; continuity suffices here.
+\end{theorem}
+\begin{proof}
+\leanok
+\uses{lem:gorman_pair}
+Fix $a_0$ and set $\beta = x_{a_0}(1) - x_{a_0}(0)$. For $b \ne a_0$, Lemma~\ref{lem:gorman_pair} gives a common slope
+$\gamma$ for $a_0$ and $b$, and evaluating at $u = 1$ shows $\gamma = \beta$. For $a = a_0$ use any $b \ne a_0$
+(\texttt{exists\_ne}); for $a \ne a_0$ use the pair $(a_0, a)$.
+\end{proof}
+
+\section{Examples}
+\label{sec:aggregation_examples}
+
+\begin{theorem}[Gross substitutes and WARP example]
+\label{thm:zcd_example}
+\lean{Econ.AggregationExamples.zCD, Econ.AggregationExamples.zCD_homogeneous, Econ.AggregationExamples.zCD_walras,
+  Econ.AggregationExamples.zCD_grossSubstitutes, Econ.AggregationExamples.zCD_unique,
+  Econ.AggregationExamples.zCD_warp}
+\leanok
+\uses{thm:gs_unique, thm:warp_convex}
+$z(p) = (p_1/p_0 - 1,\, p_0/p_1 - 1)$ is homogeneous, satisfies Walras' law, gross substitutes and WARP on $p \gg 0$.
+Every equilibrium is a multiple of $(1,1)$, and the equilibrium set is convex.
+\end{theorem}
+\begin{proof}
+\leanok
+Direct computation (\texttt{field\_simp}). For WARP, with $D = p_0p'_1 - p_1p'_0$:
+$p\cdot z(p')\,p'_0p'_1 = (p'_1 - p'_0)D$ and $p'\cdot z(p)\,p_0p_1 = -(p_1 - p_0)D$; different excess demands force
+$D \ne 0$, and the sign conditions follow by cases on the sign of $D$.
+\end{proof}
+
+\begin{theorem}[Law of demand, Gorman and production examples]
+\label{thm:aggregation_examples}
+\lean{Econ.AggregationExamples.lawOfDemand_neg, Econ.AggregationExamples.xG, Econ.AggregationExamples.xG_budget,
+  Econ.AggregationExamples.xG_gorman, Econ.AggregationExamples.techY, Econ.AggregationExamples.convex_techY,
+  Econ.AggregationExamples.prodEconomy, Econ.AggregationExamples.prodEconomy_eq,
+  Econ.AggregationExamples.prodEconomy_paretoOptimal, Econ.AggregationExamples.uTwo,
+  Econ.AggregationExamples.prodEconomy2, Econ.AggregationExamples.prodEconomy2_eq,
+  Econ.AggregationExamples.rational_two, Econ.AggregationExamples.lns_two,
+  Econ.AggregationExamples.prodEconomy2_paretoOptimal}
+\leanok
+\uses{thm:lod_sum, thm:gorman, thm:first_welfare_production, thm:second_welfare_production}
+$z(p) = -p$ satisfies the strict law of demand. $x_a(w) = (a, -a) + w(\tfrac12, \tfrac12)$ is a budget-balanced
+Gorman system at prices $(1,1)$. With technology $Y = \{y : y_0 \le 0,\ y_1 \le -y_0\}$: a one-consumer economy where
+all hypotheses of both production welfare theorems hold; and a two-consumer economy ($u = x_0 + 2x_1$, endowment
+$(1,0)$, half shares) whose equilibrium at $p = (1,1)$ has $y = (-2, 2)$, $x_a = (0,1)$, and is Pareto optimal.
+\end{theorem}
+\begin{proof}
+\leanok
+Direct computation. For $-p$: $(p'-p)\cdot(-p' + p) = -\|p' - p\|^2 < 0$. In the production examples, profit
+$y_0 + y_1 \le 0$ on $Y$; on the budget line $y_0 + y_1 \le 1$, $u(y) \le 2(y_0 + y_1) \le 2 = u(0,1)$.
+\end{proof}

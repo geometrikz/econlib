@@ -1,0 +1,367 @@
+% Lean: EconLean/Macro/OLG/{LogHousehold,Diamond,Samuelson}.lean
+\chapter{Overlapping Generations}
+\label{chap:olg}
+
+\section{The two-period log household}
+\label{sec:log_household}
+
+Lifetime utility is $U(c_1, c_2) = \log c_1 + \beta \log c_2$ with $\beta > 0$; the budget is
+$c_1 + c_2/R \le W$ with $R, W > 0$.
+
+\begin{definition}[Log lifetime utility]
+\label{def:logU}
+\lean{Econ.OLG.logU}
+\leanok
+$\mathrm{logU}_\beta(c_1, c_2) = \log c_1 + \beta \log c_2$.
+\end{definition}
+
+\begin{theorem}[Optimal consumption]
+\label{thm:logU_opt}
+\lean{Econ.OLG.logU_le_opt, Econ.OLG.logU_lt_opt}
+\leanok
+\uses{def:logU}
+Let $c_1^* = W/(1+\beta)$, $c_2^* = \beta R W/(1 + \beta)$. For every affordable $c_1, c_2 > 0$,
+$U(c_1, c_2) \le U(c_1^*, c_2^*)$, with strict inequality unless $(c_1, c_2) = (c_1^*, c_2^*)$.
+\end{theorem}
+\begin{proof}
+\leanok
+No calculus: apply $\log x \le x - 1$ to $x = c_1/c_1^*$ and $x = c_2/c_2^*$, weighting the second by $\beta$:
+\[
+  U(c_1, c_2) - U(c_1^*, c_2^*) \le \frac{c_1}{c_1^*} + \beta\frac{c_2}{c_2^*} - (1 + \beta).
+\]
+By algebra $\frac{c_1}{c_1^*} + \beta \frac{c_2}{c_2^*} = \frac{(1+\beta)(c_1 + c_2/R)}{W} \le 1 + \beta$.
+For strictness, if $c_1 \neq c_1^*$ (or $c_2 \neq c_2^*$) the corresponding inequality $\log x < x - 1$ is strict.
+\end{proof}
+
+\begin{definition}[Optimal saving]
+\label{def:isOptimalSaving}
+\lean{Econ.OLG.IsOptimalSaving}
+\leanok
+\uses{def:logU}
+With endowments $(\omega_1, \omega_2)$ and return $R$, saving $a$ is optimal if $\omega_1 - a > 0$,
+$\omega_2 + R a > 0$, and no $a'$ with positive consumption gives higher $U(\omega_1 - a', \omega_2 + R a')$.
+\end{definition}
+
+\begin{theorem}[Optimal saving with log utility]
+\label{thm:saving_isOptimal_iff}
+\lean{Econ.OLG.saving_isOptimal_iff}
+\leanok
+\uses{def:isOptimalSaving, thm:logU_opt}
+For $\beta, R, \omega_1 > 0$ and $\omega_2 \ge 0$: $a$ is optimal iff $a = (\beta\omega_1 - \omega_2/R)/(1 + \beta)$.
+\end{theorem}
+\begin{proof}
+\leanok
+Let $W = \omega_1 + \omega_2/R > 0$ and $a^*$ the stated value. Algebra gives $\omega_1 - a^* = c_1^*$ and
+$\omega_2 + R a^* = c_2^*$, and every $a'$ satisfies $(\omega_1 - a') + (\omega_2 + R a')/R = W$. ($\Leftarrow$)
+Theorem~\ref{thm:logU_opt}. ($\Rightarrow$) If $a \neq a^*$ then $\omega_1 - a \neq c_1^*$, so $a$ is strictly
+worse than $a^*$ by Theorem~\ref{thm:logU_opt}, contradicting optimality.
+\end{proof}
+
+\section{The Diamond model}
+\label{sec:diamond}
+
+Sources: Diamond (1965); Acemoglu \S9.2--9.3. Log utility, $y = k^\alpha$, full depreciation, population
+growth $n$. Wages $w(k) = (1-\alpha)k^\alpha$ and returns $R(k) = \alpha k^{\alpha-1}$.
+
+\begin{definition}[Diamond economy]
+\label{def:diamond}
+\lean{Econ.OLG.Diamond, Econ.OLG.Diamond.wage, Econ.OLG.Diamond.rate, Econ.OLG.Diamond.coef, Econ.OLG.Diamond.next, Econ.OLG.Diamond.coef_pos, Econ.OLG.Diamond.wage_pos, Econ.OLG.Diamond.rate_pos, Econ.OLG.Diamond.next_pos}
+\leanok
+Parameters $0 < \alpha < 1$, $\beta > 0$, $n > -1$. Let $A = \frac{\beta(1-\alpha)}{(1+\beta)(1+n)} > 0$ and
+$\mathrm{next}(k) = A k^\alpha$. Wage, return and $\mathrm{next}$ are positive at $k > 0$.
+\end{definition}
+
+\begin{definition}[Competitive equilibrium]
+\label{def:diamond_eq}
+\lean{Econ.OLG.Diamond.IsEquilibrium}
+\leanok
+\uses{def:diamond, def:isOptimalSaving}
+A path $(k_t)$ is an equilibrium if $k_t > 0$ and, for every $t$, saving $(1+n)k_{t+1}$ is optimal for a young
+agent with endowments $(w(k_t), 0)$ facing return $R(k_{t+1})$.
+\end{definition}
+
+\begin{theorem}[Equilibrium iff law of motion]
+\label{thm:diamond_isEquilibrium_iff}
+\lean{Econ.OLG.Diamond.isEquilibrium_iff}
+\leanok
+\uses{def:diamond_eq, thm:saving_isOptimal_iff}
+For $k_0 > 0$, $(k_t)$ is an equilibrium iff $k_{t+1} = A k_t^\alpha$ for all $t$.
+\end{theorem}
+\begin{proof}
+\leanok
+At positive $k_t, k_{t+1}$, by Theorem~\ref{thm:saving_isOptimal_iff} with $\omega_2 = 0$, optimality of
+$(1+n)k_{t+1}$ means $(1+n)k_{t+1} = \frac{\beta}{1+\beta}(1-\alpha)k_t^\alpha$, i.e.\ $k_{t+1} = A k_t^\alpha$
+(the interest rate drops out). ($\Rightarrow$) apply this at each $t$. ($\Leftarrow$) positivity of all $k_t$
+follows by induction since $\mathrm{next}$ preserves positivity; then apply the equivalence.
+\end{proof}
+
+\begin{definition}[Diamond as a Solow economy]
+\label{def:diamond_toSolow}
+\lean{Econ.OLG.Diamond.toSolow, Econ.OLG.Diamond.toSolow_next}
+\leanok
+\uses{def:diamond, def:solow_economy, thm:solow_cobbDouglas}
+Take $f(k) = k^\alpha$, $s = \beta(1-\alpha)/(1+\beta) \in (0, 1]$, $\delta = 1$ and the same $n$. Its law of
+motion is $\frac{s k^\alpha}{1+n} = A k^\alpha$, the Diamond law of motion.
+\end{definition}
+
+\begin{theorem}[Existence and uniqueness of equilibrium]
+\label{thm:diamond_existsUnique}
+\lean{Econ.OLG.Diamond.existsUnique_equilibrium}
+\leanok
+\uses{thm:diamond_isEquilibrium_iff}
+From any $k_0 > 0$ there is exactly one equilibrium path.
+\end{theorem}
+\begin{proof}
+\leanok
+The iterates $\mathrm{next}^t(k_0)$ satisfy the law of motion, so form an equilibrium
+(Theorem~\ref{thm:diamond_isEquilibrium_iff}); any equilibrium from $k_0$ satisfies the same recursion, so
+equals it by induction.
+\end{proof}
+
+\begin{theorem}[Steady state and global stability; Acemoglu Prop.~9.3]
+\label{thm:diamond_tendsto}
+\lean{Econ.OLG.Diamond.kstar, Econ.OLG.Diamond.kstar_pos, Econ.OLG.Diamond.isSteadyState_kstar, Econ.OLG.Diamond.next_kstar, Econ.OLG.Diamond.tendsto_equilibrium}
+\leanok
+\uses{def:diamond_toSolow, thm:diamond_isEquilibrium_iff, thm:solow_tendsto, thm:solow_cobbDouglas}
+$k^* = A^{1/(1-\alpha)}$ is the steady state, and every equilibrium path from $k_0 > 0$ converges to it.
+\end{theorem}
+\begin{proof}
+\leanok
+In the Solow representation $s/(n + \delta) = A$, so the Cobb--Douglas closed form
+(Theorem~\ref{thm:solow_cobbDouglas}) gives $k^*$. An equilibrium path coincides with the Solow path (induction
+with Definition~\ref{def:diamond_toSolow}), which converges by Theorem~\ref{thm:solow_tendsto}.
+\end{proof}
+
+\begin{lemma}[Steady-state interest rate]
+\label{lem:diamond_rate_steadyState}
+\lean{Econ.OLG.Diamond.kstar_rpow, Econ.OLG.Diamond.rate_steadyState}
+\leanok
+\uses{thm:diamond_tendsto}
+$(k^*)^{\alpha - 1} = A^{-1}$, hence $R(k^*) = \alpha/A = \frac{\alpha(1+\beta)(1+n)}{\beta(1-\alpha)}$.
+\end{lemma}
+\begin{proof}
+\leanok
+$(A^{1/(1-\alpha)})^{\alpha-1} = A^{-1}$; substitute into $R(k) = \alpha k^{\alpha-1}$.
+\end{proof}
+
+\begin{lemma}[Golden-rule capital]
+\label{lem:diamond_kgold}
+\lean{Econ.OLG.Diamond.kgold, Econ.OLG.Diamond.kgold_pos, Econ.OLG.Diamond.hasDerivAt_kgold, Econ.OLG.Diamond.rate_kgold, Econ.OLG.Diamond.rate_strictAntiOn}
+\leanok
+\uses{thm:cobbDouglas_goldenRule}
+$k_g = (\alpha/(1+n))^{1/(1-\alpha)} > 0$ satisfies $f'(k_g) = R(k_g) = 1 + n$, and $R$ is strictly decreasing
+on $(0, \infty)$.
+\end{lemma}
+\begin{proof}
+\leanok
+Theorem~\ref{thm:cobbDouglas_goldenRule} with $\delta = 1$; uniqueness of derivatives identifies $f'(k_g)$
+with $R(k_g)$. $k^{\alpha-1}$ is strictly decreasing since $\alpha - 1 < 0$.
+\end{proof}
+
+\begin{theorem}[Dynamic inefficiency criterion; Acemoglu Prop.~9.4]
+\label{thm:diamond_dynamicallyInefficient_iff}
+\lean{Econ.OLG.Diamond.dynamicallyInefficient_iff}
+\leanok
+\uses{lem:diamond_rate_steadyState, lem:diamond_kgold}
+The following are equivalent: $R(k^*) < 1 + n$; $\alpha(1+\beta) < \beta(1-\alpha)$; $k_g < k^*$.
+\end{theorem}
+\begin{proof}
+\leanok
+First equivalence: by Lemma~\ref{lem:diamond_rate_steadyState}, multiply through by $\beta(1-\alpha) > 0$ and cancel
+$1 + n > 0$. Second: $R(k_g) = 1 + n$ and $R$ is strictly decreasing, so $R(k^*) < R(k_g) \iff k_g < k^*$.
+\end{proof}
+
+\begin{definition}[Feasible paths]
+\label{def:diamond_feasible}
+\lean{Econ.OLG.Diamond.IsFeasible, Econ.OLG.Diamond.isFeasible_steadyState}
+\leanok
+\uses{def:diamond}
+$(k_t, C_t)$ is feasible if $k_t \ge 0$ and $C_t + (1+n)k_{t+1} \le k_t^\alpha$. The competitive steady state
+with $C^* = (k^*)^\alpha - (1+n)k^*$ is feasible.
+\end{definition}
+
+\begin{theorem}[Overaccumulation is inefficient]
+\label{thm:diamond_exists_dominating_path}
+\lean{Econ.OLG.Diamond.exists_dominating_path}
+\leanok
+\uses{thm:diamond_dynamicallyInefficient_iff, def:diamond_feasible, thm:goldenRule}
+If $R(k^*) < 1 + n$, there is a feasible path from $k^*$ with $C_t > C^*$ for every $t$.
+\end{theorem}
+\begin{proof}
+\leanok
+By Theorem~\ref{thm:diamond_dynamicallyInefficient_iff}, $k_g < k^*$. Set $k_0 = k^*$, $k_t = k_g$ for $t \ge 1$;
+$C_0 = (k^*)^\alpha - (1+n)k_g$ and $C_t = k_g^\alpha - (1+n)k_g$ for $t \ge 1$. Feasibility holds with equality.
+$C_0 > C^*$ because $k_g < k^*$; and $C_t > C^*$ for $t \ge 1$ by the golden rule
+(Theorem~\ref{thm:goldenRule}) since $k^* \neq k_g$.
+\end{proof}
+
+\begin{lemma}[Steady-state consumption rises below the golden rule]
+\label{lem:diamond_consumption_strictMono}
+\lean{Econ.OLG.Diamond.consumption_strictMonoOn}
+\leanok
+\uses{lem:diamond_kgold, thm:goldenRule}
+If $0 \le a < b \le k_g$, then $a^\alpha - (1+n)a < b^\alpha - (1+n)b$.
+\end{lemma}
+\begin{proof}
+\leanok
+If $b = k_g$, Theorem~\ref{thm:goldenRule}. Otherwise write $b = \lambda a + (1-\lambda)k_g$ with
+$\lambda = (k_g - b)/(k_g - a) \in (0, 1)$. Strict concavity of $k^\alpha$ gives
+$b^\alpha > \lambda a^\alpha + (1-\lambda)k_g^\alpha$, and $(1+n)b$ is the same combination of $(1+n)a$ and
+$(1+n)k_g$. So $g(b) > \lambda g(a) + (1-\lambda) g(k_g) \ge g(a)$, using $g(k_g) \ge g(a)$
+(Theorem~\ref{thm:goldenRule}), where $g(k) = k^\alpha - (1+n)k$.
+\end{proof}
+
+\begin{theorem}[Dynamic efficiency when $R^* \ge 1 + n$]
+\label{thm:diamond_no_dominating_path}
+\lean{Econ.OLG.Diamond.no_dominating_path}
+\leanok
+\uses{lem:lt_tangent, lem:diamond_consumption_strictMono, thm:diamond_dynamicallyInefficient_iff, def:diamond_feasible}
+If $1 + n \le R(k^*)$, $k_0 = k^*$, $(k, C)$ is feasible and $C_t \ge C^*$ for all $t$, then $C_t = C^*$ for all $t$.
+\end{theorem}
+\begin{proof}
+\leanok
+Write $c = 1 + n$, $R^* = R(k^*)$.
+\emph{Tangent bound.} By concavity, $k^\alpha \le (k^*)^\alpha + R^*(k - k^*)$ for $k \ge 0$
+(Lemma~\ref{lem:lt_tangent}). With feasibility,
+$c(k_{t+1} - k^*) \le R^*(k_t - k^*) - (C_t - C^*)$.
+\emph{Capital falls weakly and stays below $k^*$.} By induction, $k_t \le k^*$ and $k_{t+1} \le k_t$: if
+$k_t \le k^*$ then $R^*(k_t - k^*) \le c(k_t - k^*)$ (as $R^* \ge c$), and $C_t \ge C^*$ gives
+$c\, k_{t+1} \le c\, k_t$.
+\emph{A strict gain pushes capital strictly below $k^*$.} Suppose $C_s > C^*$. Since $R^*(k_s - k^*) \le 0$,
+we get $k_{s+1} < k^*$, and $k_{s+1+N} \le k_{s+1}$ for all $N$.
+\emph{A fixed per-period loss.} $k^* \le k_g$ (else $R^* < c$ by Theorem~\ref{thm:diamond_dynamicallyInefficient_iff}).
+Let $\mathrm{gap} = g(k^*) - g(k_{s+1}) > 0$ (Lemma~\ref{lem:diamond_consumption_strictMono}). For
+$t = s + 1 + N$, $g(k_t) \le g(k_{s+1})$ since $k_t \le k_{s+1} \le k_g$, and feasibility with $C_t \ge C^*$
+gives $c(k_t - k_{t+1}) \ge C_t - g(k_t) + \ldots \ge \mathrm{gap}$. Inductively
+$N \cdot \mathrm{gap} \le c(k_{s+1} - k_{s+1+N})$.
+\emph{Contradiction.} Choose $N > c k^*/\mathrm{gap}$; then $k_{s+1+N} < k_{s+1} - k^* < 0$, contradicting $k \ge 0$.
+\end{proof}
+
+\begin{theorem}[Complete characterization; Acemoglu Prop.~9.4]
+\label{thm:diamond_iff_improvement}
+\lean{Econ.OLG.Diamond.dynamicallyInefficient_iff_exists_improvement}
+\leanok
+\uses{thm:diamond_exists_dominating_path, thm:diamond_no_dominating_path}
+$R(k^*) < 1 + n$ iff some feasible path from $k^*$ has $C_t \ge C^*$ for all $t$ and $C_t > C^*$ for some $t$.
+\end{theorem}
+\begin{proof}
+\leanok
+($\Rightarrow$) Theorem~\ref{thm:diamond_exists_dominating_path}. ($\Leftarrow$) otherwise
+Theorem~\ref{thm:diamond_no_dominating_path} forces $C_t = C^*$, contradicting the strict gain. The Lean file
+also checks that both cases occur ($\alpha = 1/4, \beta = 1, n = 0$ is inefficient; $\alpha = 1/2$ is efficient).
+\end{proof}
+
+\section{Samuelson's exchange economy and fiat money}
+\label{sec:samuelson}
+
+Sources: Samuelson (1958); Shell (1971); Ljungqvist--Sargent ch.~9. One agent is born each period, lives two
+periods with endowments $(\omega_1, \omega_2)$ and log utility; there is an initial old agent at $t = 0$.
+
+\begin{definition}[Economy, allocations, feasibility, dominance]
+\label{def:samuelson}
+\lean{Econ.OLG.Samuelson, Econ.OLG.Samuelson.Allocation, Econ.OLG.Samuelson.IsFeasible, Econ.OLG.Samuelson.utility, Econ.OLG.Samuelson.ParetoDominates, Econ.OLG.Samuelson.StrictlyDominates, Econ.OLG.Samuelson.StrictlyDominates.paretoDominates}
+\leanok
+\uses{def:logU}
+$\omega_1, \omega_2, \beta > 0$. An allocation gives consumption $\mathrm{young}_t$ to generation $t$ when young
+and $\mathrm{old}_t$ to the old at date $t$ ($\mathrm{old}_0$ is the initial old). It is feasible if consumption is
+positive and $\mathrm{young}_t + \mathrm{old}_t \le \omega_1 + \omega_2$. Generation $t$'s utility is
+$U(\mathrm{young}_t, \mathrm{old}_{t+1})$. $x$ \emph{Pareto-dominates} $y$ if nobody is worse off and someone is
+strictly better off; $x$ \emph{strictly dominates} $y$ if the initial old and every generation are strictly
+better off (which implies Pareto dominance).
+\end{definition}
+
+\begin{definition}[Autarky]
+\label{def:autarky}
+\lean{Econ.OLG.Samuelson.autarky, Econ.OLG.Samuelson.autarky_feasible, Econ.OLG.Samuelson.autarkyRate, Econ.OLG.Samuelson.autarkyRate_lt_one_iff}
+\leanok
+\uses{def:samuelson}
+Autarky gives everyone their endowment; it is feasible. The autarky rate is $R_{\mathrm{aut}} = \omega_2/(\beta\omega_1)$,
+and $R_{\mathrm{aut}} < 1 \iff \omega_2 < \beta\omega_1$.
+\end{definition}
+
+\begin{theorem}[Equilibrium interest rates]
+\label{thm:samuelson_isEquilibrium_iff}
+\lean{Econ.OLG.Samuelson.IsEquilibrium, Econ.OLG.Samuelson.isEquilibrium_iff}
+\leanok
+\uses{def:autarky, thm:saving_isOptimal_iff}
+A rate path $R$ supports zero saving as optimal at every date iff $R_t = R_{\mathrm{aut}}$ for all $t$.
+\end{theorem}
+\begin{proof}
+\leanok
+By Theorem~\ref{thm:saving_isOptimal_iff}, $0$ is optimal at $R_t$ iff $0 = (\beta\omega_1 - \omega_2/R_t)/(1+\beta)$,
+i.e.\ $R_t = \omega_2/(\beta\omega_1)$.
+\end{proof}
+
+\begin{theorem}[The competitive equilibrium is autarky]
+\label{thm:samuelson_ce_iff}
+\lean{Econ.OLG.Samuelson.IsCompetitiveEquilibrium, Econ.OLG.Samuelson.isCompetitiveEquilibrium_iff}
+\leanok
+\uses{thm:samuelson_isEquilibrium_iff}
+A nonmonetary competitive equilibrium $(R, x)$ (optimal savings $a_t$, market clearing $a_t = 0$, consumption
+from the budget constraints, $\mathrm{old}_0 = \omega_2$) holds iff $R_t = R_{\mathrm{aut}}$ for all $t$ and $x$ is autarky.
+\end{theorem}
+\begin{proof}
+\leanok
+($\Rightarrow$) Market clearing gives $a_t = 0$, so Theorem~\ref{thm:samuelson_isEquilibrium_iff} pins down $R$, and the
+budget constraints give $\mathrm{young}_t = \omega_1$, $\mathrm{old}_{t+1} = \omega_2$, $\mathrm{old}_0 = \omega_2$.
+($\Leftarrow$) take $a = 0$.
+\end{proof}
+
+\begin{theorem}[Golden rule dominates autarky]
+\label{thm:golden_dominates_autarky}
+\lean{Econ.OLG.Samuelson.golden, Econ.OLG.Samuelson.golden_feasible, Econ.OLG.Samuelson.golden_dominates_autarky}
+\leanok
+\uses{def:autarky, thm:logU_opt}
+The golden allocation splits $\omega_1 + \omega_2$ as $\frac{1}{1+\beta}$ to the young and $\frac{\beta}{1+\beta}$ to the old;
+it is feasible. If $\omega_2 < \beta\omega_1$, it strictly dominates autarky.
+\end{theorem}
+\begin{proof}
+\leanok
+Initial old: $\omega_2 < \beta(\omega_1 + \omega_2)/(1+\beta)$ rearranges to $\omega_2 < \beta\omega_1$. Each generation: the
+golden bundle is the unique optimum of Theorem~\ref{thm:logU_opt} with $R = 1$ and $W = \omega_1 + \omega_2$; the autarky
+bundle is affordable and differs from it (since $\omega_1 \neq (\omega_1 + \omega_2)/(1+\beta)$ when $\omega_2 < \beta\omega_1$),
+so it is strictly worse.
+\end{proof}
+
+\begin{theorem}[The First Welfare Theorem fails]
+\label{thm:firstWelfareTheorem_fails}
+\lean{Econ.OLG.Samuelson.firstWelfareTheorem_fails, Econ.OLG.Samuelson.competitiveEquilibrium_dominated}
+\leanok
+\uses{thm:samuelson_ce_iff, thm:golden_dominates_autarky}
+If $\omega_2 < \beta\omega_1$, a competitive equilibrium exists, and every competitive equilibrium allocation is strictly
+dominated by a feasible allocation.
+\end{theorem}
+\begin{proof}
+\leanok
+By Theorem~\ref{thm:samuelson_ce_iff} the equilibrium allocation is autarky (and autarky at $R_{\mathrm{aut}}$ is one);
+the golden allocation dominates it (Theorem~\ref{thm:golden_dominates_autarky}).
+\end{proof}
+
+\begin{theorem}[Stationary monetary equilibrium]
+\label{thm:samuelson_monetary}
+\lean{Econ.OLG.Samuelson.IsMonetaryEquilibrium, Econ.OLG.Samuelson.monetaryAllocation, Econ.OLG.Samuelson.isMonetaryEquilibrium_iff}
+\leanok
+\uses{thm:saving_isOptimal_iff}
+With money stock $M > 0$ and constant price level $p > 0$, buying real balances $M/p$ (gross return $1$) is optimal iff
+$\omega_2 < \beta\omega_1$ and $p = M(1+\beta)/(\beta\omega_1 - \omega_2)$.
+\end{theorem}
+\begin{proof}
+\leanok
+By Theorem~\ref{thm:saving_isOptimal_iff} with $R = 1$, optimality means $M/p = (\beta\omega_1 - \omega_2)/(1+\beta)$. Since
+$M/p > 0$, this forces $\beta\omega_1 - \omega_2 > 0$, and solving gives $p$. Conversely that $p$ is positive and satisfies
+the equation.
+\end{proof}
+
+\begin{theorem}[Money is a Pareto improvement]
+\label{thm:monetary_dominates}
+\lean{Econ.OLG.Samuelson.monetaryEquilibrium_eq_golden_and_dominates}
+\leanok
+\uses{thm:samuelson_monetary, thm:golden_dominates_autarky}
+In a stationary monetary equilibrium the allocation is the golden allocation, which is feasible and strictly
+dominates autarky.
+\end{theorem}
+\begin{proof}
+\leanok
+Substituting $M/p = (\beta\omega_1 - \omega_2)/(1+\beta)$, $\omega_1 - M/p = (\omega_1 + \omega_2)/(1+\beta)$ and
+$\omega_2 + M/p = \beta(\omega_1 + \omega_2)/(1+\beta)$. Then apply Theorem~\ref{thm:golden_dominates_autarky}.
+\end{proof}

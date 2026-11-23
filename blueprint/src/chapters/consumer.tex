@@ -1,0 +1,659 @@
+% Lean: EconLean/Consumer/{Budget,Demand,Duality,RevealedPreference,Envelope,Continuity}.lean
+\chapter{Consumer Theory}
+\label{chap:consumer}
+
+\section{Commodity Space, Prices, and Budget Sets}
+\label{sec:budget}
+
+This section corresponds to \texttt{EconLean/Consumer/Budget.lean} (MWG \S2.B--\S2.D).
+Let $\iota$ be a finite index set of commodities. A consumption bundle is a vector
+$x \in \R^\iota$ with consumption set $\{x \in \R^\iota \mid x \ge 0\}$, equipped with
+the pointwise order and sup-norm metric $d(x, y) = \max_{i \in \iota} |x_i - y_i|$.
+
+\begin{definition}[Bundle cost]
+\label{def:cost}
+\lean{Econ.cost}
+\leanok
+Given a price vector $p \in \R^\iota$ and bundle $x \in \R^\iota$, the \emph{cost} of
+$x$ at prices $p$ is the inner product
+\[
+  p \cdot x = \sum_{i \in \iota} p_i x_i.
+\]
+\end{definition}
+
+\begin{lemma}[Basic algebraic and topological properties of cost]
+\label{lem:cost_props}
+\lean{Econ.cost_smul_left, Econ.cost_smul_right, Econ.cost_add_left, Econ.cost_add_right, Econ.cost_sub_left, Econ.cost_sub_right, Econ.cost_nonneg, Econ.eq_zero_of_cost_eq_zero, Econ.continuous_cost}
+\leanok
+\uses{def:cost}
+The cost map $(p, x) \mapsto p \cdot x$ satisfies:
+\begin{enumerate}
+  \item Bilinearity: $(\alpha p) \cdot x = p \cdot (\alpha x) = \alpha(p \cdot x)$,
+        $(p \pm q) \cdot x = p \cdot x \pm q \cdot x$, and $p \cdot (x \pm y) = p \cdot x \pm p \cdot y$.
+  \item Nonnegativity: if $p \ge 0$ and $x \ge 0$, then $p \cdot x \ge 0$.
+  \item Strict positivity: if $p \gg 0$ (i.e.\ $p_i > 0$ for all $i$), $x \ge 0$, and
+        $p \cdot x = 0$, then $x = 0$.
+  \item Continuity: for every fixed $p$, $x \mapsto p \cdot x$ is continuous.
+\end{enumerate}
+\end{lemma}
+\begin{proof}
+\leanok
+Bilinearity and nonnegativity follow directly from finite-sum algebra. For (3), a finite
+sum of nonnegative terms $p_i x_i \ge 0$ vanishes iff every term vanishes; since $p_i > 0$,
+each $x_i = 0$. Continuity holds because $x \mapsto \sum_i p_i x_i$ is a finite sum of
+continuous coordinate projections scaled by constants.
+\end{proof}
+
+\begin{definition}[Walrasian budget set]
+\label{def:budgetSet}
+\lean{Econ.budgetSet, Econ.mem_budgetSet}
+\leanok
+\uses{def:cost}
+For prices $p \in \R^\iota$ and wealth $w \in \R$, the \emph{Walrasian budget set} is
+\[
+  \B(p, w) = \{x \in \R^\iota \mid x \ge 0 \land p \cdot x \le w\}.
+\]
+\end{definition}
+
+\begin{proposition}[Scale invariance of the budget set]
+\label{thm:budgetSet_smul}
+\lean{Econ.budgetSet_smul}
+\leanok
+\uses{def:budgetSet}
+For any $\alpha > 0$, $\B(\alpha p, \alpha w) = \B(p, w)$.
+\end{proposition}
+\begin{proof}
+\uses{lem:cost_props}
+\leanok
+By bilinearity of cost (Lemma~\ref{lem:cost_props}), $(\alpha p) \cdot x = \alpha(p \cdot x)$,
+and since $\alpha > 0$, $\alpha(p \cdot x) \le \alpha w \iff p \cdot x \le w$.
+\end{proof}
+
+\begin{lemma}[Nonemptiness for nonnegative wealth]
+\label{lem:zero_mem_budgetSet}
+\lean{Econ.zero_mem_budgetSet}
+\leanok
+\uses{def:budgetSet}
+If $w \ge 0$, then $0 \in \B(p, w)$.
+\end{lemma}
+\begin{proof}
+\leanok
+We have $0 \ge 0$ and $p \cdot 0 = 0 \le w$.
+\end{proof}
+
+\begin{proposition}[Convexity of the budget set]
+\label{thm:convex_budgetSet}
+\lean{Econ.convex_budgetSet}
+\leanok
+\uses{def:budgetSet}
+For all $p \in \R^\iota$ and $w \in \R$, $\B(p, w)$ is convex.
+\end{proposition}
+\begin{proof}
+\uses{lem:cost_props}
+\leanok
+$\B(p, w) = \{x \mid x \ge 0\} \cap \{x \mid p \cdot x \le w\}$ is the intersection of
+the convex nonnegative orthant and a closed half-space defined by the linear map
+$x \mapsto p \cdot x$.
+\end{proof}
+
+\begin{proposition}[Closedness of the budget set]
+\label{thm:isClosed_budgetSet}
+\lean{Econ.isClosed_budgetSet}
+\leanok
+\uses{def:budgetSet}
+For all $p \in \R^\iota$ and $w \in \R$, $\B(p, w)$ is closed.
+\end{proposition}
+\begin{proof}
+\uses{lem:cost_props}
+\leanok
+$\B(p, w)$ is the intersection of $\{x \mid 0 \le x\}$ and $\{x \mid p \cdot x \le w\}$,
+both defined by non-strict inequalities between continuous functions (Lemma~\ref{lem:cost_props}).
+\end{proof}
+
+\begin{lemma}[Coordinate bound in the budget set]
+\label{lem:le_div_budgetSet}
+\lean{Econ.le_div_of_mem_budgetSet}
+\leanok
+\uses{def:budgetSet}
+If $p \gg 0$ and $x \in \B(p, w)$, then $x_i \le w / p_i$ for every $i \in \iota$.
+\end{lemma}
+\begin{proof}
+\leanok
+Every term $p_j x_j$ in $p \cdot x$ is nonnegative, so $p_i x_i \le \sum_j p_j x_j = p \cdot x \le w$.
+Dividing by $p_i > 0$ gives $x_i \le w / p_i$.
+\end{proof}
+
+\begin{theorem}[Compactness of the budget set]
+\label{thm:isCompact_budgetSet}
+\lean{Econ.isCompact_budgetSet}
+\leanok
+\uses{def:budgetSet}
+If $p \gg 0$, then $\B(p, w)$ is compact.
+\end{theorem}
+\begin{proof}
+\uses{thm:isClosed_budgetSet, lem:le_div_budgetSet}
+\leanok
+By Lemma~\ref{lem:le_div_budgetSet}, $\B(p, w)$ is contained in the closed box
+$\prod_{i \in \iota} [0, w / p_i]$, which is compact since $\iota$ is finite. Being a
+closed subset (Proposition~\ref{thm:isClosed_budgetSet}) of a compact set, $\B(p, w)$ is compact.
+\end{proof}
+
+
+\section{Walrasian Demand, Walras' Law, and Existence}
+\label{sec:demand}
+
+This section corresponds to \texttt{EconLean/Consumer/Demand.lean} (MWG \S2.D--\S2.E, \S3.B, \S3.D).
+
+\begin{definition}[Walrasian demand correspondence]
+\label{def:demand}
+\lean{Econ.demand}
+\leanok
+\uses{def:budgetSet}
+Given a preference relation $R$ on $\R^\iota$, the \emph{Walrasian demand correspondence} is
+\[
+  x(p, w) = \{x \in \B(p, w) \mid \forall y \in \B(p, w),\; x \pref y\}.
+\]
+\end{definition}
+
+\begin{proposition}[Homogeneity of degree zero; MWG Prop.~3.D.2(i)]
+\label{thm:demand_smul}
+\lean{Econ.demand_smul}
+\leanok
+\uses{def:demand}
+For all $\alpha > 0$, $x(\alpha p, \alpha w) = x(p, w)$.
+\end{proposition}
+\begin{proof}
+\uses{thm:budgetSet_smul}
+\leanok
+Immediate from $\B(\alpha p, \alpha w) = \B(p, w)$ (Proposition~\ref{thm:budgetSet_smul}).
+\end{proof}
+
+\begin{definition}[Local nonsatiation; MWG Def.~3.B.3]
+\label{def:lns}
+\lean{Econ.LocallyNonsatiated}
+\leanok
+\uses{def:P}
+A preference relation $R$ on $\R^\iota$ is \emph{locally nonsatiated} if for every
+$x \ge 0$ and every $\varepsilon > 0$, there exists $y \ge 0$ with $d(y, x) < \varepsilon$
+and $y \spref x$.
+\end{definition}
+
+\begin{lemma}[Strict improvement within budget]
+\label{lem:exists_better_affordable}
+\lean{Econ.exists_better_affordable}
+\leanok
+\uses{def:lns, def:budgetSet, def:P}
+Suppose $R$ is locally nonsatiated. If $y \ge 0$ and $p \cdot y < w$, then there exists
+$z \in \B(p, w)$ such that $z \spref y$.
+\end{lemma}
+\begin{proof}
+\uses{lem:cost_props}
+\leanok
+By continuity of $z \mapsto p \cdot z$ (Lemma~\ref{lem:cost_props}) and $p \cdot y < w$,
+there exists $\varepsilon > 0$ such that every $z$ with $d(z, y) < \varepsilon$ satisfies
+$p \cdot z < w$. Local nonsatiation produces $z \ge 0$ in this ball with $z \spref y$,
+and $z \in \B(p, w)$.
+\end{proof}
+
+\begin{theorem}[Walras' law; MWG Prop.~3.D.2(ii)]
+\label{thm:walras_law}
+\lean{Econ.walras_law}
+\leanok
+\uses{def:lns, def:demand, def:cost}
+If $R$ is locally nonsatiated and $x \in x(p, w)$, then $p \cdot x = w$.
+\end{theorem}
+\begin{proof}
+\uses{lem:exists_better_affordable}
+\leanok
+Since $x \in \B(p, w)$, we have $p \cdot x \le w$. If $p \cdot x < w$, then
+Lemma~\ref{lem:exists_better_affordable} yields $z \in \B(p, w)$ with $z \spref x$,
+contradicting $x \pref z$ (optimality of $x$). Hence $p \cdot x = w$.
+\end{proof}
+
+\begin{definition}[Strong monotonicity; MWG Def.~3.B.2]
+\label{def:stronglyMonotone}
+\lean{Econ.StronglyMonotone}
+\leanok
+\uses{def:P}
+$R$ is \emph{strongly monotone} if for all $x, y \in \R^\iota$ with $0 \le x \le y$ and
+$x \ne y$, we have $y \spref x$.
+\end{definition}
+
+\begin{proposition}[Strong monotonicity implies local nonsatiation]
+\label{thm:mono_lns}
+\lean{Econ.StronglyMonotone.locallyNonsatiated}
+\leanok
+\uses{def:stronglyMonotone, def:lns}
+If $\iota$ is nonempty and $R$ is strongly monotone, then $R$ is locally nonsatiated.
+\end{proposition}
+\begin{proof}
+\leanok
+Given $x \ge 0$ and $\varepsilon > 0$, set $y_i = x_i + \varepsilon/2$ for all $i \in \iota$.
+Then $0 \le x \le y$, $d(y, x) = \varepsilon/2 < \varepsilon$, and since $\iota$ is
+nonempty $y \ne x$. By strong monotonicity, $y \spref x$.
+\end{proof}
+
+\begin{theorem}[Existence of Walrasian demand; MWG Prop.~3.D.1]
+\label{thm:demand_nonempty}
+\lean{Econ.demand_nonempty}
+\leanok
+\uses{def:demand, def:prefOf}
+If $u : \R^\iota \to \R$ is continuous, $p \gg 0$, and $w \ge 0$, then the Walrasian
+demand set $x(\pref_u; p, w)$ is nonempty.
+\end{theorem}
+\begin{proof}
+\uses{thm:isCompact_budgetSet, lem:zero_mem_budgetSet}
+\leanok
+By Theorem~\ref{thm:isCompact_budgetSet} and Lemma~\ref{lem:zero_mem_budgetSet}, $\B(p, w)$
+is compact and nonempty. By the Weierstrass extreme value theorem, the continuous function
+$u$ attains its maximum on $\B(p, w)$ at some $x \in \B(p, w)$, which lies in $x(\pref_u; p, w)$.
+\end{proof}
+
+\begin{definition}[Convex preferences]
+\label{def:convexPref}
+\lean{Econ.ConvexPref}
+\leanok
+A preference relation $R$ on $\R^\iota$ is \emph{convex} if every upper contour set
+$\{y \in \R^\iota \mid y \pref x\}$ is convex.
+\end{definition}
+
+\begin{proposition}[Convexity of demand; MWG Prop.~3.D.2(iii)]
+\label{thm:convex_demand}
+\lean{Econ.convex_demand}
+\leanok
+\uses{def:rational, def:convexPref, def:demand}
+If $R$ is rational and convex, then $x(p, w)$ is a convex set.
+\end{proposition}
+\begin{proof}
+\uses{thm:convex_budgetSet, thm:refl}
+\leanok
+Let $x, y \in x(p, w)$ and $a, b \ge 0$ with $a + b = 1$. Since $\B(p, w)$ is convex
+(Proposition~\ref{thm:convex_budgetSet}), $ax + by \in \B(p, w)$. Both $x \pref x$
+(Proposition~\ref{thm:refl}) and $y \pref x$ (since $x \in \B(p, w)$ and $y \in x(p, w)$),
+so convexity of $\{z \mid z \pref x\}$ gives $ax + by \pref x$. For any $z \in \B(p, w)$,
+transitivity with $x \pref z$ yields $ax + by \pref z$, hence $ax + by \in x(p, w)$.
+\end{proof}
+
+
+\section{Indirect Utility, Expenditure Minimization, and Duality}
+\label{sec:duality}
+
+This section corresponds to \texttt{EconLean/Consumer/Duality.lean} (MWG \S3.D--\S3.E).
+Fix a utility function $u : \R^\iota \to \R$.
+
+\begin{definition}[Indirect utility, upper contour set, expenditure, Hicksian demand]
+\label{def:duality_objs}
+\lean{Econ.indirectUtility, Econ.upperSet, Econ.expenditure, Econ.hicksian}
+\leanok
+\uses{def:budgetSet, def:cost}
+For prices $p \in \R^\iota$, wealth $w \in \R$, and target utility $\ubar \in \R$:
+\begin{align*}
+  v(p, w) &= \sup \{u(x) \mid x \in \B(p, w)\}, \\
+  \Uset(u, \ubar) &= \{x \in \R^\iota \mid x \ge 0 \land u(x) \ge \ubar\}, \\
+  e(p, \ubar) &= \inf \{p \cdot x \mid x \in \Uset(u, \ubar)\}, \\
+  h(p, \ubar) &= \{x \in \Uset(u, \ubar) \mid \forall y \in \Uset(u, \ubar),\; p \cdot x \le p \cdot y\}.
+\end{align*}
+\end{definition}
+
+\begin{lemma}[Value functions equal the objective at an optimizer]
+\label{lem:value_eq}
+\lean{Econ.indirectUtility_eq, Econ.expenditure_eq}
+\leanok
+\uses{def:duality_objs, def:demand, def:prefOf}
+\begin{enumerate}
+  \item If $x \in x(\pref_u; p, w)$, then $v(p, w) = u(x)$.
+  \item If $x \in h(p, \ubar)$, then $e(p, \ubar) = p \cdot x$.
+\end{enumerate}
+\end{lemma}
+\begin{proof}
+\leanok
+In (1), $u(x)$ is the greatest element of $u(\B(p, w))$, so it equals the supremum.
+In (2), $p \cdot x$ is the least element of $\{p \cdot y \mid y \in \Uset(u, \ubar)\}$,
+so it equals the infimum.
+\end{proof}
+
+\begin{lemma}[Scaling down a strictly above-target bundle]
+\label{lem:exists_cheaper_above}
+\lean{Econ.exists_cheaper_above}
+\leanok
+\uses{def:cost}
+Suppose $u$ is continuous, $p \gg 0$, $u(0) \le \ubar$, and $y \ge 0$ satisfies
+$u(y) > \ubar$. Then there exists $z \ge 0$ with $u(z) > \ubar$ and $p \cdot z < p \cdot y$.
+\end{lemma}
+\begin{proof}
+\uses{lem:cost_props}
+\leanok
+First, $p \cdot y > 0$: since $p \gg 0$ and $y \ge 0$, if $p \cdot y = 0$ then $y = 0$
+(Lemma~\ref{lem:cost_props}), contradicting $u(0) \le \ubar < u(y)$. Next, $t \mapsto u(t y)$
+is continuous and exceeds $\ubar$ at $t = 1$, so there exists $t \in (0, 1)$ with
+$u(t y) > \ubar$. Setting $z = t y \ge 0$ gives $p \cdot z = t (p \cdot y) < p \cdot y$.
+\end{proof}
+
+\begin{theorem}[Duality, Part 1: UMP implies EMP; MWG Prop.~3.E.3(i)]
+\label{thm:demand_subset_hicksian}
+\lean{Econ.demand_subset_hicksian}
+\leanok
+\uses{def:lns, def:demand, def:duality_objs, def:prefOf}
+If $\pref_u$ is locally nonsatiated and $x \in x(\pref_u; p, w)$, then
+$x \in h(p, u(x))$.
+\end{theorem}
+\begin{proof}
+\uses{lem:exists_better_affordable, def:prefOf, lem:represents_P_iff}
+\leanok
+Clearly $x \in \Uset(u, u(x))$. Suppose for contradiction there exists $y \in \Uset(u, u(x))$
+with $p \cdot y < p \cdot x$. Since $p \cdot x \le w$, we have $p \cdot y < w$, so
+Lemma~\ref{lem:exists_better_affordable} yields $z \in \B(p, w)$ with $z \spref_u y$,
+meaning $u(y) < u(z)$ (Lemma~\ref{lem:represents_P_iff}). But $x$ maximizes $u$ on
+$\B(p, w)$, giving $u(z) \le u(x) \le u(y) < u(z)$, a contradiction.
+\end{proof}
+
+\begin{theorem}[Duality identity $e(p, v(p, w)) = w$]
+\label{thm:e_of_v}
+\lean{Econ.expenditure_indirectUtility}
+\leanok
+\uses{def:lns, def:duality_objs, def:prefOf}
+If $u$ is continuous, $\pref_u$ is locally nonsatiated, $p \gg 0$, and $w \ge 0$, then
+\[
+  e(p, v(p, w)) = w.
+\]
+\end{theorem}
+\begin{proof}
+\uses{thm:demand_nonempty, lem:value_eq, thm:demand_subset_hicksian, thm:walras_law}
+\leanok
+Pick $x \in x(\pref_u; p, w)$ using Theorem~\ref{thm:demand_nonempty}. Then $v(p, w) = u(x)$
+(Lemma~\ref{lem:value_eq}), $x \in h(p, u(x))$ (Theorem~\ref{thm:demand_subset_hicksian}),
+so $e(p, v(p, w)) = e(p, u(x)) = p \cdot x = w$ by Lemma~\ref{lem:value_eq} and
+Walras' law (Theorem~\ref{thm:walras_law}).
+\end{proof}
+
+\begin{proposition}[No excess utility in Hicksian demand]
+\label{thm:no_excess_utility}
+\lean{Econ.utility_eq_of_mem_hicksian}
+\leanok
+\uses{def:duality_objs}
+If $u$ is continuous, $p \gg 0$, $u(0) \le \ubar$, and $x \in h(p, \ubar)$, then $u(x) = \ubar$.
+\end{proposition}
+\begin{proof}
+\uses{lem:exists_cheaper_above}
+\leanok
+We have $u(x) \ge \ubar$. If $u(x) > \ubar$, Lemma~\ref{lem:exists_cheaper_above} gives
+$z \in \Uset(u, \ubar)$ with $p \cdot z < p \cdot x$, contradicting expenditure minimization.
+\end{proof}
+
+\begin{theorem}[Duality, Part 2: EMP implies UMP; MWG Prop.~3.E.3(ii)]
+\label{thm:hicksian_subset_demand}
+\lean{Econ.hicksian_subset_demand}
+\leanok
+\uses{def:duality_objs, def:demand, def:prefOf}
+If $u$ is continuous, $p \gg 0$, $u(0) \le \ubar$, and $x \in h(p, \ubar)$, then
+$x \in x(\pref_u; p, p \cdot x)$.
+\end{theorem}
+\begin{proof}
+\uses{lem:exists_cheaper_above}
+\leanok
+Clearly $x \in \B(p, p \cdot x)$. Suppose for contradiction some $y \in \B(p, p \cdot x)$
+has $u(y) > u(x)$. Since $u(x) \ge \ubar$, we have $u(y) > \ubar$, so
+Lemma~\ref{lem:exists_cheaper_above} gives $z \in \Uset(u, \ubar)$ with
+$p \cdot z < p \cdot y \le p \cdot x$, contradicting $x \in h(p, \ubar)$.
+\end{proof}
+
+\begin{theorem}[Existence of Hicksian demand]
+\label{thm:hicksian_nonempty}
+\lean{Econ.hicksian_nonempty}
+\leanok
+\uses{def:duality_objs}
+If $u$ is continuous, $p \gg 0$, and $\Uset(u, \ubar)$ is nonempty (witnessed by some $x_0$),
+then $h(p, \ubar)$ is nonempty.
+\end{theorem}
+\begin{proof}
+\uses{thm:isCompact_budgetSet, lem:cost_props}
+\leanok
+Let $K = \B(p, p \cdot x_0) \cap \{x \mid u(x) \ge \ubar\}$. Since $\B(p, p \cdot x_0)$ is
+compact (Theorem~\ref{thm:isCompact_budgetSet}) and $\{x \mid u(x) \ge \ubar\}$ is closed,
+$K$ is compact and nonempty (as $x_0 \in K$). The continuous function $x \mapsto p \cdot x$
+(Lemma~\ref{lem:cost_props}) attains a minimum on $K$ at some $x \in K$. Any
+$y \in \Uset(u, \ubar)$ either lies in $K$ (so $p \cdot x \le p \cdot y$) or satisfies
+$p \cdot y > p \cdot x_0 \ge p \cdot x$; thus $x \in h(p, \ubar)$.
+\end{proof}
+
+\begin{theorem}[Duality identity $v(p, e(p, \ubar)) = \ubar$]
+\label{thm:v_of_e}
+\lean{Econ.indirectUtility_expenditure}
+\leanok
+\uses{def:duality_objs}
+If $u$ is continuous, $p \gg 0$, $u(0) \le \ubar$, and $\Uset(u, \ubar)$ is nonempty, then
+\[
+  v(p, e(p, \ubar)) = \ubar.
+\]
+\end{theorem}
+\begin{proof}
+\uses{thm:hicksian_nonempty, lem:value_eq, thm:hicksian_subset_demand, thm:no_excess_utility}
+\leanok
+Pick $x \in h(p, \ubar)$ (Theorem~\ref{thm:hicksian_nonempty}). Then $e(p, \ubar) = p \cdot x$
+(Lemma~\ref{lem:value_eq}) and $x \in x(\pref_u; p, p \cdot x)$
+(Theorem~\ref{thm:hicksian_subset_demand}), hence
+$v(p, e(p, \ubar)) = u(x) = \ubar$ by Lemma~\ref{lem:value_eq} and
+Proposition~\ref{thm:no_excess_utility}.
+\end{proof}
+
+\begin{proposition}[Properties of $v$, $h$, and $e$; MWG Props.~3.D.3, 3.E.2]
+\label{thm:ve_props}
+\lean{Econ.indirectUtility_smul, Econ.indirectUtility_mono, Econ.hicksian_smul, Econ.expenditure_smul, Econ.expenditure_concave}
+\leanok
+\uses{def:duality_objs}
+\begin{enumerate}
+  \item $v$ is homogeneous of degree $0$: $v(\alpha p, \alpha w) = v(p, w)$ for $\alpha > 0$.
+  \item If $u$ is continuous and $p \gg 0$, then $v(p, \cdot)$ is nondecreasing on $[0, \infty)$.
+  \item $h$ is homogeneous of degree $0$ in prices: $h(\alpha p, \ubar) = h(p, \ubar)$ for $\alpha > 0$.
+  \item $e$ is homogeneous of degree $1$ in prices: if $h(p, \ubar)$ is nonempty and $\alpha > 0$,
+        then $e(\alpha p, \ubar) = \alpha e(p, \ubar)$.
+  \item $e$ is concave in prices: for $a, b \ge 0$, whenever Hicksian optimizers exist at
+        $p$, $q$, and $ap + bq$,
+        \[
+          a e(p, \ubar) + b e(q, \ubar) \le e(ap + bq, \ubar).
+        \]
+\end{enumerate}
+\end{proposition}
+\begin{proof}
+\uses{thm:budgetSet_smul, thm:demand_nonempty, lem:value_eq, lem:cost_props}
+\leanok
+(1) follows directly from Proposition~\ref{thm:budgetSet_smul}.
+For (2), if $0 \le w \le w'$, pick optimizers $x \in x(\pref_u; p, w)$ and
+$x' \in x(\pref_u; p, w')$ (Theorem~\ref{thm:demand_nonempty}); since $x \in \B(p, w')$,
+$v(p, w) = u(x) \le u(x') = v(p, w')$.
+For (3), scaling $p$ by $\alpha > 0$ preserves cost inequalities (Lemma~\ref{lem:cost_props}).
+For (4), an optimizer $x \in h(p, \ubar)$ also lies in $h(\alpha p, \ubar)$ by (3), so
+$e(\alpha p, \ubar) = (\alpha p) \cdot x = \alpha(p \cdot x) = \alpha e(p, \ubar)$.
+For (5), let $x_p \in h(p, \ubar)$, $x_q \in h(q, \ubar)$, and $x_m \in h(ap + bq, \ubar)$.
+Because $x_m \in \Uset(u, \ubar)$, we have $p \cdot x_p \le p \cdot x_m$ and
+$q \cdot x_q \le q \cdot x_m$; multiplying by $a, b \ge 0$ and adding yields
+$a e(p, \ubar) + b e(q, \ubar) \le (ap + bq) \cdot x_m = e(ap + bq, \ubar)$.
+\end{proof}
+
+
+\section{Revealed Preference: WARP and the Compensated Law of Demand}
+\label{sec:revealed}
+
+This section corresponds to \texttt{EconLean/Consumer/RevealedPreference.lean}
+(MWG \S2.F, \S3.J).
+
+\begin{definition}[Weak Axiom of Revealed Preference (WARP); MWG Def.~2.F.1]
+\label{def:warp}
+\lean{Econ.WARP}
+\leanok
+\uses{def:cost}
+A demand function $x : \R^\iota \times \R \to \R^\iota$ satisfies \emph{WARP} if for all
+$p, p' \gg 0$ and $w, w' \ge 0$, whenever $x(p', w') \ne x(p, w)$ and
+$p \cdot x(p', w') \le w$, we have $p' \cdot x(p, w) > w'$.
+\end{definition}
+
+\begin{theorem}[Unique rational choice satisfies WARP]
+\label{thm:warp_of_rational}
+\lean{Econ.warp_of_unique_demand, Econ.warp_of_rational}
+\leanok
+\uses{def:rational, def:demand, def:warp}
+Let $R$ be a rational preference.
+\begin{enumerate}
+  \item If $x(p, w) = \{x\}$ and $x(p', w') = \{x'\}$ with $x' \ne x$ and $p \cdot x' \le w$,
+        then $p' \cdot x > w'$.
+  \item Consequently, if $R$ yields a unique optimal bundle $x(p, w)$ for every $p \gg 0$
+        and $w \ge 0$, then the resulting demand function $x$ satisfies WARP.
+\end{enumerate}
+\end{theorem}
+\begin{proof}
+\leanok
+Suppose for contradiction that $p' \cdot x \le w'$. Since $x' \in \B(p, w)$ and $x$ is
+optimal at $(p, w)$, we have $x \pref x'$. Because $x \in \B(p', w')$ and $x' \pref y$ for
+every $y \in \B(p', w')$, transitivity gives $x \pref y$ for all $y \in \B(p', w')$.
+Thus $x \in x(p', w') = \{x'\}$, contradicting $x' \ne x$.
+\end{proof}
+
+\begin{theorem}[Compensated law of demand; MWG Prop.~2.F.1]
+\label{thm:compensated_law}
+\lean{Econ.compensated_law_of_demand, Econ.compensated_law_of_demand_strict}
+\leanok
+\uses{def:cost}
+Suppose $x, x'$ exhaust wealth ($p \cdot x = w$ and $p' \cdot x' = w'$), wealth is
+Slutsky-compensated ($w' = p' \cdot x$), and WARP holds for the pair
+($p' \cdot x \le w' \land x \ne x' \implies w < p \cdot x'$). Then
+\[
+  (p' - p) \cdot (x' - x) \le 0,
+\]
+with strict inequality whenever $x \ne x'$.
+\end{theorem}
+\begin{proof}
+\uses{lem:cost_props}
+\leanok
+Expanding by bilinearity (Lemma~\ref{lem:cost_props}),
+\[
+  (p' - p) \cdot (x' - x) = (p' \cdot x' - p' \cdot x) - (p \cdot x' - p \cdot x)
+  = (w' - w') - (p \cdot x' - w) = w - p \cdot x'.
+\]
+If $x = x'$, this is $0$. If $x \ne x'$, since $p' \cdot x = w'$, WARP gives $w < p \cdot x'$,
+so $w - p \cdot x' < 0$.
+\end{proof}
+
+
+\section{Envelope Results: Shephard's Lemma, Roy's Identity, and the Slutsky Equation}
+\label{sec:envelope}
+
+This section corresponds to \texttt{EconLean/Consumer/Envelope.lean} (MWG \S3.G:
+Propositions~3.G.1, 3.G.3, 3.G.4). Derivatives are formulated as Fr\'echet derivatives
+$Df(a)$, with partial derivatives obtained by evaluating at standard basis vectors $e_j$.
+
+\begin{lemma}[Auxiliary bounds and derivative helpers]
+\label{lem:envelope_helpers}
+\lean{Econ.costCLM, Econ.costCLM_apply, Econ.cost_single, Econ.eventually_pos, Econ.expenditure_le, Econ.le_indirectUtility}
+\leanok
+\uses{def:cost, def:duality_objs}
+\begin{enumerate}
+  \item For fixed $x$, the linear map $\delta \mapsto \delta \cdot x$ is a continuous linear
+        map on $\R^\iota$, and $e_j \cdot x = x_j$.
+  \item Every strictly positive price vector $p \gg 0$ has an open neighborhood of strictly
+        positive price vectors.
+  \item For $q \ge 0$ and $x \in \Uset(u, \ubar)$, $e(q, \ubar) \le q \cdot x$.
+  \item If $u$ is continuous, $q \gg 0$, and $x \ge 0$, then $u(x) \le v(q, q \cdot x)$.
+\end{enumerate}
+\end{lemma}
+\begin{proof}
+\uses{lem:cost_props, thm:demand_nonempty, lem:value_eq}
+\leanok
+(1) and (2) follow from coordinate projections and continuity of evaluation.
+For (3), $q \cdot y \ge 0$ for all $y \in \Uset(u, \ubar)$ (Lemma~\ref{lem:cost_props}),
+so the infimum defining $e(q, \ubar)$ is bounded below by $0$ and at most $q \cdot x$.
+For (4), pick $y \in x(\pref_u; q, q \cdot x)$ via Theorem~\ref{thm:demand_nonempty};
+since $x \in \B(q, q \cdot x)$, $u(x) \le u(y) = v(q, q \cdot x)$ (Lemma~\ref{lem:value_eq}).
+\end{proof}
+
+\begin{theorem}[Shephard's lemma; MWG Prop.~3.G.1]
+\label{thm:shephard}
+\lean{Econ.shephard, Econ.shephard_partial}
+\leanok
+\uses{def:duality_objs, def:cost}
+Let $p \gg 0$ and $h \in h(p, \ubar)$. If $q \mapsto e(q, \ubar)$ is Fr\'echet differentiable
+at $p$ with derivative $E'$, then for every direction $\delta \in \R^\iota$,
+\[
+  E'(\delta) = \delta \cdot h,
+\]
+and in coordinates, $\frac{\partial e}{\partial p_j}(p, \ubar) = h_j$.
+\end{theorem}
+\begin{proof}
+\uses{lem:value_eq, lem:envelope_helpers}
+\leanok
+Consider $g(q) = q \cdot h - e(q, \ubar)$. For all $q \gg 0$ near $p$
+(Lemma~\ref{lem:envelope_helpers}(2)), Lemma~\ref{lem:envelope_helpers}(3) gives
+$g(q) \ge 0$, while $g(p) = p \cdot h - e(p, \ubar) = 0$ (Lemma~\ref{lem:value_eq}).
+Thus $g$ has a local minimum at $p$. Its Fr\'echet derivative at $p$ is
+$(\delta \mapsto \delta \cdot h) - E'$, which must vanish by Fermat's theorem.
+Evaluating at $\delta = e_j$ gives $E'(e_j) = e_j \cdot h = h_j$.
+\end{proof}
+
+\begin{corollary}[Uniqueness of Hicksian demand under differentiability]
+\label{thm:hicksian_unique}
+\lean{Econ.hicksian_unique}
+\leanok
+\uses{def:duality_objs}
+If $p \gg 0$ and $q \mapsto e(q, \ubar)$ is differentiable at $p$, then $h(p, \ubar)$
+contains at most one bundle.
+\end{corollary}
+\begin{proof}
+\uses{thm:shephard}
+\leanok
+For any $h, h' \in h(p, \ubar)$ and every $j \in \iota$, Theorem~\ref{thm:shephard} gives
+$h_j = E'(e_j) = h'_j$, so $h = h'$.
+\end{proof}
+
+\begin{theorem}[Roy's identity; MWG Prop.~3.G.4]
+\label{thm:roy}
+\lean{Econ.roy, Econ.roy_partial}
+\leanok
+\uses{def:lns, def:demand, def:duality_objs, def:prefOf}
+Suppose $u$ is continuous, $\pref_u$ is locally nonsatiated, $p \gg 0$, and
+$x \in x(\pref_u; p, w)$. If $v$ is Fr\'echet differentiable at $(p, w)$ with derivative
+$V'$, then for every direction $\delta \in \R^\iota$,
+\[
+  V'(\delta, \delta \cdot x) = 0.
+\]
+Consequently, whenever $\frac{\partial v}{\partial w}(p, w) = V'(0, 1) \ne 0$,
+\[
+  x_j = -\frac{\partial v / \partial p_j}{\partial v / \partial w}
+      = -\frac{V'(e_j, 0)}{V'(0, 1)}.
+\]
+\end{theorem}
+\begin{proof}
+\uses{thm:walras_law, lem:value_eq, lem:envelope_helpers}
+\leanok
+By Walras' law (Theorem~\ref{thm:walras_law}), $p \cdot x = w$. Define
+$\varphi(q) = v(q, q \cdot x)$. For $q \gg 0$ near $p$, Lemma~\ref{lem:envelope_helpers}(4)
+gives $\varphi(q) \ge u(x) = v(p, w) = \varphi(p)$ (Lemma~\ref{lem:value_eq}), so $\varphi$
+has a local minimum at $p$. By the chain rule, $D\varphi(p)(\delta) = V'(\delta, \delta \cdot x)$,
+which vanishes by Fermat's theorem. Taking $\delta = e_j$ and decomposing
+$(e_j, x_j) = (e_j, 0) + x_j(0, 1)$ gives $V'(e_j, 0) + x_j V'(0, 1) = 0$, and dividing
+by $V'(0, 1) \ne 0$ yields Roy's identity.
+\end{proof}
+
+\begin{theorem}[Slutsky equation; MWG Prop.~3.G.3]
+\label{thm:slutsky}
+\lean{Econ.slutsky}
+\leanok
+\uses{def:cost}
+Let $X : \R^\iota \times \R \to \R^\iota$, $H : \R^\iota \to \R^\iota$, and
+$E : \R^\iota \to \R$ satisfy $H(q) = X(q, E(q))$ in a neighborhood of $p$. Suppose
+$X$ is differentiable at $(p, E(p))$ with derivative $X'$, $H$ and $E$ are differentiable
+at $p$ with derivatives $H'$ and $E'$, and $E'(\delta) = \delta \cdot H(p)$ (as supplied
+by Shephard's lemma). Then for every direction $\delta \in \R^\iota$,
+\[
+  H'(\delta) = X'(\delta, 0) + (\delta \cdot H(p))\, X'(0, 1),
+\]
+which in coordinates ($\delta = e_j$) reads
+$\frac{\partial h_i}{\partial p_j} = \frac{\partial x_i}{\partial p_j} + h_j \frac{\partial x_i}{\partial w}$.
+\end{theorem}
+\begin{proof}
+\leanok
+Differentiating $q \mapsto X(q, E(q))$ at $p$ by the chain rule gives
+$H'(\delta) = X'(\delta, E'(\delta)) = X'(\delta, \delta \cdot H(p))$.
+Decomposing $(\delta, \delta \cdot H(p)) = (\delta, 0) + (\delta \cdot H(p))\,(0, 1)$
+and applying linearity of $X'$ yields the result.
+\end{proof}
+
+\input{chapters/consumer_continuity}

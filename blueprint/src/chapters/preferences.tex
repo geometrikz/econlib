@@ -1,0 +1,270 @@
+% Lean: EconLean/Preferences/{Basic,Utility}.lean
+\chapter{Preferences}
+\label{chap:preferences}
+
+\section{Preference Relations and Rationality}
+\label{sec:preferences}
+
+This section corresponds to \texttt{EconLean/Preferences/Basic.lean} and formalizes
+Mas-Colell, Whinston \& Green (MWG) \S1.B (Proposition~1.B.1). Let $X$ be a set of
+alternatives and $R \subseteq X \times X$ a binary relation written $x \pref y$
+(``$x$ is at least as good as $y$'').
+
+\begin{definition}[Strict preference]
+\label{def:P}
+\lean{Econ.P}
+\leanok
+Given a weak preference relation $R$ on $X$, the \emph{strict preference} relation
+$P(R)$ (written $x \spref y$) is defined by
+\[
+  x \spref y \iff x \pref y \land \neg(y \pref x).
+\]
+\end{definition}
+
+\begin{definition}[Indifference]
+\label{def:I}
+\lean{Econ.I}
+\leanok
+Given a weak preference relation $R$ on $X$, the \emph{indifference} relation
+$I(R)$ (written $x \indiff y$) is defined by
+\[
+  x \indiff y \iff x \pref y \land y \pref x.
+\]
+\end{definition}
+
+\begin{definition}[Rational preference]
+\label{def:rational}
+\lean{Econ.Rational}
+\leanok
+A preference relation $R$ on $X$ is \emph{rational} if it is:
+\begin{enumerate}
+  \item \emph{complete}: for all $x, y \in X$, $x \pref y$ or $y \pref x$;
+  \item \emph{transitive}: for all $x, y, z \in X$, if $x \pref y$ and $y \pref z$, then $x \pref z$.
+\end{enumerate}
+\end{definition}
+
+\begin{proposition}[Reflexivity]
+\label{thm:refl}
+\lean{Econ.Rational.refl}
+\leanok
+\uses{def:rational}
+If $R$ is rational, then $R$ is reflexive: $x \pref x$ for every $x \in X$.
+\end{proposition}
+\begin{proof}
+\leanok
+By completeness applied to $x$ and $x$, either $x \pref x$ or $x \pref x$; in both cases $x \pref x$.
+\end{proof}
+
+\begin{lemma}[Strict preference via negation]
+\label{lem:P_iff_not}
+\lean{Econ.Rational.P_iff_not}
+\leanok
+\uses{def:P, def:rational}
+If $R$ is rational, then for all $x, y \in X$,
+\[
+  x \spref y \iff \neg(y \pref x).
+\]
+\end{lemma}
+\begin{proof}
+\leanok
+The forward direction is immediate from Definition~\ref{def:P}. Conversely, if
+$\neg(y \pref x)$, completeness yields $x \pref y \lor y \pref x$, so $x \pref y$
+must hold, giving $x \spref y$.
+\end{proof}
+
+\begin{proposition}[Properties of strict preference]
+\label{thm:P_props}
+\lean{Econ.P_irrefl, Econ.P_trans, Econ.P_of_P_of_R, Econ.P_of_R_of_P}
+\leanok
+\uses{def:P}
+Let $R$ be a binary relation on $X$.
+\begin{enumerate}
+  \item \emph{Irreflexivity}: for all $x \in X$, $\neg(x \spref x)$ (no hypotheses on $R$ needed).
+  \item If $R$ is transitive, then $\spref$ is transitive: $x \spref y$ and $y \spref z$ imply $x \spref z$.
+  \item \emph{Mixed transitivity}: if $R$ is transitive, then
+        $(x \spref y \land y \pref z) \implies x \spref z$ and
+        $(x \pref y \land y \spref z) \implies x \spref z$.
+\end{enumerate}
+\end{proposition}
+\begin{proof}
+\leanok
+For (1), $x \spref x$ means $x \pref x \land \neg(x \pref x)$, a contradiction.
+For (2), $x \pref y \pref z$ gives $x \pref z$ by transitivity; if $z \pref x$, then
+$z \pref x \pref y$ would imply $z \pref y$, contradicting $y \spref z$.
+For (3), if $x \spref y \pref z$, transitivity gives $x \pref z$, and $z \pref x$
+would yield $y \pref z \pref x$, contradicting $x \spref y$. The symmetric case
+$x \pref y \spref z$ is analogous.
+\end{proof}
+
+\begin{proposition}[Indifference is an equivalence relation]
+\label{thm:I_equiv}
+\lean{Econ.Rational.I_equivalence}
+\leanok
+\uses{def:I, def:rational}
+If $R$ is rational, then $\indiff$ is an equivalence relation on $X$.
+\end{proposition}
+\begin{proof}
+\uses{thm:refl}
+\leanok
+Reflexivity follows from $x \pref x$ (Proposition~\ref{thm:refl}). Symmetry is immediate
+from the symmetry of $x \pref y \land y \pref x$. For transitivity, $x \indiff y$ and
+$y \indiff z$ yield $x \pref y \pref z$ and $z \pref y \pref x$, so $x \indiff z$.
+\end{proof}
+
+\begin{proposition}[Preorder structure]
+\label{thm:isPreorder}
+\lean{Econ.Rational.isPreorder}
+\leanok
+\uses{def:rational}
+Every rational preference relation $R$ is a preorder (reflexive and transitive).
+\end{proposition}
+\begin{proof}
+\uses{thm:refl}
+\leanok
+Reflexivity is Proposition~\ref{thm:refl}, and transitivity is part of Definition~\ref{def:rational}.
+\end{proof}
+
+\begin{proposition}[Trichotomy]
+\label{thm:trichotomy}
+\lean{Econ.Rational.trichotomy}
+\leanok
+\uses{def:P, def:I, def:rational}
+If $R$ is rational, then for all $x, y \in X$, at least one of $x \spref y$,
+$x \indiff y$, or $y \spref x$ holds (and by definition they are pairwise exclusive).
+\end{proposition}
+\begin{proof}
+\leanok
+Case-split on whether $x \pref y$ and $y \pref x$ hold. The three combinations where at
+least one holds give $x \indiff y$, $x \spref y$, or $y \spref x$; the fourth case
+($\neg(x \pref y)$ and $\neg(y \pref x)$) contradicts completeness.
+\end{proof}
+
+
+\section{Utility Representations}
+\label{sec:utility}
+
+This section corresponds to \texttt{EconLean/Preferences/Utility.lean} and formalizes
+MWG \S1.B (Definition~1.B.2, Proposition~1.B.2) and the finite case of \S3.C.
+
+\begin{definition}[Utility representation]
+\label{def:represents}
+\lean{Econ.Represents}
+\leanok
+A function $u : X \to \R$ \emph{represents} a preference relation $R$ on $X$ if
+\[
+  \forall x, y \in X,\quad x \pref y \iff u(y) \le u(x).
+\]
+\end{definition}
+
+\begin{theorem}[Representable preferences are rational; MWG Prop.~1.B.2]
+\label{thm:represents_rational}
+\lean{Econ.Represents.rational}
+\leanok
+\uses{def:represents, def:rational}
+If $u : X \to \R$ represents $R$, then $R$ is rational.
+\end{theorem}
+\begin{proof}
+\leanok
+Completeness: for any $x, y \in X$, totality of $\le$ on $\R$ gives $u(y) \le u(x)$ or
+$u(x) \le u(y)$, hence $x \pref y$ or $y \pref x$. Transitivity: if $x \pref y$ and
+$y \pref z$, then $u(z) \le u(y) \le u(x)$, so $u(z) \le u(x)$ and thus $x \pref z$.
+\end{proof}
+
+\begin{lemma}[Strict preference under utility representation]
+\label{lem:represents_P_iff}
+\lean{Econ.Represents.P_iff}
+\leanok
+\uses{def:represents, def:P}
+If $u$ represents $R$, then for all $x, y \in X$,
+\[
+  x \spref y \iff u(y) < u(x).
+\]
+\end{lemma}
+\begin{proof}
+\leanok
+Unfolding $P$, $x \spref y \iff u(y) \le u(x) \land \neg(u(x) \le u(y)) \iff u(y) < u(x)$.
+\end{proof}
+
+\begin{proposition}[Ordinal invariance of utility]
+\label{thm:comp_strictMono}
+\lean{Econ.Represents.comp_strictMono}
+\leanok
+\uses{def:represents}
+If $u : X \to \R$ represents $R$ and $f : \R \to \R$ is strictly increasing, then
+$f \circ u$ also represents $R$.
+\end{proposition}
+\begin{proof}
+\leanok
+Because $f$ is strictly increasing, $f(u(y)) \le f(u(x)) \iff u(y) \le u(x) \iff x \pref y$.
+\end{proof}
+
+\begin{definition}[Preference induced by a utility function]
+\label{def:prefOf}
+\lean{Econ.prefOf, Econ.represents_prefOf}
+\leanok
+\uses{def:represents}
+Any function $u : X \to \R$ induces a preference relation $\pref_u$ defined by
+$x \pref_u y \iff u(y) \le u(x)$, which is represented by $u$ tautologically.
+\end{definition}
+
+\begin{definition}[Lower contour set and counting utility]
+\label{def:countingUtility}
+\lean{Econ.lowerContour, Econ.mem_lowerContour, Econ.countingUtility}
+\leanok
+Suppose $X$ is finite. For each $x \in X$, define its \emph{lower contour set}
+\[
+  L(x) = \{y \in X \mid x \pref y\}
+\]
+and the \emph{counting utility} $u(x) = |L(x)| \in \R$.
+\end{definition}
+
+\begin{lemma}[Monotonicity of lower contour sets]
+\label{lem:lowerContour_subset}
+\lean{Econ.lowerContour_subset}
+\leanok
+\uses{def:rational, def:countingUtility}
+If $X$ is finite, $R$ is rational, and $x \pref y$, then $L(y) \subseteq L(x)$.
+\end{lemma}
+\begin{proof}
+\leanok
+If $z \in L(y)$, then $y \pref z$; by transitivity with $x \pref y$, we obtain
+$x \pref z$, so $z \in L(x)$.
+\end{proof}
+
+\begin{theorem}[Existence of utility on finite sets]
+\label{thm:exists_utility_of_finite}
+\lean{Econ.exists_utility_of_finite}
+\leanok
+\uses{def:rational, def:represents}
+If $X$ is finite and $R$ is rational, then there exists $u : X \to \R$ representing $R$.
+\end{theorem}
+\begin{proof}
+\uses{def:countingUtility, lem:lowerContour_subset, thm:refl}
+\leanok
+Take $u(x) = |L(x)|$, the counting utility.
+\begin{itemize}
+  \item[$(\Rightarrow)$] If $x \pref y$, Lemma~\ref{lem:lowerContour_subset} gives
+        $L(y) \subseteq L(x)$, hence $|L(y)| \le |L(x)|$, i.e.\ $u(y) \le u(x)$.
+  \item[$(\Leftarrow)$] Suppose $u(y) \le u(x)$ but $\neg(x \pref y)$. By completeness,
+        $y \pref x$, so $L(x) \subseteq L(y)$ by Lemma~\ref{lem:lowerContour_subset}.
+        Moreover $y \in L(y)$ by reflexivity (Proposition~\ref{thm:refl}) while
+        $y \notin L(x)$, so $L(x) \subsetneq L(y)$. Hence $|L(x)| < |L(y)|$,
+        contradicting $u(y) \le u(x)$.
+\end{itemize}
+\end{proof}
+
+\begin{corollary}[Characterization of rationality on finite sets]
+\label{thm:rational_iff_utility}
+\lean{Econ.rational_iff_exists_utility}
+\leanok
+\uses{def:rational, def:represents}
+On a finite set $X$, a preference relation $R$ is rational if and only if it admits a
+utility representation.
+\end{corollary}
+\begin{proof}
+\uses{thm:exists_utility_of_finite, thm:represents_rational}
+\leanok
+Combine Theorem~\ref{thm:exists_utility_of_finite} and Theorem~\ref{thm:represents_rational}.
+\end{proof}
+
+

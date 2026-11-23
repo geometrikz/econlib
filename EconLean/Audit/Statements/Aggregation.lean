@@ -1,0 +1,110 @@
+/-
+# Frozen statements: production economies and bridge B0 aggregation results
+
+Headline statements of `GE/Production.lean` and `Bridges/Aggregation/*.lean`,
+copied after the context-isolated adversarial review of 2026-11-23 (no
+statement rated wrong; findings fixed or documented, see
+`Audit/REVIEW-production-aggregation.md`). Each is closed by the library
+theorem, so a weakened library statement stops this file compiling. Do not
+edit a statement here without a new review.
+-/
+module
+
+public import EconLean.GE.Production
+public import EconLean.Bridges.Aggregation.GrossSubstitutes
+public import EconLean.Bridges.Aggregation.LawOfDemand
+public import EconLean.Bridges.Aggregation.Gorman
+
+@[expose] public section
+
+set_option linter.unusedSectionVars false
+
+namespace Econ.Audit
+
+open Econ
+
+section Production
+
+variable {α β ι : Type*} [Fintype α] [Fintype β] [Fintype ι] {E : ProductionEconomy α β ι}
+
+theorem frozen_production_walrasian_def (p : ι → ℝ) (x : Allocation α ι) (y : β → ι → ℝ) :
+    E.IsWalrasianEquilibrium p x y ↔
+      (∀ j, y j ∈ E.prod j ∧ ∀ y' ∈ E.prod j, cost p y' ≤ cost p (y j)) ∧
+      (∀ a, x a ∈ demand (E.pref a) p
+        (cost p (E.endow a) + ∑ j, E.share a j * cost p (y j))) ∧
+      ∑ a, x a = ∑ a, E.endow a + ∑ j, y j := Iff.rfl
+
+theorem frozen_production_paretoOptimal_def (x : Allocation α ι) (y : β → ι → ℝ) :
+    E.ParetoOptimal x y ↔
+      ((∀ a, 0 ≤ x a) ∧ (∀ j, y j ∈ E.prod j) ∧ ∑ a, x a = ∑ a, E.endow a + ∑ j, y j) ∧
+      ∀ x' y', E.Feasible x' y' →
+        ¬ ((∀ a, E.pref a (x' a) (x a)) ∧ ∃ a, P (E.pref a) (x' a) (x a)) := Iff.rfl
+
+theorem frozen_production_first_welfare (hR : ∀ a, Rational (E.pref a))
+    (hlns : ∀ a, LocallyNonsatiated (E.pref a)) {p : ι → ℝ} {x : Allocation α ι}
+    {y : β → ι → ℝ} (heq : E.IsWalrasianEquilibrium p x y) : E.ParetoOptimal x y :=
+  ProductionEconomy.first_welfare_theorem hR hlns heq
+
+theorem frozen_production_second_welfare [Nonempty ι] [Nonempty α]
+    (hR : ∀ a, Rational (E.pref a)) (hconv : ∀ a, ConvexPref (E.pref a))
+    (hlns : ∀ a, LocallyNonsatiated (E.pref a)) (hY : ∀ j, Convex ℝ (E.prod j))
+    {x : Allocation α ι} {y : β → ι → ℝ} (hxy : E.ParetoOptimal x y) :
+    ∃ p : ι → ℝ, p ≠ 0 ∧
+      E.IsPriceQuasiEquilibriumWithTransfers p (fun a => cost p (x a)) x y :=
+  ProductionEconomy.second_welfare_theorem hR hconv hlns hY hxy
+
+theorem frozen_production_quasi_to_eq (hR : ∀ a, Rational (E.pref a))
+    (hcont : ∀ a, ContinuousPref (E.pref a)) {p : ι → ℝ} {w : α → ℝ}
+    {x : Allocation α ι} {y : β → ι → ℝ}
+    (h : E.IsPriceQuasiEquilibriumWithTransfers p w x y)
+    (hcheap : ∀ a, ∃ z, 0 ≤ z ∧ cost p z < w a) :
+    E.IsPriceEquilibriumWithTransfers p w x y :=
+  h.isPriceEquilibriumWithTransfers hR hcont hcheap
+
+end Production
+
+section Aggregation
+
+variable {ι : Type*} [Fintype ι]
+
+theorem frozen_grossSubstitutes_def [DecidableEq ι] (z : (ι → ℝ) → (ι → ℝ)) :
+    GrossSubstitutes z ↔ ∀ p l (t : ℝ), (∀ i, 0 < p i) → p l < t →
+      ∀ k, k ≠ l → z p k < z (Function.update p l t) k := Iff.rfl
+
+theorem frozen_grossSubstitutes_sum [DecidableEq ι] {α : Type*} (s : Finset α)
+    (hs : s.Nonempty) {z : α → (ι → ℝ) → (ι → ℝ)} (h : ∀ a ∈ s, GrossSubstitutes (z a)) :
+    GrossSubstitutes (fun p => ∑ a ∈ s, z a p) :=
+  GrossSubstitutes.sum s hs h
+
+theorem frozen_grossSubstitutes_unique [DecidableEq ι] [Nonempty ι]
+    {z : (ι → ℝ) → (ι → ℝ)} (hGS : GrossSubstitutes z)
+    (hhom : ∀ p, (∀ i, 0 < p i) → ∀ t : ℝ, 0 < t → z (t • p) = z p) {p p' : ι → ℝ}
+    (hp : ∀ i, 0 < p i) (hp' : ∀ i, 0 < p' i) (hz : z p = 0) (hz' : z p' = 0) :
+    ∃ t : ℝ, 0 < t ∧ p' = t • p :=
+  hGS.unique_equilibrium hhom hp hp' hz hz'
+
+theorem frozen_lawOfDemand_sum {α : Type*} (s : Finset α) {z : α → (ι → ℝ) → (ι → ℝ)}
+    {D : Set (ι → ℝ)} (h : ∀ a ∈ s, LawOfDemand (z a) D) :
+    LawOfDemand (fun p => ∑ a ∈ s, z a p) D :=
+  LawOfDemand.sum s h
+
+theorem frozen_warp_convex_equilibria {z : (ι → ℝ) → (ι → ℝ)} {D : Set (ι → ℝ)}
+    (hD : Convex ℝ D) (hW : ∀ p ∈ D, cost p (z p) = 0)
+    (hWARP : ∀ p ∈ D, ∀ p' ∈ D, z p ≠ z p' → cost p (z p') ≤ 0 → 0 < cost p' (z p)) :
+    Convex ℝ {p | p ∈ D ∧ z p = 0} :=
+  ExcessWARP.convex_equilibria hD hW hWARP
+
+theorem frozen_gorman_iff_direction {α : Type*} [Fintype α] {x : α → ℝ → ι → ℝ}
+    (h : ∃ β : ι → ℝ, ∀ a w, x a w = x a 0 + w • β) :
+    ∃ X : ℝ → ι → ℝ, ∀ w : α → ℝ, ∑ a, x a (w a) = X (∑ a, w a) :=
+  aggregatesThroughWealth_of_gorman h
+
+theorem frozen_gorman_nonneg {α : Type*} [Fintype α] [Nontrivial α] {x : α → ℝ → ι → ℝ}
+    (hagg : ∃ X : ℝ → ι → ℝ, ∀ w : α → ℝ, (∀ a, 0 ≤ w a) → ∑ a, x a (w a) = X (∑ a, w a))
+    (hc : ∀ a, ContinuousOn (x a) (Set.Ici 0)) :
+    ∃ β : ι → ℝ, ∀ a, ∀ w, 0 ≤ w → x a w = x a 0 + w • β :=
+  gorman_of_aggregatesThroughWealthNonneg hagg hc
+
+end Aggregation
+
+end Econ.Audit

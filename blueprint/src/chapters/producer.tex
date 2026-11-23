@@ -1,0 +1,252 @@
+% Lean: EconLean/Producer/Production.lean, Cost.lean, Aggregation.lean
+\chapter{Producer Theory}
+\label{chap:producer}
+
+Source: MWG Ch.~5. Vectors live in $\R^L$ (Lean: \texttt{ι → ℝ} with \texttt{ι} finite);
+$p \cdot y = \sum_i p_i y_i$ is \texttt{cost p y} (Definition~\ref{def:cost}). A firm is a
+production set $Y \subseteq \R^L$ of net-output vectors.
+
+\paragraph{Junk values.} Profit and cost are real $\sup$/$\inf$, so they equal $0$ where MWG
+writes $\pm\infty$ (unbounded profits, infeasible output). Every result whose content depends on
+the value assumes an attained optimum, bounded profits, or feasibility.
+
+\section{Production sets}
+\label{sec:production-sets}
+
+\begin{definition}[Properties of production sets; MWG \S5.B]
+\label{def:production-properties}
+\lean{Econ.PossibilityOfInaction, Econ.FreeDisposal, Econ.NoFreeLunch, Econ.Irreversible, Econ.NonincreasingReturns, Econ.NondecreasingReturns, Econ.ConstantReturns, Econ.Additive}
+\leanok
+Possibility of inaction $0 \in Y$; free disposal $y \in Y, y' \le y \Rightarrow y' \in Y$;
+no free lunch $Y \cap \R^L_+ \subseteq \{0\}$; irreversibility $y, -y \in Y \Rightarrow y = 0$;
+nonincreasing returns $\alpha y \in Y$ for $\alpha \in [0,1]$; nondecreasing returns
+$\alpha y \in Y$ for $\alpha \ge 1$; constant returns $\alpha y \in Y$ for $\alpha \ge 0$;
+additivity $Y + Y \subseteq Y$.
+\end{definition}
+
+\begin{proposition}[Relations between the properties; MWG \S5.B]
+\label{prop:production-relations}
+\lean{Econ.NonincreasingReturns.of_convex, Econ.constantReturns_iff, Econ.Additive.nsmul_mem, Econ.Additive.constantReturns_and_convex}
+\leanok
+\uses{def:production-properties}
+(a) A convex $Y$ with $0 \in Y$ has nonincreasing returns. (b) CRS $\iff$ nonincreasing and
+nondecreasing returns. (c) If $Y$ is additive, $(n+1) y \in Y$ for $y \in Y$. (d) Additivity and
+nonincreasing returns imply constant returns and convexity.
+\end{proposition}
+\begin{proof}
+\leanok
+(a) $\alpha y = \alpha y + (1-\alpha) 0$. (b) Split on $\alpha \le 1$. (c) Induction on $n$ using
+additivity. (d) For $\alpha \ge 0$ let $n = \lceil \alpha \rceil$ (\texttt{Nat.ceil}) and
+$\beta = \alpha/(n+1) \in [0,1]$; then $\beta y \in Y$ and $\alpha y = (n+1)(\beta y) \in Y$ by (c).
+Convexity: $a y + b y'$ is a sum of two scaled plans, each in $Y$ by CRS.
+\end{proof}
+
+\section{Profit maximization}
+\label{sec:profit}
+
+\begin{definition}[Profit function and supply correspondence; MWG Def.~5.C.1]
+\label{def:profit}
+\lean{Econ.profit, Econ.supply, Econ.profitDomain, Econ.mem_supply, Econ.profit_def}
+\leanok
+\uses{def:cost, def:maxValue}
+$\pi(p) = \sup\{p \cdot y : y \in Y\}$ and $y(p) = \{y \in Y : p\cdot y' \le p \cdot y\ \forall y' \in Y\}$.
+These are literally \texttt{maxValue} and \texttt{argmax} of Berge's setting
+(Chapter~\ref{chap:foundations}) with objective $(p,y)\mapsto p\cdot y$ and constant feasible set $Y$.
+$\mathrm{dom}\,\pi$ is the set of $p$ at which profits are bounded above.
+\end{definition}
+
+\begin{lemma}[Values at an optimum]
+\label{lem:profit-values}
+\lean{Econ.profit_eq, Econ.cost_le_profit, Econ.profit_nonneg}
+\leanok
+\uses{def:profit}
+If $y \in y(p)$ then $\pi(p) = p \cdot y$. If profits are bounded at $p$, $p\cdot y \le \pi(p)$ for all
+$y \in Y$, and $\pi(p) \ge 0$ when $0 \in Y$.
+\end{lemma}
+\begin{proof}
+\leanok
+$p\cdot y$ is the greatest element of the value set (\texttt{IsGreatest.csSup\_eq}); the others
+are \texttt{le\_csSup}.
+\end{proof}
+
+\begin{proposition}[Homogeneity, convexity, law of supply; MWG Prop.~5.C.1 (i)--(iv), (vi)]
+\label{prop:profit-props}
+\lean{Econ.supply_smul, Econ.profit_smul, Econ.convexOn_profit, Econ.convex_supply, Econ.law_of_supply}
+\leanok
+\uses{def:profit, lem:profit-values}
+For $\alpha > 0$, $y(\alpha p) = y(p)$; for $\alpha \ge 0$, $\pi(\alpha p) = \alpha \pi(p)$ (no
+boundedness needed; off $\mathrm{dom}\,\pi$ this reads $0 = \alpha\cdot 0$). If $Y \neq \emptyset$,
+$\pi$ is convex on $\mathrm{dom}\,\pi$, which is convex. If $Y$ is convex so is $y(p)$. For
+$y \in y(p)$, $y' \in y(p')$: $(p - p')\cdot(y - y') \ge 0$.
+\end{proposition}
+\begin{proof}
+\leanok
+Homogeneity: $(\alpha p)\cdot y = \alpha (p\cdot y)$, and \texttt{Real.sSup\_smul\_of\_nonneg}
+scales a real supremum (junk-consistently). Convexity: at $ap + bq$ every plan earns
+$a\, p\cdot y + b\, q \cdot y \le a\pi(p) + b\pi(q)$, which gives both bounded profits at the
+mixture and the inequality via \texttt{csSup\_le}. Convex supply: mix two optimal plans and
+compare with any $z$ using $p\cdot z = a\, p \cdot z + b\, p\cdot z$. Law of supply: add
+$p\cdot y \ge p \cdot y'$ and $p'\cdot y' \ge p'\cdot y$.
+\end{proof}
+
+\begin{theorem}[Hotelling's lemma; MWG Prop.~5.C.1 (vi)]
+\label{thm:hotelling}
+\lean{Econ.hotelling, Econ.hotelling_partial, Econ.supply_subsingleton}
+\leanok
+\uses{def:profit, lem:profit-values}
+Let $y \in y(p)$, profits bounded for all prices near $p$, and $\pi$ differentiable at $p$ with
+derivative $\Pi'$. Then $\Pi'(\delta) = \delta \cdot y$ for all $\delta$; in particular
+$\partial \pi/\partial p_j = y_j$, and $y(p)$ has at most one element.
+\end{theorem}
+\begin{proof}
+\leanok
+\uses{lem:envelope_helpers}
+$g(q) = \pi(q) - q\cdot y$ is $\ge 0$ near $p$ (bounded profits and $y \in Y$) and $= 0$ at $p$,
+so it has a local minimum and its derivative $\Pi' - (\delta \mapsto \delta\cdot y)$ vanishes
+(Fermat, \texttt{IsLocalMin.hasFDerivAt\_eq\_zero}). Uniqueness: two supplied plans have the same
+coordinates $\Pi'(e_j)$. MWG's converse (single-valued supply $\Rightarrow$ differentiable $\pi$) is
+not formalized.
+\end{proof}
+
+\begin{theorem}[Berge for the firm]
+\label{thm:berge-supply}
+\lean{Econ.continuous_profitObjective, Econ.berge_supply}
+\leanok
+\uses{def:profit, thm:berge}
+If $Y$ is nonempty and compact, $\pi$ is continuous, $y(p)$ is nonempty and compact, and $y(\cdot)$
+is upper hemicontinuous.
+\end{theorem}
+\begin{proof}
+\leanok
+$(p,y)\mapsto p\cdot y$ is continuous (\texttt{fun\_prop}) and a constant correspondence is UHC and
+LHC (Mathlib's \texttt{UpperHemicontinuous.const}, \texttt{LowerHemicontinuous.const}); apply
+Berge's theorem.
+\end{proof}
+
+\section{Cost minimization}
+\label{sec:cost}
+
+\begin{definition}[Cost function and conditional factor demand; MWG \S5.C]
+\label{def:cost-function}
+\lean{Econ.costFunction, Econ.factorDemand, Econ.mem_factorDemand, Econ.costFunction_eq}
+\leanok
+\uses{def:duality_objs}
+For a production function $f$, $c(w,q) = \inf\{w\cdot z : z \ge 0, f(z) \ge q\}$ and $z(w,q)$ its
+minimizers. These are the consumer's expenditure function and Hicksian demand with $f$ in place of
+$u$; at a minimizer $c(w,q) = w \cdot z$.
+\end{definition}
+
+\begin{proposition}[Properties of the cost function; MWG Prop.~5.C.2]
+\label{prop:cost-props}
+\lean{Econ.factorDemand_smul, Econ.costFunction_smul, Econ.concaveOn_costFunction, Econ.costFunction_concave, Econ.costFunction_mono, Econ.costFunction_crs}
+\leanok
+\uses{def:cost-function, thm:ve_props}
+(i) $z(\alpha w, q) = z(w,q)$ for $\alpha > 0$ and $c(\alpha w, q) = \alpha c(w,q)$ for $\alpha \ge 0$.
+(ii) If $q$ is feasible, $c(\cdot,q)$ is concave on $w \ge 0$; also $a c(w) + b c(w') \le c(aw + bw')$
+for $a,b\ge0$ when minimizers exist. (iii) For $w \ge 0$ and $q \le q'$ with $q'$ feasible,
+$c(w,q) \le c(w,q')$. (iv) If $f(tz) = t f(z)$ for $t > 0$, $z \ge 0$, then $c(w,q) = q\, c(w,1)$ for $q>0$.
+\end{proposition}
+\begin{proof}
+\leanok
+(i) From the consumer versions and \texttt{Real.sInf\_smul\_of\_nonneg}. (ii) For any feasible $z$,
+$a\, c(w) + b\, c(w') \le a\, w\cdot z + b\, w'\cdot z = (aw+bw')\cdot z$, since each infimum is
+genuine (nonempty, bounded below by $0$ for $w\ge0$); take \texttt{le\_csInf}. The second form is
+\texttt{expenditure\_concave}. (iii) \texttt{csInf\_le\_csInf}: the feasible set shrinks as $q$ rises.
+(iv) The upper set at $q$ is $q$ times the one at $1$ (rescale by $q^{-1}$), so the cost image
+scales by $q$.
+\end{proof}
+
+\begin{theorem}[Shephard's lemma for cost; MWG Prop.~5.C.2 (vi)]
+\label{thm:shephard-cost}
+\lean{Econ.shephard_cost}
+\leanok
+\uses{def:cost-function, thm:shephard}
+If $w \gg 0$, $z \in z(w,q)$ and $c(\cdot,q)$ is differentiable at $w$ with derivative $C'$, then
+$C'(e_j) = z_j$.
+\end{theorem}
+\begin{proof}
+\leanok
+This is the consumer's Shephard lemma (\texttt{shephard\_partial}) applied to $u = f$.
+\end{proof}
+
+\begin{proposition}[Profit maximization implies cost minimization]
+\label{prop:profitmax-costmin}
+\lean{Econ.factorDemand_of_profitMax}
+\leanok
+\uses{def:cost-function}
+If $p \ge 0$ and $z^* \ge 0$ maximizes $p f(z) - w\cdot z$ over $z \ge 0$, then $z^* \in z(w, f(z^*))$.
+\end{proposition}
+\begin{proof}
+\leanok
+For $z \ge 0$ with $f(z) \ge f(z^*)$, optimality gives
+$w\cdot z \ge w\cdot z^* + p(f(z) - f(z^*)) \ge w\cdot z^*$ (\texttt{nlinarith}).
+\end{proof}
+
+\section{Aggregation and efficiency}
+\label{sec:aggregation}
+
+\begin{definition}[Aggregate production set]
+\label{def:aggregate}
+\lean{Econ.aggregate, Econ.cost_univ_sum}
+\leanok
+\uses{def:cost}
+For firms $j \in J$ (finite), $Y = \sum_j Y_j = \{\sum_j y_j : y_j \in Y_j\}$. Value is additive:
+$p\cdot \sum_j y_j = \sum_j p\cdot y_j$ (\texttt{Finset.sum\_comm}).
+\end{definition}
+
+\begin{theorem}[Aggregation of supply; MWG Prop.~5.E.1]
+\label{thm:aggregation}
+\lean{Econ.sum_mem_supply_aggregate, Econ.mem_supply_of_sum_mem_supply_aggregate, Econ.supply_aggregate, Econ.profit_aggregate, Econ.profit_aggregate_of_supply}
+\leanok
+\uses{def:aggregate, def:profit, lem:profit-values}
+$y \in y(p)$ for the aggregate iff $y = \sum_j y_j$ with $y_j \in y_j(p)$. If each $Y_j$ is nonempty
+with profits bounded at $p$, then $\pi(p) = \sum_j \pi_j(p)$.
+\end{theorem}
+\begin{proof}
+\leanok
+($\Leftarrow$) sum the individual inequalities. ($\Rightarrow$) if some $y_j$ were beaten by
+$y'_j \in Y_j$, replacing it (\texttt{Function.update}) would raise aggregate profit by
+$p\cdot y'_j - p\cdot y_j > 0$. Profits: every aggregate plan earns at most $\sum_j \pi_j$
+(\texttt{csSup\_le}); conversely, for $\delta > 0$ pick $y_j$ within $\varepsilon = \delta/(|J|+1)$ of
+$\pi_j$ (\texttt{exists\_lt\_of\_lt\_csSup}), so $\sum_j \pi_j - |J|\varepsilon \le \pi(p)$ and
+$\sum_j\pi_j < \pi(p) + \delta$ (\texttt{le\_of\_forall\_pos\_lt\_add}).
+\end{proof}
+
+\begin{definition}[Efficiency; MWG Def.~5.F.1]
+\label{def:efficient}
+\lean{Econ.Efficient}
+\leanok
+$y \in Y$ is efficient if no $y' \in Y$ with $y' \ge y$ differs from $y$.
+\end{definition}
+
+\begin{theorem}[Profit maximization implies efficiency; MWG Prop.~5.F.1]
+\label{thm:efficient-of-supply}
+\lean{Econ.efficient_of_mem_supply}
+\leanok
+\uses{def:efficient, def:profit}
+If $p \gg 0$ and $y \in y(p)$ then $y$ is efficient.
+\end{theorem}
+\begin{proof}
+\leanok
+If $y' \ge y$, $y' \ne y$, some coordinate is strictly larger, so $p\cdot y' > p \cdot y$
+(\texttt{Finset.sum\_lt\_sum}), contradicting optimality.
+\end{proof}
+
+\begin{theorem}[Efficient plans are supported by prices; MWG Prop.~5.F.2]
+\label{thm:price-of-efficient}
+\lean{Econ.exists_price_of_efficient}
+\leanok
+\uses{def:efficient, def:profit}
+Let $L \ge 1$, $Y$ convex and $y$ efficient. Then there is $p \ge 0$, $p \ne 0$, with $y \in y(p)$.
+\end{theorem}
+\begin{proof}
+\leanok
+$S = \{a : a \gg y\}$ is open and convex (\texttt{isOpen\_set\_pi}, \texttt{convex\_pi}) and disjoint
+from $Y$ by efficiency. Hahn--Banach (\texttt{geometric\_hahn\_banach\_open}) gives a continuous
+linear $f$ and $u$ with $f < u$ on $S$ and $f \ge u$ on $Y$. Set $p_i = -f(e_i)$, so
+$p\cdot x = -f(x)$ (\texttt{LinearMap.pi\_apply\_eq\_sum\_univ}). $p \ge 0$: if $f(e_i) > 0$, the point
+$y + \mathbf 1 + t e_i \in S$ with $t$ large violates $f < u$. $p \ne 0$: otherwise $f = 0$ and
+$0 < u \le 0$. Optimality: for $b \in Y$, $p\cdot b \le -u < p\cdot(y + \varepsilon \mathbf 1)
+= p\cdot y + \varepsilon \sum_i p_i$ for all $\varepsilon > 0$; let $\varepsilon \to 0$
+(\texttt{le\_of\_forall\_pos\_lt\_add}).
+\end{proof}

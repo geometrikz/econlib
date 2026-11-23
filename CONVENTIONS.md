@@ -44,5 +44,24 @@ end Econ
 - Import narrowly (specific Mathlib files, not `Mathlib`), which keeps builds fast.
 - The build must finish with no warnings (`lake build`).
 
+## Blueprint: a human proof for every theorem (required)
+Every change that adds or changes a Lean theorem, lemma or definition that a
+reader would cite also adds or updates its blueprint entry, in the same change.
+Details and a template: `blueprint/README.md`.
+- Put it in the area's file under `blueprint/src/chapters/` (one file per area;
+  a new area gets a new chapter file and an `\input` line in `content.tex`).
+- Tag it `\lean{Full.Lean.Name}` (several names allowed, comma separated),
+  `\leanok` on the statement once it compiles, and `\leanok` inside the proof
+  once it has no `sorry`. Give it a `\label` and list what it relies on in
+  `\uses{...}`.
+- The written proof follows the Lean proof step by step: same case splits,
+  same intermediate claims in the same order, same lemmas (name them). If the
+  Lean proof changes, update the text.
+- State the same hypotheses as Lean. If the Lean statement is weaker or
+  stronger than the textbook one, say so in a sentence.
+- `Audit/` statement files are not blueprinted.
+- CI fails if a `\lean{...}` name does not exist (`checkdecls`). Before handing
+  off, run `leanblueprint web` (or ask the integrator) and fix any LaTeX errors.
+
 ## Versions
 Lean `v4.36.0`, Mathlib `v4.36.0` (see `lean-toolchain`, `lakefile.toml`).

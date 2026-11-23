@@ -1,0 +1,517 @@
+% Lean: EconLean/GE/Exchange.lean, GE/SecondWelfare.lean, GE/Existence.lean, GE/Examples.lean
+\chapter{General Equilibrium: Exchange Economies}
+\label{chap:ge}
+
+Sources: MWG ch.~15--18; Debreu, \emph{Theory of Value} (1959) \S5.6. Consumers $a \in \alpha$ and goods
+$i \in \iota$ are finite. A consumer of an economy is literally the consumer of Chapter~\ref{chap:consumer} with
+wealth $p \cdot \omega_a$, so the definitions of cost, budget set and demand are reused.
+
+\section{Exchange economies and the First Welfare Theorem}
+\label{sec:exchange}
+
+\begin{definition}[Exchange economy, allocations]
+\label{def:exchange_economy}
+\lean{Econ.ExchangeEconomy, Econ.Allocation, Econ.ExchangeEconomy.totalEndowment, Econ.ExchangeEconomy.wealth}
+\leanok
+\uses{def:cost}
+An exchange economy gives each consumer $a$ a preference $\pref_a$ on $\R^\iota$ and an endowment $\omega_a \ge 0$.
+An allocation is any map $a \mapsto x_a \in \R^\iota$. The aggregate endowment is $\bar\omega = \sum_a \omega_a$, and
+consumer $a$'s wealth at prices $p$ is $p \cdot \omega_a$.
+\end{definition}
+
+\begin{lemma}[Value of a sum]
+\label{lem:cost_sum}
+\lean{Econ.cost_sum}
+\leanok
+\uses{def:cost}
+$p \cdot \sum_{a \in s} x_a = \sum_{a \in s} p \cdot x_a$.
+\end{lemma}
+\begin{proof}
+\leanok
+Unfold the dot product, evaluate the sum of functions pointwise, distribute $p_i$, and swap the two finite sums
+(\texttt{Finset.sum\_comm}).
+\end{proof}
+
+\begin{definition}[Feasibility, Pareto optimality, equilibrium, core]
+\label{def:ge_notions}
+\lean{Econ.ExchangeEconomy.Feasible, Econ.ExchangeEconomy.ParetoDominates, Econ.ExchangeEconomy.ParetoOptimal, Econ.ExchangeEconomy.WeaklyParetoOptimal, Econ.ExchangeEconomy.IsWalrasianEquilibrium, Econ.ExchangeEconomy.Blocks, Econ.ExchangeEconomy.InCore, Econ.ExchangeEconomy.IndividuallyRational}
+\leanok
+\uses{def:exchange_economy, def:demand, def:P}
+\begin{itemize}
+\item $x$ is \emph{feasible} if every $x_a \ge 0$ and $\sum_a x_a = \bar\omega$ (MWG Def.~15.B.1).
+\item $y$ \emph{Pareto dominates} $x$ if $y_a \pref_a x_a$ for all $a$ and $y_b \spref_b x_b$ for some $b$. $x$ is
+\emph{Pareto optimal} if it is feasible and no feasible $y$ Pareto dominates it (Def.~16.B.2). \emph{Weakly} Pareto
+optimal: no feasible $y$ has $y_a \spref_a x_a$ for every $a$.
+\item $(p, x)$ is a \emph{Walrasian equilibrium} if each $x_a$ is in $a$'s demand at prices $p$ and wealth
+$p \cdot \omega_a$, and $\sum_a x_a = \bar\omega$ (Def.~16.B.3).
+\item A coalition $S$ \emph{blocks} $x$ if $S \neq \emptyset$ and there are $y_a \ge 0$ ($a \in S$) with
+$\sum_{a \in S} y_a = \sum_{a \in S} \omega_a$ and $y_a \spref_a x_a$ for all $a \in S$. The \emph{core} is the set of
+feasible allocations no coalition blocks (Def.~18.B.1--2).
+\item $x$ is \emph{individually rational} if $x_a \pref_a \omega_a$ for all $a$.
+\end{itemize}
+\end{definition}
+
+\begin{lemma}[Basic facts]
+\label{lem:ge_basic}
+\lean{Econ.ExchangeEconomy.feasible_endow, Econ.ExchangeEconomy.IsWalrasianEquilibrium.feasible, Econ.ExchangeEconomy.Feasible.sum_cost, Econ.ExchangeEconomy.ParetoOptimal.weaklyParetoOptimal}
+\leanok
+\uses{def:ge_notions, lem:cost_sum}
+(i) The endowment allocation is feasible. (ii) A Walrasian equilibrium allocation is feasible. (iii) If $x$ is
+feasible then $\sum_a p \cdot x_a = \sum_a p \cdot \omega_a$. (iv) With at least one consumer, Pareto optimal implies
+weakly Pareto optimal.
+\end{lemma}
+\begin{proof}
+\leanok
+(i) $\omega_a \ge 0$ and the sum is $\bar\omega$ by definition. (ii) Demanded bundles lie in a budget set, so are
+$\ge 0$; markets clear by definition. (iii) Both sides equal $p \cdot \bar\omega$ by Lemma~\ref{lem:cost_sum} and
+$\sum_a x_a = \bar\omega$. (iv) If a feasible $y$ made everyone strictly better off, it would make everyone weakly
+better off and some (any) consumer strictly better off, so it would Pareto dominate $x$.
+\end{proof}
+
+\begin{lemma}[Better bundles cost more]
+\label{lem:cost_gt_demand}
+\lean{Econ.ExchangeEconomy.cost_gt_of_mem_demand}
+\leanok
+\uses{def:demand}
+If $x$ is demanded at $(p, w)$, $y \ge 0$ and $y \spref x$, then $w < p \cdot y$.
+\end{lemma}
+\begin{proof}
+\leanok
+Otherwise $y$ is in the budget set, so optimality of $x$ gives $x \pref y$, contradicting $y \spref x$.
+\end{proof}
+
+\begin{lemma}[MWG Lemma 16.C.1]
+\label{lem:cost_ge_demand}
+\lean{Econ.ExchangeEconomy.cost_ge_of_mem_demand}
+\leanok
+\uses{def:demand, def:lns, lem:exists_better_affordable, thm:P_props}
+Let $\pref$ be rational and locally nonsatiated. If $x$ is demanded at $(p, w)$, $y \ge 0$ and $y \pref x$, then
+$w \le p \cdot y$.
+\end{lemma}
+\begin{proof}
+\leanok
+Suppose $p \cdot y < w$. By Lemma~\ref{lem:exists_better_affordable} there is an affordable $z \spref y$. By
+transitivity ($z \spref y \pref x$ gives $z \spref x$, \texttt{P\_of\_P\_of\_R}), $z \spref x$, contradicting optimality
+of $x$.
+\end{proof}
+
+\begin{theorem}[First Welfare Theorem, MWG Prop.~16.C.1]
+\label{thm:first_welfare}
+\lean{Econ.ExchangeEconomy.first_welfare_theorem}
+\leanok
+\uses{def:ge_notions, lem:cost_gt_demand, lem:cost_ge_demand, lem:ge_basic}
+If every $\pref_a$ is rational and locally nonsatiated, every Walrasian equilibrium allocation is Pareto optimal.
+\end{theorem}
+\begin{proof}
+\leanok
+$x$ is feasible by Lemma~\ref{lem:ge_basic}. Suppose a feasible $y$ Pareto dominates $x$, with $y_b \spref_b x_b$.
+Each $y_a \pref_a x_a$, so $p \cdot \omega_a \le p \cdot y_a$ by Lemma~\ref{lem:cost_ge_demand}, and
+$p \cdot \omega_b < p \cdot y_b$ by Lemma~\ref{lem:cost_gt_demand}. Summing (\texttt{Finset.sum\_lt\_sum}),
+$\sum_a p \cdot \omega_a < \sum_a p \cdot y_a$. But feasibility of $y$ makes these equal
+(Lemma~\ref{lem:ge_basic}(iii)), a contradiction.
+\end{proof}
+
+\begin{theorem}[Walrasian equilibria are in the core, MWG Prop.~18.B.2]
+\label{thm:eq_in_core}
+\lean{Econ.ExchangeEconomy.IsWalrasianEquilibrium.inCore}
+\leanok
+\uses{def:ge_notions, lem:cost_gt_demand, lem:cost_sum}
+Every Walrasian equilibrium allocation is in the core. No assumption on preferences is needed.
+\end{theorem}
+\begin{proof}
+\leanok
+Suppose $S \neq \emptyset$ blocks with $y$. For $a \in S$, $y_a \spref_a x_a$, so $p \cdot \omega_a < p \cdot y_a$
+(Lemma~\ref{lem:cost_gt_demand}). Summing over the nonempty $S$, $\sum_S p \cdot \omega_a < \sum_S p \cdot y_a$. By
+Lemma~\ref{lem:cost_sum} and $\sum_S y_a = \sum_S \omega_a$ the right side equals the left, a contradiction.
+\end{proof}
+
+\begin{theorem}[Core allocations are individually rational and weakly Pareto optimal]
+\label{thm:core_props}
+\lean{Econ.ExchangeEconomy.InCore.individuallyRational, Econ.ExchangeEconomy.InCore.weaklyParetoOptimal}
+\leanok
+\uses{def:ge_notions, lem:P_iff_not}
+If preferences are rational, core allocations are individually rational. With at least one consumer, core allocations
+are weakly Pareto optimal.
+\end{theorem}
+\begin{proof}
+\leanok
+If $x_a \pref_a \omega_a$ fails then, by completeness (Lemma~\ref{lem:P_iff_not}), $\omega_a \spref_a x_a$, and the
+singleton coalition $\{a\}$ blocks with $y = \omega$. If some feasible $y$ made everyone strictly better off, the grand
+coalition would block with $y$: its resources are $\sum_a \omega_a = \bar\omega = \sum_a y_a$.
+\end{proof}
+
+\begin{theorem}[Walrasian equilibria are individually rational]
+\label{thm:eq_ir}
+\lean{Econ.ExchangeEconomy.IsWalrasianEquilibrium.individuallyRational}
+\leanok
+\uses{def:ge_notions}
+Every Walrasian equilibrium allocation is individually rational.
+\end{theorem}
+\begin{proof}
+\leanok
+$\omega_a \ge 0$ costs exactly $p \cdot \omega_a$, so it is in $a$'s budget set, and optimality of $x_a$ gives
+$x_a \pref_a \omega_a$.
+\end{proof}
+
+\section{Equilibrium with transfers and the Second Welfare Theorem}
+\label{sec:second_welfare}
+
+\begin{definition}[Continuous preferences]
+\label{def:continuousPref}
+\lean{Econ.ContinuousPref}
+\leanok
+$\pref$ is continuous if for every $x \ge 0$ the sets $\{y \ge 0 : y \pref x\}$ and $\{y \ge 0 : x \pref y\}$ are
+closed.
+\end{definition}
+
+\begin{lemma}[Facts about strict upper contour sets]
+\label{lem:strictUpper}
+\lean{Econ.continuousPref_prefOf, Econ.convex_strictUpper, Econ.mem_closure_strictUpper}
+\leanok
+\uses{def:continuousPref, def:prefOf, def:convexPref, def:lns, thm:P_props}
+(i) A preference represented by a continuous utility is continuous. (ii) If $\pref$ is rational and convex,
+$\{y \ge 0 : y \spref x\}$ is convex. (iii) If $\pref$ is locally nonsatiated and $x \ge 0$, then $x$ is in the closure
+of $\{y \ge 0 : y \spref x\}$.
+\end{lemma}
+\begin{proof}
+\leanok
+(i) Each set is $\{y \ge 0\} \cap \{u(y) \ge u(x)\}$ (or $\le$), an intersection of closed sets. (ii) Take $y_1, y_2$
+strictly better than $x$ and $s, t \ge 0$ with $s + t = 1$. The mix is $\ge 0$. By completeness, say $y_1 \pref y_2$;
+convexity of the upper contour set of $y_2$ gives $s y_1 + t y_2 \pref y_2 \spref x$, so the mix is strictly better
+than $x$ (\texttt{P\_of\_R\_of\_P}); symmetrically if $y_2 \pref y_1$. (iii) For each $\varepsilon > 0$ local
+nonsatiation gives $y \ge 0$ within $\varepsilon$ of $x$ with $y \spref x$.
+\end{proof}
+
+\begin{definition}[Price (quasi-)equilibrium with transfers]
+\label{def:pe_transfers}
+\lean{Econ.ExchangeEconomy.IsPriceEquilibriumWithTransfers, Econ.ExchangeEconomy.IsPriceQuasiEquilibriumWithTransfers}
+\leanok
+\uses{def:ge_notions}
+$(p, w, x)$ is a \emph{price equilibrium with transfers} (MWG Def.~16.B.4) if $x$ is feasible,
+$\sum_a w_a = p \cdot \bar\omega$, and every $y \ge 0$ with $y \spref_a x_a$ has $w_a < p \cdot y$. It is a
+\emph{quasi-equilibrium} (Def.~16.D.1) if instead $w_a \le p \cdot y$. MWG also asks $p \cdot x_a \le w_a$; under
+rational, locally nonsatiated preferences this follows (Theorem~\ref{thm:pe_cost_eq}).
+\end{definition}
+
+\begin{lemma}[Walrasian equilibrium as a special case]
+\label{lem:we_is_pe}
+\lean{Econ.ExchangeEconomy.IsWalrasianEquilibrium.isPriceEquilibriumWithTransfers, Econ.ExchangeEconomy.IsPriceEquilibriumWithTransfers.quasi}
+\leanok
+\uses{def:pe_transfers, lem:cost_gt_demand, lem:cost_sum}
+A Walrasian equilibrium $(p, x)$ is a price equilibrium with transfers $w_a = p \cdot \omega_a$. Every price
+equilibrium with transfers is a quasi-equilibrium.
+\end{lemma}
+\begin{proof}
+\leanok
+Feasibility is Lemma~\ref{lem:ge_basic}; $\sum_a p \cdot \omega_a = p \cdot \bar\omega$ by Lemma~\ref{lem:cost_sum};
+the strict-cost condition is Lemma~\ref{lem:cost_gt_demand}. The second claim weakens $<$ to $\le$.
+\end{proof}
+
+\begin{lemma}[Lemma 16.C.1 with transfers]
+\label{lem:pe_cost_ge}
+\lean{Econ.ExchangeEconomy.IsPriceEquilibriumWithTransfers.cost_ge}
+\leanok
+\uses{def:pe_transfers, lem:exists_better_affordable}
+In a price equilibrium with transfers with rational, locally nonsatiated preferences, $y \ge 0$ and $y \pref_a x_a$
+imply $w_a \le p \cdot y$.
+\end{lemma}
+\begin{proof}
+\leanok
+If $p \cdot y < w_a$, Lemma~\ref{lem:exists_better_affordable} gives $z \ge 0$ with $p \cdot z \le w_a$ and
+$z \spref_a y$. Then $z \spref_a x_a$ by transitivity, so $w_a < p \cdot z \le w_a$.
+\end{proof}
+
+\begin{theorem}[First Welfare Theorem with transfers, MWG Prop.~16.C.1]
+\label{thm:first_welfare_transfers}
+\lean{Econ.ExchangeEconomy.IsPriceEquilibriumWithTransfers.paretoOptimal}
+\leanok
+\uses{lem:pe_cost_ge, lem:cost_sum}
+With rational, locally nonsatiated preferences, every price equilibrium with transfers is Pareto optimal.
+\end{theorem}
+\begin{proof}
+\leanok
+As in Theorem~\ref{thm:first_welfare}: if a feasible $y$ dominates $x$ with $y_b \spref_b x_b$, then
+$w_a \le p \cdot y_a$ for all $a$ (Lemma~\ref{lem:pe_cost_ge}) and $w_b < p \cdot y_b$, so
+$\sum_a w_a < \sum_a p \cdot y_a$. Both sums equal $p \cdot \bar\omega$ (by the transfer condition and by
+Lemma~\ref{lem:cost_sum} with $\sum_a y_a = \bar\omega$).
+\end{proof}
+
+\begin{theorem}[Consumers spend exactly their wealth]
+\label{thm:pe_cost_eq}
+\lean{Econ.ExchangeEconomy.IsPriceEquilibriumWithTransfers.cost_eq}
+\leanok
+\uses{lem:pe_cost_ge, lem:cost_sum}
+Under the same hypotheses, $p \cdot x_a = w_a$ for every $a$.
+\end{theorem}
+\begin{proof}
+\leanok
+Lemma~\ref{lem:pe_cost_ge} with $y = x_b$ (reflexivity) gives $w_b \le p \cdot x_b$ for each $b$. The totals agree:
+$\sum_b p \cdot x_b = p \cdot \bar\omega = \sum_b w_b$. So the nonnegative terms $p \cdot x_b - w_b$ sum to $0$, hence
+each is $0$ (\texttt{Finset.sum\_eq\_zero\_iff\_of\_nonneg}).
+\end{proof}
+
+\begin{theorem}[Second Welfare Theorem, MWG Prop.~16.D.1]
+\label{thm:second_welfare}
+\lean{Econ.ExchangeEconomy.second_welfare_theorem}
+\leanok
+\uses{def:pe_transfers, lem:strictUpper, thm:price_support, lem:cost_sum}
+Let $\iota$ be nonempty and every $\pref_a$ rational, convex and locally nonsatiated. For every Pareto optimal $x$
+there is $p \neq 0$ such that $(p, w, x)$ with $w_a = p \cdot x_a$ is a price quasi-equilibrium with transfers.
+\end{theorem}
+\begin{proof}
+\leanok
+For any $p$, $\sum_a p \cdot x_a = p \cdot \bar\omega$ by Lemma~\ref{lem:cost_sum} and feasibility. If there are no
+consumers, $p = (1, \dots, 1)$ works vacuously. Otherwise fix a consumer $a_0$.
+
+Let $V_a = \{y \ge 0 : y \spref_a x_a\}$ and $V = \{\sum_a y_a : y_a \in V_a \text{ for all } a\}$. $V$ is convex: a mix
+of two sums is the sum of the mixes, and each $V_a$ is convex (Lemma~\ref{lem:strictUpper}(ii)). $\bar\omega \notin V$:
+if $\bar\omega = \sum_a y_a$ with $y_a \in V_a$, then $y$ is feasible and makes everyone, in particular $a_0$, strictly
+better off, so it Pareto dominates $x$. Hence $\bar\omega \notin \operatorname{int} V$, and
+Theorem~\ref{thm:price_support} gives $p \neq 0$ with $p \cdot \bar\omega \le p \cdot v$ for all $v \in V$.
+
+Now fix $a$ and $y \ge 0$ with $y \spref_a x_a$; we show $p \cdot x_a \le p \cdot y$. Let
+$g(y') = \sum_b p \cdot y'_b$, continuous in the allocation $y'$. Let $T$ be the set of allocations $y'$ with $y'_a = y$
+and $y'_b \in V_b$ for $b \neq a$. Every $y' \in T$ has $\sum_b y'_b \in V$, so
+$p \cdot \bar\omega \le g(y')$ (using Lemma~\ref{lem:cost_sum}). The allocation $x[a \mapsto y]$ lies in the closure of
+$T$: $T$ is a product, its closure is the product of closures (\texttt{closure\_pi\_set}), and each $x_b$ is in the
+closure of $V_b$ by Lemma~\ref{lem:strictUpper}(iii). The set $\{y' : p \cdot \bar\omega \le g(y')\}$ is closed, so
+$p \cdot \bar\omega \le g(x[a \mapsto y]) = p \cdot y + \sum_{b \neq a} p \cdot x_b$. Since
+$p \cdot \bar\omega = p \cdot x_a + \sum_{b \neq a} p \cdot x_b$, this gives $p \cdot x_a \le p \cdot y$.
+\end{proof}
+
+\begin{lemma}[Cheaper-point lemma, MWG Prop.~16.D.2]
+\label{lem:cheaper_point}
+\lean{Econ.ExchangeEconomy.cost_gt_of_cheaper_point}
+\leanok
+\uses{def:continuousPref, lem:P_iff_not, lem:cost_props}
+Let $\pref$ be rational and continuous, $x, z \ge 0$, $p \cdot z < w$, and suppose every $y \ge 0$ with $y \spref x$
+has $w \le p \cdot y$. Then every such $y$ has $w < p \cdot y$.
+\end{lemma}
+\begin{proof}
+\leanok
+Suppose $y \ge 0$, $y \spref x$ and $p \cdot y \le w$. The lower contour set $L = \{v \ge 0 : x \pref v\}$ is closed and
+$y \notin L$. The path $t \mapsto y + t(z - y)$ is continuous, so it stays outside $L$ for $|t| < \varepsilon$. Take
+$t = \min(\varepsilon/2, 1) \in (0, 1]$ and $v = (1 - t) y + t z \ge 0$. Then $v \notin L$, so by completeness
+$v \spref x$ (Lemma~\ref{lem:P_iff_not}), hence $w \le p \cdot v$. But
+$p \cdot v = (1 - t)\, p \cdot y + t\, p \cdot z < w$ since $p \cdot y \le w$, $p \cdot z < w$ and $t > 0$.
+\end{proof}
+
+\begin{theorem}[Quasi-equilibrium implies equilibrium]
+\label{thm:quasi_to_eq}
+\lean{Econ.ExchangeEconomy.IsPriceQuasiEquilibriumWithTransfers.isPriceEquilibriumWithTransfers, Econ.ExchangeEconomy.IsPriceEquilibriumWithTransfers.mem_demand}
+\leanok
+\uses{lem:cheaper_point, def:pe_transfers}
+If preferences are rational and continuous and each consumer has a cheaper point ($z \ge 0$ with $p \cdot z < w_a$),
+a price quasi-equilibrium with transfers is a price equilibrium with transfers. If moreover $w_a = p \cdot x_a$, each
+$x_a$ is in $a$'s demand at $(p, p \cdot x_a)$.
+\end{theorem}
+\begin{proof}
+\leanok
+The first claim applies Lemma~\ref{lem:cheaper_point} to each consumer. For the second, $x_a \ge 0$ costs exactly
+$p \cdot x_a$, so it is affordable. If an affordable $y$ had $x_a \pref_a y$ fail, completeness gives $y \spref_a x_a$,
+so $p \cdot x_a < p \cdot y \le p \cdot x_a$.
+\end{proof}
+
+\begin{lemma}[Supporting prices are nonnegative]
+\label{lem:price_nonneg}
+\lean{Econ.ExchangeEconomy.IsPriceQuasiEquilibriumWithTransfers.price_nonneg}
+\leanok
+\uses{def:pe_transfers, def:stronglyMonotone}
+With at least one consumer and strongly monotone preferences, if $(p, (p \cdot x_a)_a, x)$ is a quasi-equilibrium
+then $p \ge 0$.
+\end{lemma}
+\begin{proof}
+\leanok
+Suppose $p_i < 0$ and pick a consumer $a$. Let $y = x_a + e_i$. Then $y \ge x_a$, $y \neq x_a$, so $y \spref_a x_a$ by
+strong monotonicity and $p \cdot x_a \le p \cdot y$. But $p \cdot y = p \cdot x_a + p_i < p \cdot x_a$.
+\end{proof}
+
+\begin{theorem}[Second Welfare Theorem, textbook form]
+\label{thm:second_welfare_demand}
+\lean{Econ.ExchangeEconomy.second_welfare_theorem_demand}
+\leanok
+\uses{thm:second_welfare, lem:price_nonneg, thm:quasi_to_eq, thm:mono_lns}
+Let $\iota$ and $\alpha$ be nonempty, preferences rational, strongly monotone, continuous and convex, and $x$ Pareto
+optimal with $x_a \gg 0$ for all $a$. Then there is $p \neq 0$, $p \ge 0$, such that $(p, (p \cdot x_a)_a, x)$ is a
+price equilibrium with transfers and every $x_a$ is in $a$'s demand at $(p, p \cdot x_a)$.
+\end{theorem}
+\begin{proof}
+\leanok
+Strong monotonicity implies local nonsatiation (Theorem~\ref{thm:mono_lns}), so Theorem~\ref{thm:second_welfare} gives
+$p \neq 0$ and a quasi-equilibrium. $p \ge 0$ by Lemma~\ref{lem:price_nonneg}. The zero bundle is a cheaper point: some
+$p_i > 0$ (as $p \ge 0$, $p \neq 0$), so $p \cdot x_a \ge p_i x_{a,i} > 0 = p \cdot 0$. Theorem~\ref{thm:quasi_to_eq}
+upgrades to an equilibrium and gives the demand statement.
+\end{proof}
+
+\section{Existence of equilibrium}
+\label{sec:ge_existence}
+
+Mathlib does not yet have Brouwer's fixed point theorem. It is stated as a hypothesis, so every theorem using it is
+explicit about it, and it is proved outright for two goods.
+
+\begin{definition}[Price simplex, Brouwer property]
+\label{def:priceSimplex}
+\lean{Econ.priceSimplex, Econ.le_one_of_mem_priceSimplex, Econ.BrouwerSimplex}
+\leanok
+$\Delta = \{p \ge 0 : \sum_i p_i = 1\}$; every $p \in \Delta$ has $p_i \le 1$. \texttt{BrouwerSimplex} is the statement
+that every continuous $f : \Delta \to \Delta$ has a fixed point.
+\end{definition}
+
+\begin{theorem}[Brouwer for two goods]
+\label{thm:brouwer_two}
+\lean{Econ.brouwerSimplex_fin_two}
+\leanok
+\uses{def:priceSimplex}
+Every continuous self-map of the simplex in $\R^2$ has a fixed point.
+\end{theorem}
+\begin{proof}
+\leanok
+Parametrize $\Delta$ by $\gamma(t) = (t, 1 - t)$, $t \in [0, 1]$. Let $h(t) = f(\gamma(t))_0 - t$, continuous on
+$[0, 1]$. $h(0) = f(\gamma(0))_0 \ge 0$ and $h(1) = f(\gamma(1))_0 - 1 \le 0$ since coordinates in $\Delta$ are at most
+$1$. The intermediate value theorem gives $t$ with $h(t) = 0$, so $f(\gamma(t))_0 = t$. Both $f(\gamma(t))$ and
+$\gamma(t)$ sum to $1$, so the second coordinates also agree.
+\end{proof}
+
+\begin{theorem}[Gale--Nikaido--Debreu lemma]
+\label{thm:gnd}
+\lean{Econ.gale_nikaido_debreu}
+\leanok
+\uses{def:priceSimplex, def:cost}
+Assume Brouwer. If $z$ is continuous on $\Delta$ and $p \cdot z(p) \le 0$ on $\Delta$, then $z(p) \le 0$ for some
+$p \in \Delta$.
+\end{theorem}
+\begin{proof}
+\leanok
+Let $m_i(p) = \max(z_i(p), 0) \ge 0$, $S(p) = \sum_i m_i(p) \ge 0$, and
+$f(p)_i = (p_i + m_i(p))/(1 + S(p))$. $f$ is continuous on $\Delta$ (the denominator is positive) and maps $\Delta$ into
+$\Delta$: entries are $\ge 0$ and sum to $(1 + S)/(1 + S) = 1$. Brouwer gives a fixed point $p$, so
+$m_i = p_i S$ for every $i$. Since $z_i m_i = m_i^2$ (check $z_i \le 0$ and $z_i \ge 0$ separately),
+\[
+\textstyle\sum_i m_i^2 = \sum_i z_i m_i = S \sum_i p_i z_i = S\, (p \cdot z(p)) \le 0.
+\]
+So every $m_i^2 = 0$, i.e.\ $\max(z_i, 0) = 0$, i.e.\ $z_i(p) \le 0$.
+\end{proof}
+
+\begin{lemma}[Goods in excess supply are free]
+\label{lem:price_zero_excess}
+\lean{Econ.price_eq_zero_of_excess_supply}
+\leanok
+\uses{def:cost}
+If $p \ge 0$, $e \le 0$, $p \cdot e = 0$ and $e_i < 0$, then $p_i = 0$.
+\end{lemma}
+\begin{proof}
+\leanok
+Each term $p_j e_j \le 0$ and they sum to $0$, so each is $0$; $p_i e_i = 0$ with $e_i \neq 0$ gives $p_i = 0$.
+\end{proof}
+
+\begin{definition}[Demand selection, excess demand, free-disposal equilibrium]
+\label{def:excessDemand}
+\lean{Econ.ExchangeEconomy.IsDemandSelection, Econ.ExchangeEconomy.excessDemand, Econ.ExchangeEconomy.IsFreeDisposalEquilibrium}
+\leanok
+\uses{def:ge_notions}
+A demand selection on $D$ picks $d_a(p)$ in $a$'s demand at $(p, p \cdot \omega_a)$ for $p \in D$. Excess demand is
+$z(p) = \sum_a d_a(p) - \bar\omega$. $(p, x)$ is a free-disposal equilibrium if $p \ge 0$, each $x_a$ is demanded,
+$\sum_a x_a \le \bar\omega$, and $p_i = 0$ for every good in excess supply.
+\end{definition}
+
+\begin{lemma}[Aggregate Walras' law and its consequences]
+\label{lem:agg_walras}
+\lean{Econ.ExchangeEconomy.cost_excessDemand, Econ.ExchangeEconomy.isWalrasianEquilibrium_of_excessDemand_eq_zero, Econ.ExchangeEconomy.IsFreeDisposalEquilibrium.isWalrasianEquilibrium}
+\leanok
+\uses{def:excessDemand, thm:walras_law, lem:cost_sum}
+(i) With locally nonsatiated consumers, $p \cdot z(p) = 0$ on $D$. (ii) If $z(p) = 0$, $(p, d(p))$ is a Walrasian
+equilibrium. (iii) A free-disposal equilibrium with $p \gg 0$ is a Walrasian equilibrium.
+\end{lemma}
+\begin{proof}
+\leanok
+(i) Expand $p \cdot z(p) = \sum_a p \cdot d_a(p) - \sum_a p \cdot \omega_a$ (Lemma~\ref{lem:cost_sum}); each consumer
+spends exactly their wealth by Walras' law (Theorem~\ref{thm:walras_law}). (ii) is the definition. (iii) For each $i$,
+either $(\sum_a x_a)_i < \bar\omega_i$, which would force $p_i = 0$, impossible, or equality holds.
+\end{proof}
+
+\begin{theorem}[Existence of a free-disposal equilibrium]
+\label{thm:ge_existence}
+\lean{Econ.ExchangeEconomy.exists_freeDisposalEquilibrium, Econ.ExchangeEconomy.exists_freeDisposalEquilibrium_two_goods}
+\leanok
+\uses{thm:gnd, lem:agg_walras, lem:price_zero_excess, thm:brouwer_two}
+Assume Brouwer, locally nonsatiated consumers, and a demand selection defined and continuous on all of $\Delta$. Then a
+free-disposal equilibrium exists. For two goods the Brouwer hypothesis is not needed.
+\end{theorem}
+\begin{proof}
+\leanok
+$z$ is continuous on $\Delta$ (a finite sum of continuous maps minus a constant), and $p \cdot z(p) = 0 \le 0$ by
+Lemma~\ref{lem:agg_walras}. Theorem~\ref{thm:gnd} gives $p \in \Delta$ with $z(p) \le 0$, i.e.\
+$\sum_a d_a(p) \le \bar\omega$. If $(\sum_a d_a(p))_i < \bar\omega_i$ then $z_i(p) < 0$, and
+Lemma~\ref{lem:price_zero_excess} gives $p_i = 0$. For two goods use Theorem~\ref{thm:brouwer_two}.
+\end{proof}
+
+\begin{remark}[Scope]
+The demand selection must exist at boundary prices where some good is free. Strongly monotone consumers (e.g.\
+Cobb--Douglas) have no demand there, so this does not yet cover MWG Prop.~17.C.1; that needs a boundary or truncation
+argument. Continuity of the selection is assumed rather than derived from Berge's theorem.
+\end{remark}
+
+\section{Worked examples}
+\label{sec:ge_examples}
+
+These examples satisfy every hypothesis of the headline theorems, which shows the hypotheses are not contradictory.
+
+\begin{theorem}[Perfect substitutes]
+\label{thm:ge_lin_example}
+\lean{Econ.GEExamples.endow₂, Econ.GEExamples.endow₂_nonneg, Econ.GEExamples.endow₂_pos, Econ.GEExamples.uLin, Econ.GEExamples.linEconomy, Econ.GEExamples.pOne, Econ.GEExamples.cost_pOne, Econ.GEExamples.continuous_uLin, Econ.GEExamples.rational_lin, Econ.GEExamples.stronglyMonotone_lin, Econ.GEExamples.lns_lin, Econ.GEExamples.continuousPref_lin, Econ.GEExamples.convexPref_lin, Econ.GEExamples.linEconomy_eq, Econ.GEExamples.linEconomy_paretoOptimal}
+\leanok
+\uses{thm:first_welfare, thm:eq_in_core, thm:second_welfare_demand, lem:strictUpper}
+Two consumers with $u(x) = x_0 + x_1$ and endowments $(1, 2)$, $(2, 1)$. Preferences are rational, strongly monotone,
+continuous and convex. At $p = (1, 1)$ the endowment allocation is a Walrasian equilibrium, so it is Pareto optimal and
+in the core, and the textbook Second Welfare Theorem applies to it.
+\end{theorem}
+\begin{proof}
+\leanok
+At $p = (1, 1)$, $p \cdot y = u(y)$. So every affordable $y$ has $u(y) = p \cdot y \le p \cdot \omega_a = u(\omega_a)$,
+and $\omega_a$ is on the budget line. Strong monotonicity: if $x \le y$, $x \neq y$, then $u(x) < u(y)$ (otherwise
+both coordinates agree). Convexity: $u$ is linear, so $u(s y_1 + t y_2) = s u(y_1) + t u(y_2) \ge u(x)$. Continuity by
+Lemma~\ref{lem:strictUpper}(i). Then apply Theorems~\ref{thm:first_welfare}, \ref{thm:eq_in_core}
+and~\ref{thm:second_welfare_demand}.
+\end{proof}
+
+\begin{theorem}[Different tastes]
+\label{thm:ge_asym_example}
+\lean{Econ.GEExamples.wt, Econ.GEExamples.uAsym, Econ.GEExamples.asymEconomy, Econ.GEExamples.xStar, Econ.GEExamples.rational_asym, Econ.GEExamples.stronglyMonotone_asym, Econ.GEExamples.lns_asym, Econ.GEExamples.asymEconomy_eq, Econ.GEExamples.asymEconomy_paretoOptimal, Econ.GEExamples.not_paretoOptimal_endow}
+\leanok
+\uses{thm:first_welfare}
+With $u_0 = 2x_0 + x_1$, $u_1 = x_0 + 2x_1$ and the same endowments, $x^* = ((3, 0), (0, 3))$ at $p = (1, 1)$ is a
+Walrasian equilibrium, hence Pareto optimal, while the endowment allocation is not Pareto optimal.
+\end{theorem}
+\begin{proof}
+\leanok
+Each consumer has wealth $3$. An affordable $y \ge 0$ has $y_0 + y_1 \le 3$, so $u_a(y) \le 2(y_0 + y_1) \le 6 = u_a(x^*_a)$;
+$x^*$ clears markets. Theorem~\ref{thm:first_welfare} gives Pareto optimality. $x^*$ dominates the endowment:
+utilities rise from $4$ to $6$ for both.
+\end{proof}
+
+\begin{theorem}[A blocked allocation]
+\label{thm:ge_blocked_example}
+\lean{Econ.GEExamples.allToZero, Econ.GEExamples.not_inCore_allToZero}
+\leanok
+\uses{def:ge_notions, thm:ge_lin_example}
+In the perfect-substitutes economy, giving everything to consumer 0 is not in the core.
+\end{theorem}
+\begin{proof}
+\leanok
+Consumer 1 alone blocks by keeping $\omega_1$: $u(0) = 0 < 3 = u(\omega_1)$.
+\end{proof}
+
+\begin{theorem}[Leontief existence witness]
+\label{thm:ge_leon_example}
+\lean{Econ.GEExamples.uLeon, Econ.GEExamples.leonEconomy, Econ.GEExamples.lns_leon, Econ.GEExamples.dLeon, Econ.GEExamples.dLeon_demand, Econ.GEExamples.dLeon_continuous}
+\leanok
+\uses{thm:ge_existence}
+With $u(x) = \min(x_0, x_1)$ and the same endowments, preferences are locally nonsatiated, and $d_a(p) = (w, w)$ with
+$w = p \cdot \omega_a$ is a demand selection continuous on all of $\Delta$, so the two-good existence theorem applies.
+\end{theorem}
+\begin{proof}
+\leanok
+Local nonsatiation: add $\varepsilon/2$ to both goods; this is within $\varepsilon$ and raises $u$ by $\varepsilon/2$.
+Demand: $p \cdot (w, w) = w(p_0 + p_1) = w$. For affordable $y$, $u(y) \le y_0, y_1$, so
+$u(y) = (p_0 + p_1) u(y) \le p_0 y_0 + p_1 y_1 \le w = u(w, w)$. Continuity: $w$ is linear in $p$.
+\end{proof}

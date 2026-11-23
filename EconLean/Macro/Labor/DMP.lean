@@ -40,7 +40,9 @@ matching function with respect to unemployment, `β = η`.**
 empirical case; Hosios's general condition is `β = −θ q'(θ)/q(θ)`, which is
 `η` here); efficiency is evaluated with the steady-state (`r → 0`) welfare
 criterion, as in Pissarides §8.1, so `hosios` compares it with the `r = 0`
-equilibrium. The flow dynamics are in discrete time.
+equilibrium. The flow dynamics are in discrete time. The Hosios condition with
+discounting (`r > 0`) and a present-value planner is proved in
+`Macro/Labor/HosiosDiscounted.lean`.
 -/
 module
 

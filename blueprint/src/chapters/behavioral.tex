@@ -1,0 +1,312 @@
+% Lean: EconLean/Behavioral/{PresentBias,RankDependent,ReferenceDependence,Temptation,Logit,RationalInattention,Ambiguity}.lean
+\chapter{Behavioral Decision Theory}
+\label{chap:behavioral}
+
+Sources: Laibson (1997); O'Donoghue--Rabin (1999); Strotz (1956); Quiggin (1982); Kahneman--Tversky (1979);
+Tversky--Kahneman (1992); MWG \S6.D; K\H{o}szegi--Rabin (2006, 2007); Gul--Pesendorfer (2001);
+Anderson--de Palma--Thisse (1988); Sims (2003); Mat\v{e}jka--McKay (2015); Ellsberg (1961);
+Gilboa--Schmeidler (1989). Review record: \texttt{Audit/REVIEW-behavioral.md}.
+
+\section{Present bias}
+\label{sec:beh-present-bias}
+
+\begin{definition}[Quasi-hyperbolic discounting]
+\label{def:beh-discount}
+\lean{Econ.PresentBias.discount, Econ.PresentBias.presentValue, Econ.PresentBias.PreferenceReversal}
+\leanok
+Self $t$ weights a payoff $k$ periods ahead by $D(0)=1$, $D(k)=\beta\delta^k$ ($k\ge1$). A \emph{preference
+reversal} between $a$ at date $s>0$ and $b$ at $s+1$: from date $0$, $b$ at $s+1$ is strictly preferred; at date
+$s$, $a$ now is strictly preferred.
+\end{definition}
+
+\begin{theorem}[Exponential discounting is time consistent]
+\label{thm:beh-exp-consistent}
+\lean{Econ.PresentBias.exponential_timeConsistent, Econ.PresentBias.not_preferenceReversal_of_beta_one}
+\leanok
+\uses{def:beh-discount}
+With $\beta=1$, $\delta>0$ and $t\le t'\le s,s'$, self $t$ and self $t'$ rank dated rewards identically; in
+particular there are no reversals.
+\end{theorem}
+\begin{proof}
+\leanok
+$\delta^{s-t}=\delta^{t'-t}\delta^{s-t'}$; dividing both sides by $\delta^{t'-t}>0$ preserves strict inequality.
+\end{proof}
+
+\begin{theorem}[Reversals iff present bias]
+\label{thm:beh-reversal-iff}
+\lean{Econ.PresentBias.exists_preferenceReversal_iff}
+\leanok
+\uses{def:beh-discount}
+For $\beta,\delta>0$, positive rewards exhibiting a reversal exist iff $\beta<1$.
+\end{theorem}
+\begin{proof}
+\leanok
+A reversal means $\beta\delta b<a<\delta b$. If $\beta\ge1$ and $b>0$ this is impossible. If $\beta<1$ take $b=1$,
+$a=\delta(1+\beta)/2$, $s=1$.
+\end{proof}
+
+\begin{definition}[O'Donoghue--Rabin task]
+\label{def:beh-task}
+\lean{Econ.PresentBias.Task, Econ.PresentBias.Task.U, Econ.PresentBias.Task.NaiveDoes, Econ.PresentBias.Task.naiveDate, Econ.PresentBias.Task.tcDate, Econ.PresentBias.Task.sophFrom, Econ.PresentBias.Task.sophDate}
+\leanok
+A task is done once in periods $1,\dots,T$; doing it at $\tau$ yields reward $v_\tau$ and cost $c_\tau$, $\delta=1$.
+Self $t$ values doing it now at $\beta v_t-c_t$ (immediate costs) or $v_t-\beta c_t$ (immediate rewards), and at
+$\tau>t$ at $\beta(v_\tau-c_\tau)$. A naif does it at $t$ iff $t=T$ or now is weakly better than every later date;
+$\tau_n$ is the first such $t$ and $\tau_{tc}$ is $\tau_n$ with $\beta=1$. A sophisticate's date is computed by
+backward induction from $T$ (doing it when indifferent); $\tau_s$ is its value from period $1$.
+\end{definition}
+
+\begin{theorem}[Sophisticates finish no later than naifs]
+\label{thm:beh-soph-le-naive}
+\lean{Econ.PresentBias.Task.soph_le_naive}
+\leanok
+\uses{def:beh-task}
+For every task and every $\beta$, $\tau_s\le\tau_n$.
+\end{theorem}
+\begin{proof}
+\leanok
+At $t=\tau_n$ the naif prefers now to every later date, in particular to the sophisticate's continuation date,
+so the sophisticated plan from $t$ stops at $t$. By induction downward from $t$, the plan from period $1$ stops
+no later than $t$.
+\end{proof}
+
+\begin{theorem}[Naifs procrastinate with immediate costs, preproperate with immediate rewards]
+\label{thm:beh-naive-tc}
+\lean{Econ.PresentBias.Task.tc_le_naive_of_immediateCosts, Econ.PresentBias.Task.naive_le_tc_of_immediateRewards}
+\leanok
+\uses{def:beh-task}
+If costs are immediate, $c\ge0$ and $0<\beta\le1$, then $\tau_{tc}\le\tau_n$. If rewards are immediate, $v\ge0$ and
+$0\le\beta\le1$, then $\tau_n\le\tau_{tc}$.
+\end{theorem}
+\begin{proof}
+\leanok
+$\tau_{tc}$ is the earliest period whose net value $w=v-c$ is at least every later one. Immediate costs: if the
+naif acted at $t<\tau_{tc}$ there is $\tau>t$ with $w_\tau>w_t$, yet $\beta w_\tau\le\beta v_t-c_t\le\beta w_t$,
+contradicting $\beta>0$. Immediate rewards: at $\tau_{tc}$, $\beta w_\tau\le\beta w_{\tau_{tc}}\le v-\beta c$, so
+the naif acts there.
+\end{proof}
+
+\begin{theorem}[The paper's examples]
+\label{thm:beh-or-examples}
+\lean{Econ.PresentBias.Task.report_dates, Econ.PresentBias.Task.movie_dates}
+\leanok
+\uses{def:beh-task}
+With $\beta=1/2$, $T=4$ and values $3,5,8,13$: immediate costs give $(\tau_{tc},\tau_s,\tau_n)=(1,2,4)$;
+immediate rewards give $(4,1,3)$.
+\end{theorem}
+\begin{proof}
+\leanok
+Unfold the backward induction and the definition of the first naive date and compare numbers.
+\end{proof}
+
+\section{Rank-dependent utility and prospect theory}
+\label{sec:beh-rdu}
+
+\begin{definition}[Grid lotteries, FOSD, RDU, OPT, CPT]
+\label{def:beh-lottery}
+\lean{Econ.RankDependent.Lottery, Econ.RankDependent.G, Econ.RankDependent.F, Econ.RankDependent.eu, Econ.RankDependent.FOSD, Econ.RankDependent.rdu, Econ.RankDependent.opt, Econ.RankDependent.cpt}
+\leanok
+Outcomes are grid points $0<1<\dots<n$ (index order is the ranking). A lottery is a probability vector $p$ on the
+grid; $G_p(k)=\Pr(\ge k)$, $F_p(k)=\Pr(\le k)$. $p$ FOSD $q$ iff $G_q\le G_p$. RDU is
+$\sum_k[w(G_p(k))-w(G_p(k+1))]u_k$; OPT is $\sum_k\pi(p_k)v_k$; CPT with reference point $r$ is
+$\sum_{k>r}w^+(G_p(k))(v_k-v_{k-1})-\sum_{k<r}w^-(F_p(k))(v_{k+1}-v_k)$.
+\end{definition}
+
+\begin{theorem}[FOSD iff higher EU for all increasing $u$; MWG 6.D.1]
+\label{thm:beh-fosd-eu}
+\lean{Econ.RankDependent.fosd_iff_eu, Econ.RankDependent.eu_eq_layer}
+\leanok
+\uses{def:beh-lottery}
+\end{theorem}
+\begin{proof}
+\leanok
+Abel summation gives $E_pu=u_0+\sum_{k<n}G_p(k+1)(u_{k+1}-u_k)$, which is monotone in $G_p$. Conversely the
+indicator of $\{j\ge k\}$ has expectation $G_p(k)$.
+\end{proof}
+
+\begin{theorem}[RDU: Quiggin]
+\label{thm:beh-rdu}
+\lean{Econ.RankDependent.rdu_id, Econ.RankDependent.rdu_mono, Econ.RankDependent.rdu_strictMono, Econ.RankDependent.sum_decisionWeight}
+\leanok
+\uses{def:beh-lottery, thm:beh-fosd-eu}
+With $w=\mathrm{id}$, RDU is EU. With $w$ increasing, $w(0)=0$, $w(1)=1$, decision weights are nonnegative and sum
+to one, and RDU respects FOSD (strictly when $w,u$ are strictly increasing and dominance is strict somewhere).
+\end{theorem}
+\begin{proof}
+\leanok
+Abel summation puts RDU in layer form $u_0+\sum_{k<n}w(G_p(k+1))(u_{k+1}-u_k)$, monotone in each $G_p(k)$.
+\end{proof}
+
+\begin{theorem}[OPT violates FOSD]
+\label{thm:beh-opt}
+\lean{Econ.RankDependent.opt_violates_fosd}
+\leanok
+\uses{def:beh-lottery}
+If $\pi(0)=0$ and $\pi(a+b)<\pi(a)+\pi(b)$ for some $a,b>0$, $a+b\le1$, there are a strictly increasing $v$ on a
+four-point grid and lotteries $p$ FOSD $q$ with $\mathrm{OPT}(p)<\mathrm{OPT}(q)$.
+\end{theorem}
+\begin{proof}
+\leanok
+$p$ puts $a+b$ on the top outcome; $q$ splits it as $a$ and $b$ on two outcomes just below. With $v=(0,1,1+\varepsilon,1+2\varepsilon)$
+the OPT difference is at least $D-\varepsilon M>0$ for $D=\pi(a)+\pi(b)-\pi(a+b)$ and $\varepsilon=D/(2M)$.
+\end{proof}
+
+\begin{theorem}[CPT]
+\label{thm:beh-cpt}
+\lean{Econ.RankDependent.cpt_mono, Econ.RankDependent.cpt_id, Econ.RankDependent.cpt_zero_eq_rdu, Econ.RankDependent.cpt_rejects_fair_coin, Econ.RankDependent.tk_rejects_fair_coin}
+\leanok
+\uses{def:beh-lottery, thm:beh-rdu}
+CPT respects FOSD; without weighting and with $v_r=0$ it is $E_pv$; with no losses it is RDU; with loss aversion
+$v(-x)<-v(x)$ and $0<w^+(1/2)\le w^-(1/2)$ it rejects the fair coin $\pm x$, in particular for the TK (1992)
+value function with $\lambda>1$.
+\end{theorem}
+\begin{proof}
+\leanok
+Monotonicity term by term, using $F_p(k)=1-G_p(k+1)$. The EU identity splits the layer form at $r$ and
+telescopes the loss part. The fair coin's CPT value is $w^+(\tfrac12)v_2+w^-(\tfrac12)v_0<0$.
+\end{proof}
+
+\section{Reference-dependent preferences}
+\label{sec:beh-kr}
+
+\begin{definition}[K\H{o}szegi--Rabin utility and equilibria]
+\label{def:beh-kr}
+\lean{Econ.ReferenceDependence.u, Econ.ReferenceDependence.U, Econ.ReferenceDependence.IsPE, Econ.ReferenceDependence.IsPPE, Econ.ReferenceDependence.IsCPE, Econ.ReferenceDependence.IsPEDet, Econ.ReferenceDependence.μLin}
+\leanok
+$u(c\mid r)=\sum_k m_k(c_k)+\sum_k\mu(m_k(c_k)-m_k(r_k))$; $U(F\mid G)$ averages it. $F$ is a PE if no $F'\in D$ does
+better given expectation $F$; a PPE is a best PE; a CPE maximizes $U(F\mid F)$. Linear $\mu$: slope $\eta$ on gains,
+$\eta\lambda$ on losses.
+\end{definition}
+
+\begin{theorem}[Existence and multiplicity]
+\label{thm:beh-kr-exist}
+\lean{Econ.ReferenceDependence.exists_ppe, Econ.ReferenceDependence.exists_cpe, Econ.ReferenceDependence.isPEDet_of_isMax, Econ.ReferenceDependence.exists_ppeDet, Econ.ReferenceDependence.two_PE_example}
+\leanok
+\uses{def:beh-kr}
+On finite choice sets a PPE exists whenever a PE does and a CPE exists. In riskless choice with $\eta\ge0$,
+$\lambda\ge1$ the consumption-utility maximizer is a PE. PE need not be unique.
+\end{theorem}
+\begin{proof}
+\leanok
+Maxima over finite sets. For the riskless PE, $\mu(x)\le\eta x$ gives $u(c'\mid c)\le(1+\eta)m(c')-\eta m(c)\le m(c)$.
+\end{proof}
+
+\begin{theorem}[Endowment effect]
+\label{thm:beh-endowment}
+\lean{Econ.ReferenceDependence.sell_iff, Econ.ReferenceDependence.buy_iff, Econ.ReferenceDependence.endowment_effect, Econ.ReferenceDependence.keep_isPE_iff, Econ.ReferenceDependence.sell_isPE_iff}
+\leanok
+\uses{def:beh-kr}
+With the status quo as reference, $\mathrm{WTA}=v(1+\eta\lambda)/(1+\eta)$, $\mathrm{WTP}=v(1+\eta)/(1+\eta\lambda)$ and
+$\mathrm{WTP}<\mathrm{WTA}$ iff $\lambda>1$. With expectations as reference, keeping is a PE iff $p\le\mathrm{WTA}$
+and selling iff $p\ge v(1+\eta)/(1+\eta\lambda)$.
+\end{theorem}
+\begin{proof}
+\leanok
+Compute the two utilities in each comparison and solve the linear inequality in $p$.
+\end{proof}
+
+\section{Temptation}
+\label{sec:beh-gp}
+
+\begin{theorem}[Gul--Pesendorfer: set betweenness and commitment]
+\label{thm:beh-gp}
+\lean{Econ.Temptation.W, Econ.Temptation.setBetweenness, Econ.Temptation.commitment_strict, Econ.Temptation.W_pair_succumb, Econ.Temptation.W_le_max_u, Econ.Temptation.W_union_of_not_tempting}
+\leanok
+For $W(A)=\max_A(u+v)-\max_Av$: $W(A)\ge W(B)$ implies $W(A)\ge W(A\cup B)\ge W(B)$; a resisted temptation makes
+$\{x\}$ strictly better than $\{x,y\}$.
+\end{theorem}
+\begin{proof}
+\leanok
+$W(A\cup B)=\max(a,b)-\max(\alpha,\beta)$; check the four cases of which menu attains each maximum.
+\end{proof}
+
+\section{Logit and rational inattention}
+\label{sec:beh-ri}
+
+\begin{theorem}[Generalized logit solves the Gibbs problem]
+\label{thm:beh-gibbs}
+\lean{Econ.Logit.generalizedLogit_optimal, Econ.Logit.eq_generalizedLogit_of_optimal, Econ.Logit.objective_generalizedLogit, Econ.Logit.softmax_optimal}
+\leanok
+For $\lambda>0$ and $P>0$, $p\mapsto\sum p_iv_i-\lambda\,\mathrm{KL}(p\|P)$ is uniquely maximized by
+$p_i=P_ie^{v_i/\lambda}/\sum_jP_je^{v_j/\lambda}$, with value $\lambda\log\sum_jP_je^{v_j/\lambda}$.
+\end{theorem}
+\begin{proof}
+\leanok
+Term by term, $\log x\le x-1$ with $x=q_i/p_i$ gives $p_iv_i-\lambda p_i\log(p_i/P_i)\le\lambda(q_i-p_i)+\lambda p_i\log Z$,
+strictly unless $p_i=q_i$; sum over $i$.
+\end{proof}
+
+\begin{theorem}[Mutual information is the minimal average divergence]
+\label{thm:beh-mi}
+\lean{Econ.RationalInattention.avgKL_eq, Econ.RationalInattention.mutualInfo_le_avgKL, Econ.RationalInattention.kl_nonneg, Econ.RationalInattention.kl_eq_zero_iff, Econ.RationalInattention.marginal_isProb}
+\leanok
+\uses{thm:beh-gibbs}
+$\sum_\omega g_\omega\,\mathrm{KL}(p_\omega\|Q)=I(p)+\mathrm{KL}(P\|Q)\ge I(p)$, $P$ the marginal.
+\end{theorem}
+\begin{proof}
+\leanok
+State by state the difference is $\sum_ig_\omega p_{\omega i}(\log P_i-\log Q_i)$; swap sums. Gibbs' inequality
+is the Gibbs problem with $v=0$.
+\end{proof}
+
+\begin{lemma}[Gibbs problem with a vanishing default]
+\label{lem:beh-gibbs0}
+\lean{Econ.RationalInattention.gl_nonneg, Econ.RationalInattention.gl_eq_zero, Econ.RationalInattention.gl_isProb, Econ.RationalInattention.log_gl, Econ.RationalInattention.term_le0, Econ.RationalInattention.term_lt0, Econ.RationalInattention.objective_le0, Econ.RationalInattention.objective_gl0, Econ.RationalInattention.eq_gl_of_optimal0, Econ.RationalInattention.kl_nonneg0, Econ.RationalInattention.Z_pos_of_isProb}
+\leanok
+\uses{thm:beh-gibbs}
+For $\lambda>0$ and a probability default $P\ge0$ (zeros allowed), the generalized logit $q$ is a probability vector
+vanishing where $P$ does, and every $p\ll P$ satisfies $\sum p_iv_i-\lambda\,\mathrm{KL}(p\|P)\le\lambda\log Z$, with
+equality only at $p=q$. Gibbs' inequality $\mathrm{KL}(p\|q)\ge0$ holds whenever $p\ll q$.
+\end{lemma}
+\begin{proof}
+\leanok
+Terms with $P_i=0$ have $p_i=q_i=0$ and contribute $0$. On the others $\log q_i=\log P_i+v_i/\lambda-\log Z$ and
+$\log x\le x-1$ (strict for $x\ne1$) bounds each term as in Theorem~\ref{thm:beh-gibbs}. $Z>0$ because some $P_i>0$.
+\end{proof}
+
+\begin{theorem}[Mat\v{e}jka--McKay, Theorem 1]
+\label{thm:beh-mm}
+\lean{Econ.RationalInattention.optimal_is_generalizedLogit, Econ.RationalInattention.optimal_is_softmax_of_uniform, Econ.RationalInattention.sum_objective_eq, Econ.RationalInattention.rule_eq_zero_of_marginal_eq_zero}
+\leanok
+\uses{thm:beh-mi, thm:beh-gibbs, lem:beh-gibbs0}
+If $p$ maximizes $\sum_\omega g_\omega\sum_ip_{\omega i}v_{\omega i}-\lambda I(p)$ with marginal $P$
+(actions with $P_i=0$ allowed), then $p_{\omega i}=P_ie^{v_{\omega i}/\lambda}/\sum_jP_je^{v_{\omega j}/\lambda}$ in every state; with a
+uniform marginal this is the multinomial logit.
+\end{theorem}
+\begin{proof}
+\leanok
+Actions with $P_i=0$ have $p_{\omega i}=0$ in every state, so $p_\omega\ll P$. The Gibbs bound is redone
+for defaults that may vanish (with $p\ll P$, terms with $P_i=0$ are $0$ on both sides). Replace
+$p_{\omega_0}$ by the generalized logit for default $P$; its marginal still vanishes where $P$ does, so
+$\mathrm{KL}(P'\|P)\ge0$. The objective of $p$ equals the per-state Gibbs
+objectives with default $P$; that of the deviation is at least its per-state Gibbs objectives
+(Theorem~\ref{thm:beh-mi}). By uniqueness in the Gibbs problem the deviation is strictly better unless
+$p_{\omega_0}$ already is the generalized logit.
+\end{proof}
+
+\section{Ambiguity}
+\label{sec:beh-ambiguity}
+
+\begin{theorem}[Ellsberg]
+\label{thm:beh-ellsberg}
+\lean{Econ.Ambiguity.ellsberg_not_seu, Econ.Ambiguity.ellsberg_meu, Econ.Ambiguity.ellsbergPriors_nonempty}
+\leanok
+No weights $\pi$ on \{red, black, yellow\} rank the red bet above black and black-or-yellow above
+red-or-yellow. Maxmin EU with priors $(1/3,0,2/3)$ and $(1/3,2/3,0)$ does.
+\end{theorem}
+\begin{proof}
+\leanok
+The two strict inequalities say $\pi_R>\pi_B$ and $\pi_B>\pi_R$. The maxmin values are $1/3,0,1/3,2/3$.
+\end{proof}
+
+\begin{theorem}[Gilboa--Schmeidler axioms hold for maxmin EU]
+\label{thm:beh-gs}
+\lean{Econ.Ambiguity.meu, Econ.Ambiguity.meu_mono, Econ.Ambiguity.meu_mix_ge, Econ.Ambiguity.meu_mix_const, Econ.Ambiguity.meu_le_eu, Econ.Ambiguity.exists_eq_meu}
+\leanok
+$V(f)=\min_{\pi\in C}E_\pi f$ is monotone, concave under mixing (uncertainty aversion), and
+$V(\alpha f+(1-\alpha)c)=\alpha V(f)+(1-\alpha)c$ for constants $c$, $\alpha\ge0$.
+\end{theorem}
+\begin{proof}
+\leanok
+Each $E_\pi$ is linear; a minimum of linear functions is concave and commutes with adding constants.
+\end{proof}

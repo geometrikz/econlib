@@ -1,0 +1,115 @@
+% Lean: EconLean/GE/Production.lean
+\chapter{Production Economies and the Welfare Theorems}
+\label{chap:ge_production}
+
+Source: MWG \S16.B--16.D. A \emph{private ownership economy} adds firms $j$ with production sets
+$Y_j \subseteq \R^\iota$ to an exchange economy (Definition~\ref{def:exchange_economy}); consumer $a$ owns share
+$\theta_{aj} \ge 0$ of firm $j$, with $\sum_a \theta_{aj} = 1$.
+
+\begin{definition}[Private ownership economy; MWG \S16.B]
+\label{def:production_economy}
+\lean{Econ.ProductionEconomy, Econ.ProductionEconomy.ProfitMax, Econ.ProductionEconomy.wealth,
+  Econ.ProductionEconomy.Feasible, Econ.ProductionEconomy.ParetoOptimal,
+  Econ.ProductionEconomy.IsWalrasianEquilibrium,
+  Econ.ProductionEconomy.IsPriceQuasiEquilibriumWithTransfers,
+  Econ.ProductionEconomy.IsPriceEquilibriumWithTransfers}
+\leanok
+\uses{def:exchange_economy}
+$y$ \emph{maximizes profit} on $Y$ at $p$ if $y \in Y$ and $p \cdot y' \le p \cdot y$ for $y' \in Y$. Consumer $a$'s
+wealth is $p \cdot \omega_a + \sum_j \theta_{aj}\, p \cdot y_j$. $(x, y)$ is \emph{feasible} if $x_a \ge 0$,
+$y_j \in Y_j$ and $\sum_a x_a = \bar\omega + \sum_j y_j$; \emph{Pareto optimal} if feasible and no feasible $(x', y')$
+Pareto dominates $x$. $(p, x, y)$ is a \emph{Walrasian equilibrium} if every firm maximizes profit, every $x_a$ is
+demanded at that wealth, and markets clear. A \emph{price (quasi-)equilibrium with transfers} $(p, w, x, y)$ has
+$(x,y)$ feasible, firms maximizing profit, $\sum_a w_a = p \cdot (\bar\omega + \sum_j y_j)$, and every $z \ge 0$
+with $z \spref_a x_a$ costing more than (at least) $w_a$.
+\end{definition}
+
+\begin{lemma}[Total wealth]
+\label{lem:sum_wealth}
+\lean{Econ.ProductionEconomy.sum_wealth}
+\leanok
+\uses{def:production_economy, lem:cost_sum}
+$\sum_a \mathrm{wealth}_a(p, y) = p \cdot (\bar\omega + \sum_j y_j)$.
+\end{lemma}
+\begin{proof}
+\leanok
+Split the sum, use linearity of $p \cdot$ (Lemma~\ref{lem:cost_sum}), swap the order of summation
+(\texttt{Finset.sum\_comm}), and use $\sum_a \theta_{aj} = 1$.
+\end{proof}
+
+\begin{theorem}[First Welfare Theorem with production; MWG Prop.~16.C.1]
+\label{thm:first_welfare_production}
+\lean{Econ.ProductionEconomy.first_welfare_theorem}
+\leanok
+\uses{def:production_economy}
+If every $\pref_a$ is rational and locally nonsatiated, every Walrasian equilibrium allocation $(x, y)$ is Pareto
+optimal. No assumption on the production sets is needed.
+\end{theorem}
+\begin{proof}
+\leanok
+\uses{lem:cost_ge_demand, lem:cost_gt_demand, lem:sum_wealth}
+An equilibrium allocation is feasible. Suppose a feasible $(x', y')$ Pareto dominates $x$, with $b$ strictly better
+off. By Lemma~\ref{lem:cost_ge_demand} $p \cdot x'_a \ge \mathrm{wealth}_a$ for all $a$, and by
+Lemma~\ref{lem:cost_gt_demand} the inequality is strict for $b$ (\texttt{Finset.sum\_lt\_sum}). With
+Lemma~\ref{lem:sum_wealth}: $p \cdot (\bar\omega + \sum_j y_j) < \sum_a p \cdot x'_a = p\cdot(\bar\omega + \sum_j y'_j)$.
+Profit maximization gives $p \cdot y'_j \le p \cdot y_j$ for each $j$; summing, a contradiction.
+\end{proof}
+
+\begin{lemma}[Limit lemma]
+\label{lem:le_sum_cost_closure}
+\lean{Econ.ProductionEconomy.le_sum_cost_of_mem_closure, Econ.ProductionEconomy.sum_update_eq}
+\leanok
+If $c_0 \le \sum_a p \cdot y'_a$ whenever $y'_a \in s_a$ for all $a$, then $c_0 \le \sum_a p \cdot z_a$ whenever
+$z_a \in \overline{s_a}$ for all $a$. Also $\sum_b f(x[a \mapsto v]_b) = \sum_b f(x_b) - f(x_a) + f(v)$.
+\end{lemma}
+\begin{proof}
+\leanok
+The map $y' \mapsto \sum_a p \cdot y'_a$ is continuous, so $\{y' : c_0 \le \sum_a p\cdot y'_a\}$ is closed and contains
+the product $\prod_a s_a$; its closure is $\prod_a \overline{s_a}$ (\texttt{closure\_pi\_set}). The update identity is
+\texttt{Finset.sum\_update\_of_mem} with \texttt{Finset.add\_sum\_erase}.
+\end{proof}
+
+\begin{theorem}[Second Welfare Theorem with production; MWG Prop.~16.D.1]
+\label{thm:second_welfare_production}
+\lean{Econ.ProductionEconomy.second_welfare_theorem}
+\leanok
+\uses{def:production_economy}
+Let $\iota$ and the set of consumers be nonempty, every $\pref_a$ rational, convex and locally nonsatiated, and every
+$Y_j$ convex. For every Pareto optimal $(x, y)$ there is $p \neq 0$ such that $(p, w, x, y)$ with $w_a = p \cdot x_a$ is
+a price quasi-equilibrium with transfers (in particular every firm maximizes profit at $p$).
+\end{theorem}
+\begin{proof}
+\leanok
+\uses{lem:strictUpper, thm:price_support, lem:le_sum_cost_closure}
+Let $V_a = \{z \ge 0 : z \spref_a x_a\}$, $V = \{\sum_a x'_a : x'_a \in V_a\}$ and
+$Z = \{\bar\omega + \sum_j y'_j : y'_j \in Y_j\}$. Both are convex (Lemma~\ref{lem:strictUpper}(ii); convexity of $Y_j$),
+hence so is $V - Z$ (\texttt{Convex.sub}). $0 \notin V - Z$, since otherwise $(x', y')$ would be a feasible allocation
+making every consumer strictly better off, contradicting Pareto optimality (there is a consumer $a_0$). So
+$0 \notin \operatorname{int}(V - Z)$ and Theorem~\ref{thm:price_support} gives $p \neq 0$ with
+$p \cdot z \le p \cdot v$ for $v \in V$, $z \in Z$. By feasibility $\sum_a p \cdot x_a = p \cdot(\bar\omega + \sum_j y_j)$,
+which is the transfer condition.
+
+\emph{Firms.} Fix $j$ and $y' \in Y_j$. Then $\bar\omega + \sum_k y[j\mapsto y']_k \in Z$, so its value is
+$\le \sum_a p \cdot x'_a$ for all $x'$ with $x'_a \in V_a$; by Lemma~\ref{lem:le_sum_cost_closure} and
+$x_a \in \overline{V_a}$ (Lemma~\ref{lem:strictUpper}(iii)) it is $\le \sum_a p \cdot x_a = p\cdot(\bar\omega + \sum_k y_k)$.
+Expanding with the update identity gives $p \cdot y' \le p \cdot y_j$.
+
+\emph{Consumers.} Fix $a$ and $z \ge 0$ with $z \spref_a x_a$. Apply Lemma~\ref{lem:le_sum_cost_closure} with
+$s_a = \{z\}$ and $s_b = V_b$ for $b \ne a$, benchmark $\bar\omega + \sum_j y_j \in Z$, at the point $x[a \mapsto z]$:
+$\sum_b p\cdot x_b \le \sum_b p \cdot x_b - p\cdot x_a + p \cdot z$, i.e.\ $p\cdot x_a \le p \cdot z$.
+\end{proof}
+
+\begin{theorem}[Quasi-equilibrium to equilibrium with production; MWG Prop.~16.D.2]
+\label{thm:quasi_to_eq_production}
+\lean{Econ.ProductionEconomy.IsPriceQuasiEquilibriumWithTransfers.isPriceEquilibriumWithTransfers}
+\leanok
+\uses{def:production_economy, def:continuousPref}
+With rational, continuous preferences and a cheaper point $z \ge 0$, $p \cdot z < w_a$, for every consumer, a price
+quasi-equilibrium with transfers is a price equilibrium with transfers.
+\end{theorem}
+\begin{proof}
+\leanok
+\uses{lem:cheaper_point}
+Feasibility, profit maximization and the transfer condition carry over; the consumer condition is
+Lemma~\ref{lem:cheaper_point} applied to each consumer.
+\end{proof}

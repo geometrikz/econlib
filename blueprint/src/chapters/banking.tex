@@ -1,0 +1,126 @@
+% Lean: EconLean/Macro/Banking/DiamondDybvig.lean
+\chapter{Bank Runs}
+\label{chap:banking}
+
+Sources: Diamond--Dybvig (1983); Freixas--Rochet ch.~7. A fraction $\lambda \in (0,1)$ of depositors is impatient;
+the technology returns $R > 1$ at date 2 or $1$ if liquidated at date 1.
+
+\section{Optimal liquidity insurance}
+\label{sec:dd_insurance}
+
+\begin{lemma}[Tangent-line inequality]
+\label{lem:dd_le_tangent}
+\lean{Econ.DiamondDybvig.le_tangent}
+\leanok
+If $u$ is concave on $(0, \infty)$ and differentiable at $c > 0$ with derivative $d$, then
+$u(x) \le u(c) + d(x - c)$ for $x > 0$.
+\end{lemma}
+\begin{proof}
+\leanok
+For $x < c$ the chord slope on $[x, c]$ is $\ge d$; for $x > c$ the chord slope on $[c, x]$ is $\le d$; rearrange.
+\end{proof}
+
+\begin{theorem}[The first-order condition characterizes optimal risk sharing]
+\label{thm:dd_optimal_of_foc}
+\lean{Econ.DiamondDybvig.optimal_of_foc}
+\leanok
+\uses{lem:dd_le_tangent}
+Let $u$ be concave on $(0, \infty)$, differentiable at $c_1, c_2 > 0$ with $u'(c_1) = R u'(c_2) \ge 0$, and
+$\lambda c_1 + (1-\lambda)c_2/R = 1$. Then $(c_1, c_2)$ maximizes $\lambda u(x_1) + (1-\lambda) u(x_2)$ over positive
+$(x_1, x_2)$ with $\lambda x_1 + (1-\lambda)x_2/R \le 1$.
+\end{theorem}
+\begin{proof}
+\leanok
+Apply Lemma~\ref{lem:dd_le_tangent} at $c_1$ and $c_2$ and weight by $\lambda$, $1 - \lambda$. Using $u'(c_2) = u'(c_1)/R$,
+the linear terms sum to $u'(c_1)\,[(\lambda x_1 + (1-\lambda)x_2/R) - 1] \le 0$.
+\end{proof}
+
+\begin{definition}[CRRA utility and the optimum]
+\label{def:dd_crra}
+\lean{Econ.DiamondDybvig.crra, Econ.DiamondDybvig.hasDerivAt_crra, Econ.DiamondDybvig.concaveOn_crra, Econ.DiamondDybvig.c1star, Econ.DiamondDybvig.c2star}
+\leanok
+$u(c) = c^{1-\gamma}/(1-\gamma)$ for $\gamma \neq 1$, with $u'(c) = c^{-\gamma}$; it is concave on $(0, \infty)$ for $\gamma > 0$
+(its derivative is decreasing). Let $c_1^* = 1/(\lambda + (1-\lambda)R^{1/\gamma - 1})$ and $c_2^* = R^{1/\gamma} c_1^*$.
+\end{definition}
+
+\begin{theorem}[CRRA optimum provides liquidity insurance]
+\label{thm:dd_crra_optimum}
+\lean{Econ.DiamondDybvig.crra_optimum}
+\leanok
+\uses{def:dd_crra, thm:dd_optimal_of_foc}
+For $\gamma > 1$ and $R > 1$: $(c_1^*, c_2^*)$ exhausts the budget, $1 < c_1^* < c_2^*$, and it is optimal.
+\end{theorem}
+\begin{proof}
+\leanok
+Let $e = R^{1/\gamma - 1} \in (0, 1)$ (exponent negative, base $> 1$). Then $\lambda + (1-\lambda)e \in (0, 1)$, so
+$c_1^* > 1$. Since $R^{1/\gamma}/R = e$, the budget is $c_1^*(\lambda + (1-\lambda)e) = 1$. $R^{1/\gamma} > 1$ gives
+$c_2^* > c_1^*$. Optimality by Theorem~\ref{thm:dd_optimal_of_foc}: the FOC
+$c_1^{-\gamma} = R (R^{1/\gamma}c_1)^{-\gamma} = R \cdot R^{-1} c_1^{-\gamma}$ holds.
+\end{proof}
+
+\section{The demand-deposit game}
+\label{sec:dd_game}
+
+\begin{definition}[Bank and payoffs]
+\label{def:dd_bank}
+\lean{Econ.DiamondDybvig.Bank, Econ.DiamondDybvig.Bank.latePay, Econ.DiamondDybvig.Bank.WaitIsBest, Econ.DiamondDybvig.Bank.RunIsBest, Econ.DiamondDybvig.Bank.GoodEquilibrium, Econ.DiamondDybvig.Bank.RunEquilibrium}
+\leanok
+The bank promises $r_1 > 0$ at date 1. If a fraction $f < 1$ withdraws and $f r_1 < 1$, waiters get
+$\mathrm{latePay}(f) = R(1 - f r_1)/(1 - f)$. Waiting is a best response at $f$ if $f r_1 \le 1$ and (when $f < 1$)
+$r_1 \le \mathrm{latePay}(f)$. Running is a best response if $f r_1 > 1$, or $f < 1$ and $\mathrm{latePay}(f) \le r_1$.
+The good equilibrium is ``waiting is best at $f = \lambda$''; the run equilibrium is ``running is best at $f = 1$''.
+\end{definition}
+
+\begin{theorem}[Good equilibrium]
+\label{thm:dd_good_iff}
+\lean{Econ.DiamondDybvig.Bank.goodEquilibrium_iff}
+\leanok
+\uses{def:dd_bank}
+The good equilibrium exists iff $r_1(1 - \lambda + \lambda R) \le R$.
+\end{theorem}
+\begin{proof}
+\leanok
+$r_1 \le R(1 - \lambda r_1)/(1 - \lambda)$ is equivalent (multiply by $1 - \lambda > 0$) to $r_1(1 - \lambda + \lambda R) \le R$.
+Conversely this also implies $\lambda r_1 \le \lambda R/(1 - \lambda + \lambda R) < 1$.
+\end{proof}
+
+\begin{theorem}[Run equilibrium]
+\label{thm:dd_run_iff}
+\lean{Econ.DiamondDybvig.Bank.runEquilibrium_iff}
+\leanok
+\uses{def:dd_bank}
+The run equilibrium exists iff $r_1 > 1$.
+\end{theorem}
+\begin{proof}
+\leanok
+At $f = 1$ the clause $f < 1$ fails, so running is best iff $1 \cdot r_1 > 1$.
+\end{proof}
+
+\begin{theorem}[Multiple equilibria under the optimal contract]
+\label{thm:dd_multiple}
+\lean{Econ.DiamondDybvig.Bank.multiple_equilibria}
+\leanok
+\uses{thm:dd_crra_optimum, thm:dd_good_iff, thm:dd_run_iff}
+If $r_1 = c_1^*$ with $\gamma > 1$, both equilibria exist.
+\end{theorem}
+\begin{proof}
+\leanok
+$c_1^* > 1$ gives the run equilibrium. From the budget, $c_2^* = R(1 - \lambda c_1^*)/(1 - \lambda)$, and $c_1^* < c_2^*$
+rearranges to $c_1^*(1 - \lambda + \lambda R) < R$, giving the good equilibrium.
+\end{proof}
+
+\begin{theorem}[Suspension of convertibility eliminates runs]
+\label{thm:dd_suspension}
+\lean{Econ.DiamondDybvig.Bank.suspensionEarlyPay, Econ.DiamondDybvig.Bank.suspension_waiting_strictly_better}
+\leanok
+\uses{def:dd_bank}
+Under suspension, a would-be early withdrawer when a fraction $f \ge \lambda$ tries to withdraw gets
+$\frac{\lambda}{f} r_1 + (1 - \frac{\lambda}{f})\mathrm{latePay}(\lambda)$. If $r_1(1 - \lambda + \lambda R) < R$, this is
+strictly less than $\mathrm{latePay}(\lambda)$ for every $f \ge \lambda$.
+\end{theorem}
+\begin{proof}
+\leanok
+The hypothesis is equivalent to $r_1 < \mathrm{latePay}(\lambda)$. The early payoff is a mixture with positive weight
+$\lambda/f$ on $r_1$ and the rest on $\mathrm{latePay}(\lambda)$, hence strictly smaller. The Lean file also checks
+$c_1^* > 1$ for $\lambda = 1/2$, $R = 2$, $\gamma = 2$.
+\end{proof}

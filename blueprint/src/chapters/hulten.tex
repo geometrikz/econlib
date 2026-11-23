@@ -1,0 +1,138 @@
+% Lean: EconLean/Macro/Hulten.lean
+\chapter{Hulten's Theorem}
+\label{chap:hulten}
+
+Sources: Hulten (1978); Baqaee--Farhi (2019) \S2. In an efficient economy,
+$\partial \log Y / \partial \log A_i$ equals sector $i$'s Domar weight (sales over GDP). We prove it in two
+Cobb--Douglas economies with labour supply $1$. ``$\partial \log Y^*/\partial \log A_i$'' means the derivative
+at $t = 0$ of $t \mapsto \log Y^*$ with $A_i$ replaced by $A_i e^t$.
+
+\section{Horizontal economy}
+\label{sec:hulten_horizontal}
+
+\begin{definition}[Horizontal economy]
+\label{def:hulten_horizontal}
+\lean{Econ.Hulten.Horizontal, Econ.Hulten.Horizontal.output, Econ.Hulten.Horizontal.maxOutput, Econ.Hulten.Horizontal.output_a}
+\leanok
+Sectors $x_i = A_i l_i$ ($A_i > 0$) feed $Y = \prod_i x_i^{a_i}$ with $a_i > 0$, $\sum_i a_i = 1$. Let
+$Y^* = \prod_i (A_i a_i)^{a_i}$; the allocation $l = a$ produces $Y^*$.
+\end{definition}
+
+\begin{theorem}[Planner's problem]
+\label{thm:hulten_h_output_le}
+\lean{Econ.Hulten.Horizontal.output_le}
+\leanok
+\uses{def:hulten_horizontal}
+For $l \ge 0$ with $\sum_i l_i = 1$, $\mathrm{output}(l) \le Y^*$.
+\end{theorem}
+\begin{proof}
+\leanok
+Factor $(A_i l_i)^{a_i} = (A_i a_i)^{a_i} (l_i/a_i)^{a_i}$, so $\mathrm{output}(l) = Y^* \prod_i (l_i/a_i)^{a_i}$.
+By the weighted AM--GM inequality, $\prod_i (l_i/a_i)^{a_i} \le \sum_i a_i (l_i/a_i) = \sum_i l_i = 1$.
+\end{proof}
+
+\begin{definition}[Competitive equilibrium]
+\label{def:hulten_h_ce}
+\lean{Econ.Hulten.Horizontal.IsCE}
+\leanok
+\uses{def:hulten_horizontal}
+With the final good as numeraire: $w > 0$, $l \ge 0$, $\sum_i l_i = 1$; zero profit $p_i A_i = w$; Cobb--Douglas
+demand $p_i (A_i l_i) = a_i Y$; and $Y = \mathrm{output}(l)$.
+\end{definition}
+
+\begin{theorem}[Equilibrium is efficient; Domar weights]
+\label{thm:hulten_h_ce_eq}
+\lean{Econ.Hulten.Horizontal.ce_eq, Econ.Hulten.Horizontal.domar}
+\leanok
+\uses{def:hulten_h_ce}
+In any competitive equilibrium $l_i = a_i$, $Y = Y^*$, $w = Y$, and the Domar weight $p_i x_i / Y = a_i$.
+\end{theorem}
+\begin{proof}
+\leanok
+Combining zero profit and demand, $w l_i = a_i Y$. Summing over $i$, $w = Y$. Cancelling $w > 0$, $l_i = a_i$, so
+$Y = \mathrm{output}(a) = Y^*$. The Domar weight is $a_i Y / Y$ with $Y = Y^* > 0$.
+\end{proof}
+
+\begin{definition}[Shocked economy]
+\label{def:hulten_shock}
+\lean{Econ.Hulten.Horizontal.shock, Econ.Hulten.Horizontal.log_maxOutput}
+\leanok
+\uses{def:hulten_horizontal}
+$\mathrm{shock}(i, t)$ replaces $A_i$ by $A_i e^t$. Also $\log Y^* = \sum_j a_j \log(A_j a_j)$.
+\end{definition}
+
+\begin{theorem}[Hulten's theorem, horizontal economy]
+\label{thm:hulten_horizontal}
+\lean{Econ.Hulten.Horizontal.hulten_planner, Econ.Hulten.Horizontal.hulten}
+\leanok
+\uses{def:hulten_shock, thm:hulten_h_ce_eq}
+Given a competitive equilibrium, $t \mapsto \log Y^*(\mathrm{shock}(i, t))$ has derivative $p_i x_i / Y$ at $0$; and
+the same holds for $t \mapsto \log Y_t$ along any family of competitive equilibria of the shocked economies.
+\end{theorem}
+\begin{proof}
+\leanok
+By Definition~\ref{def:hulten_shock}, only the $i$-th term changes:
+$\log Y^*(\mathrm{shock}(i, t)) = \log Y^* + a_i t$, whose derivative is $a_i$, the Domar weight
+(Theorem~\ref{thm:hulten_h_ce_eq}). For equilibria, $Y_t = Y^*(\mathrm{shock}(i, t))$ by Theorem~\ref{thm:hulten_h_ce_eq}
+applied to each shocked economy.
+\end{proof}
+
+\section{Vertical economy}
+\label{sec:hulten_vertical}
+
+\begin{definition}[Vertical economy]
+\label{def:hulten_vertical}
+\lean{Econ.Hulten.Vertical, Econ.Hulten.Vertical.output, Econ.Hulten.Vertical.maxOutput, Econ.Hulten.Vertical.maxOutput_pos}
+\leanok
+Upstream $x_1 = A_1 l_1$ is an input downstream: $Y = A_2 (1 - l_1)^{1-\omega}(A_1 l_1)^\omega$ with $0 < \omega < 1$.
+$Y^* = \mathrm{output}(\omega) > 0$.
+\end{definition}
+
+\begin{theorem}[Planner's problem]
+\label{thm:hulten_v_output_le}
+\lean{Econ.Hulten.Vertical.output_le}
+\leanok
+\uses{def:hulten_vertical}
+For $0 \le l_1 \le 1$, $\mathrm{output}(l_1) \le Y^*$.
+\end{theorem}
+\begin{proof}
+\leanok
+$\mathrm{output}(l_1) = Y^* \cdot \big(\tfrac{1 - l_1}{1-\omega}\big)^{1-\omega}\big(\tfrac{l_1}{\omega}\big)^\omega$, and by
+two-term weighted AM--GM the product is at most $(1-\omega)\tfrac{1-l_1}{1-\omega} + \omega\tfrac{l_1}{\omega} = 1$.
+\end{proof}
+
+\begin{definition}[Competitive equilibrium]
+\label{def:hulten_v_ce}
+\lean{Econ.Hulten.Vertical.IsCE}
+\leanok
+\uses{def:hulten_vertical}
+$w > 0$, $0 \le l_1 \le 1$, $p_1 A_1 = w$, $p_1 A_1 l_1 = \omega Y$, $w(1 - l_1) = (1-\omega) Y$, $Y = \mathrm{output}(l_1)$.
+\end{definition}
+
+\begin{theorem}[Equilibrium is efficient; Domar weights sum above one]
+\label{thm:hulten_v_ce_eq}
+\lean{Econ.Hulten.Vertical.ce_eq, Econ.Hulten.Vertical.domar}
+\leanok
+\uses{def:hulten_v_ce}
+In equilibrium $l_1 = \omega$, $Y = Y^*$, $w = Y$; the Domar weights are $p_1 x_1/w = \omega$ and $Y/w = 1$, summing to
+$1 + \omega > 1$.
+\end{theorem}
+\begin{proof}
+\leanok
+From the first two conditions $w l_1 = \omega Y$; adding the labour-demand condition, $w = Y$; cancelling, $l_1 = \omega$.
+\end{proof}
+
+\begin{theorem}[Hulten's theorem, vertical economy]
+\label{thm:hulten_vertical}
+\lean{Econ.Hulten.Vertical.log_maxOutput, Econ.Hulten.Vertical.hulten}
+\leanok
+\uses{thm:hulten_v_ce_eq}
+Scaling $A_1$ by $e^t$ changes $\log Y^*$ at rate $\omega$; scaling $A_2$ by $e^t$ changes it at rate $1$. Both are the
+equilibrium Domar weights.
+\end{theorem}
+\begin{proof}
+\leanok
+$\log Y^* = \log A_2 + (1-\omega)\log(1-\omega) + \omega \log(A_1 \omega)$. Replacing $A_1$ by $A_1 e^t$ adds $\omega t$;
+replacing $A_2$ by $A_2 e^t$ adds $t$. Differentiate and use Theorem~\ref{thm:hulten_v_ce_eq}. The Lean file also
+exhibits an equilibrium ($A_1 = A_2 = 1$, $\omega = 1/2$).
+\end{proof}

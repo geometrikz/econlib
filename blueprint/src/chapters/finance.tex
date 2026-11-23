@@ -1,0 +1,68 @@
+% Lean: EconLean/Finance/AssetPricing.lean
+\chapter{Asset Pricing}
+\label{chap:finance}
+
+\section{No arbitrage and state prices}
+\label{sec:ftap}
+
+Sources: Duffie, \emph{Dynamic Asset Pricing Theory}, ch.~1; LeRoy--Werner ch.~6--9; Cochrane ch.~4.
+
+\begin{definition}[Market, arbitrage, state prices, completeness]
+\label{def:ftap_market}
+\lean{Econ.AssetPricing.Market, Econ.AssetPricing.Market.payoff, Econ.AssetPricing.Market.cost, Econ.AssetPricing.Market.IsArbitrage, Econ.AssetPricing.Market.NoArbitrage, Econ.AssetPricing.Market.IsStatePrice, Econ.AssetPricing.Market.Complete}
+\leanok
+Finitely many states $s$ and assets $i$; payoffs $X_{si}$ and prices $q_i$. Portfolio $h$ pays $(Xh)_s$ and costs
+$q\cdot h$. An arbitrage has $Xh \ge 0$, $q\cdot h \le 0$, and $q\cdot h < 0$ or some $(Xh)_s > 0$. A state-price vector
+is $m \gg 0$ with $q_i = \sum_s m_sX_{si}$. Markets are complete if every $z \in \R^\sigma$ equals some $Xh$.
+\end{definition}
+
+\begin{lemma}[Pricing by state prices]
+\label{lem:ftap_cost_eq}
+\lean{Econ.AssetPricing.Market.cost_eq}
+\leanok
+\uses{def:ftap_market}
+If $m$ is a state-price vector, $q\cdot h = \sum_s m_s(Xh)_s$.
+\end{lemma}
+\begin{proof}
+\leanok
+Substitute $q_i$ and exchange the order of summation (\texttt{Finset.sum\_comm}).
+\end{proof}
+
+\begin{theorem}[Fundamental theorem of asset pricing]
+\label{thm:ftap}
+\lean{Econ.AssetPricing.Market.ftap, Econ.AssetPricing.Market.ftap_sdf}
+\leanok
+\uses{lem:ftap_cost_eq}
+There is no arbitrage iff a strictly positive state-price vector exists. Equivalently, for any strictly positive
+weights $\pi$, some $D \gg 0$ satisfies $q_i = \sum_s \pi_sD_sX_{si}$.
+\end{theorem}
+\begin{proof}
+\leanok
+($\Leftarrow$) By Lemma~\ref{lem:ftap_cost_eq}, $Xh \ge 0$ forces $q\cdot h \ge 0$, and $q\cdot h > 0$ if some payoff is
+positive; so no arbitrage. ($\Rightarrow$) In $\R^{1+\sigma}$ let $\Phi(h) = (-q\cdot h, Xh)$, $T$ its range (a
+closed subspace, \texttt{Submodule.isClosed\_of\_finiteDimensional}), and $S$ the convex hull of the unit vectors
+(compact, \texttt{Set.Finite.isCompact\_convexHull}). Every $z \in S$ is $\ge 0$ with $\sum z = 1$
+(\texttt{convexHull\_min}); if such a $z$ were $\Phi(h)$, some coordinate would be positive and $h$ would be an arbitrage,
+so $S \cap T = \emptyset$. Geometric Hahn--Banach (\texttt{geometric\_hahn\_banach\_compact\_closed}) gives a linear $f$
+and $u < v$ with $f < u$ on $S$ and $f > v$ on $T$. Since $0 \in T$, $v < 0$; since $T$ is a subspace, $f = 0$ on $T$
+(otherwise scale $\Phi(h)$ to make $f = v$). So $f(e_j) < 0$ for every unit vector; put $w_j = -f(e_j) > 0$. Writing
+$f$ in coordinates (\texttt{LinearMap.pi\_apply\_eq\_sum\_univ}), $f(\Phi(h)) = 0$ becomes
+$w_0\,q\cdot h = \sum_s w_s(Xh)_s$; with $h = e_i$, $m_s = w_s/w_0$ are state prices. The SDF form is the rescaling
+$D_s = m_s/\pi_s$.
+\end{proof}
+
+\begin{theorem}[Complete markets iff unique state prices]
+\label{thm:ftap_complete}
+\lean{Econ.AssetPricing.Market.complete_iff_unique}
+\leanok
+\uses{thm:ftap}
+Under no arbitrage, markets are complete iff the strictly positive state-price vector is unique.
+\end{theorem}
+\begin{proof}
+\leanok
+($\Rightarrow$) If $m, m'$ are state prices, $\sum_s(m'_s - m_s)(Xh)_s = 0$ for all $h$; choose $h$ with $Xh = m' - m$
+to get $\sum(m'_s - m_s)^2 = 0$. ($\Leftarrow$) If markets are incomplete, the payoff span is a proper subspace, so a
+nonzero linear functional $g$ vanishes on it (\texttt{Submodule.exists\_le\_ker\_of\_lt\_top}); with $z_s = g(e_s)$,
+$\sum_s z_sX_{si} = 0$ for every $i$ and $z \ne 0$. With $c = \min_s m_s$ and $\varepsilon = c/(\sum|z_s| + 1)$,
+$m + \varepsilon z$ is another strictly positive state-price vector, contradicting uniqueness.
+\end{proof}

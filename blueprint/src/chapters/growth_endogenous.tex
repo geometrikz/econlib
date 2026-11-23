@@ -1,0 +1,256 @@
+% Lean: EconLean/Macro/Growth/{AK,Lucas,Romer}.lean
+\chapter{Endogenous Growth}
+\label{chap:growth_endogenous}
+
+\section{The AK model}
+\label{sec:ak}
+
+Sources: Acemoglu ch.~11; Rebelo (1991).
+
+\begin{definition}[Solow-style AK path]
+\label{def:ak_kpath}
+\lean{Econ.AK.kpath}
+\leanok
+$K_0 = k_0$, $K_{t+1} = sAK_t + (1-\delta)K_t$.
+\end{definition}
+
+\begin{theorem}[Constant growth, no convergence]
+\label{thm:ak_solow}
+\lean{Econ.AK.kpath_eq, Econ.AK.growthRate_eq, Econ.AK.tendsto_atTop}
+\leanok
+\uses{def:ak_kpath}
+$K_t = (1 + sA - \delta)^t k_0$; whenever $K_t \ne 0$ its growth rate is $sA - \delta$; if $k_0 > 0$ and $sA > \delta$
+then $K_t \to \infty$.
+\end{theorem}
+\begin{proof}
+\leanok
+Induction on $t$; the growth rate is $(K_{t+1} - K_t)/K_t = sA - \delta$ by the recursion; the limit is
+$(1 + sA - \delta)^t \to \infty$ (\texttt{tendsto\_pow\_atTop\_atTop\_of\_one\_lt}) times $k_0 > 0$.
+\end{proof}
+
+\begin{definition}[Feasible plans and the candidate optimum]
+\label{def:ak_plan}
+\lean{Econ.AK.Plan, Econ.AK.kstar, Econ.AK.cstar, Econ.AK.optPlan}
+\leanok
+A plan from $k_0$ with gross return $R$: $c_t > 0$, $k_{t+1} = Rk_t - c_t$, $k_t \ge 0$. The candidate is
+$k^*_t = (\beta R)^t k_0$, $c^*_t = (1-\beta)Rk^*_t$; for $\beta \in (0,1)$, $R, k_0 > 0$ it is a plan.
+\end{definition}
+
+\begin{lemma}[Growth and the present-value budget]
+\label{lem:ak_budget}
+\lean{Econ.AK.cstar_succ, Econ.AK.kstar_succ, Econ.AK.pv_budget}
+\leanok
+\uses{def:ak_plan}
+$c^*_{t+1} = \beta R c^*_t$, $k^*_{t+1} = \beta R k^*_t$, and every plan satisfies
+$\sum_{t<T} c_t/R^{t+1} = k_0 - k_T/R^T$.
+\end{lemma}
+\begin{proof}
+\leanok
+Direct computation; the budget identity by induction on $T$ using $k_{T+1} = Rk_T - c_T$.
+\end{proof}
+
+\begin{theorem}[Optimal saving with log utility]
+\label{thm:ak_optimal}
+\lean{Econ.AK.optimal_finite, Econ.AK.summable_cstar, Econ.AK.optimal, Econ.AK.cstar_strictMono_iff}
+\leanok
+\uses{lem:ak_budget}
+For every plan and $T$: $\sum_{t<T}\beta^t\log c_t \le \sum_{t<T}\beta^t \log c^*_t + \beta^T/(1-\beta)$. The optimum's
+lifetime utility converges, and any plan whose lifetime utility converges to $W$ has $W$ at most the optimum's.
+Consumption grows strictly iff $\beta R > 1$.
+\end{theorem}
+\begin{proof}
+\leanok
+Pointwise $\log c \le \log c^* + (c - c^*)/c^*$ (\texttt{log\_le\_sub\_one\_of\_pos}). Since
+$\beta^t/c^*_t = 1/((1-\beta)k_0R^{t+1})$, summing gives the difference
+$\frac{1}{(1-\beta)k_0}\big[\sum c_t/R^{t+1} - \sum c^*_t/R^{t+1}\big]$, which by Lemma~\ref{lem:ak_budget} equals
+$\frac{1}{(1-\beta)k_0}[\beta^Tk_0 - k_T/R^T] \le \beta^T/(1-\beta)$. Summability: $\beta^t\log c^*_t =
+\beta^t\log((1-\beta)Rk_0) + t\beta^t\log(\beta R)$ (\texttt{summable\_pow\_mul\_geometric\_of\_norm\_lt\_one}). Let
+$T \to \infty$ (\texttt{le\_of\_tendsto\_of\_tendsto'}). Growth: $c^*_{t+1} = \beta R c^*_t$ with $c^*_t > 0$.
+\end{proof}
+
+\section{Lucas (1988): human capital and an externality}
+\label{sec:lucas}
+
+Sources: Lucas (1988) \S4; Acemoglu \S11.4. Output $A u_t h_t \bar h_t^\gamma$, human capital
+$h_{t+1} = (1 + B(1-u_t))h_t$, log utility; human capital only.
+
+\begin{definition}[The Lucas economy]
+\label{def:lucas}
+\lean{Econ.Lucas.Economy, Econ.Lucas.Feasible, Econ.Lucas.Economy.growth, Econ.Lucas.Economy.hpath, Econ.Lucas.Economy.uStar, Econ.Lucas.Economy.planU, Econ.Lucas.Economy.privU, Econ.Lucas.Economy.IsPrivOptimal, Econ.Lucas.Economy.IsEquilibrium, Econ.Lucas.Economy.IsEfficient, Econ.Lucas.Economy.phi}
+\leanok
+$A, B > 0$, $\gamma \ge 0$, $\beta \in (0,1)$; feasible $u_t \in (0, 1]$; $g(u) = 1 + B(1-u)$;
+$u^*(\kappa) = (1+B)/(B(1+\kappa))$; planner utility $\log(Au_th_t^{1+\gamma})$; private utility given $\bar h$:
+$\log(Au_th_t\bar h_t^\gamma)$. Equilibrium: $u$ privately optimal against $\bar h = h(u)$. Efficiency: $u$ maximizes
+planner utility. $\varphi_\kappa(u) = \log u + \kappa\log g(u)$.
+\end{definition}
+
+\begin{lemma}[Basic facts]
+\label{lem:lucas_basic}
+\lean{Econ.Lucas.Economy.growth_ge_one, Econ.Lucas.Economy.growth_le, Econ.Lucas.Economy.hpath_pos, Econ.Lucas.Economy.log_hpath, Econ.Lucas.Economy.log_growth_mem, Econ.Lucas.Economy.uStar_pos}
+\leanok
+\uses{def:lucas}
+For feasible $u$: $1 \le g(u_t) \le 1 + B$, $h_t > 0$, $\log h_t = \log h_0 + \sum_{s<t}\log g(u_s)$ and
+$0 \le \log g(u_t) \le \log(1+B)$; $u^*(\kappa) > 0$ for $\kappa > 0$.
+\end{lemma}
+\begin{proof}
+\leanok
+Direct; the log formula by induction using \texttt{log\_mul}.
+\end{proof}
+
+\begin{lemma}[The per-period problem]
+\label{lem:lucas_phi}
+\lean{Econ.Lucas.Economy.phi_le}
+\leanok
+\uses{lem:lucas_basic}
+For $\kappa > 0$ and $u \in (0,1]$: $\varphi_\kappa(u) \le \varphi_\kappa(u^*(\kappa))$, strictly if $u \ne u^*$.
+\end{lemma}
+\begin{proof}
+\leanok
+$g(u^*) = (1+B)\kappa/(1+\kappa)$, and the first-order condition $1/u^* = \kappa B/g(u^*)$ holds. Write
+$\varphi(u) - \varphi(u^*) = \log(u/u^*) + \kappa\log(g(u)/g(u^*))$ and bound each log by $x - 1$
+(\texttt{log\_le\_sub\_one\_of\_pos}, strict \texttt{log\_lt\_sub\_one\_of\_pos}); the linear terms cancel by the FOC.
+\end{proof}
+
+\begin{lemma}[Separation into per-period terms]
+\label{lem:lucas_separate}
+\lean{Econ.Lucas.Economy.sum_geom_cumsum, Econ.Lucas.Economy.separate, Econ.Lucas.Economy.core_finite, Econ.Lucas.Economy.tendsto_correction, Econ.Lucas.Economy.summable_log_hpath, Econ.Lucas.Economy.core_limit}
+\leanok
+\uses{lem:lucas_basic, lem:lucas_phi}
+With $\kappa = w\beta/(1-\beta)$:
+$\sum_{t<T}\beta^t(\log u_t + w\log h_t) = w\log h_0\sum_{t<T}\beta^t + \sum_{s<T}\beta^s\varphi_\kappa(u_s) -
+\frac{w\beta^T}{1-\beta}\sum_{s<T}\log g(u_s)$. Hence, if $u^*(\kappa) \le 1$, any feasible path's finite sum is at
+most that of the constant path $u^*$ plus $\sum_{s<T}\beta^s(\varphi(u_s) - \varphi(u^*)) + wT\beta^T\log(1+B)/(1-\beta)$;
+the last term tends to $0$; and in the limit, for summable extra terms $e_t$,
+$W \le W^* + \beta^s(\varphi(u_s) - \varphi(u^*))$ for every $s$.
+\end{lemma}
+\begin{proof}
+\leanok
+$\sum_{t<T}\beta^t\sum_{s<t}a_s = \sum_{s<T}a_s(\beta^{s+1} - \beta^T)/(1-\beta)$ by induction. Substitute
+Lemma~\ref{lem:lucas_basic}'s formula for $\log h_t$. For the comparison, $\sum \log g(u_s) \ge 0$ and the constant
+path's sum is at most $T\log(1+B)$. The correction tends to $0$ by
+\texttt{tendsto\_self\_mul\_const\_pow\_of\_abs\_lt\_one}. Summability of $\beta^t\log h_t$: $|\log h_t| \le
+|\log h_0| + t\log(1+B)$. In the limit, for $T > s$ all terms of the $\varphi$-sum other than $s$ are $\le 0$.
+\end{proof}
+
+\begin{theorem}[Equilibrium and efficient allocations]
+\label{thm:lucas_eq_eff}
+\lean{Econ.Lucas.Economy.privU_eq, Econ.Lucas.Economy.planU_eq, Econ.Lucas.Economy.uStar_priv, Econ.Lucas.Economy.privOptimal, Econ.Lucas.Economy.isEquilibrium_iff, Econ.Lucas.Economy.isEfficient_iff}
+\leanok
+\uses{lem:lucas_separate}
+Assume $1 - \beta \le \beta B$. Against any $\bar h > 0$ with $\sum\beta^t\log\bar h_t$ convergent, the constant
+$u_{eq} = (1-\beta)(1+B)/B$ is privately optimal and any path differing from it somewhere is strictly worse. So the
+competitive equilibrium is exactly the constant path $u_{eq}$, and the efficient path is exactly the constant
+$u_P = u^*((1+\gamma)\beta/(1-\beta))$.
+\end{theorem}
+\begin{proof}
+\leanok
+Private utility is $\beta^t(\log A + \gamma\log\bar h_t) + \beta^t(\log u_t + \log h_t)$ and planner utility is
+$\beta^t\log A + \beta^t(\log u_t + (1+\gamma)\log h_t)$ (\texttt{log\_mul}, \texttt{log\_rpow}); apply
+Lemma~\ref{lem:lucas_separate} with $w = 1$ and $w = 1 + \gamma$. If a candidate equilibrium (efficient path) differs
+from the constant at some $s$, the strict inequality contradicts its optimality against the constant path.
+\end{proof}
+
+\begin{theorem}[Lucas: equilibrium growth is too low]
+\label{thm:lucas}
+\lean{Econ.Lucas.Economy.uStar_comparison, Econ.Lucas.Economy.lucas}
+\leanok
+\uses{thm:lucas_eq_eff}
+Under $1 - \beta \le \beta B$, if $u_{eq}$ is an equilibrium and $u_P$ efficient, then for $\gamma > 0$:
+$u_P(t) < u_{eq}(t)$ and $g(u_{eq}(t)) < g(u_P(t))$ for all $t$; for $\gamma = 0$ the paths coincide.
+\end{theorem}
+\begin{proof}
+\leanok
+By Theorem~\ref{thm:lucas_eq_eff} both are constants $u^*(\kappa)$ with $\kappa_{priv} = \beta/(1-\beta) \le
+\kappa_P = (1+\gamma)\beta/(1-\beta)$; $u^*$ is strictly decreasing in $\kappa$, and $g$ is strictly decreasing in $u$.
+\end{proof}
+
+\section{Romer (1990): expanding varieties}
+\label{sec:romer}
+
+Sources: Romer (1990); Acemoglu \S13.1 (lab equipment). Final output
+$\frac{1}{1-a}\sum_\nu x_\nu^{1-a}L^a$; machines cost $\psi = 1 - a$; one unit of output in R\&D creates $\eta$ varieties.
+
+\begin{lemma}[Tangent line for $x^q$]
+\label{lem:romer_tangent}
+\lean{Econ.Romer.rpow_tangent}
+\leanok
+For $0 < q < 1$, $x \ge 0$, $y > 0$: $x^q \le y^q + qy^{q-1}(x - y)$, strictly if $x \ne y$.
+\end{lemma}
+\begin{proof}
+\leanok
+With $z = x/y - 1 \ge -1$, $x^q = y^q(1+z)^q$ and Bernoulli's inequality $(1+z)^q \le 1 + qz$
+(\texttt{rpow\_one\_add\_le\_one\_add\_mul\_self}, strict version).
+\end{proof}
+
+\begin{definition}[Romer economy]
+\label{def:romer}
+\lean{Econ.Romer.Economy, Econ.Romer.Economy.ψ, Econ.Romer.Economy.finalProfit, Econ.Romer.Economy.demand, Econ.Romer.Economy.monoProfit, Econ.Romer.Economy.rEq, Econ.Romer.Economy.eulerGrowth, Econ.Romer.Economy.netOutput, Econ.Romer.Economy.xPlan, Econ.Romer.Economy.RPlan}
+\leanok
+$a \in (0,1)$, $L, \eta > 0$, $\beta \in (0,1)$. Demand $x(p) = p^{-1/a}L$; monopoly profit $(p - \psi)x(p)$;
+$r_{eq} = \eta aL$; Euler-implied growth $\beta(1 + r_{eq})$ (a definition); net output per variety
+$\frac{1}{1-a}x^{1-a}L^a - \psi x$; $x_S = x(\psi)$; $R_S = 1 + \eta\,\mathrm{net}(x_S)$.
+\end{definition}
+
+\begin{theorem}[Demand, monopoly pricing, free entry]
+\label{thm:romer_static}
+\lean{Econ.Romer.Economy.demand_pos, Econ.Romer.Economy.demand_foc, Econ.Romer.Economy.demand_optimal, Econ.Romer.Economy.monopoly_price, Econ.Romer.Economy.demand_one, Econ.Romer.Economy.freeEntry_iff}
+\leanok
+\uses{def:romer, lem:romer_tangent}
+At price $p > 0$, $x(p)$ uniquely maximizes the final-good firm's profit. The monopoly price is uniquely $p = 1$,
+selling $L$ and earning $aL$. With interest $r > 0$, free entry $\eta\cdot aL/r = 1$ holds iff $r = \eta aL$.
+\end{theorem}
+\begin{proof}
+\leanok
+FOC: $x(p)^{-a}L^a = p$. Apply Lemma~\ref{lem:romer_tangent} with $q = 1 - a$ at $y = x(p)$ and multiply by
+$L^a/(1-a)$. Monopoly: Bernoulli $p^{1/a} \ge 1 + (p-1)/a$ (\texttt{one\_add\_mul\_self\_le\_rpow\_one\_add}, strict
+for $p \ne 1$) gives $p - (1 - a) \le ap^{1/a}$; multiply by $p^{-1/a}L$. Free entry is algebra.
+\end{proof}
+
+\begin{theorem}[The planner's static choice]
+\label{thm:romer_planner_static}
+\lean{Econ.Romer.Economy.ψ_pos, Econ.Romer.Economy.xPlan_gt, Econ.Romer.Economy.netOutput_xPlan, Econ.Romer.Economy.planner_static, Econ.Romer.Economy.RPlan_pos}
+\leanok
+\uses{thm:romer_static}
+$x_S = (1-a)^{-1/a}L > L$ maximizes net output per variety, which equals $a\,x_S$; $R_S > 0$.
+\end{theorem}
+\begin{proof}
+\leanok
+Net output is the final-good profit at $p = \psi$, so Theorem~\ref{thm:romer_static} applies. $(1-a)^{-1/a} > 1$
+(\texttt{one\_lt\_rpow\_of\_pos\_of\_lt\_one\_of\_neg}). Using the FOC, $\mathrm{net}(x_S) = x_S(1/(1-a)\cdot(1-a) - (1-a)) = a x_S$.
+\end{proof}
+
+\begin{theorem}[Optimal growth: the planner's problem is AK]
+\label{thm:romer_planner}
+\lean{Econ.Romer.Economy.PlannerPlan, Econ.Romer.Economy.akCapital, Econ.Romer.Economy.akCapital_ge, Econ.Romer.Economy.toAK, Econ.Romer.Economy.planner_optimal, Econ.Romer.Economy.plannerPlan, Econ.Romer.Economy.plannerPlan_growth, Econ.Romer.Economy.plannerPlan_rd_nonneg}
+\leanok
+\uses{thm:romer_planner_static, thm:ak_optimal}
+A planner plan ($C_t > 0$, $x_t \ge 0$, $N_{t+1} = N_t + \eta(N_t\,\mathrm{net}(x_t) - C_t) \ge 0$) has lifetime utility
+at most that of the AK optimum with return $R_S$ from $k_0 = N_0/\eta$, and that optimum is attained by a planner plan
+using $x_S$, growing at $\beta R_S$, with non-negative R\&D when $\beta R_S \ge 1$.
+\end{theorem}
+\begin{proof}
+\leanok
+Define $k_0 = N_0/\eta$, $k_{t+1} = R_Sk_t - C_t$. By induction $N_t/\eta \le k_t$, because
+$\mathrm{net}(x_t) \le \mathrm{net}(x_S)$ and $N_t \ge 0$. So $(C, k)$ is an AK plan and Theorem~\ref{thm:ak_optimal}
+applies. Conversely $N_t = \eta k^*_t$, $C = c^*$, $x = x_S$ satisfies the law of motion. Growth by
+Lemma~\ref{lem:ak_budget}.
+\end{proof}
+
+\begin{theorem}[Equilibrium growth is too low; scale effect]
+\label{thm:romer_growth}
+\lean{Econ.Romer.Economy.eulerGrowth_lt_optimal, Econ.Romer.Economy.eulerGrowth_strictMono_L}
+\leanok
+\uses{thm:romer_planner_static, def:romer}
+$\beta(1 + \eta aL) < \beta R_S$, and the Euler-implied growth factor is strictly larger in the same economy with a
+larger labour force.
+\end{theorem}
+\begin{proof}
+\leanok
+$R_S = 1 + \eta a x_S$ and $x_S > L$ (Theorem~\ref{thm:romer_planner_static}); multiply by $\beta\eta a > 0$. The scale
+effect is monotonicity of $\beta(1 + \eta aL)$ in $L$.
+\end{proof}
+
+\begin{remark}
+The equilibrium growth factor is the household's log-utility Euler equation at the free-entry interest rate; the
+decentralized dynamic equilibrium is not constructed in Lean.
+\end{remark}

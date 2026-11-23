@@ -198,7 +198,7 @@ The policy plan is handled exactly as in Theorem~\ref{thm:verification}.
 
 \begin{theorem}[Euler equations and transversality are sufficient; SL Thm~4.15]
 \label{thm:euler_transversality}
-\lean{Econ.euler_transversality}
+\lean{Econ.euler_transversality_along, Econ.euler_transversality}
 \leanok
 \uses{def:sequence_problem}
 Let states lie in an ordered real vector space $E$, with feasible next states nonnegative. Let
@@ -209,6 +209,9 @@ $F_x(x, y), F_y(x, y)$ be linear functionals with the supergradient inequality o
 and $F_x(x, y) z \ge 0$ for $z \ge 0$. If a feasible plan $x^*$ satisfies the Euler equations
 $F_y(x^*_t, x^*_{t+1}) + \beta F_x(x^*_{t+1}, x^*_{t+2}) = 0$ and the transversality condition
 $\beta^t F_x(x^*_t, x^*_{t+1}) x^*_t \to 0$, and $\beta \ge 0$, then $x^*$ is optimal.
+The Lean proof is \texttt{euler\_transversality\_along}, which only asks for the supergradient inequality and
+$F_x \ge 0$ at the points $(x^*_t, x^*_{t+1})$ of the candidate plan; \texttt{euler\_transversality} is the
+global form above, derived from it.
 \end{theorem}
 \begin{proof}
 \leanok
@@ -542,7 +545,7 @@ Apply Lemma~\ref{lem:hasDerivAt_concave_minorant}.
 
 \begin{remark}[Non-vacuity of the dynamic-programming hypotheses]
 \label{rem:dp_example}
-\lean{Econ.DPExample.P, Econ.DPExample.convexGraph, Econ.DPExample.strictlyConcaveReturn}
+\lean{Econ.DPExample.S, Econ.DPExample.F, Econ.DPExample.P, Econ.DPExample.convexGraph, Econ.DPExample.strictlyConcaveReturn}
 \leanok
 \uses{def:DynProg, def:dp_concavity, thm:value_monotone, thm:exists_continuous_policy, thm:benveniste_scheinkman}
 \texttt{Macro/DP/Examples.lean} exhibits $S = [0, 1]$, $\Gamma(x) = S$, $F(x, y) = -(x - 2)^2 - y^2$,
@@ -715,3 +718,222 @@ feasible. The Euler equation $F_{k'}(k_t, k_{t+1}) + \beta F_k(k_{t+1}, k_{t+2})
 $\beta^t F_k(k_t, k_{t+1}) k_t = \beta^t \alpha/(1-\alpha\beta) \to 0$ are the computations of
 Theorem~\ref{thm:bm_euler_tvc}.
 \end{proof}
+
+% Lean: EconLean/Macro/DP/Monotone.lean
+\section{Monotone policies and monotone convergence}
+\label{sec:dp_monotone}
+
+Sources: SL \S4.2, \S6.1; Topkis (1978).
+
+\begin{theorem}[Monotone policy (Topkis)]
+\label{thm:policy_monotone}
+\lean{Econ.DynProg.policy_monotone}
+\leanok
+\uses{def:policy, lem:tendsto_discounted_value}
+Let $X$ be linearly ordered. Suppose feasible sets are ascending (if $x < x'$, $y \in \Gamma(x)$, $y' \in \Gamma(x')$
+and $y' < y$, then $y' \in \Gamma(x)$ and $y \in \Gamma(x')$), and $F$ has strictly increasing differences (for
+$x < x'$, $y' < y$, all four pairs feasible, $F(x', y') - F(x, y') < F(x', y) - F(x, y)$). If $y$ is optimal at $x$,
+$y'$ is optimal at $x' > x$, then $y \le y'$.
+\end{theorem}
+\begin{proof}
+\leanok
+Suppose $y' < y$. By ascending sets, $y' \in \Gamma(x)$ and $y \in \Gamma(x')$. Optimality of $y$ at $x$ against $y'$
+(\texttt{bellman\_le}) gives $F(x, y') + \beta V(y') \le F(x, y) + \beta V(y)$; optimality of $y'$ at $x'$ against
+$y$ gives $F(x', y) + \beta V(y) \le F(x', y') + \beta V(y')$. Adding, $F(x', y) - F(x, y) \le F(x', y') - F(x, y')$,
+contradicting strictly increasing differences.
+\end{proof}
+
+\begin{lemma}[Orbits of monotone maps are monotone]
+\label{lem:orbit_monotone}
+\lean{Econ.orbit_monotone_or_antitone}
+\leanok
+\uses{def:planOf}
+If $g$ is monotone on a linear order, the orbit $x_{n+1} = g(x_n)$ is monotone if $x_0 \le g(x_0)$ and antitone
+otherwise.
+\end{lemma}
+\begin{proof}
+\leanok
+If $x_0 \le x_1$, induct: $x_n \le x_{n+1}$ gives $x_{n+1} = g(x_n) \le g(x_{n+1}) = x_{n+2}$. Otherwise
+$x_1 \le x_0$ and the same induction gives $x_{n+2} \le x_{n+1}$.
+\end{proof}
+
+\begin{theorem}[Monotone convergence to a steady state]
+\label{thm:orbit_tendsto_fixedPoint}
+\lean{Econ.orbit_tendsto_fixedPoint}
+\leanok
+\uses{lem:orbit_monotone}
+If $g : [a, b] \to [a, b]$ is monotone and continuous, every orbit converges to some $k$ with $g(k) = k$.
+\end{theorem}
+\begin{proof}
+\leanok
+By Lemma~\ref{lem:orbit_monotone} the orbit is monotone or antitone, and it is bounded by $a$ and $b$, so it converges
+to its supremum or infimum $L$ (\texttt{tendsto\_atTop\_ciSup} / \texttt{ciInf}). $[a, b]$ is closed, so $L \in [a, b]$.
+The shifted sequence $x_{n+1} = g(x_n)$ tends to $g(L)$ by continuity and to $L$ as a tail of $x$; limits are unique.
+\end{proof}
+
+% Lean: EconLean/Macro/DP/MarkovChain.lean
+\section{Finite Markov chains}
+\label{sec:markov}
+
+Sources: SL ch.~11 (Thms 11.1, 11.4); Ljungqvist--Sargent ch.~2.
+
+\begin{definition}[Stochastic matrices and invariant distributions]
+\label{def:markov}
+\lean{Econ.IsStochastic, Econ.Distributions, Econ.IsInvariant, Econ.l1Dist, Econ.vecMul_apply'}
+\leanok
+$Q$ is stochastic if $Q(z, z') \ge 0$ and each row sums to $1$. Distributions are $\mu \ge 0$ with $\sum_z \mu(z) = 1$;
+$\mu$ moves to $(\mu Q)(z') = \sum_z \mu(z) Q(z, z')$. $\pi$ is invariant if it is a distribution with $\pi Q = \pi$.
+$\|\mu - \nu\|_1 = \sum_z |\mu(z) - \nu(z)|$ (twice the total variation distance).
+\end{definition}
+
+\begin{lemma}[Distributions]
+\label{lem:distributions}
+\lean{Econ.IsStochastic.vecMul_mem, Econ.IsStochastic.pow_vecMul_mem, Econ.isCompact_distributions, Econ.l1Dist_le_two, Econ.l1Dist_self, Econ.l1Dist_eq_zero}
+\leanok
+\uses{def:markov}
+(i) $\mu Q$ and $\mu Q^n$ are distributions when $\mu$ is. (ii) The set of distributions is compact. (iii) For
+distributions, $\|\mu - \nu\|_1 \le 2$, $\|\mu - \mu\|_1 = 0$, and $\|\mu - \nu\|_1 = 0$ implies $\mu = \nu$.
+\end{lemma}
+\begin{proof}
+\leanok
+(i) Entries are sums of nonnegative products; swapping sums, $\sum_{z'} \sum_z \mu(z) Q(z, z') = \sum_z \mu(z) = 1$.
+Powers by induction. (ii) It is a closed subset (an intersection of half-spaces and a hyperplane) of the compact cube
+$[0, 1]^Z$; each $\mu(z) \le \sum \mu = 1$. (iii) $|\mu(z) - \nu(z)| \le \mu(z) + \nu(z)$, which sums to $2$; a sum of
+nonnegative terms is zero only if each term is.
+\end{proof}
+
+\begin{theorem}[Existence of an invariant distribution]
+\label{thm:exists_invariant}
+\lean{Econ.exists_invariant}
+\leanok
+\uses{lem:distributions}
+Every stochastic matrix on a finite nonempty set has an invariant distribution.
+\end{theorem}
+\begin{proof}
+\leanok
+Krylov--Bogolyubov. Start from a point mass $\mu_0$, let $a_t = \mu_0 Q^t$ and the Ces\`aro averages
+$\nu_n = \frac{1}{n+1}\sum_{t \le n} a_t$, which are distributions. By compactness some subsequence
+$\nu_{\varphi(k)} \to \pi$, a distribution. Shifting the sum, $\nu_n Q - \nu_n = \frac{1}{n+1}(a_{n+1} - a_0)$, whose
+entries are bounded by $1/(n+1) \to 0$. By continuity of $\mu \mapsto \mu Q - \mu$, $\nu_{\varphi(k)} Q - \nu_{\varphi(k)}
+\to \pi Q - \pi$, and also $\to 0$; so $\pi Q = \pi$.
+\end{proof}
+
+\begin{lemma}[Doeblin contraction]
+\label{lem:l1_contract}
+\lean{Econ.l1Dist_contract}
+\leanok
+\uses{def:markov}
+If $Q(z, z') \ge \varepsilon$ for all $z, z'$, then for distributions $\mu, \nu$,
+$\|\mu Q - \nu Q\|_1 \le (1 - |Z|\varepsilon)\|\mu - \nu\|_1$.
+\end{lemma}
+\begin{proof}
+\leanok
+Let $d = \mu - \nu$, so $\sum_z d(z) = 0$. Subtracting the common floor,
+$(\mu Q - \nu Q)(z') = \sum_z d(z)(Q(z, z') - \varepsilon)$. Then
+$\sum_{z'} |\cdot| \le \sum_{z'}\sum_z |d(z)|(Q(z, z') - \varepsilon) = \sum_z |d(z)| (1 - |Z|\varepsilon)$, using that
+rows sum to $1$.
+\end{proof}
+
+\begin{theorem}[Doeblin's theorem, finite case]
+\label{thm:doeblin}
+\lean{Econ.doeblin}
+\leanok
+\uses{thm:exists_invariant, lem:l1_contract, lem:distributions}
+If $Q$ is stochastic and $Q(z, z') \ge \varepsilon > 0$ for all $z, z'$, there is a unique invariant distribution $\pi$,
+and $\|\mu Q^n - \pi\|_1 \le 2(1 - |Z|\varepsilon)^n$ for every distribution $\mu$. (SL Thm 11.4 uses an $N$-step
+condition; this is the one-step case.)
+\end{theorem}
+\begin{proof}
+\leanok
+Take $\pi$ from Theorem~\ref{thm:exists_invariant} and let $r = 1 - |Z|\varepsilon$. A row sums to $1$ and has $|Z|$
+entries $\ge \varepsilon$, so $r \ge 0$; $r < 1$ since $|Z| > 0$. Using $\pi Q^n = \pi$ and
+Lemma~\ref{lem:l1_contract}, induction gives $\|\mu Q^n - \pi\|_1 \le r^n \|\mu - \pi\|_1 \le 2 r^n$. Uniqueness: another
+invariant $\pi'$ has $\pi' Q^n = \pi'$, so $\|\pi' - \pi\|_1 \le 2 r^n \to 0$, hence $\|\pi' - \pi\|_1 = 0$ and $\pi' = \pi$.
+\end{proof}
+
+% Lean: EconLean/Macro/DP/Stochastic.lean, StochasticExamples.lean
+\section{Stochastic dynamic programming with finite shocks}
+\label{sec:stoch_dp}
+
+Source: SL ch.~9 (Thm 9.6), with a finite shock space $Z$ (SL allows a compact metric space with a Feller kernel). The
+sequence-problem side (SL Thms 9.2--9.5) is not yet formalized, so $V$ is characterized as the unique bounded continuous
+solution of the Bellman equation.
+
+\begin{definition}[Stochastic dynamic program]
+\label{def:stoch_dp}
+\lean{Econ.StochDynProg, Econ.StochDynProg.expect, Econ.StochDynProg.objective, Econ.StochDynProg.bound, Econ.StochDynProg.abs_F_le}
+\leanok
+\uses{def:contCorr}
+States are $(x, z)$ with $z$ in a finite discrete $Z$. $Q$ is a stochastic matrix, $0 < \beta < 1$, $\Gamma(x, z)$ is
+nonempty, compact and continuous, and $F((x, z), y)$ is continuous and bounded by $M$ on the graph. For bounded continuous
+$v$, $E[v \mid z](y) = \sum_{z'} Q(z, z') v(y, z')$ and the objective is $F((x, z), y) + \beta E[v \mid z](y)$.
+\end{definition}
+
+\begin{lemma}[Objective is continuous and bounded]
+\label{lem:stoch_objective}
+\lean{Econ.StochDynProg.continuous_objective, Econ.StochDynProg.abs_expect_le, Econ.StochDynProg.isGreatest_objective}
+\leanok
+\uses{def:stoch_dp, lem:isGreatest_maxValue}
+The objective is jointly continuous, $|E[v \mid z](y)| \le \|v\|$, and its maximum over $\Gamma(x, z)$ is attained.
+\end{lemma}
+\begin{proof}
+\leanok
+$z \mapsto Q(z, z')$ is continuous because $Z$ is discrete, so the objective is a finite sum of continuous terms.
+$|\sum_{z'} Q(z, z') v(y, z')| \le \sum_{z'} Q(z, z') \|v\| = \|v\|$. Attainment is Lemma~\ref{lem:isGreatest_maxValue}.
+\end{proof}
+
+\begin{theorem}[Stochastic Bellman operator is a contraction]
+\label{thm:stoch_contracting}
+\lean{Econ.StochDynProg.bellmanOp, Econ.StochDynProg.isGreatest_bellmanOp, Econ.StochDynProg.contracting}
+\leanok
+\uses{lem:stoch_objective, thm:continuous_maxValue, thm:blackwell}
+$(Tv)(x, z) = \max_{y \in \Gamma(x,z)} [F((x,z), y) + \beta E[v \mid z](y)]$ maps bounded continuous functions to bounded
+continuous functions, with $\|Tv\| \le M + \beta\|v\|$, and is a contraction of modulus $\beta$.
+\end{theorem}
+\begin{proof}
+\leanok
+$Tv$ is continuous by Theorem~\ref{thm:continuous_maxValue}, and bounded since at a maximizer
+$|F + \beta E| \le M + \beta \|v\|$. Contraction by Blackwell (Theorem~\ref{thm:blackwell}). Monotonicity: if $f \le g$,
+at a maximizer $y$ for $f$, $\sum Q f \le \sum Q g$ (nonnegative weights), so $(Tf)(s) \le$ objective of $g$ at $y \le (Tg)(s)$.
+Discounting: rows sum to $1$, so $E[f + a \mid z] = E[f \mid z] + a$; at a maximizer for $f + a$ the value is
+$\le (Tf)(s) + \beta a$.
+\end{proof}
+
+\begin{theorem}[Stochastic Bellman equation, SL Thm 9.6]
+\label{thm:stoch_bellman}
+\lean{Econ.StochDynProg.value, Econ.StochDynProg.bellman_equation, Econ.StochDynProg.value_unique, Econ.StochDynProg.iterate_converges}
+\leanok
+\uses{thm:stoch_contracting}
+The fixed point $V$ of $T$ solves the Bellman equation with the max attained, is the only bounded continuous solution,
+and value iteration converges: $T^n v_0 \to V$ with $d(T^n v_0, V) \le d(v_0, T v_0)\, \beta^n/(1 - \beta)$.
+\end{theorem}
+\begin{proof}
+\leanok
+Banach's fixed point theorem (\texttt{ContractingWith.fixedPoint}) for Theorem~\ref{thm:stoch_contracting}. A bounded
+continuous $w$ solving the equation has $Tw = w$ pointwise (greatest elements are unique), so $w = V$ by uniqueness of the
+fixed point. The rate is Mathlib's a priori estimate.
+\end{proof}
+
+\begin{theorem}[Optimal policy]
+\label{thm:stoch_policy}
+\lean{Econ.StochDynProg.policy, Econ.StochDynProg.policy_nonempty_compact_uhc}
+\leanok
+\uses{thm:stoch_bellman, lem:argmax_props, thm:uhc_argmax}
+The policy $G(x, z) = \operatorname{argmax}_{y \in \Gamma(x,z)}[F + \beta E[V \mid z]]$ has nonempty compact values and
+is upper hemicontinuous.
+\end{theorem}
+\begin{proof}
+\leanok
+Lemma~\ref{lem:argmax_props} and Theorem~\ref{thm:uhc_argmax} applied to the continuous objective of
+Lemma~\ref{lem:stoch_objective}.
+\end{proof}
+
+\begin{remark}[Non-vacuity]
+\label{rem:stoch_example}
+\lean{Econ.StochExample.Q, Econ.StochExample.isStochastic_Q, Econ.StochExample.P}
+\leanok
+\uses{thm:stoch_bellman, thm:doeblin}
+$X = [0, 1]$, two shock states switching with probability $1/2$, $\Gamma \equiv X$, $F = x z - y^2$ (bounded by $2$),
+$\beta = 1/2$ satisfies every assumption, so Theorem~\ref{thm:stoch_bellman} applies. The fair-coin chain satisfies
+Doeblin with $\varepsilon = 1/2$, so Theorem~\ref{thm:doeblin} gives a unique invariant distribution.
+\end{remark}

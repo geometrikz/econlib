@@ -15,6 +15,26 @@ Mathlib. Every file is heavily commented for readers who know the economics
 - `EconLean/Consumer/RevealedPreference.lean`: WARP, compensated law of demand
 - `ROADMAP.md`: what comes next, and related projects
 
+## Blueprint: human-readable proofs
+Every Lean theorem has a matching human-readable proof in the blueprint, written
+to follow the Lean proof step by step and linked to it with `\lean{...}`.
+
+- Web: https://geometrikz.github.io/econlib/blueprint/ (with dependency graph)
+- PDF: https://geometrikz.github.io/econlib/blueprint.pdf
+- Source: [`blueprint/src/chapters/`](blueprint/src/chapters), one file per area.
+  How to add an entry: [`blueprint/README.md`](blueprint/README.md).
+- [`docs/math_companion.md`](docs/math_companion.md): a Markdown companion for
+  the consumer theory chapters, with a Mermaid dependency graph.
+
+GitHub Actions builds the blueprint (web and PDF), checks that every `\lean{...}`
+name exists (`lake exe checkdecls blueprint/lean_decls`), builds the API docs and
+publishes them to GitHub Pages on every push to `main`. To build locally (optional):
+```
+pip install leanblueprint   # also needs graphviz and a TeX distribution with xelatex
+leanblueprint web && leanblueprint serve
+leanblueprint pdf
+```
+
 ## Build
 ```
 lake exe cache get   # downloads prebuilt Mathlib

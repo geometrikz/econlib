@@ -1,0 +1,327 @@
+% Lean: EconLean/Macro/Labor/{McCall,DMP}.lean
+\chapter{Labour Markets}
+\label{chap:labor}
+
+\section{McCall job search}
+\label{sec:mccall}
+
+Sources: McCall (1970); Ljungqvist--Sargent ch.~6. An unemployed worker draws offer $w_i$ with probability
+$p_i$ each period (finitely many offers), discounts by $\beta \in [0, 1)$ and receives $c$ while unemployed.
+
+\begin{definition}[Offer distribution, environment, reservation wage]
+\label{def:mccall}
+\lean{Econ.McCall.OfferDist, Econ.McCall.OfferDist.expect, Econ.McCall.Env, Econ.McCall.T, Econ.McCall.IsReservationWage}
+\leanok
+$E[g(w)] = \sum_i p_i g(w_i)$ with $p_i \ge 0$, $\sum p_i = 1$. Let $T(x) = (1-\beta)c + \beta E[\max(w, x)]$;
+$x$ is a \emph{reservation wage} if $T(x) = x$.
+\end{definition}
+
+\begin{lemma}[Properties of expectations and of $T$]
+\label{lem:mccall_T_props}
+\lean{Econ.McCall.expect_const, Econ.McCall.expect_mono, Econ.McCall.expect_max_sub_le, Econ.McCall.expect_max_mono, Econ.McCall.continuous_T, Econ.McCall.expect_of_forall, Econ.McCall.T_sub_strictAnti}
+\leanok
+\uses{def:mccall}
+$E$ of a constant is that constant; $E$ is monotone; for $x \le y$,
+$0 \le E[\max(w, y)] - E[\max(w, x)] \le y - x$; $T$ is continuous; and $x \mapsto T(x) - x$ is strictly decreasing.
+\end{lemma}
+\begin{proof}
+\leanok
+The first facts use $\sum p_i = 1$ and $p_i \ge 0$. Pointwise $\max(w, y) \le \max(w, x) + (y - x)$ (check $w \le x$
+and $w \ge x$), then take expectations. Hence for $x < y$,
+$T(y) - T(x) \le \beta(y - x) < y - x$, i.e.\ $T(y) - y < T(x) - x$.
+\end{proof}
+
+\begin{theorem}[Textbook reservation-wage equation]
+\label{thm:mccall_textbook}
+\lean{Econ.McCall.isReservationWage_iff_textbook}
+\leanok
+\uses{def:mccall}
+$x$ is a reservation wage iff $x - c = \frac{\beta}{1-\beta} E[(w - x)^+]$.
+\end{theorem}
+\begin{proof}
+\leanok
+Pointwise $\max(w, x) = x + (w - x)^+$, so $E[\max(w, x)] = x + E[(w - x)^+]$. Substitute into $T(x) = x$ and
+rearrange, multiplying by $1 - \beta > 0$.
+\end{proof}
+
+\begin{theorem}[Existence and uniqueness of the reservation wage]
+\label{thm:mccall_existsUnique}
+\lean{Econ.McCall.existsUnique_reservationWage}
+\leanok
+\uses{lem:mccall_T_props}
+There is exactly one reservation wage.
+\end{theorem}
+\begin{proof}
+\leanok
+Let $B = \sum_i |w_i|$, so $-B \le w_i \le B$. \emph{Upper point:} $b = \max(B, c) + 1$ exceeds every offer, so
+$E[\max(w, b)] = b$ and $T(b) - b = (1-\beta)(c - b) < 0$. \emph{Lower point:}
+$a = \min(-B, (1-\beta)c + \beta E[w]) - 1$ is below every offer, so $E[\max(w, a)] = E[w]$ and
+$T(a) - a = (1-\beta)c + \beta E[w] - a > 0$. Since $T - \mathrm{id}$ is strictly decreasing, $a \le b$. By the
+intermediate value theorem there is $x \in [a, b]$ with $T(x) = x$; strict monotonicity of $T - \mathrm{id}$
+gives uniqueness.
+\end{proof}
+
+\begin{definition}[Bellman operator]
+\label{def:mccall_bellman}
+\lean{Econ.McCall.bellman}
+\leanok
+\uses{def:mccall}
+For values $V_i$ of holding offer $i$: $(BV)_i = \max\big(\frac{w_i}{1-\beta},\ c + \beta\sum_j p_j V_j\big)$.
+\end{definition}
+
+\begin{theorem}[The reservation-wage value function solves the Bellman equation]
+\label{thm:mccall_bellman_solution}
+\lean{Econ.McCall.bellman_reservationWage}
+\leanok
+\uses{def:mccall_bellman}
+If $\bar w$ is a reservation wage, $V_i = \max(w_i, \bar w)/(1-\beta)$ is a fixed point of $B$.
+\end{theorem}
+\begin{proof}
+\leanok
+The continuation value is $c + \beta\sum_j p_j \max(w_j, \bar w)/(1-\beta) = \bar w/(1-\beta)$, which rearranges
+$T(\bar w) = \bar w$. Then $(BV)_i = \max(w_i/(1-\beta), \bar w/(1-\beta)) = \max(w_i, \bar w)/(1-\beta)$.
+\end{proof}
+
+\begin{theorem}[Uniqueness of the Bellman solution]
+\label{thm:mccall_bellman_unique}
+\lean{Econ.McCall.bellman_unique}
+\leanok
+\uses{def:mccall_bellman}
+$B$ has at most one fixed point.
+\end{theorem}
+\begin{proof}
+\leanok
+Let $V = BV$, $W = BW$ and $D = \sum_j p_j(V_j - W_j)$. Since $|\max(a, u) - \max(a, v)| \le |u - v|$,
+$|V_i - W_i| \le \beta|D|$ for each $i$. Then $|D| \le \sum_j p_j |V_j - W_j| \le \beta|D|$; as $\beta < 1$,
+$D = 0$, hence $V_i = W_i$.
+\end{proof}
+
+\begin{theorem}[Reservation-wage policy]
+\label{thm:mccall_accept_iff}
+\lean{Econ.McCall.accept_iff}
+\leanok
+\uses{thm:mccall_bellman_solution, thm:mccall_bellman_unique}
+At the solution $V$ of the Bellman equation, accepting offer $i$ is optimal
+($c + \beta\sum_j p_j V_j \le w_i/(1-\beta)$) iff $\bar w \le w_i$.
+\end{theorem}
+\begin{proof}
+\leanok
+By uniqueness $V_i = \max(w_i, \bar w)/(1-\beta)$, whose continuation value is $\bar w/(1-\beta)$; compare.
+\end{proof}
+
+\begin{lemma}[Ordering reservation wages]
+\label{lem:mccall_le_of_T_le}
+\lean{Econ.McCall.reservationWage_le_of_T_le}
+\leanok
+\uses{lem:mccall_T_props}
+If $T_1 \le T_2$ pointwise and $x_1, x_2$ are their reservation wages, then $x_1 \le x_2$.
+\end{lemma}
+\begin{proof}
+\leanok
+If $x_2 < x_1$, strict decrease of $T_2 - \mathrm{id}$ gives $T_2(x_1) - x_1 < T_2(x_2) - x_2 = 0$, so
+$x_1 = T_1(x_1) \le T_2(x_1) < x_1$.
+\end{proof}
+
+\begin{theorem}[Benefits raise the reservation wage]
+\label{thm:mccall_strictMono_c}
+\lean{Econ.McCall.reservationWage_strictMono_c}
+\leanok
+\uses{lem:mccall_T_props}
+If $c_1 < c_2$ (same $\beta$, same distribution) then $x_1 < x_2$.
+\end{theorem}
+\begin{proof}
+\leanok
+Suppose $x_2 \le x_1$. Since $T_2 - \mathrm{id}$ is decreasing, $T_2(x_1) - x_1 \le T_2(x_2) - x_2 = 0$. But
+$T_2(x_1) = T_1(x_1) + (1-\beta)(c_2 - c_1) = x_1 + (1-\beta)(c_2 - c_1) > x_1$.
+\end{proof}
+
+\begin{theorem}[Riskier offers raise the reservation wage; L--S \S6.3.3]
+\label{thm:mccall_riskier}
+\lean{Econ.McCall.Riskier, Econ.McCall.reservationWage_mono_riskier, Econ.McCall.mps_example}
+\leanok
+\uses{lem:mccall_le_of_T_le}
+Say $G$ is riskier than $F$ if $E_F[g] \le E_G[g]$ for every convex $g$. Then $x_F \le x_G$. Example: the 50--50
+lottery on $\{0, 2\}$ is riskier than the sure offer $1$.
+\end{theorem}
+\begin{proof}
+\leanok
+$w \mapsto \max(w, x)$ is convex (max of $\mathrm{id}$ and a constant), so $T_F \le T_G$ pointwise; apply
+Lemma~\ref{lem:mccall_le_of_T_le}. For the example, convexity gives
+$g(1) = g(\tfrac12 \cdot 2 + \tfrac12 \cdot 0) \le \tfrac12 g(2) + \tfrac12 g(0)$.
+\end{proof}
+
+\section{Unemployment flows, DMP, and the Hosios condition}
+\label{sec:dmp}
+
+Sources: Pissarides (2000) ch.~1 and \S8.1; Mortensen--Pissarides (1994); Hosios (1990).
+
+\begin{definition}[Unemployment flow]
+\label{def:dmp_flow}
+\lean{Econ.DMP.flow}
+\leanok
+With separation rate $s$ and finding rate $f$, $\mathrm{flow}(u) = u + s(1-u) - f u$.
+\end{definition}
+
+\begin{theorem}[Steady-state unemployment]
+\label{thm:dmp_steady_unemp}
+\lean{Econ.DMP.steadyState_unemployment, Econ.DMP.tendsto_unemployment}
+\leanok
+\uses{def:dmp_flow}
+If $s + f > 0$, $\mathrm{flow}(u) = u \iff u = s/(s+f)$. If moreover $s + f < 2$, iterates from any $u_0$
+converge to $u^* = s/(s+f)$.
+\end{theorem}
+\begin{proof}
+\leanok
+The fixed-point equation is $s(1 - u) = f u$. For convergence, by induction
+$u_t = u^* + (1 - s - f)^t (u_0 - u^*)$, and $|1 - s - f| < 1$.
+\end{proof}
+
+\begin{definition}[DMP economy]
+\label{def:dmp_economy}
+\lean{Econ.DMP.Economy, Econ.DMP.Economy.findRate, Econ.DMP.Economy.fillRate, Econ.DMP.Economy.unemp, Econ.DMP.Economy.vac, Econ.DMP.Economy.findRate_eq}
+\leanok
+Parameters $A > 0$, $\eta \in (0,1)$, $s > 0$, $c > 0$, $b < y$. Matching $m(u, v) = A u^\eta v^{1-\eta}$ gives
+$f(\theta) = A\theta^{1-\eta}$ and $q(\theta) = A\theta^{-\eta}$, with $f(\theta) = \theta q(\theta)$. Steady-state
+unemployment $u(\theta) = s/(s + f(\theta))$ and vacancies $v(\theta) = \theta u(\theta)$.
+\end{definition}
+
+\begin{definition}[Job-creation condition]
+\label{def:dmp_jc}
+\lean{Econ.DMP.Economy.jc, Econ.DMP.Economy.IsEquilibrium}
+\leanok
+\uses{def:dmp_economy}
+$\mathrm{jc}_{r, \beta}(\theta) = c(r + s)\theta^\eta/A + \beta c \theta$. $\theta$ is an equilibrium if $\theta > 0$ and
+$\mathrm{jc}_{r,\beta}(\theta) = (1-\beta)(y - b)$.
+\end{definition}
+
+\begin{lemma}[Textbook form]
+\label{lem:dmp_jc_textbook}
+\lean{Econ.DMP.Economy.jc_iff_textbook}
+\leanok
+\uses{def:dmp_jc}
+For $\theta > 0$, $r \ge 0$, the job-creation condition is equivalent to
+$c/q(\theta) = (y - w)/(r + s)$ with Nash wage $w = (1-\beta)b + \beta(y + c\theta)$.
+\end{lemma}
+\begin{proof}
+\leanok
+$c/q(\theta) = c\theta^\eta/A$; multiply through by $r + s > 0$ and rearrange.
+\end{proof}
+
+\begin{lemma}[$\mathrm{jc}$ is continuous and strictly increasing]
+\label{lem:dmp_jc_mono}
+\lean{Econ.DMP.Economy.jc_strictMonoOn, Econ.DMP.Economy.continuous_jc}
+\leanok
+\uses{def:dmp_jc}
+For $r, \beta \ge 0$, $\mathrm{jc}_{r,\beta}$ is continuous and strictly increasing on $[0, \infty)$.
+\end{lemma}
+\begin{proof}
+\leanok
+$\theta^\eta$ is strictly increasing for $\eta > 0$ and multiplied by $c(r+s)/A > 0$; $\beta c\theta$ is nondecreasing.
+\end{proof}
+
+\begin{theorem}[Existence and uniqueness of equilibrium tightness]
+\label{thm:dmp_existsUnique}
+\lean{Econ.DMP.Economy.existsUnique_equilibrium}
+\leanok
+\uses{lem:dmp_jc_mono}
+For $r \ge 0$ and $\beta \in [0, 1)$ there is a unique equilibrium $\theta$.
+\end{theorem}
+\begin{proof}
+\leanok
+Let $K = (1-\beta)(y - b) > 0$. $\mathrm{jc}(0) = 0 \le K$. At
+$\theta_1 = (KA/(c(r+s)))^{1/\eta}$, $\theta_1^\eta = KA/(c(r+s))$, so the first term equals $K$ and
+$\mathrm{jc}(\theta_1) \ge K$. The IVT on $[0, \theta_1]$ gives a root, which is not $0$ since $\mathrm{jc}(0) = 0 < K$.
+Uniqueness from strict monotonicity.
+\end{proof}
+
+\begin{theorem}[Bargaining power lowers tightness]
+\label{thm:dmp_strictAnti_beta}
+\lean{Econ.DMP.Economy.equilibrium_strictAnti_β}
+\leanok
+\uses{lem:dmp_jc_mono}
+If $0 \le \beta_1 < \beta_2$ with equilibria $\theta_1, \theta_2$ (same $r \ge 0$), then $\theta_2 < \theta_1$.
+\end{theorem}
+\begin{proof}
+\leanok
+Suppose $\theta_1 \le \theta_2$. Then $\mathrm{jc}_{\beta_1}(\theta_1) \le \mathrm{jc}_{\beta_1}(\theta_2) \le \mathrm{jc}_{\beta_2}(\theta_2)$,
+i.e.\ $(1-\beta_1)(y-b) \le (1-\beta_2)(y-b)$, contradicting $\beta_1 < \beta_2$ and $y > b$.
+\end{proof}
+
+\begin{theorem}[The Beveridge curve slopes down]
+\label{thm:beveridge}
+\lean{Econ.DMP.Economy.unemp_strictAntiOn, Econ.DMP.Economy.vac_strictMonoOn, Econ.DMP.Economy.beveridge}
+\leanok
+\uses{def:dmp_economy}
+For $0 < \theta < \theta'$: $u(\theta') < u(\theta)$ and $v(\theta) < v(\theta')$.
+\end{theorem}
+\begin{proof}
+\leanok
+$f$ is strictly increasing, so $u = s/(s+f)$ strictly decreases. For vacancies,
+$v(\theta) = s/(s/\theta + A\theta^{-\eta})$, and both terms in the denominator strictly decrease in $\theta$.
+\end{proof}
+
+\begin{definition}[Welfare and efficiency]
+\label{def:dmp_welfare}
+\lean{Econ.DMP.Economy.welfare, Econ.DMP.Economy.welfare_eq, Econ.DMP.Economy.IsEfficient}
+\leanok
+\uses{def:dmp_economy}
+$W(\theta) = b + \frac{(y - b) f(\theta) - c s \theta}{s + f(\theta)}$, which equals
+$y(1 - u) + b u - c\theta u$ with $u = u(\theta)$. $\theta$ is efficient if $\theta > 0$ maximizes $W$ over $\theta' > 0$.
+\end{definition}
+
+\begin{lemma}[Derivative of welfare]
+\label{lem:dmp_hasDerivAt_welfare}
+\lean{Econ.DMP.Economy.hasDerivAt_welfare}
+\leanok
+\uses{def:dmp_welfare, def:dmp_jc}
+For $\theta > 0$,
+$W'(\theta) = \frac{s f(\theta)}{\theta (s + f(\theta))^2}\big((1-\eta)(y-b) - \mathrm{jc}_{0,\eta}(\theta)\big)$.
+\end{lemma}
+\begin{proof}
+\leanok
+Quotient rule with $f'(\theta) = A(1-\eta)\theta^{-\eta}$; then rewrite $f(\theta) = A\theta/\theta^\eta$ and
+$\theta^{-\eta} = 1/\theta^\eta$ and simplify.
+\end{proof}
+
+\begin{lemma}[Welfare is uniquely maximized at the $r = 0$, $\beta = \eta$ equilibrium]
+\label{lem:dmp_welfare_lt}
+\lean{Econ.DMP.Economy.welfare_lt_of_ne}
+\leanok
+\uses{lem:dmp_hasDerivAt_welfare, lem:dmp_jc_mono}
+If $\theta_e$ is an equilibrium with $r = 0$, $\beta = \eta$, then $W(\theta) < W(\theta_e)$ for every $\theta > 0$, $\theta \neq \theta_e$.
+\end{lemma}
+\begin{proof}
+\leanok
+Let $P(\theta) = (1-\eta)(y-b) - \mathrm{jc}_{0,\eta}(\theta)$; $P(\theta_e) = 0$ and $P$ is strictly decreasing
+(Lemma~\ref{lem:dmp_jc_mono}). The prefactor in Lemma~\ref{lem:dmp_hasDerivAt_welfare} is positive. So $W' > 0$ on
+$(\theta, \theta_e)$ when $\theta < \theta_e$, and $W' < 0$ on $(\theta_e, \theta)$ when $\theta > \theta_e$; $W$ is
+continuous on the closed interval, so it is strictly monotone there.
+\end{proof}
+
+\begin{theorem}[Efficient tightness]
+\label{thm:dmp_isEfficient_iff}
+\lean{Econ.DMP.Economy.isEfficient_iff}
+\leanok
+\uses{lem:dmp_welfare_lt, thm:dmp_existsUnique}
+$\theta$ is efficient iff it is an equilibrium with $r = 0$ and $\beta = \eta$.
+\end{theorem}
+\begin{proof}
+\leanok
+Let $\theta_e$ be the ($r = 0$, $\beta = \eta$) equilibrium (Theorem~\ref{thm:dmp_existsUnique}). If $\theta$ is efficient but
+$\theta \neq \theta_e$, Lemma~\ref{lem:dmp_welfare_lt} gives $W(\theta) < W(\theta_e)$, contradicting efficiency.
+Conversely an equilibrium is efficient by Lemma~\ref{lem:dmp_welfare_lt}.
+\end{proof}
+
+\begin{theorem}[Hosios condition]
+\label{thm:hosios}
+\lean{Econ.DMP.Economy.hosios}
+\leanok
+\uses{thm:dmp_isEfficient_iff, thm:dmp_strictAnti_beta}
+If $\theta$ is the $r = 0$ equilibrium for $\beta \in [0, 1)$, then $\theta$ is efficient iff $\beta = \eta$.
+\end{theorem}
+\begin{proof}
+\leanok
+By Theorem~\ref{thm:dmp_isEfficient_iff}, efficiency means $\theta$ is also the $\beta = \eta$ equilibrium. If
+$\beta \neq \eta$, Theorem~\ref{thm:dmp_strictAnti_beta} makes the two equilibria strictly ordered, so they differ.
+If $\beta = \eta$ it holds trivially.
+\end{proof}

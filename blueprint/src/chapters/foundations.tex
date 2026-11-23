@@ -344,3 +344,60 @@ $m(0) = 1$ while $m(x) = 0$ for $x \neq 0$, so $m(1/(n+1)) = 0 \not\to 1$. A sec
 all hypotheses of Theorem~\ref{thm:berge} for $\max_{y \in [-1,1]} -(y - x)^2$, so the theorem is not
 vacuous.
 \end{remark}
+
+% Lean: EconLean/Foundations/SupportingHyperplane.lean
+\section{The supporting hyperplane theorem}
+\label{sec:supporting_hyperplane}
+
+Source: MWG Mathematical Appendix, Theorem M.G.3; Rockafellar, \emph{Convex Analysis}, Thm.~11.6.
+Mathlib separates a point from open, closed, or full-dimensional convex sets. The set used in the
+Second Welfare Theorem need not be any of these, so finite dimension does the remaining work.
+
+\begin{lemma}[Linear functionals are price vectors]
+\label{lem:cost_eq_linearMap}
+\lean{Econ.exists_cost_eq_linearMap, Econ.exists_cost_eq_linearMap_ne_zero}
+\leanok
+\uses{def:cost}
+Every linear $f : \R^\iota \to \R$ has the form $f(z) = p \cdot z$ with $p_i = f(e_i)$. If $f \neq 0$ then $p \neq 0$.
+\end{lemma}
+\begin{proof}
+\leanok
+Write $z = \sum_i z_i e_i$ and use linearity (\texttt{LinearMap.pi\_apply\_eq\_sum\_univ}):
+$f(z) = \sum_i z_i f(e_i) = p \cdot z$. If $p = 0$ then $f(z) = 0 \cdot z = 0$ for all $z$, so $f = 0$.
+\end{proof}
+
+\begin{theorem}[Supporting hyperplane, functional form]
+\label{thm:linearMap_support}
+\lean{Econ.exists_linearMap_support}
+\leanok
+Let $\iota$ be nonempty, $C \subseteq \R^\iota$ convex, and $x \notin \operatorname{int} C$. Then there is a linear
+$f \neq 0$ with $f(x) \le f(c)$ for every $c \in C$.
+\end{theorem}
+\begin{proof}
+\leanok
+Case 1: $\operatorname{int} C \neq \emptyset$. Mathlib's
+\texttt{geometric\_hahn\_banach\_of\_nonempty\_interior\_point} gives a continuous $g \neq 0$ with $g(c) \le g(x)$ on
+$C$; take $f = -g$.
+
+Case 2: $\operatorname{int} C = \emptyset$. If $C = \emptyset$, any coordinate projection $f = \pi_i$ works vacuously,
+and it is nonzero since it maps the all-ones vector to $1$. Otherwise fix $c_0 \in C$. A convex set in finite
+dimension has nonempty interior iff its affine span is everything
+(\texttt{Convex.interior\_nonempty\_iff\_affineSpan\_eq\_top}), so the affine span of $C$ is proper, and therefore its
+direction $V$ is a proper linear subspace. Some nonzero linear $g$ vanishes on $V$
+(\texttt{Submodule.exists\_le\_ker\_of\_lt\_top}). For $c \in C$, $c - c_0 \in V$, so $g(c) = g(c_0)$: $g$ is constant
+on $C$. If $g(x) \le g(c_0)$ take $f = g$; otherwise take $f = -g$.
+\end{proof}
+
+\begin{theorem}[Supporting hyperplane, price form]
+\label{thm:price_support}
+\lean{Econ.exists_price_support}
+\leanok
+\uses{thm:linearMap_support, lem:cost_eq_linearMap}
+Let $\iota$ be nonempty, $C \subseteq \R^\iota$ convex, and $x \notin \operatorname{int} C$. There is a price vector
+$p \neq 0$ with $p \cdot x \le p \cdot c$ for all $c \in C$.
+\end{theorem}
+\begin{proof}
+\leanok
+Take $f$ from Theorem~\ref{thm:linearMap_support} and write it as $p \cdot (\,\cdot\,)$ with $p \neq 0$ by
+Lemma~\ref{lem:cost_eq_linearMap}.
+\end{proof}

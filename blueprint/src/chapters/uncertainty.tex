@@ -1,0 +1,282 @@
+% Lean: EconLean/Uncertainty/VNM.lean, MoneyLottery.lean, RiskAversion.lean, Pratt.lean, StochasticDominance.lean
+\chapter{Choice under Uncertainty}
+\label{chap:uncertainty}
+
+Source: MWG Ch.~6. Prior Lean work: J.~Li (arXiv 2506.07066) states vN--M in Lean~4, but its
+representation theorem is not fully proved there; the proof below is independent.
+
+\section{Lotteries and the expected utility theorem}
+\label{sec:vnm}
+
+\begin{definition}[Lotteries, mixtures, expected utility; MWG Defs.~6.B.1, 6.B.2, 6.B.5]
+\label{def:lottery}
+\lean{Econ.lotteries, Econ.mix, Econ.degenerate, Econ.expectedUtility}
+\leanok
+For a finite outcome set $C$, a lottery is $L \in \R^C$ with $L_c \ge 0$ and $\sum_c L_c = 1$. The
+reduced compound lottery is $\alpha L + (1-\alpha) L'$; $\delta_c$ is the sure outcome $c$; and
+$U(L) = \sum_c L_c u_c$.
+\end{definition}
+
+\begin{lemma}[Algebra of mixtures]
+\label{lem:mix-algebra}
+\lean{Econ.mix_one, Econ.mix_zero, Econ.mix_self, Econ.mix_comm, Econ.mem_Icc_mix, Econ.convex_lotteries, Econ.mix_mem, Econ.expectedUtility_mix, Econ.expectedUtility_degenerate, Econ.degenerate_mem, Econ.sum_degenerate, Econ.expectedUtility_affine}
+\leanok
+\uses{def:lottery}
+Mixtures with weight $1$, $0$ or of $L$ with itself are trivial; $\alpha L + (1-\alpha)L' =
+(1-\alpha)L' + \alpha L$; the set of lotteries is convex; $U$ is affine in the lottery;
+$U(\delta_c) = u_c$; $L = \sum_c L_c \delta_c$; and $\sum_c L_c (a u_c + b) = a U(L) + b$.
+\end{lemma}
+\begin{proof}
+\leanok
+Pointwise ring identities and \texttt{pi\_eq\_sum\_univ}.
+\end{proof}
+
+\begin{definition}[vN--M axioms; MWG Defs.~6.B.3, 6.B.4]
+\label{def:vnm-axioms}
+\lean{Econ.VNMAxioms, Econ.HasEURepresentation}
+\leanok
+\uses{def:lottery, def:rational}
+$\pref$ on lotteries is rational; continuous: $\{\alpha \in [0,1] : \alpha L + (1-\alpha)L' \pref L''\}$
+and $\{\alpha \in [0,1] : L'' \pref \alpha L + (1-\alpha)L'\}$ are closed; and satisfies independence:
+for $\alpha \in (0,1)$, $L \pref L' \iff \alpha L + (1-\alpha)L'' \pref \alpha L' + (1-\alpha) L''$.
+$u$ represents $\pref$ if $L \pref L' \iff U(L) \ge U(L')$ on lotteries.
+\end{definition}
+
+\begin{proposition}[Expected utility satisfies the axioms]
+\label{prop:vnm-easy}
+\lean{Econ.vnmAxioms_of_eu}
+\leanok
+\uses{def:vnm-axioms, lem:mix-algebra}
+An expected-utility preference satisfies the vN--M axioms.
+\end{proposition}
+\begin{proof}
+\leanok
+Rationality from \texttt{le\_total}, \texttt{le\_trans}. Continuity: each set is
+$[0,1] \cap \{\alpha : \text{affine}(\alpha) \le \text{const}\}$, closed. Independence: both sides
+are $\alpha U(\cdot) + (1-\alpha)U(L'')$; cancel $\alpha > 0$.
+\end{proof}
+
+\begin{lemma}[Consequences of the axioms]
+\label{lem:vnm-consequences}
+\lean{Econ.exists_top_of_total_finset, Econ.VNMAxioms.complete', Econ.VNMAxioms.refl', Econ.VNMAxioms.trans', Econ.VNMAxioms.indep_strict, Econ.VNMAxioms.strict_mix, Econ.VNMAxioms.le_mix, Econ.VNMAxioms.mix_le, Econ.VNMAxioms.le_of_degenerate, Econ.VNMAxioms.degenerate_le, Econ.VNMAxioms.indiff_mix}
+\leanok
+\uses{def:vnm-axioms, lem:mix-algebra}
+(a) A total transitive relation has a top element on a nonempty finite set. (b) Independence holds
+for $\spref$. (c) If $L \spref L'$ and $\alpha\in(0,1)$ then $L \spref \alpha L + (1-\alpha)L' \spref L'$
+(MWG Step~1). (d) Betweenness: if $M \pref L, L'$ then $M \pref$ every mixture (and dually).
+(e) If $M \pref \delta_c$ for all $c$ then $M \pref L$ for every lottery (and dually).
+(f) Indifference survives mixing with a common lottery.
+\end{lemma}
+\begin{proof}
+\leanok
+(a) \texttt{Finset.induction\_on}. (b) Apply independence in both directions. (c) Independence with
+$L'' = L'$ and, after \texttt{mix\_comm}, with weight $1-\alpha$ and $L'' = L$. (d) $M \pref \alpha M +
+(1-\alpha)L' \pref \alpha L + (1-\alpha)L'$, two uses of independence; endpoints separately.
+(e) $\{L : M \pref L\}$ is convex by (d) and contains every $\delta_c$, so it contains
+$L = \sum_c L_c\delta_c$ (\texttt{Convex.sum\_mem}). (f) Independence both ways.
+\end{proof}
+
+\begin{theorem}[von Neumann--Morgenstern expected utility theorem; MWG Prop.~6.B.3]
+\label{thm:vnm}
+\lean{Econ.exists_eu_of_vnmAxioms, Econ.vnm_theorem}
+\leanok
+\uses{def:vnm-axioms, prop:vnm-easy, lem:vnm-consequences}
+A preference on lotteries over a finite set satisfies the vN--M axioms iff it has an expected
+utility representation.
+\end{theorem}
+\begin{proof}
+\leanok
+If $C = \emptyset$ there are no lotteries. Otherwise take best and worst outcomes $\bar c, \underline c$
+(Lemma~\ref{lem:vnm-consequences}(a)); by (e), $\delta_{\bar c} \pref L \pref \delta_{\underline c}$
+for all $L$. If $\delta_{\underline c} \pref \delta_{\bar c}$ all lotteries are indifferent and $u = 0$
+works. Otherwise let $M_\alpha = \alpha\delta_{\bar c} + (1-\alpha)\delta_{\underline c}$.
+Step~2: $\beta < \alpha \Rightarrow M_\alpha \spref M_\beta$, writing $M_\alpha$ as a mixture of
+$\delta_{\bar c}$ and $M_\beta$ with weight $\gamma = (\alpha-\beta)/(1-\beta)$ and using (c); hence
+$M_\alpha \pref M_\beta \iff \beta \le \alpha$. Step~3: the sets
+$\{\alpha : M_\alpha \pref L\}$, $\{\alpha : L \pref M_\alpha\}$ are closed (continuity), cover $[0,1]$
+(completeness) and contain $1$ and $0$; since $[0,1]$ is connected (\texttt{isPreconnected\_closed\_iff})
+they meet, giving $U(L)$ with $L \indiff M_{U(L)}$, unique by Step~2. Step~4: $L \pref L' \iff
+U(L') \le U(L)$ by transitivity. Step~5: by (f) twice, $\beta L + (1-\beta)L' \indiff
+M_{\beta U(L) + (1-\beta)U(L')}$, so $U$ is mixture-linear. Step~6: $U$ is therefore convex and
+concave on the simplex, and Jensen's inequality both ways (\texttt{ConvexOn.map\_sum\_le},
+\texttt{ConcaveOn.le\_map\_sum}) at $L = \sum_c L_c\delta_c$ gives $U(L) = \sum_c L_c U(\delta_c)$.
+Take $u_c = U(\delta_c)$. The converse is Proposition~\ref{prop:vnm-easy}.
+\end{proof}
+
+\begin{theorem}[Uniqueness up to positive affine transformation; MWG Prop.~6.B.2]
+\label{thm:vnm-unique}
+\lean{Econ.HasEURepresentation.affine, Econ.HasEURepresentation.unique}
+\leanok
+\uses{def:vnm-axioms, lem:mix-algebra}
+If $u$ represents $\pref$ so does $a u + b$ ($a > 0$). If $u$ and $v$ both represent $\pref$ then
+$v = a u + b$ for some $a > 0$, $b$.
+\end{theorem}
+\begin{proof}
+\leanok
+Let $c_M, c_m$ maximize and minimize $u$. If $u(c_m) = u(c_M)$, $u$ is constant, all $\delta_c$ are
+indifferent, so $v$ is constant and $a = 1$ works. Otherwise $\delta_c \indiff \alpha\delta_{c_M} +
+(1-\alpha)\delta_{c_m}$ with $\alpha = (u_c - u_{c_m})/(u_{c_M}-u_{c_m})$, so $v_c = \alpha v_{c_M} +
+(1-\alpha) v_{c_m}$, and $v_{c_M} > v_{c_m}$ because $\delta_{c_M}\spref\delta_{c_m}$. Take
+$a = (v_{c_M}-v_{c_m})/(u_{c_M}-u_{c_m})$.
+\end{proof}
+
+\section{Money lotteries and risk aversion}
+\label{sec:risk-aversion}
+
+\begin{definition}[Simple money lotteries]
+\label{def:simple-lottery}
+\lean{Econ.SimpleLottery, Econ.SimpleLottery.expect, Econ.SimpleLottery.mean, Econ.SimpleLottery.cdf, Econ.SimpleLottery.twoPoint, Econ.SimpleLottery.pure, Econ.SimpleLottery.integral, Econ.SimpleLottery.SupportedIn}
+\leanok
+A finitely supported probability $F$ on $\R$ (\texttt{ℝ →₀ ℝ}); $E_F[u] = \sum_x F(x) u(x)$, mean
+$E_F[x]$, CDF $F(t) = P(X \le t)$; two-point and degenerate lotteries. MWG uses general distributions;
+we restrict to finite support.
+\end{definition}
+
+\begin{lemma}[Linearity of expectation]
+\label{lem:expect-linear}
+\lean{Econ.SimpleLottery.expect_eq_sum, Econ.SimpleLottery.expect_eq_sum_of_subset, Econ.SimpleLottery.sum_prob, Econ.SimpleLottery.support_nonempty, Econ.SimpleLottery.expect_const, Econ.SimpleLottery.expect_add, Econ.SimpleLottery.expect_sub, Econ.SimpleLottery.expect_const_mul, Econ.SimpleLottery.expect_congr, Econ.SimpleLottery.expect_mono, Econ.SimpleLottery.expect_nonneg, Econ.SimpleLottery.expect_twoPoint, Econ.SimpleLottery.support_twoPoint_subset, Econ.SimpleLottery.expect_pure, Econ.SimpleLottery.integral_add, Econ.SimpleLottery.integral_smul, Econ.SimpleLottery.integral_finset_sum, Econ.SimpleLottery.expect_eq_integral}
+\leanok
+\uses{def:simple-lottery}
+$E_F$ is linear and monotone in $u$, depends only on $u$ on the support, and is linear in $F$.
+\end{lemma}
+\begin{proof}
+\leanok
+Finite-sum identities; linearity in $F$ from \texttt{Finsupp.sum\_add\_index'} and
+\texttt{Finsupp.sum\_smul\_index'}.
+\end{proof}
+
+\begin{theorem}[Risk aversion $\iff$ concavity; MWG Prop.~6.C.1 (i)$\iff$(ii)]
+\label{thm:risk-averse-concave}
+\lean{Econ.RiskAverseOn, Econ.ConcaveOn.expect_le, Econ.riskAverseOn_iff_concaveOn}
+\leanok
+\uses{lem:expect-linear}
+$u$ is risk averse on a convex $I$ ($E_F[u] \le u(E_F[x])$ for lotteries in $I$) iff $u$ is concave on $I$.
+\end{theorem}
+\begin{proof}
+\leanok
+($\Leftarrow$) Jensen, \texttt{ConcaveOn.le\_map\_sum}. ($\Rightarrow$) test on the two-point lottery
+on $x, y$ with weights $a, 1-a$.
+\end{proof}
+
+\begin{theorem}[Certainty equivalents; MWG Prop.~6.C.1 (iii)]
+\label{thm:certainty-equivalent}
+\lean{Econ.IsCertaintyEquivalent, Econ.SimpleLottery.exists_min_max_expect, Econ.exists_certaintyEquivalent, Econ.riskAverse_iff_certaintyEquivalent_le_mean}
+\leanok
+\uses{thm:risk-averse-concave}
+A continuous $u$ gives every lottery a certainty equivalent $c$ with $u(c) = E_F[u]$. For continuous
+strictly increasing $u$: risk averse $\iff c(F,u) \le E_F[x]$ for all $F$.
+\end{theorem}
+\begin{proof}
+\leanok
+$E_F[u]$ lies between $u$ at the worst and best support points; intermediate value theorem
+(\texttt{intermediate\_value\_uIcc}). Then $u(c) \le u(\text{mean}) \iff c \le \text{mean}$.
+\end{proof}
+
+\begin{theorem}[Pratt's theorem, (ii)$\iff$(iii); MWG Prop.~6.C.2]
+\label{thm:pratt}
+\lean{Econ.MoreRiskAverse, Econ.moreRiskAverse_iff}
+\leanok
+\uses{thm:certainty-equivalent}
+For continuous strictly increasing $u_1,u_2$: $c(F,u_2) \le c(F,u_1)$ for all $F$ iff $u_2 = \psi\circ u_1$
+with $\psi$ increasing and concave on the range of $u_1$.
+\end{theorem}
+\begin{proof}
+\leanok
+($\Rightarrow$) $\psi = u_2 \circ u_1^{-1}$ (\texttt{Function.invFun}); the range is convex
+(connected). Concavity: for $t_i = u_1(x_i)$ the two-point lottery on $x_1, x_2$ has
+$u_1(c_1) = a t_1 + (1-a)t_2$ and $a\psi(t_1) + (1-a)\psi(t_2) = u_2(c_2) \le u_2(c_1) = \psi(a t_1 + (1-a) t_2)$.
+($\Leftarrow$) $u_2(c_2) = E[\psi(u_1)] \le \psi(E[u_1]) = u_2(c_1)$ by Jensen.
+\end{proof}
+
+\begin{theorem}[Arrow--Pratt coefficient]
+\label{thm:arrow-pratt}
+\lean{Econ.arrowPratt, Econ.riskAverse_iff_arrowPratt_nonneg}
+\leanok
+\uses{thm:risk-averse-concave}
+$r_A(x) = -u''(x)/u'(x)$. For twice differentiable $u$ with $u' > 0$: risk averse $\iff r_A \ge 0$.
+\end{theorem}
+\begin{proof}
+\leanok
+$r_A \ge 0 \iff u'' \le 0$. Concave $\Rightarrow u'$ antitone (\texttt{ConcaveOn.antitoneOn\_deriv})
+$\Rightarrow u'' \le 0$ (\texttt{Antitone.deriv\_nonpos}); conversely
+\texttt{concaveOn\_univ\_of\_deriv2\_nonpos}.
+\end{proof}
+
+\begin{theorem}[Pratt's theorem, Arrow--Pratt clause; MWG Prop.~6.C.2 (i)$\iff$(iii)]
+\label{thm:pratt-arrow}
+\lean{Econ.marginalRatio, Econ.relSlope, Econ.relSlope_comm, Econ.arrowPratt_le_iff_antitone_marginalRatio, Econ.exists_relSlope_eq, Econ.tendsto_relSlope, Econ.arrowPratt_le_iff_moreRiskAverse}
+\leanok
+\uses{thm:pratt, thm:arrow-pratt}
+For twice differentiable $u_1,u_2$ with $u_1', u_2' > 0$: $r_A(x,u_2) \ge r_A(x,u_1)$ for all $x$ iff
+$u_2$ is more risk averse than $u_1$.
+\end{theorem}
+\begin{proof}
+\leanok
+Let $g = u_2'/u_1'$. Step~1: $g' = (u_2''u_1' - u_2'u_1'')/u_1'^2$, so $r_1 \le r_2$ everywhere iff
+$g' \le 0$ iff $g$ is antitone (\texttt{antitone\_of\_deriv\_nonpos}, \texttt{Antitone.deriv\_nonpos}).
+By Theorem~\ref{thm:pratt} it remains to show $g$ antitone iff $\psi = u_2\circ u_1^{-1}$ is concave.
+($\Rightarrow$) The slope of $\psi$ between $u_1(x), u_1(y)$ is $(u_2(y)-u_2(x))/(u_1(y)-u_1(x)) =
+g(\xi)$ for some $\xi\in(x,y)$ (Cauchy MVT, \texttt{exists\_ratio\_hasDerivAt\_eq\_ratio\_slope}); slopes
+therefore decrease, and \texttt{concaveOn\_of\_slope\_anti\_adjacent} applies. ($\Leftarrow$) For
+$x < y < z$ concavity orders the slopes (\texttt{ConcaveOn.slope\_anti\_adjacent}) so
+$S(y,z) \le S(x,z) \le S(x,y)$. The slope $S(x,y) \to g(x)$ as $y \to x$ (ratio of difference
+quotients, \texttt{hasDerivAt\_iff\_tendsto\_slope}); passing to the limit $y \downarrow x$ and
+$y \uparrow z$ gives $g(z) \le S(x,z) \le g(x)$.
+\end{proof}
+
+\section{Stochastic dominance}
+\label{sec:stochastic-dominance}
+
+\begin{theorem}[FOSD $\iff$ CDF dominance; MWG Prop.~6.D.1]
+\label{thm:fosd}
+\lean{Econ.SimpleLottery.FOSD, Econ.SimpleLottery.expect_gt, Econ.SimpleLottery.expect_ge_le_of_cdf, Econ.SimpleLottery.fosd_iff_cdf_le}
+\leanok
+\uses{lem:expect-linear}
+$E_G[u] \le E_F[u]$ for every nondecreasing $u$ iff $F(t) \le G(t)$ for all $t$.
+\end{theorem}
+\begin{proof}
+\leanok
+($\Rightarrow$) $u = \mathbf 1[x > t]$ gives $1 - G(t) \le 1 - F(t)$. ($\Leftarrow$) First
+$P_G(X \ge m) \le P_F(X \ge m)$: on the joint support $S$, $\{x < m\} = \{x \le b\}$ with $b$ the
+largest support point below $m$. Then induct on the number of values $u$ takes on $S$: with top value
+$M$ and next value $M'$, on $S$ we have $u = \min(u, M') + (M - M')\mathbf 1[x \ge m]$ where $m$ is the
+least support point with $u = M$; $\min(u,M')$ takes one value fewer.
+\end{proof}
+
+\begin{definition}[SOSD and mean-preserving spreads; MWG Def.~6.D.2]
+\label{def:sosd}
+\lean{Econ.SimpleLottery.SOSD, Econ.SimpleLottery.IsMeanPreservingSpread}
+\leanok
+\uses{def:simple-lottery}
+$F$ SOSD $G$: equal means and $E_G[u] \le E_F[u]$ for nondecreasing concave $u$. $G$ is a
+mean-preserving spread of $F$ if $G = \sum_x F(x) H_x$ with each $H_x$ of mean $x$.
+\end{definition}
+
+\begin{theorem}[Mean-preserving spreads are dominated; MWG Prop.~6.D.2]
+\label{thm:mps-sosd}
+\lean{Econ.SimpleLottery.expect_of_compound, Econ.SimpleLottery.expect_le_of_meanPreservingSpread, Econ.SimpleLottery.sosd_of_meanPreservingSpread}
+\leanok
+\uses{def:sosd, thm:risk-averse-concave}
+If $G$ is a mean-preserving spread of $F$ then $E_G[u] \le E_F[u]$ for every concave $u$, and $F$ SOSD $G$.
+\end{theorem}
+\begin{proof}
+\leanok
+$E_G[u] = \sum_x F(x) E_{H_x}[u] \le \sum_x F(x) u(x) = E_F[u]$ by linearity in the distribution and
+Jensen for each $H_x$; with $u = \mathrm{id}$ the same computation gives equal means.
+\end{proof}
+
+\begin{theorem}[SOSD implies the integrated-CDF condition; MWG Prop.~6.D.2]
+\label{thm:sosd-shortfall}
+\lean{Econ.SimpleLottery.SOSD.shortfall_le, Econ.SimpleLottery.monotone_step, Econ.SimpleLottery.expect_shortfall_eq_integral_cdf}
+\leanok
+\uses{def:sosd}
+If $F$ SOSD $G$ then $E_F[(t-X)^+] \le E_G[(t-X)^+]$ for all $t$; and $E_F[(t-X)^+] = \int_a^t F(s)\,ds$
+when $a$ is below the support, so this is $\int_{-\infty}^t F \le \int_{-\infty}^t G$.
+\end{theorem}
+\begin{proof}
+\leanok
+$u(x) = -(t-x)^+$ is nondecreasing and concave. For the identity, $\int_a^t \mathbf 1[x \le s]\,ds$ is
+the Lebesgue measure of $[x,t]$, i.e.\ $(t-x)^+$ (\texttt{setIntegral\_indicator},
+\texttt{Real.volume\_Icc}); sum over atoms (\texttt{intervalIntegral.integral\_finsetSum}, step
+functions are monotone hence interval integrable). The converses of MWG 6.D.2 are not formalized.
+\end{proof}
