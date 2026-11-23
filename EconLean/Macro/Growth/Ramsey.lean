@@ -37,10 +37,9 @@ finite and continuous at `c = 0`, so log and CRRA utility with `σ ≥ 1` are
 excluded (as in SL's bounded case). Both directions of the modified golden
 rule are proved (an interior steady state satisfies `β f'(k*) = 1`, and the
 `k*` solving it is a steady state), and the `√` example witnesses an interior
-steady state. Still open: with Inada-type conditions, every path from
-`k₀ > 0` converges to `k*` (not to the trivial steady state `0`; SL Thm 6.2 /
-Acemoglu Prop. 6.3); strict monotonicity of `g` and monotonicity of
-consumption (SL ch. 6).
+steady state. Global convergence to `k*` from every `k₀ > 0` under Inada
+conditions is in `RamseyGlobal.lean`. Still open: strict monotonicity of `g`
+and monotonicity of consumption (SL ch. 6).
 -/
 module
 

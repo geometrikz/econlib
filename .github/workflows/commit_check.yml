@@ -1,0 +1,40 @@
+name: Commit check
+
+# Every pushed commit must be signed (GitHub "Verified") and authored by
+# geometrikz's noreply address. See CONVENTIONS.md, "Commits".
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+permissions:
+  contents: read
+
+jobs:
+  verified-and-authored:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check commits
+        env:
+          GH_TOKEN: ${{ github.token }}
+          REPO: ${{ github.repository }}
+          BEFORE: ${{ github.event.before || github.event.pull_request.base.sha }}
+          AFTER: ${{ github.event.after || github.event.pull_request.head.sha }}
+        run: |
+          set -euo pipefail
+          AUTHOR="33253415+geometrikz@users.noreply.github.com"
+          if [ -z "$BEFORE" ] || [ "$BEFORE" = "0000000000000000000000000000000000000000" ]; then
+            shas=$(gh api "repos/$REPO/commits?sha=$AFTER&per_page=1" -q '.[].sha')
+          else
+            shas=$(gh api "repos/$REPO/compare/$BEFORE...$AFTER" -q '.commits[].sha')
+          fi
+          fail=0
+          for s in $shas; do
+            read -r verified email < <(gh api "repos/$REPO/commits/$s" -q '"\(.commit.verification.verified) \(.commit.author.email)"')
+            echo "$s verified=$verified author=$email"
+            if [ "$verified" != "true" ] || [ "$email" != "$AUTHOR" ]; then fail=1; fi
+          done
+          if [ "$fail" = 1 ]; then
+            echo "::error::Unverified commit or wrong author email. See CONVENTIONS.md, 'Commits'."
+            exit 1
+          fi

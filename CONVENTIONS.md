@@ -65,3 +65,15 @@ Details and a template: `blueprint/README.md`.
 
 ## Versions
 Lean `v4.36.0`, Mathlib `v4.36.0` (see `lean-toolchain`, `lakefile.toml`).
+
+## Commits (so they count as geoff's and show "Verified")
+- Author every commit as `geometrikz <33253415+geometrikz@users.noreply.github.com>`
+  (e.g. `git commit --author="geometrikz <33253415+geometrikz@users.noreply.github.com>"`).
+  That email is linked to github.com/geometrikz, so commits count as contributions.
+- Commit and push only from the cloud integrator session, and leave the committer
+  identity and signing at the environment defaults (committer
+  `Claude <noreply@anthropic.com>`, SSH-signed). GitHub verifies that signature, so
+  commits show "Verified". Never override `user.name`/`user.email` with `git -c`,
+  never set `commit.gpgsign=false`, and never push unsigned commits from a laptop.
+- CI (`.github/workflows/commit_check.yml`) fails if a pushed commit is unverified
+  or has a different author email.

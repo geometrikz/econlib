@@ -1,0 +1,462 @@
+% Lean: EconLean/Macro/Growth/RamseyGlobal.lean, EconLean/Macro/DP/{StochasticPlan,InvariantMeasure,
+%       StochasticConcavity,StationaryDist}.lean, EconLean/Macro/HA/StochSavings.lean
+\chapter{Global Dynamics, Stochastic Plans and Stationary Distributions}
+\label{chap:stochastic_ha}
+
+Sources: Stokey--Lucas (SL) ch.~6, 9, 12; Acemoglu ch.~6; Aiyagari (1994); Chamberlain--Wilson (2000);
+Brock--Mirman (1972).
+
+\section{Global convergence in the Ramsey--Cass--Koopmans model}
+\label{sec:ramsey_global}
+
+We use the RCK model of Section~\ref{sec:ramsey}, with optimal policy $g$
+($\operatorname{policy}(k) = \{g(k)\}$) and value function $V$. We write $\hat V$ for $V$
+extended by $0$ off $[0,\bar k]$.
+
+\begin{lemma}[Two secant bounds for concave functions]
+\label{lem:concave_secant_bounds}
+\lean{Econ.ConcaveOn.sub_le_mul_slope, Econ.ConcaveOn.mul_deriv_le}
+\leanok
+Let $f$ be concave on a set $s \ni 0$.
+(i) If $y \in s$ and $0 < \varepsilon < y/2$, then $f(y) - f(y - \varepsilon) \le \varepsilon\,
+\frac{f(y/2) - f(0)}{y/2}$.
+(ii) If $\varepsilon \in s$, $\varepsilon > 0$ and $f'(\varepsilon) = d$, then $\varepsilon d \le f(\varepsilon) - f(0)$.
+\end{lemma}
+\begin{proof}
+\leanok
+(i) Apply \texttt{ConcaveOn.slope\_anti\_adjacent} twice, on $y/2 < y - \varepsilon < y$ and on
+$0 < y/2 < y - \varepsilon$. Chaining gives the slope on $[y-\varepsilon, y]$ at most the slope on $[0, y/2]$.
+Multiply by $\varepsilon$.
+(ii) \texttt{ConcaveOn.le\_slope\_of\_hasDerivAt}: the derivative at the right end of $[0,\varepsilon]$ is at most
+the secant slope.
+\end{proof}
+
+\begin{definition}[Inada conditions]
+\label{def:rck_inada}
+\lean{Econ.RCKModel.Inada}
+\leanok
+\uses{def:rck}
+$u$ and $f$ are differentiable on $(0,\infty)$, and $u'(c) \to \infty$ as $c \to 0^+$, $f'(k) \to \infty$ as $k \to 0^+$.
+\end{definition}
+
+\begin{lemma}[Basic facts]
+\label{lem:rck_global_basic}
+\lean{Econ.RCKModel.value_concaveOn, Econ.RCKModel.extendS_val, Econ.RCKModel.deriv_u_pos,
+  Econ.RCKModel.exists_small, Econ.RCKModel.lt_f_of_mgr}
+\leanok
+\uses{def:rck, thm:value_strictlyConcave}
+$\hat V$ is concave on $[0,\bar k]$, and $\hat V(k) = V(k)$ there. If $c > 0$ and $u'(c)$ exists, then $u'(c) > 0$.
+A property that holds eventually as $x \to 0^+$ holds at some $x \in (0,b)$. If $k^* > 0$ and $\beta f'(k^*) = 1$,
+then $k^* < f(k^*)$.
+\end{lemma}
+\begin{proof}
+\leanok
+Concavity: SL~4.8 (Theorem~\ref{thm:value_strictlyConcave}) together with \texttt{ConcaveFn.concaveOn}.
+$u'(c) > 0$: strict concavity gives $u'(c) > u(c+1) - u(c)$, and strict monotonicity makes that positive.
+The eventual property: intersect the filter set with $(0, b)$ and take any point.
+Last claim: by strict concavity, $f'(k^*) < f(k^*)/k^*$ (derivative below the secant from $0$, using $f(0)=0$).
+Also $f'(k^*) = 1/\beta > 1$. So $f(k^*) > k^* f'(k^*) > k^*$.
+\end{proof}
+
+\begin{lemma}[Positive consumption]
+\label{lem:rck_policy_lt_f}
+\lean{Econ.RCKModel.policy_lt_f}
+\leanok
+\uses{def:rck_inada, lem:concave_secant_bounds, lem:rck_global_basic}
+Under the Inada conditions, $g(k) < f(k)$ for every $k > 0$.
+\end{lemma}
+\begin{proof}
+\leanok
+Suppose $y = g(k) = f(k)$. Then $y > 0$. Let $L$ be the secant slope of $\hat V$ on $[0, y/2]$. By $u'(0^+) = \infty$,
+pick $\varepsilon \in (0, y/2)$ with $u'(\varepsilon) > \beta L$. Saving $y - \varepsilon$ instead is feasible, so
+the Bellman inequality and optimality of $y$ give $u(\varepsilon) - u(0) \le \beta(V(y) - V(y-\varepsilon))$.
+Lemma~\ref{lem:concave_secant_bounds}(i) bounds the right side by $\beta\varepsilon L$, and (ii), applied to $u$,
+bounds the left side below by $\varepsilon u'(\varepsilon)$. Hence $u'(\varepsilon) \le \beta L$, a contradiction.
+\end{proof}
+
+\begin{lemma}[Positive saving]
+\label{lem:rck_policy_pos}
+\lean{Econ.RCKModel.policy_pos}
+\leanok
+\uses{def:rck_inada, lem:concave_secant_bounds}
+Under the Inada conditions, $g(k) > 0$ for every $k > 0$.
+\end{lemma}
+\begin{proof}
+\leanok
+Suppose $g(k) = 0$, and let $a = f(k) > 0$.
+\begin{itemize}
+\item Since $\Gamma(0) = \{0\}$, we have $g(0) = 0$ and $V(0) = u(0) + \beta V(0)$.
+\item Optimality of $0$ at $k$ gives $V(k) = u(a) + \beta V(0)$.
+\item The deviation to save $\varepsilon \le \min(k, a/2)$ gives $u(a-\varepsilon) + \beta V(\varepsilon) \le V(k)$.
+\item The Bellman inequality at $\varepsilon$, choosing $0$, gives $V(\varepsilon) \ge u(f(\varepsilon)) + \beta V(0)$.
+\end{itemize}
+Combining, $\beta(u(f(\varepsilon)) - u(0)) \le u(a) - u(a-\varepsilon) \le \varepsilon L_u$, by
+Lemma~\ref{lem:concave_secant_bounds}(i). Strict concavity of $u$ (secant from $0$, with $f(\varepsilon) < a$) gives
+$u(f(\varepsilon)) - u(0) > s f(\varepsilon)$, where $s = (u(a) - u(0))/a > 0$. Lemma~\ref{lem:concave_secant_bounds}(ii)
+for $f$ gives $f(\varepsilon) \ge \varepsilon f'(\varepsilon)$. So $\beta s f'(\varepsilon) \le L_u$. This
+contradicts $f'(0^+) = \infty$ once $\varepsilon$ is chosen with $f'(\varepsilon) > L_u/(\beta s)$.
+\end{proof}
+
+\begin{lemma}[Envelope and Euler conditions]
+\label{lem:rck_envelope_euler}
+\lean{Econ.RCKModel.hasDerivAt_value, Econ.RCKModel.euler}
+\leanok
+\uses{thm:benveniste_scheinkman}
+If $0 < k < \bar k$, $g(k) < f(k)$, $u'(f(k) - g(k)) = u'$ and $f'(k) = f'$, then $\hat V'(k) = u' f'$.
+If $0 < g(k) < f(k)$ and $\hat V'(g(k)) = v$, then $u'(f(k) - g(k)) = \beta v$.
+\end{lemma}
+\begin{proof}
+\leanok
+Envelope: Benveniste--Scheinkman (Theorem~\ref{thm:benveniste_scheinkman}) with choice $g(k)$ held fixed. That
+choice stays feasible near $k$ by continuity of $f$, and the chain rule gives the derivative of $u(f(\cdot) - g(k))$.
+Euler: $r \mapsto u(f(k) - r) + \beta \hat V(r)$ has a local maximum at the interior point $g(k)$, by the Bellman
+inequality and optimality. Its derivative $-u' + \beta v$ therefore vanishes.
+\end{proof}
+
+\begin{lemma}[Capital rises below $k^*$]
+\label{lem:rck_lt_policy}
+\lean{Econ.RCKModel.lt_policy}
+\leanok
+\uses{lem:rck_policy_lt_f, lem:rck_policy_pos, lem:rck_envelope_euler}
+If $0 < k < k^*$ and $\beta f'(k^*) = 1$, then $k < g(k)$.
+\end{lemma}
+\begin{proof}
+\leanok
+Suppose $y = g(k) \le k$. Then $y > 0$ and $c = f(k) - y > 0$, and also $f(y) - g(y) > 0$, by the two previous lemmas.
+So $\hat V$ is differentiable at $k$, with $\hat V'(k) = u'(c) f'(k)$, and at $y$. The Euler equation gives
+$u'(c) = \beta \hat V'(y)$. Concavity of $\hat V$ gives $\hat V'(k) \le \hat V'(y)$: if $y < k$, compare both with
+the secant on $[y,k]$; if $y = k$, the derivatives are equal. Strict concavity of $f$ gives
+$f'(k) > \text{slope}(k,k^*) > f'(k^*)$. Hence
+$u'(c) = \beta \hat V'(y) \ge \beta u'(c) f'(k) > \beta u'(c) f'(k^*) = u'(c)$, a contradiction.
+\end{proof}
+
+\begin{lemma}[Existence of the modified-golden-rule capital stock]
+\label{lem:rck_exists_mgr}
+\lean{Econ.RCKModel.exists_mgr}
+\leanok
+\uses{def:rck_inada}
+Under the Inada conditions there is $k^* \in (0, \bar k)$ with $\beta f'(k^*) = 1$.
+\end{lemma}
+\begin{proof}
+\leanok
+$f'(\bar k) < f(\bar k)/\bar k \le 1 < 1/\beta$ (derivative below the secant from $0$, and $f(\bar k) \le \bar k$).
+By $f'(0^+) = \infty$ there is $a \in (0, \bar k)$ with $f'(a) > 1/\beta$. Darboux's theorem
+(\texttt{exists\_hasDerivWithinAt\_eq\_of\_lt\_of\_gt}) gives $k^* \in (a, \bar k)$ with $f'(k^*) = 1/\beta$.
+\end{proof}
+
+\begin{theorem}[Global convergence to the modified golden rule; SL Thm~6.2, Acemoglu Prop.~6.3]
+\label{thm:rck_global_convergence}
+\lean{Econ.RCKModel.global_convergence}
+\leanok
+\uses{def:rck_inada, lem:rck_exists_mgr, lem:rck_lt_policy}
+Under the Inada conditions, the policy is a function $g$, and there is $k^* \in (0, \bar k)$ with the following
+properties: $k^* < f(k^*)$, $\beta f'(k^*) = 1$, and $k^*$ is the only $k \ge 0$ solving this equation.
+Moreover $g(k^*) = k^*$, and for every $k_0 > 0$ the optimal path $k_{t+1} = g(k_t)$ is monotone and converges
+to $k^*$.
+\end{theorem}
+\begin{proof}
+\leanok
+\uses{thm:rck_monotone_policy, thm:steady_state_mgr, thm:modified_golden_rule, thm:mgr_unique, thm:orbit_tendsto_fixedPoint}
+Take the continuous monotone policy $g$ (Theorem~\ref{thm:rck_monotone_policy}) and $k^*$ from
+Lemma~\ref{lem:rck_exists_mgr}. We have $k^* < f(k^*)$ by Lemma~\ref{lem:rck_global_basic}, and
+$g(k^*) = k^*$ by Theorem~\ref{thm:steady_state_mgr}. Let $m = \min(k_0, k^*) > 0$. By induction, $k_t \ge m$ for
+all $t$. If $k_t \ge k^*$, then $g(k_t) \ge g(k^*) = k^* \ge m$ by monotonicity. Otherwise $m \le k_t < k^*$, and
+$g(k_t) > k_t \ge m$ by Lemma~\ref{lem:rck_lt_policy}. The path converges to a fixed point $k_\infty$ of $g$
+(Theorem~\ref{thm:orbit_tendsto_fixedPoint}), and $k_\infty \ge m > 0$. Positive consumption at $k_\infty$
+(Lemma~\ref{lem:rck_policy_lt_f}) lets Theorem~\ref{thm:modified_golden_rule} give $\beta f'(k_\infty) = 1$.
+Uniqueness (Theorem~\ref{thm:mgr_unique}) then gives $k_\infty = k^*$, and it also gives the uniqueness clause.
+Monotonicity of the path follows from monotonicity of $g$ (\texttt{orbit\_monotone\_or\_antitone}).
+\end{proof}
+
+\begin{remark}[Witness]
+\label{rem:rck_inada_example}
+\lean{Econ.tendsto_deriv_sqrt, Econ.RCKModel.sqrtExample_inada}
+\leanok
+$\sqrt{\cdot}$ has derivative $1/(2\sqrt x) \to \infty$ as $x \to 0^+$, so the $\sqrt{}$ economy satisfies the
+Inada conditions. A Lean example shows that every optimal path from $k_0 > 0$ converges to $k^* = 1/16$.
+\end{remark}
+
+\section{The stochastic sequence problem}
+\label{sec:stoch_plan}
+
+We use a stochastic DP $P$ with finite shocks (Definition~\ref{def:stoch_dp}).
+
+\begin{definition}[Contingent plans and expected payoffs]
+\label{def:stoch_plan}
+\lean{Econ.StochDynProg.shift, Econ.StochDynProg.stateAt, Econ.StochDynProg.IsFeasible,
+  Econ.StochDynProg.payoffN, Econ.StochDynProg.policyPlan, Econ.StochDynProg.expectedPayoff}
+\leanok
+\uses{def:stoch_dp}
+A contingent plan is $\sigma : \mathrm{List}\,Z \to X$. $\sigma([])$ is today's choice, and $\sigma(z_1,\dots,z_n)$ is
+the choice after the shocks $z_1, \dots, z_n$. The continuation after $z$ is $\sigma_z(h) = \sigma(z :: h)$, and
+the state at a node is defined recursively. $\sigma$ is feasible from $s$ if every choice is feasible at its node.
+The $n$-period expected payoff is
+$J_0 = 0$, $J_{n+1}(\sigma, s) = F(s, \sigma[]) + \beta \sum_{z'} Q(z,z') J_n(\sigma_{z'}, (\sigma[], z'))$.
+The expected payoff is $\lim_n J_n$. The plan generated by a policy $g$ chooses $g(s)$ today and continues
+from $(g(s), z')$.
+\end{definition}
+
+\begin{lemma}[Elementary facts]
+\label{lem:stoch_plan_basic}
+\lean{Econ.StochDynProg.IsFeasible.head, Econ.StochDynProg.IsFeasible.shift, Econ.StochDynProg.sum_Q_mul_add,
+  Econ.StochDynProg.value_ge, Econ.StochDynProg.value_eq_of_mem_policy, Econ.StochDynProg.abs_value_le,
+  Econ.StochDynProg.isFeasible_policyPlan, Econ.StochDynProg.exists_policy_selection,
+  Econ.StochDynProg.tendsto_value_add}
+\leanok
+\uses{def:stoch_plan, thm:stoch_bellman, thm:stoch_policy}
+Feasibility passes to today's choice and to continuations. $\sum_{z'} Q(z,z')(a_{z'} + c) = \sum Q a + c$.
+For feasible $y$, $F(s,y) + \beta E V(y,\cdot) \le V(s)$, with equality for $y$ in the policy. $|V| \le \|V\|$. Policy
+plans are feasible, a policy selection exists, and $V(s) + c\beta^n\|V\| \to V(s)$.
+\end{lemma}
+\begin{proof}
+\leanok
+Each fact is by unfolding the definitions, by the Bellman equation (Theorem~\ref{thm:stoch_bellman}; equality
+because a maximiser of the objective attains the greatest element), or, for the policy plan, by induction on
+the history.
+\end{proof}
+
+\begin{lemma}[Bounds on $J_n$]
+\label{lem:stoch_payoff_bounds}
+\lean{Econ.StochDynProg.payoffN_le, Econ.StochDynProg.payoffN_policy_ge, Econ.StochDynProg.abs_payoffN_succ_sub_le,
+  Econ.StochDynProg.exists_tendsto_payoffN, Econ.StochDynProg.tendsto_expectedPayoff}
+\leanok
+\uses{lem:stoch_plan_basic}
+For feasible $\sigma$: $J_n(\sigma, s) \le V(s) + \beta^n \|V\|$. For the policy plan:
+$J_n \ge V(s) - \beta^n\|V\|$. Also $|J_{n+1} - J_n| \le B\beta^n$, where $B$ bounds $|F|$, so $J_n$ converges.
+\end{lemma}
+\begin{proof}
+\leanok
+The first two bounds are by induction on $n$, generalising over the plan and the state. At step $n+1$, bound
+each continuation by the induction hypothesis, use $\sum_{z'} Q = 1$, and apply the Bellman inequality
+(respectively equality). The third is the same induction with $|\cdot|$, using $|F| \le B$ at step $0$.
+Convergence: \texttt{cauchySeq\_of\_le\_geometric} and completeness of $\mathbb R$.
+\end{proof}
+
+\begin{theorem}[Stochastic principle of optimality; SL Thms~9.2 and 9.4]
+\label{thm:stoch_isGreatest}
+\lean{Econ.StochDynProg.expectedPayoff_le, Econ.StochDynProg.expectedPayoff_policyPlan,
+  Econ.StochDynProg.isGreatest_expectedPayoff}
+\leanok
+\uses{lem:stoch_payoff_bounds}
+$V(s)$ is the greatest expected payoff over feasible contingent plans from $s$. Every feasible plan has
+expected payoff at most $V(s)$, and every policy plan attains $V(s)$.
+\end{theorem}
+\begin{proof}
+\leanok
+Pass to the limit in the bounds of Lemma~\ref{lem:stoch_payoff_bounds}. The upper bound uses
+\texttt{le\_of\_tendsto\_of\_tendsto'}. For the policy plan, squeeze between $V(s) \pm \beta^n\|V\|$.
+\end{proof}
+
+\begin{theorem}[Optimal plans follow the policy; SL Thm~9.5, first period]
+\label{thm:stoch_policy_of_optimal}
+\lean{Econ.StochDynProg.policy_of_optimal}
+\leanok
+\uses{lem:stoch_payoff_bounds}
+If a feasible plan attains $V(s)$, then its first choice lies in the policy at $s$.
+\end{theorem}
+\begin{proof}
+\leanok
+Let $y = \sigma[]$. Bounding each continuation by Lemma~\ref{lem:stoch_payoff_bounds} gives
+$J_{n+1}(\sigma, s) \le F(s,y) + \beta E V(y,\cdot) + \beta^{n+1}\|V\|$. Letting $n \to \infty$ gives
+$V(s) \le F(s,y) + \beta E V(y,\cdot)$. So the objective at $y$ is at least that at every feasible $y'$, since
+those are at most $V(s)$ by the Bellman inequality.
+\end{proof}
+
+\section{Invariant distributions of Feller kernels}
+\label{sec:feller}
+
+\begin{definition}[Feller kernel, step distributions, Ces\`aro averages, Markov operator]
+\label{def:feller}
+\lean{Econ.IsFeller, Econ.distIter, Econ.distSum, Econ.cesaro, Econ.markovOp}
+\leanok
+A Markov kernel $\kappa$ on $X$ is Feller if $x \mapsto \int f\,d\kappa(x)$ is continuous for every bounded
+continuous $f$; that function is $Kf$. Starting from $x$, $\mu_0 = \delta_x$ and $\mu_{n+1} = \kappa \circ \mu_n$.
+$\nu_n = (n+1)^{-1} \sum_{k \le n} \mu_k$.
+\end{definition}
+
+\begin{lemma}[Integrals]
+\label{lem:feller_integrals}
+\lean{Econ.integral_comp_measure, Econ.isProbabilityMeasure_distIter, Econ.distSum_univ, Econ.isFiniteMeasure_distSum,
+  Econ.isProbabilityMeasure_cesaro, Econ.integral_distSum, Econ.integral_cesaro, Econ.integral_distIter_succ}
+\leanok
+\uses{def:feller}
+$\int f\, d(\kappa \circ \mu) = \int\!\int f\, d\kappa(x)\, d\mu(x)$. Each $\mu_n$ and $\nu_n$ is a probability
+measure. $\int f\, d\nu_n = (n+1)^{-1} \sum_{k \le n} \int f\, d\mu_k$, and $\int f\, d\mu_{k+1} = \int Kf\, d\mu_k$.
+\end{lemma}
+\begin{proof}
+\leanok
+The first is \texttt{Kernel.integral\_comp} for the composition with a constant kernel. Masses and integrals of
+the partial sums are by induction, using \texttt{integral\_add\_measure} and \texttt{integral\_smul\_measure}.
+\end{proof}
+
+\begin{lemma}[Asymptotic invariance of Ces\`aro averages]
+\label{lem:feller_cesaro}
+\lean{Econ.tendsto_integral_markovOp_sub}
+\leanok
+\uses{lem:feller_integrals}
+$\int Kf\, d\nu_n - \int f\, d\nu_n \to 0$.
+\end{lemma}
+\begin{proof}
+\leanok
+By Lemma~\ref{lem:feller_integrals} the difference telescopes: it equals
+$(n+1)^{-1}(a_{n+1} - a_0)$, where $a_k = \int f\,d\mu_k$ and $|a_k| \le \|f\|$. It is therefore bounded by
+$2\|f\|/(n+1) \to 0$.
+\end{proof}
+
+\begin{theorem}[Krylov--Bogolyubov for Feller kernels; SL Thm~12.10]
+\label{thm:exists_invariant_of_feller}
+\lean{Econ.exists_invariant_of_feller}
+\leanok
+\uses{lem:feller_cesaro}
+A Feller Markov kernel on a nonempty compact metrizable space has an invariant probability measure.
+\end{theorem}
+\begin{proof}
+\leanok
+The probability measures on a compact space form a compact space (Prokhorov; Mathlib), so $(\nu_n)$ has a
+cluster point $\nu$. Along an ultrafilter converging to $\nu$, integrals of bounded continuous functions
+converge. With Lemma~\ref{lem:feller_cesaro} this gives $\int Kf\,d\nu = \int f\,d\nu$ for every bounded
+continuous $f$. Then $\int f\,d(\kappa\circ\nu) = \int Kf\,d\nu = \int f\,d\nu$. Finite Borel measures are
+determined by such integrals (\texttt{ext\_of\_forall\_integral\_eq\_of\_IsFiniteMeasure}), so $\kappa \circ \nu = \nu$.
+\end{proof}
+
+\section{Concavity and continuous policies in stochastic DP}
+\label{sec:stoch_concavity}
+
+\begin{definition}[Convex technology; concave return, strictly concave in the choice]
+\label{def:stoch_concavity}
+\lean{Econ.ConcaveReturnStrictInChoice, Econ.StochDynProg.ConvexTech, Econ.StochDynProg.ConcaveRet}
+\leanok
+\uses{def:stoch_dp, def:dp_concavity}
+For each shock $z$, the graph of $\Gamma(\cdot, z)$ is convex, and $F((\cdot, z), \cdot)$ is concave on it. It is strictly
+concave between two different choices at the same state. This weakens SL Assumption~9.7, which requires
+strictness whenever the states differ.
+\end{definition}
+
+\begin{lemma}[Concavity is preserved]
+\label{lem:stoch_concave_bellmanOp}
+\lean{Econ.StochDynProg.concave_expect, Econ.StochDynProg.concave_bellmanOp}
+\leanok
+\uses{def:stoch_concavity}
+If $f(\cdot, z)$ is concave for every $z$, then so is $y \mapsto \sum_{z'} Q(z,z') f(y,z')$, and so is $Tf(\cdot, z)$.
+\end{lemma}
+\begin{proof}
+\leanok
+The expectation is a nonnegative combination of concave functions. For $T$: take maximisers $y, y'$ at
+$x, x'$. Their convex combination is feasible at the combined state (convex technology), and the objective
+there is at least the combination, by concavity of the return and of the expectation.
+\end{proof}
+
+\begin{theorem}[SL Thms~9.8--9.9, variant]
+\label{thm:stoch_value_concave}
+\lean{Econ.StochDynProg.value_concave, Econ.StochDynProg.exists_continuous_policy}
+\leanok
+\uses{lem:stoch_concave_bellmanOp}
+$V(\cdot, z)$ is concave for every $z$. The policy is single-valued, $\{g(s)\}$, with $g$ continuous.
+\end{theorem}
+\begin{proof}
+\leanok
+\uses{thm:stoch_policy, lem:stoch_plan_basic}
+Value iterates from $0$ are concave by Lemma~\ref{lem:stoch_concave_bellmanOp}, and concavity survives the uniform
+limit. Uniqueness: if $y \ne y'$ were both optimal at $(x,z)$, then at their midpoint the return is strictly larger
+and the expected value is no smaller, so the objective exceeds $V(x,z)$. That contradicts the Bellman
+inequality. Continuity comes from Berge: a single-valued UHC argmax is continuous
+(\texttt{continuous\_of\_argmax\_eq\_singleton}).
+\end{proof}
+
+\section{Stationary distributions under the optimal policy}
+\label{sec:stationary}
+
+\begin{definition}[Policy kernel]
+\label{def:policy_kernel}
+\lean{Econ.measurable_shock, Econ.policyKernel}
+\leanok
+For a measurable $g$, $\kappa((x,z), \cdot) = \sum_{z'} Q(z,z')\, \delta_{(g(x,z), z')}$. It is built as a finite sum of
+deterministic kernels with constant densities.
+\end{definition}
+
+\begin{lemma}[Properties of the policy kernel]
+\label{lem:policy_kernel}
+\lean{Econ.policyKernel_apply, Econ.isMarkovKernel_policyKernel, Econ.integral_policyKernel, Econ.isFeller_policyKernel}
+\leanok
+\uses{def:policy_kernel, def:feller}
+$\kappa$ is Markov when $Q$ is stochastic, and $\int f\,d\kappa(x,z) = \sum_{z'} Q(z,z') f(g(x,z),z')$. Hence
+$\kappa$ is Feller when $g$ is continuous.
+\end{lemma}
+\begin{proof}
+\leanok
+Unfold the sum and densities (\texttt{withDensity\_const}). Total mass: $\sum \mathrm{ofReal}(Q) =
+\mathrm{ofReal}(\sum Q) = 1$. Integrals: \texttt{integral\_finsetSum\_measure}, \texttt{integral\_smul\_measure} and
+\texttt{integral\_dirac}. The resulting finite sum is continuous because $Z$ is discrete and $g$, $f$ are continuous.
+\end{proof}
+
+\begin{theorem}[Stationary distribution under the optimal policy; SL \S9.6 with Thm~12.10]
+\label{thm:stoch_exists_stationary}
+\lean{Econ.StochDynProg.exists_stationary}
+\leanok
+\uses{thm:stoch_value_concave, lem:policy_kernel, thm:exists_invariant_of_feller}
+On a compact convex nonempty $S$, with convex technology and a concave return strictly concave in the choice,
+the policy is a continuous function $g$, and the induced Markov process on $S \times Z$ has an invariant
+probability measure.
+\end{theorem}
+\begin{proof}
+\leanok
+Theorem~\ref{thm:stoch_value_concave} gives $g$. Its kernel is Markov and Feller (Lemma~\ref{lem:policy_kernel}),
+and $S \times Z$ is compact and metrizable, so Theorem~\ref{thm:exists_invariant_of_feller} applies.
+\end{proof}
+
+\section{Stochastic savings: income fluctuation and stochastic growth}
+\label{sec:stoch_savings}
+
+\begin{definition}[Stochastic savings problem]
+\label{def:stoch_savings}
+\lean{Econ.StochSavings, Econ.StochSavings.S, Econ.StochSavings.Γ, Econ.StochSavings.F, Econ.StochSavings.toStochDynProg}
+\leanok
+\uses{def:stoch_dp}
+State $k \in [0,\bar k]$, finite Markov shock $z$. Cash on hand $h(k,z) \ge 0$ is continuous and concave in $k$.
+The choice is $k' \in [0,\bar k]$ with $k' \le h(k,z)$, and the return is $u(h(k,z) - k')$, where $u$ is
+continuous, nondecreasing and strictly concave on $[0,\infty)$. Covers the income fluctuation problem
+($h = Ra + y(z)$, with assets capped at $\bar k$) and stochastic growth ($h = z f(k)$).
+\end{definition}
+
+\begin{lemma}[The model is a concave stochastic DP]
+\label{lem:stoch_savings_dp}
+\lean{Econ.StochSavings.continuous_h, Econ.StochSavings.Γ_isClosed_graph, Econ.StochSavings.Γ_lhc,
+  Econ.StochSavings.convexTech, Econ.StochSavings.concaveRet}
+\leanok
+\uses{def:stoch_savings, def:stoch_concavity}
+$\Gamma$ is continuous with compact values, $F$ is continuous and bounded, the technology is convex, and the
+return is concave and strictly concave in the choice.
+\end{lemma}
+\begin{proof}
+\leanok
+$\Gamma$ has a closed graph (so it is UHC). It is LHC because $\min(y, h(k',z'))$ is a continuous feasible
+selection through any $y$. $F$ is bounded because $h$ is bounded on the compact $S \times Z$ and $u$ is bounded on
+$[0, \max h]$. Convexity: $a y + b y' \le a h(k) + b h(k') \le h(a k + b k')$. Concave return: consumption at the
+mixture is at least the mixture of consumptions (concavity of $h$); then use monotonicity and concavity of $u$.
+Strictness at the same state: different choices give different consumptions, and $u$ is strictly concave.
+\end{proof}
+
+\begin{theorem}[Stationary wealth distribution]
+\label{thm:stoch_savings_stationary}
+\lean{Econ.StochSavings.exists_stationary}
+\leanok
+\uses{lem:stoch_savings_dp, thm:stoch_exists_stationary}
+The optimal savings rule $k' = g(k,z)$ is a unique continuous function, and $(k,z)$ has a stationary distribution
+under it. This is existence only. If $h(0,z) = 0$ (stochastic growth), the point mass at $k = 0$ is already
+invariant. The non-degenerate ergodic set (SL Thms~13.3--13.5) and uniqueness (SL Thm~12.12) are open.
+\end{theorem}
+\begin{proof}
+\leanok
+Apply Theorem~\ref{thm:stoch_exists_stationary} with $S = [0,\bar k]$.
+\end{proof}
+
+\begin{remark}[Witnesses]
+\label{rem:stoch_savings_examples}
+\lean{Econ.StochSavings.aiyagariExample, Econ.StochSavings.brockMirmanExample}
+\leanok
+\uses{def:stoch_savings}
+An Aiyagari household: $u = \sqrt c$, $R = 1$, $\beta = 9/10$, income $y \in \{1/4, 1/2\}$ i.i.d., $\bar k = 1$.
+Stochastic growth: $u = \sqrt c$, $h = z\sqrt k$, $\beta = 1/2$, $z \in \{1/2, 1\}$ i.i.d. Here $z\sqrt k \le 1$ on $[0,1]$, so
+the cap never binds. Lean examples apply Theorem~\ref{thm:stoch_savings_stationary} to both. These witness
+that the hypotheses can be met, not that the distribution is non-degenerate.
+\end{remark}
