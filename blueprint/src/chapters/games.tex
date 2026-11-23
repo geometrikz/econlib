@@ -294,3 +294,47 @@ leaf, so somebody wins; if the loser could deviate to win it would gain $1 > -1$
 draws, split on the SPE outcome $v \in \{1, 0, -1\}$; Nash bounds every unilateral deviation's payoff by the
 deviator's equilibrium payoff, and the zero-sum relation turns that into the stated guarantees.
 \end{proof}
+
+\section{Repeated games}
+\label{sec:repeated}
+
+\begin{definition}[Repeated game, discounted payoff, SPE; MWG \S12.D]
+\label{def:repeated}
+\lean{Econ.RepeatedProfile, Econ.histFrom, Econ.pathFrom, Econ.discPayoff, Econ.IsRepeatedSPE}
+\leanok
+\uses{def:nash}
+A strategy maps histories (lists of past profiles) to actions. From history $h$ the profile $\sigma$ generates a path
+$a^0, a^1, \dots$ and player $i$ gets $(1-\delta)\sum_t \delta^t u_i(a^t)$. $\sigma$ is subgame perfect if after every
+history no player gains by switching to any other repeated-game strategy.
+\end{definition}
+
+\begin{theorem}[Verification theorem]
+\label{thm:bellman-verification}
+\lean{Econ.histFrom_succ, Econ.summable_disc, Econ.discPayoff_le_of_bellman, Econ.disc_const}
+\leanok
+\uses{def:repeated}
+If $|W_t| \le B$ and $(1-\delta)g_t + \delta W_{t+1} \le W_t$ for all $t$, then $(1-\delta)\sum_t \delta^t g_t \le W_0$.
+\end{theorem}
+\begin{proof}
+\leanok
+By induction $(1-\delta)\sum_{s<T}\delta^s g_s + \delta^T W_T \le W_0$; let $T \to \infty$ using $\delta^T W_T \to 0$.
+\end{proof}
+
+\begin{theorem}[Grim trigger and the Nash-reversion folk theorem; Friedman 1971]
+\label{thm:folk}
+\lean{Econ.IsClean, Econ.grimTrigger, Econ.isClean_cons, Econ.grimTrigger_apply_clean, Econ.grimTrigger_apply_dirty, Econ.grimTrigger_path, Econ.discPayoff_grimTrigger, Econ.grimTrigger_isSPE, Econ.nashReversion_folk}
+\leanok
+\uses{thm:bellman-verification}
+Let $e$ be a stage Nash equilibrium and $a$ a profile. If $(1-\delta)u_i(t, a_{-i}) + \delta u_i(e) \le u_i(a)$
+for all $i, t$, grim trigger (play $a$ until someone deviates, then $e$ forever) is a subgame perfect
+equilibrium. Hence, with finitely many players and bounded payoffs, if $u_i(a) > u_i(e)$ for all $i$,
+grim trigger is subgame perfect for all $\delta$ close enough to $1$.
+\end{theorem}
+\begin{proof}
+\leanok
+Fix a history and a deviation $\tau$ for $i$. Along the resulting path let $W_t = u_i(a)$ if the history is still clean
+and $u_i(e)$ otherwise. In a clean state, following $a$ keeps $W$ at $u_i(a)$, and any deviation yields at most
+$(1-\delta)u_i(t,a_{-i}) + \delta u_i(e) \le u_i(a)$; in a dirty state the others play $e$ and $u_i(t, e_{-i}) \le u_i(e)$.
+The verification theorem bounds the deviation payoff by $W_0$, which is grim trigger's own payoff.
+For the folk theorem take $\delta \ge \max_i (M - u_i(a))/(M - u_i(e))$.
+\end{proof}

@@ -31,8 +31,9 @@ alternatives never raises a choice probability).
 those outside `A` (`bm_rumP`), so all BM polynomials are nonnegative
 (`bm_rumP_nonneg`, Block–Marschak's necessity theorem).
 
-**Not formalized.** Falmagne's sufficiency theorem (nonnegative BM
-polynomials ⇒ RUM); McFadden's derivation of logit from Gumbel shocks.
+Falmagne's sufficiency theorem (nonnegative BM polynomials ⇒ RUM) is in
+`Falmagne.lean`. **Not formalized:** McFadden's derivation of logit from
+Gumbel shocks.
 -/
 module
 

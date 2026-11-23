@@ -1,0 +1,375 @@
+% Lean: EconLean/Macro/DP/Doeblin.lean, EconLean/Macro/DP/ParamInvariant.lean,
+%       EconLean/Macro/HA/Aiyagari.lean, doeblin_pow in EconLean/Macro/DP/MarkovChain.lean
+\chapter{Doeblin, Parametric Stationary Distributions and Aiyagari Equilibrium}
+\label{chap:aiyagari}
+
+Sources: Stokey--Lucas (SL) \S11.4, Thm~11.12, Thm~12.13; Meyn--Tweedie Thm~16.2.4;
+Aiyagari (1994); Ljungqvist--Sargent ch.~18; Hopenhayn--Prescott (1992); A\c{c}{\i}kg\"oz (2018).
+
+\section{Doeblin's theorem on a general state space}
+\label{sec:doeblin_general}
+
+Throughout, $K$ is a Markov kernel on a measurable space $X$. It satisfies the
+\emph{minorization} with constant $\varepsilon\in[0,1]$ and probability measure $\varphi$ if
+$K(x,A) \ge \varepsilon\,\varphi(A)$ for every $x$ and measurable $A$.
+
+\begin{lemma}[Bounded functions are integrable]
+\label{lem:integrable_of_bounded}
+\lean{Econ.integrable_of_bounded}
+\leanok
+A measurable $f$ with $a \le f \le b$ is integrable against any finite measure.
+\end{lemma}
+\begin{proof}
+\leanok
+$|f| \le \max(|a|,|b|)$; apply \texttt{Integrable.of\_bound}.
+\end{proof}
+
+\begin{lemma}[Integral bound from a Hahn decomposition]
+\label{lem:integral_sub_le_hahn}
+\lean{Econ.integral_sub_le_hahn}
+\leanok
+Let $\mu,\nu$ be finite and $P$ measurable with $\nu \le \mu$ on subsets of $P$ and $\mu\le\nu$ on subsets
+of $P^c$. If $f$ is measurable with $0 \le f \le c$, then $\int f\,d\mu - \int f\,d\nu \le c\,(\mu(P) - \nu(P))$.
+\end{lemma}
+\begin{proof}
+\leanok
+\uses{lem:integrable_of_bounded}
+Split both integrals over $P$ and $P^c$ (\texttt{integral\_add\_compl}). On $P^c$, $\mu|_{P^c} \le \nu|_{P^c}$
+and $f\ge0$ give $\int_{P^c} f\,d\mu \le \int_{P^c} f\,d\nu$ (\texttt{integral\_mono\_measure}). On $P$, write
+$\mu|_P = \rho + \nu|_P$ with $\rho = \mu|_P - \nu|_P \ge 0$ (\texttt{Measure.sub\_add\_cancel\_of\_le}). Then
+$\int_P f\,d\mu - \int_P f\,d\nu = \int f\,d\rho \le c\,\rho(X) = c(\mu(P) - \nu(P))$.
+\end{proof}
+
+\begin{lemma}[Composition as an integral]
+\label{lem:comp_real_eq_integral}
+\lean{Econ.comp_real_eq_integral}
+\leanok
+$(K\circ\rho)(A) = \int K(x,A)\,d\rho(x)$ for a probability $\rho$ and measurable $A$.
+\end{lemma}
+\begin{proof}
+\leanok
+Apply \texttt{integral\_comp\_measure} (Lemma~\ref{lem:feller_integrals}) to the indicator of $A$.
+\end{proof}
+
+\begin{lemma}[One Doeblin step]
+\label{lem:doeblin_step}
+\lean{Econ.doeblin_step}
+\leanok
+Under the minorization, if $\mu(A) - \nu(A) \le c$ for all measurable $A$ (probabilities $\mu,\nu$), then
+$(K\circ\mu)(A) - (K\circ\nu)(A) \le (1-\varepsilon)c$ for all measurable $A$.
+\end{lemma}
+\begin{proof}
+\leanok
+\uses{lem:integral_sub_le_hahn, lem:comp_real_eq_integral}
+Take a Hahn decomposition $P$ of $\mu - \nu$ (\texttt{hahn\_decomposition}). Fix $A$ and let
+$g(x) = K(x,A) - \varepsilon\varphi(A)$. Minorization at $A$ gives $g\ge0$. Minorization at $A^c$ gives
+$1 - K(x,A) \ge \varepsilon(1-\varphi(A))$, so $g \le 1 - \varepsilon$. By Lemma~\ref{lem:comp_real_eq_integral},
+$\int g\,d\rho = (K\circ\rho)(A) - \varepsilon\varphi(A)$, so the constant cancels in the difference. By
+Lemma~\ref{lem:integral_sub_le_hahn}, the difference is at most $(1-\varepsilon)(\mu(P)-\nu(P)) \le (1-\varepsilon)c$.
+\end{proof}
+
+\begin{definition}[Iterated distribution]
+\label{def:iterComp}
+\lean{Econ.iterComp, Econ.isProbabilityMeasure_iterComp}
+\leanok
+$\mu K^0 = \mu$, $\mu K^{n+1} = K \circ (\mu K^n)$; each is a probability measure.
+\end{definition}
+
+\begin{theorem}[Doeblin: geometric convergence; SL Thm 11.12, minorization case]
+\label{thm:doeblin_convergence}
+\lean{Econ.doeblin_convergence}
+\leanok
+\uses{def:iterComp}
+Under the minorization, if $\pi$ is $K$-invariant, then for every probability $\mu$, every $n$ and
+measurable $A$, $|\mu K^n(A) - \pi(A)| \le (1-\varepsilon)^n$.
+\end{theorem}
+\begin{proof}
+\leanok
+\uses{lem:doeblin_step}
+Induct on $n$, carrying both one-sided bounds $\mu K^n(A) - \pi(A) \le (1-\varepsilon)^n$ and
+$\pi(A) - \mu K^n(A) \le (1-\varepsilon)^n$. At $n=0$ both are differences of numbers in $[0,1]$. The step
+is Lemma~\ref{lem:doeblin_step} applied to $(\mu K^n, \pi)$ and to $(\pi, \mu K^n)$, using $K\circ\pi = \pi$.
+\end{proof}
+
+\begin{theorem}[Doeblin: uniqueness]
+\label{thm:doeblin_unique}
+\lean{Econ.doeblin_unique}
+\leanok
+Under the minorization with $\varepsilon > 0$, any two invariant probabilities coincide.
+\end{theorem}
+\begin{proof}
+\leanok
+\uses{thm:doeblin_convergence}
+Starting from $\pi'$, $\pi' K^n = \pi'$, so $|\pi'(A) - \pi(A)| \le (1-\varepsilon)^n \to 0$. Equal values on
+measurable sets give equal measures.
+\end{proof}
+
+\begin{lemma}[Kernel powers]
+\label{lem:kernel_pow}
+\lean{Econ.isMarkovKernel_pow, Econ.invariant_pow}
+\leanok
+$K^n$ is Markov, and a $K$-invariant measure is $K^n$-invariant.
+\end{lemma}
+\begin{proof}
+\leanok
+Induction with $K^{n+1} = K^n \circ K$; Mathlib's \texttt{Kernel.Invariant.comp} and
+\texttt{Measure.id\_comp}.
+\end{proof}
+
+\begin{theorem}[Uniqueness under an $N$-step minorization; SL Condition D]
+\label{thm:unique_invariant_of_pow}
+\lean{Econ.unique_invariant_of_pow}
+\leanok
+If $K^N(x,\cdot) \ge \varepsilon\varphi$ for all $x$, with $\varepsilon>0$, then $K$ has at most one invariant
+probability.
+\end{theorem}
+\begin{proof}
+\leanok
+\uses{lem:kernel_pow, thm:doeblin_unique}
+Both invariant measures are $K^N$-invariant (Lemma~\ref{lem:kernel_pow}); apply
+Theorem~\ref{thm:doeblin_unique} to $K^N$.
+\end{proof}
+
+\begin{lemma}[Powers of stochastic matrices]
+\label{lem:stochastic_pow}
+\lean{Econ.IsStochastic.pow, Econ.IsInvariant.pow}
+\leanok
+\uses{def:markov}
+$Q^n$ is stochastic, and a $Q$-invariant distribution is $Q^n$-invariant.
+\end{lemma}
+\begin{proof}
+\leanok
+Induction on $n$. Entries of $Q^{n}Q$ are sums of products of nonnegative numbers. Row sums:
+exchange the sums and use that rows of $Q$ and $Q^n$ sum to one.
+\end{proof}
+
+\begin{theorem}[Finite Doeblin, $N$-step form]
+\label{thm:doeblin_pow}
+\lean{Econ.doeblin_pow}
+\leanok
+\uses{def:markov}
+If $Q$ is stochastic and every entry of $Q^N$ is at least $\varepsilon>0$, then $Q$ has a unique invariant
+distribution $\pi$ and $\|\mu Q^n - \pi\|_1 \le 2(1 - |Z|\varepsilon)^{\lfloor n/N\rfloor}$. Example: $Q =
+\begin{pmatrix}0&1\\1/2&1/2\end{pmatrix}$ has a zero entry but $Q^2 \ge 1/4$ entrywise.
+\end{theorem}
+\begin{proof}
+\leanok
+\uses{lem:stochastic_pow, thm:doeblin, thm:exists_invariant}
+Theorem~\ref{thm:doeblin} applies to $Q^N$ (stochastic by Lemma~\ref{lem:stochastic_pow}) and gives a unique
+$Q^N$-invariant $\pi_0$. A $Q$-invariant $\pi$ exists (Theorem~\ref{thm:exists_invariant}) and is
+$Q^N$-invariant, so $\pi = \pi_0$; the same argument gives uniqueness. For convergence write
+$Q^n = Q^{n \bmod N}(Q^N)^{\lfloor n/N\rfloor}$ and apply the $Q^N$ bound to the distribution $\mu Q^{n\bmod N}$.
+\end{proof}
+
+\section{Continuity of invariant distributions in a parameter}
+\label{sec:param_invariant}
+
+$X$ is a compact metrizable space with its Borel $\sigma$-algebra; $\Theta$ is a topological space;
+probability measures carry the weak topology.
+
+\begin{definition}[Jointly Feller family]
+\label{def:jointly_feller}
+\lean{Econ.IsJointlyFeller}
+\leanok
+\uses{def:feller}
+$(\kappa_\theta)$ is jointly Feller if $(\theta,x) \mapsto \int f\,d\kappa_\theta(x)$ is jointly continuous for every
+bounded continuous $f$.
+\end{definition}
+
+\begin{lemma}[Limits of invariant distributions are invariant]
+\label{lem:invariant_of_tendsto}
+\lean{Econ.invariant_of_tendsto, Econ.isClosed_invariant_graph}
+\leanok
+\uses{def:jointly_feller}
+If, along a nontrivial filter, $\theta_i\to\theta_0$, $\mu_i\to\mu_0$ weakly and eventually $\mu_i$ is
+$\kappa_{\theta_i}$-invariant, then $\mu_0$ is $\kappa_{\theta_0}$-invariant. Hence the graph
+$\{(\theta,\mu) : \mu \text{ is } \kappa_\theta\text{-invariant}\}$ is closed.
+\end{lemma}
+\begin{proof}
+\leanok
+\uses{lem:feller_integrals}
+Fix bounded continuous $f$ and let $G_\theta(x) = \int f\,d\kappa_\theta(x)$. Currying the jointly continuous $G$
+gives a continuous map into $C(X)$; on compact $X$ this is uniform convergence $G_\theta\to G_{\theta_0}$
+(\texttt{ContinuousMap.tendsto\_iff\_tendstoUniformly}). Eventually invariance gives
+$\int f\,d\mu_i = \int G_{\theta_i}\,d\mu_i$. The error $\int (G_{\theta_i} - G_{\theta_0})\,d\mu_i$ is at most the
+uniform distance, so tends to $0$; and $\int G_{\theta_0}\,d\mu_i \to \int G_{\theta_0}\,d\mu_0$,
+$\int f\,d\mu_i\to\int f\,d\mu_0$. Hence $\int f\,d\mu_0 = \int G_{\theta_0}\,d\mu_0 = \int f\,d(\kappa_{\theta_0}\circ\mu_0)$,
+and bounded continuous functions determine finite measures. For the graph, use
+\texttt{isClosed\_iff\_ultrafilter} with the two projections.
+\end{proof}
+
+\begin{theorem}[SL Thm 12.13]
+\label{thm:tendsto_invariant_of_unique}
+\lean{Econ.tendsto_invariant_of_unique}
+\leanok
+\uses{def:jointly_feller}
+Let $(\kappa_\theta)$ be jointly Feller Markov kernels and $\pi_\theta$ any $\kappa_\theta$-invariant probabilities.
+If $\kappa_{\theta_0}$ has a unique invariant probability, then $\pi_\theta \to \pi_{\theta_0}$ weakly as
+$\theta\to\theta_0$.
+\end{theorem}
+\begin{proof}
+\leanok
+\uses{lem:invariant_of_tendsto}
+The space of probability measures on $X$ is compact (Prokhorov), so by
+\texttt{tendsto\_nhds\_of\_unique\_mapClusterPt} it suffices to show every cluster point $\mu$ equals
+$\pi_{\theta_0}$. Take an ultrafilter $U\le\mathcal N(\theta_0)$ along which $\pi_\theta\to\mu$; by
+Lemma~\ref{lem:invariant_of_tendsto} $\mu$ is $\kappa_{\theta_0}$-invariant, and uniqueness gives $\mu=\pi_{\theta_0}$.
+\end{proof}
+
+\begin{corollary}[Continuity of the invariant distribution and its integrals]
+\label{cor:continuous_invariant}
+\lean{Econ.continuous_invariant_of_unique, Econ.continuous_integral_invariant}
+\leanok
+If every $\kappa_\theta$ has a unique invariant $\pi_\theta$, then $\theta\mapsto\pi_\theta$ is continuous, and so is
+$\theta \mapsto \int f\,d\pi_\theta$ for bounded continuous $f$.
+\end{corollary}
+\begin{proof}
+\leanok
+\uses{thm:tendsto_invariant_of_unique}
+Pointwise continuity from Theorem~\ref{thm:tendsto_invariant_of_unique}; integration against bounded
+continuous $f$ is weakly continuous.
+\end{proof}
+
+\section{Savings problems parametrized by prices}
+\label{sec:param_savings}
+
+\begin{definition}[Parametrized savings problem]
+\label{def:param_savings}
+\lean{Econ.ParamSavings, Econ.ParamSavings.slice, Econ.ParamSavings.S, Econ.ParamSavings.continuous_hS}
+\leanok
+\uses{def:stoch_savings}
+As in Definition~\ref{def:stoch_savings}, but cash on hand $h(\theta, a, z)$ depends on a price $\theta$,
+jointly continuously in $(\theta,a)$, with $h(\theta,\cdot,z)$ concave and nonnegative on $[0,\infty)$. The slice
+at $\theta$ is the ordinary savings problem with $h(\theta,\cdot,\cdot)$. Aiyagari: $h(r,a,z) = (1+r)a + w(r)e(z)$.
+\end{definition}
+
+\begin{definition}[Augmented problem]
+\label{def:param_savings_aug}
+\lean{Econ.ParamSavings.augΓ, Econ.ParamSavings.augF, Econ.ParamSavings.augΓ_isClosed_graph,
+  Econ.ParamSavings.augΓ_lhc, Econ.ParamSavings.aug}
+\leanok
+\uses{def:param_savings, def:stoch_dp, def:contCorr}
+For compact Hausdorff $\Theta$, the stochastic DP on states $((\theta,a),z)$ with feasible set
+$\{(\theta,a') : 0\le a'\le\min(\bar k, h(\theta,a,z))\}$ and return $u(h(\theta,a,z) - a')$. The price never changes.
+The feasible correspondence has a closed graph (so is UHC into the compact $\Theta\times[0,\bar k]$) and is LHC
+via the continuous selection $(\theta', a', z') \mapsto (\theta', \min(a', h))$; returns are bounded on the compact
+state space.
+\end{definition}
+
+\begin{theorem}[The augmented problem restricts to its slices]
+\label{thm:value_slice}
+\lean{Econ.ParamSavings.value_slice, Econ.ParamSavings.objective_slice, Econ.ParamSavings.policy_slice}
+\leanok
+\uses{def:param_savings_aug, thm:stoch_bellman}
+$V^{\mathrm{aug}}((\theta,a),z) = V_\theta(a,z)$, and the augmented policy at $((\theta,a),z)$ is
+$\{\theta\}\times G_\theta(a,z)$.
+\end{theorem}
+\begin{proof}
+\leanok
+The function $w(a,z) = V^{\mathrm{aug}}((\theta,a),z)$ is bounded continuous. The augmented Bellman equation at
+$((\theta,a),z)$ maximizes over the image of the slice's feasible set under $a'\mapsto(\theta,a')$, so $w$ solves
+the slice's Bellman equation, and $w = V_\theta$ by uniqueness (\texttt{value\_unique}). Then the augmented
+objective at $(\theta,a')$ equals the slice objective at $a'$, and the argmax sets correspond.
+\end{proof}
+
+\begin{theorem}[Savings policies are jointly continuous in prices]
+\label{thm:exists_joint_policy}
+\lean{Econ.ParamSavings.exists_joint_policy}
+\leanok
+\uses{def:param_savings}
+There is $g$ with $G_\theta(s) = \{g(\theta,s)\}$ for all $\theta, s$, and $(\theta,a,z)\mapsto g(\theta,(a,z))$
+jointly continuous.
+\end{theorem}
+\begin{proof}
+\leanok
+\uses{thm:stoch_value_concave, thm:value_slice, cor:continuous_argmax_singleton}
+Each slice has a unique policy $g_\theta$ (concavity, Theorem~\ref{thm:stoch_value_concave}). By
+Theorem~\ref{thm:value_slice} the augmented argmax is the singleton $\{(\theta, g_\theta(a,z))\}$. Berge
+(Corollary~\ref{cor:continuous_argmax_singleton}) makes it continuous; take the second component.
+\end{proof}
+
+\begin{lemma}[The policy kernels are jointly Feller]
+\label{lem:isJointlyFeller_policyKernel}
+\lean{Econ.ParamSavings.isJointlyFeller_policyKernel}
+\leanok
+\uses{def:jointly_feller, def:policy_kernel}
+If $g$ is jointly continuous, the kernels $\kappa_\theta((a,z),\cdot) = \sum_{z'} Q(z,z')\delta_{(g(\theta,a,z),z')}$
+are jointly Feller.
+\end{lemma}
+\begin{proof}
+\leanok
+\uses{lem:policy_kernel}
+$\int f\,d\kappa_\theta(a,z) = \sum_{z'}Q(z,z') f(g(\theta,a,z),z')$, a finite sum of continuous functions.
+\end{proof}
+
+\begin{definition}[Assets and the uniqueness hypothesis]
+\label{def:unique_stationary}
+\lean{Econ.ParamSavings.assets, Econ.ParamSavings.UniqueStationary, Econ.ParamSavings.assets_le,
+  Econ.ParamSavings.integral_assets_le, Econ.ParamSavings.exists_stationary_of_policy}
+\leanok
+\uses{def:param_savings, def:policy_kernel}
+$\mathrm{assets}(a,z) = a \in [0,\bar k]$, so $\int \mathrm{assets}\,d\mu \le \bar k$. \emph{UniqueStationary}$(\theta)$:
+the optimal policy's chain at price $\theta$ has at most one invariant probability. At least one always
+exists (\texttt{exists\_stationary\_of\_policy}: the policy equals the continuous one of
+Theorem~\ref{thm:stoch_savings_stationary}, whose kernel is Feller). This holds, e.g., under an
+$N$-step Doeblin minorization (Theorem~\ref{thm:unique_invariant_of_pow}) or Hopenhayn--Prescott monotone
+mixing (not formalized).
+\end{definition}
+
+\begin{theorem}[Aggregate asset supply is continuous in prices]
+\label{thm:continuous_aggregate}
+\lean{Econ.ParamSavings.continuous_aggregate}
+\leanok
+\uses{def:unique_stationary}
+If UniqueStationary holds at every price, there are a jointly continuous policy $g$, invariant $\pi_\theta$, with
+$\theta\mapsto\pi_\theta$ continuous and $K_s(\theta) = \int a\,d\pi_\theta$ continuous.
+\end{theorem}
+\begin{proof}
+\leanok
+\uses{thm:exists_joint_policy, lem:isJointlyFeller_policyKernel, thm:exists_invariant_of_feller,
+  cor:continuous_invariant}
+Theorem~\ref{thm:exists_joint_policy} gives $g$; each $g_\theta$ is continuous, so each kernel is Feller and has
+an invariant $\pi_\theta$ (Theorem~\ref{thm:exists_invariant_of_feller}). The family is jointly Feller
+(Lemma~\ref{lem:isJointlyFeller_policyKernel}); apply Corollary~\ref{cor:continuous_invariant}.
+\end{proof}
+
+\begin{theorem}[Asset-market clearing in Aiyagari's model; existence without uniqueness]
+\label{thm:aiyagari_equilibrium}
+\lean{Econ.ParamSavings.exists_asset_market_clearing}
+\leanok
+\uses{def:unique_stationary}
+Prices range over $[r_{lo}, r_{hi}]$. Assume $K_d$ continuous, $K_d(r_{lo})\ge\bar k$, and $K_d(r_{hi}) \le \int a\,d\mu$
+for some stationary $\mu$ at $r_{hi}$. Then some $r$ and stationary $\pi$ at $r$ satisfy $\int a\,d\pi = K_d(r)$.
+Gaps: $K_d$ is an arbitrary demand curve (no firm, wage or labor-market clearing); the upper boundary condition
+and the asset cap $\bar k$ are assumed, not derived; if the cap binds, the equilibrium need not be one of the
+uncapped economy.
+\end{theorem}
+\begin{proof}
+\leanok
+\uses{thm:exists_joint_policy, lem:isJointlyFeller_policyKernel, lem:invariant_of_tendsto,
+  thm:exists_invariant_of_feller}
+Fix the jointly continuous policy (Theorem~\ref{thm:exists_joint_policy}); the kernels are jointly Feller and each
+has an invariant probability. Let $C$ be the (closed, Lemma~\ref{lem:invariant_of_tendsto}) graph of invariant
+probabilities, and $A$ (resp.\ $B$) the projection to prices of $C \cap \{\int a\,d\mu \le K_d(r)\}$ (resp.\ $\ge$).
+Projection along the compact space of probability measures is closed (\texttt{isClosedMap\_fst\_of\_compactSpace}),
+so $A,B$ are closed; they cover the interval, $r_{lo}\in A$ by \texttt{integral\_assets\_le}, $r_{hi}\in B$ by
+hypothesis. Connectedness (\texttt{isPreconnected\_closed\_iff}) gives $r\in A\cap B$: stationary $\mu_1,\mu_2$ with
+$k_1 \le K_d(r) \le k_2$. If $k_1 = k_2$ take $\mu_1$. Otherwise $t = (k_2 - K_d(r))/(k_2-k_1)\in[0,1]$ and
+$t\mu_1 + (1-t)\mu_2$ is a stationary probability (\texttt{Measure.comp\_add}, \texttt{Measure.comp\_smul}) with
+$\int a = tk_1 + (1-t)k_2 = K_d(r)$.
+\end{proof}
+
+\begin{remark}[Non-vacuity]
+\label{rem:aiyagari_examples}
+\lean{Econ.ParamSavings.aiyagariFamily, Econ.ParamSavings.noReturn, Econ.ParamSavings.noReturn_value,
+  Econ.ParamSavings.noReturn_policy, Econ.ParamSavings.noReturn_uniqueStationary}
+\leanok
+\uses{thm:exists_joint_policy, thm:aiyagari_equilibrium, thm:doeblin_unique}
+\emph{aiyagariFamily}: $u=\sqrt c$, $r\in[0,1/20]$, $h = (1+r)a + y(z)$, $y\in\{1/4,1/2\}$ i.i.d., $\beta = 9/10$;
+Theorem~\ref{thm:exists_joint_policy} applies, and with $K_d(r) = 1 - 20r$ so does
+Theorem~\ref{thm:aiyagari_equilibrium} (cheap boundary conditions $K_d(0)=\bar k$, $K_d(1/20) = 0$). \emph{noReturn}: $h = y(z)$ does not depend on assets. Both Bellman
+equations at $(a,z)$ and $(0,z)$ maximize the same set, so $V$ does not depend on $a$; then $a'=0$ is optimal since
+$\sqrt{\cdot}$ is monotone, and uniqueness forces $g = 0$. The policy kernel is the same measure from every state,
+so the minorization holds with $\varepsilon=1$ and Theorem~\ref{thm:doeblin_unique} gives UniqueStationary
+(degenerate in assets; non-degenerate uniqueness is open).
+\end{remark}

@@ -1,0 +1,136 @@
+% Lean: EconLean/Information/{Lemons,Signaling,Screening,MoralHazard}.lean
+\chapter{Asymmetric Information}
+\label{chap:asyminfo}
+
+Source: MWG Ch.~13--14.
+
+\section{Adverse selection: the market for lemons}
+\label{sec:lemons}
+
+\begin{definition}[Lemons equilibrium; MWG Ex.~13.B.1]
+\label{def:lemons-eq}
+\lean{Econ.offeredMass, Econ.offeredQuality, Econ.IsLemonsEq}
+\leanok
+Quality $\theta$ has a finitely supported distribution $F$; sellers and buyers both value quality $\theta$
+at $\theta$. At price $p$ exactly the cars with $\theta \le p$ are offered. A price $p$ is an equilibrium
+with trade if $\Pr(\theta \le p) > 0$ and $\mathbb{E}[\theta\,1\{\theta\le p\}] = p \Pr(\theta \le p)$, i.e.\
+$p = \mathbb{E}[\theta \mid \theta \le p]$.
+\end{definition}
+
+\begin{theorem}[Akerlof unravelling]
+\label{thm:lemons}
+\lean{Econ.isLemonsEq_iff, Econ.IsLemonsEq.only_worst}
+\leanok
+\uses{def:lemons-eq}
+$p$ is an equilibrium price with trade iff $p = \min \operatorname{supp} F$; in such an equilibrium only
+cars of quality $p$ are offered.
+\end{theorem}
+\begin{proof}
+\leanok
+If $p = \mathbb{E}[\theta\mid\theta\le p]$ then $\mathbb{E}[(p-\theta)1\{\theta\le p\}] = 0$ with a nonnegative integrand, so every
+offered quality equals $p$; since some quality is offered and the minimum $m \le$ every offered quality, $p = m$.
+Conversely at $p = m$ only quality $m$ is offered.
+\end{proof}
+
+\section{Signaling}
+\label{sec:spence}
+
+\begin{definition}[Spence PBE; MWG \S13.C]
+\label{def:spence}
+\lean{Econ.spenceWage, Econ.IsSpencePBE}
+\leanok
+Types $\theta_L < \theta_H$ (prior $p_H$ on $\theta_H$) choose education $e \ge 0$ at cost $c(e,\theta)$.
+Firms with belief $\mu(e)$ pay $w(e) = \theta_L + \mu(e)(\theta_H - \theta_L)$. A pure PBE is $(e_L, e_H, \mu)$
+with $\mu \in [0,1]$, Bayes-consistent beliefs on path ($\mu(e_L)=0,\ \mu(e_H)=1$ if $e_L\ne e_H$;
+$\mu(e^*) = p_H$ if pooling) and each type maximizing $w(e) - c(e,\theta)$ over $e \ge 0$.
+\end{definition}
+
+\begin{theorem}[Separating equilibria; MWG Lemma 13.C.1, Prop.~13.C.2]
+\label{thm:spence-sep}
+\lean{Econ.IsSpencePBE.separating_eL, Econ.IsSpencePBE.separating_bounds, Econ.isSpencePBE_separating}
+\leanok
+\uses{def:spence}
+In a separating PBE the low type chooses $e_L = 0$ (if education is costly for it), and
+$c(e_H,\theta_H) - c(0,\theta_H) \le \theta_H - \theta_L \le c(e_H,\theta_L) - c(0,\theta_L)$. Conversely, with costs
+nondecreasing in $e$, every $e_H > 0$ satisfying these bounds is supported by the threshold belief
+$\mu(e) = 1\{e \ge e_H\}$.
+\end{theorem}
+\begin{proof}
+\leanok
+In a separating PBE the low type earns $\theta_L$ at $e_L$ and at least $\theta_L$ at $0$, so a positive $e_L$ is strictly
+worse. The bounds are the two types' IC constraints against each other's choice. For the converse, under
+the threshold belief any $e \in (0,e_H)$ is dominated by $0$ and any $e > e_H$ by $e_H$, by monotone costs.
+\end{proof}
+
+\begin{theorem}[Pooling equilibria; MWG Prop.~13.C.1]
+\label{thm:spence-pool}
+\lean{Econ.IsSpencePBE.pooling_bound, Econ.isSpencePBE_pooling}
+\leanok
+\uses{def:spence}
+Pooling at $e^*$ requires $\theta_L \le \theta_L + p_H(\theta_H-\theta_L) - (c(e^*,\theta_L) - c(0,\theta_L))$; with monotone costs and
+single crossing at $e^*$ this is also sufficient, supported by the belief $\mu = p_H 1\{e = e^*\}$.
+\end{theorem}
+\begin{proof}
+\leanok
+Necessity: deviating to $e=0$ yields at least $\theta_L$. Sufficiency: off path the wage is $\theta_L$, so only $e=0$
+could tempt, and the two inequalities rule it out for both types.
+\end{proof}
+
+\section{Screening}
+\label{sec:screening}
+
+\begin{definition}[Two-type screening problem; MWG \S14.C]
+\label{def:screening}
+\lean{Econ.ScreeningModel, Econ.ScreeningModel.Feasible, Econ.ScreeningModel.profit, Econ.ScreeningModel.surplusH, Econ.ScreeningModel.virtualL, Econ.ScreeningModel.VS, Econ.ScreeningModel.tLBind, Econ.ScreeningModel.tHBind, Econ.ScreeningModel.IsOptimalMenu}
+\leanok
+Types $\theta_L \le \theta_H$ with probabilities $p_L, p_H$ value $(q,t)$ at $\theta v(q) - t$; the principal earns
+$t - cq$. A menu is feasible if quantities are nonnegative and both IR and both IC constraints hold.
+Virtual surplus: $VS(q_L,q_H) = p_H(\theta_H v(q_H) - cq_H) + p_L(\theta_L v(q_L) - cq_L) - p_H(\theta_H-\theta_L)v(q_L)$.
+\end{definition}
+
+\begin{theorem}[Optimal menus; no distortion at the top, MWG Prop.~14.C.6]
+\label{thm:screening}
+\lean{Econ.ScreeningModel.screeningProfit_le, Econ.ScreeningModel.bindingMenu_feasible, Econ.ScreeningModel.screeningProfit_bindingMenu, Econ.ScreeningModel.isOptimalMenu_binding, Econ.ScreeningModel.IsOptimalMenu.noDistortionAtTop}
+\leanok
+\uses{def:screening}
+Every feasible menu earns at most $VS(q_L,q_H)$; the menu with IR$_L$ and IC$_H$ binding attains it when
+$0 \le v(q_L) \le v(q_H)$. Hence at maximizers of $VS$ the binding menu is optimal, and every optimal menu
+gives the high type an efficient quantity, the low type a quantity maximizing the distorted surplus,
+no rent to the low type, and a binding IC$_H$.
+\end{theorem}
+\begin{proof}
+\leanok
+Profit $= p_L(t_L - cq_L) + p_H(t_H - cq_H)$; bound $t_L \le \theta_L v(q_L)$ (IR$_L$) and
+$t_H \le \theta_H v(q_H) - (\theta_H - \theta_L) v(q_L) - (\text{rent}_L)$ (IC$_H$). An optimal menu attains the
+bound, forcing each inequality to bind and each quantity to maximize its term.
+\end{proof}
+
+\section{Moral hazard}
+\label{sec:moral-hazard}
+
+\begin{definition}[Principal--agent; MWG \S14.B]
+\label{def:moral-hazard}
+\lean{Econ.outcomeMean, Econ.ImplementsHigh}
+\leanok
+Effort $e\in\{L,H\}$ induces outcome lotteries $f_L, f_H$ on a finite $\Omega$ and costs $g_L < g_H$.
+A contract gives utility $\nu(\omega)$, costing the principal $\varphi(\nu(\omega))$. It implements high effort
+if $\bar u \le \mathbb{E}_H\nu - g_H$ (IR) and $\mathbb{E}_L\nu - g_L \le \mathbb{E}_H\nu - g_H$ (IC).
+\end{definition}
+
+\begin{theorem}[Full insurance, costly incentives, selling the firm; MWG Props.~14.B.1, 14.B.2, 14.B.4]
+\label{thm:moral-hazard}
+\lean{Econ.outcomeMean_const, Econ.fullInsurance_optimal, Econ.implementsHigh_nonconstant, Econ.implementsHigh_cost_gt, Econ.sellTheFirm}
+\leanok
+\uses{def:moral-hazard}
+(i) With observable effort and convex increasing $\varphi$, the constant contract $\bar u + g$ is cheapest.
+(ii) With hidden effort no constant contract implements $H$, and if $\varphi$ is strictly convex and $f_H$ has full
+support every implementing contract costs strictly more than $\varphi(\bar u + g_H)$.
+(iii) With a risk-neutral agent, selling the firm at $\alpha = \mathbb{E}_H\pi - g_H - \bar u$ implements $H$ when it is
+efficient and gives the principal the first-best profit.
+\end{theorem}
+\begin{proof}
+\leanok
+(i) Jensen. (ii) A constant contract makes IC read $-g_L \le -g_H$. An implementing contract is nonconstant
+on the support of $f_H$, so strict Jensen gives $\mathbb{E}_H\varphi(\nu) > \varphi(\mathbb{E}_H\nu) \ge \varphi(\bar u + g_H)$.
+(iii) Direct computation.
+\end{proof}

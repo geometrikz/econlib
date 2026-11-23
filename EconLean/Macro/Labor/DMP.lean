@@ -367,7 +367,9 @@ theorem isEfficient_iff {θ : ℝ} : E.IsEfficient θ ↔ E.IsEquilibrium 0 E.η
 (`r = 0`) DMP equilibrium with worker bargaining power `β ∈ [0, 1)` is
 efficient iff `β = η`, the elasticity of the matching function with respect
 to unemployment. If `β < η` there are too many vacancies; if `β > η`, too
-few. -/
+few. This is the `r = 0` case only; the general Hosios theorem with
+discounting (`r > 0`, dynamic planner) is `DMP.Discrete.hosios` in
+`Macro/Labor/HosiosDiscounted.lean`. -/
 theorem hosios {β θ : ℝ} (hβ₀ : 0 ≤ β) (hβ₁ : β < 1) (h : E.IsEquilibrium 0 β θ) :
     E.IsEfficient θ ↔ β = E.η := by
   rw [isEfficient_iff]

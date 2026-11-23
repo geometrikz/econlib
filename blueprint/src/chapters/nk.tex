@@ -1,0 +1,123 @@
+% Lean: EconLean/Macro/NK/ThreeEquation.lean
+\chapter{The New Keynesian Model}
+\label{chap:nk}
+
+Sources: Galí, \emph{Monetary Policy, Inflation, and the Business Cycle}, ch.~3--4; Woodford, \emph{Interest and
+Prices}, ch.~4; Blanchard--Kahn (1980); Bullard--Mitra (2002).
+
+\section{Blanchard--Kahn for two jump variables}
+\label{sec:bk}
+
+\begin{definition}[Determinacy of a forward system]
+\label{def:bk_determinate}
+\lean{Econ.NK.IsOrbit, Econ.NK.Bounded, Econ.NK.Determinate}
+\leanok
+For a real $2\times2$ matrix $M$, $z$ is an orbit if $z_{t+1} = Mz_t$ for all $t$; $M$ is determinate if every
+bounded orbit is zero.
+\end{definition}
+
+\begin{lemma}[Algebra of $2\times2$ orbits]
+\label{lem:bk_algebra}
+\lean{Econ.NK.mulVec_zero', Econ.NK.mulVec_one', Econ.NK.cayley_hamilton, Econ.NK.eq_zero_of_geom, Econ.NK.orbit_eq_zero, Econ.NK.bound_mulVec, Econ.NK.orbit, Econ.NK.isOrbit_orbit}
+\leanok
+\uses{def:bk_determinate}
+$M(Mv) = (\mathrm{tr}\,M)Mv - (\det M)v$ (Cayley--Hamilton). If $|r| > 1$ and $|r^tx| \le C$ for all $t$, then
+$x = 0$. An orbit starting at $0$ is $0$. $|(Mv)_i| \le (|M_{i0}| + |M_{i1}|)B$ when $|v_j| \le B$.
+\end{lemma}
+\begin{proof}
+\leanok
+Expand coordinates. For the geometric bound use \texttt{pow\_unbounded\_of\_one\_lt}.
+\end{proof}
+
+\begin{lemma}[Real roots]
+\label{lem:bk_real}
+\lean{Econ.NK.zero_of_real, Econ.NK.exists_eigenvector, Econ.NK.roots_outside_iff}
+\leanok
+\uses{lem:bk_algebra}
+If $\mu_1 + \mu_2 = \mathrm{tr}\,M$, $\mu_1\mu_2 = \det M$ and $|\mu_1|, |\mu_2| > 1$, every bounded orbit is zero.
+Every real root $\mu$ of $x^2 - (\mathrm{tr}\,M)x + \det M$ has a nonzero eigenvector. If $\mu_1\mu_2 > 0$, then
+$|\mu_1|, |\mu_2| > 1$ iff $\mu_1\mu_2 > 1$ and $|\mu_1 + \mu_2| < 1 + \mu_1\mu_2$.
+\end{lemma}
+\begin{proof}
+\leanok
+Let $p_t = Mz_t - \mu_1z_t$. By Cayley--Hamilton $p_{t+1} = \mu_2p_t$, so $p_t = \mu_2^tp_0$; boundedness forces
+$p_0 = 0$, hence $z_{t+1} = \mu_1z_t$ and $z_0 = 0$. For the eigenvector, $N = M - \mu I$ is singular, and one of
+$(N_{01}, -N_{00})$, $(N_{11}, -N_{10})$, $(1, 0)$ is a nonzero kernel vector. For the root conditions, split on
+the common sign of $\mu_1, \mu_2$ and use $(1 \mp \mu_1)(1 \mp \mu_2) = 1 \mp(\mu_1 + \mu_2) + \mu_1\mu_2$.
+\end{proof}
+
+\begin{lemma}[Complex roots: an invariant quadratic form]
+\label{lem:bk_complex}
+\lean{Econ.NK.Q, Econ.NK.Q_mulVec, Econ.NK.Q_orbit, Econ.NK.Q_square₁, Econ.NK.Q_square₂, Econ.NK.sq_le_Q, Econ.NK.Q_eq_zero}
+\leanok
+\uses{lem:bk_algebra}
+$Q(v) = \det[v, Mv]$ satisfies $Q(Mv) = (\det M)Q(v)$, hence $Q(z_t) = (\det M)^tQ(z_0)$ along orbits. With
+$\Delta = (\mathrm{tr}\,M)^2 - 4\det M < 0$, $-\Delta v_1^2 \le 4|M_{10}||Q(v)|$ and $-\Delta v_0^2 \le 4|M_{01}||Q(v)|$; in
+particular $Q(v) = 0$ only for $v = 0$.
+\end{lemma}
+\begin{proof}
+\leanok
+Direct expansion; completing the square gives $4M_{10}Q(v) = (2M_{10}v_0 + (M_{11} - M_{00})v_1)^2 - \Delta v_1^2$ and
+the symmetric identity.
+\end{proof}
+
+\begin{theorem}[Blanchard--Kahn, $2\times2$]
+\label{thm:bk}
+\lean{Econ.NK.determinate_iff}
+\leanok
+\uses{lem:bk_real, lem:bk_complex}
+If $\det M > 0$: $M$ is determinate iff $\det M > 1$ and $|\mathrm{tr}\,M| < 1 + \det M$, i.e.\ iff both eigenvalues
+lie outside the unit circle.
+\end{theorem}
+\begin{proof}
+\leanok
+Complex case ($\Delta < 0$): the second condition holds automatically, since $T^2 < 4D \le (1 + D)^2$. If
+$D \le 1$ the orbit from $(1,0)$ has $|Q(z_t)| \le |Q(z_0)|$, so it is bounded and nonzero; if $D > 1$ and $z$ is
+bounded, $D^t|Q(z_0)|$ is bounded, so $Q(z_0) = 0$ and $z = 0$. Real case: with $s = \sqrt\Delta$ and
+$\mu_{1,2} = (T \mp s)/2$, the condition is $|\mu_1|, |\mu_2| > 1$ (Lemma~\ref{lem:bk_real}). If it holds, bounded
+orbits vanish; if some $|\mu| \le 1$, the orbit $\mu^tv$ along an eigenvector is bounded and nonzero.
+\end{proof}
+
+\section{The three-equation model}
+\label{sec:nk3}
+
+\begin{definition}[Model and equilibrium]
+\label{def:nk_model}
+\lean{Econ.NK.Model, Econ.NK.Model.IsEquilibrium, Econ.NK.Model.Determinate, Econ.NK.Model.forward}
+\leanok
+\uses{def:bk_determinate}
+Parameters $\sigma, \kappa > 0$, $\beta \in (0,1)$, $\phi_\pi, \phi_x \ge 0$. A perfect-foresight equilibrium is a path
+with $x_t = x_{t+1} - (i_t - \pi_{t+1})/\sigma$, $\pi_t = \beta\pi_{t+1} + \kappa x_t$, $i_t = \phi_\pi\pi_t + \phi_xx_t$.
+The model is determinate if the only bounded equilibrium is zero. The forward matrix is
+$M = \begin{pmatrix}1 + \phi_x/\sigma + \kappa/(\sigma\beta) & (\phi_\pi - 1/\beta)/\sigma\\ -\kappa/\beta & 1/\beta\end{pmatrix}$.
+\end{definition}
+
+\begin{lemma}[Reduction to the forward map]
+\label{lem:nk_forward}
+\lean{Econ.NK.Model.forward_det, Econ.NK.Model.forward_trace, Econ.NK.Model.isEquilibrium_iff, Econ.NK.Model.determinate_iff_forward}
+\leanok
+\uses{def:nk_model}
+$\det M = (\sigma + \phi_x + \kappa\phi_\pi)/(\sigma\beta)$ and $\mathrm{tr}\,M = 1 + \phi_x/\sigma + \kappa/(\sigma\beta) + 1/\beta$.
+A path is an equilibrium iff $i$ follows the Taylor rule and $(x_t, \pi_t)$ is an orbit of $M$; so the model is
+determinate iff $M$ is.
+\end{lemma}
+\begin{proof}
+\leanok
+Solve the Phillips curve for $\pi_{t+1}$ and the IS curve for $x_{t+1}$, and clear denominators. Bounds on $x, \pi$
+bound $i$ by $(\phi_\pi + \phi_x)B$.
+\end{proof}
+
+\begin{theorem}[Determinacy and the Taylor principle]
+\label{thm:nk_taylor}
+\lean{Econ.NK.Model.taylor_principle, Econ.NK.Model.taylor_principle_strict}
+\leanok
+\uses{lem:nk_forward, thm:bk}
+The model is determinate iff $\kappa(\phi_\pi - 1) + (1-\beta)\phi_x > 0$. With $\phi_x = 0$: iff $\phi_\pi > 1$.
+\end{theorem}
+\begin{proof}
+\leanok
+$\det M - 1 = (\sigma(1-\beta) + \phi_x + \kappa\phi_\pi)/(\sigma\beta) > 0$ and $\mathrm{tr}\,M > 0$, so by
+Theorem~\ref{thm:bk} determinacy is $\mathrm{tr}\,M < 1 + \det M$, and
+$1 + \det M - \mathrm{tr}\,M = (\kappa(\phi_\pi - 1) + (1-\beta)\phi_x)/(\sigma\beta)$. The Lean file checks
+$\phi_\pi = 3/2$ (determinate) and $\phi_\pi = 1/2$ (indeterminate) for $\sigma = 1$, $\kappa = 1/10$, $\beta = 0.99$.
+\end{proof}

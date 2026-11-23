@@ -1,0 +1,402 @@
+% Lean: EconLean/Econometrics/{IV,GMM}.lean, Causal/{SyntheticControl,ShiftShare}.lean,
+%       Asymptotics/*.lean, TimeSeries/*.lean
+\chapter{Econometrics: IV, GMM, design-based identification, asymptotics and time series}
+\label{chap:econometrics2}
+
+This chapter continues Chapter~\ref{chap:econometrics}: linear instrumental variables and GMM, two modern
+identification designs (synthetic control, shift-share instruments), the first asymptotic results (convergence in
+probability, the delta method, strong consistency of OLS), and the structure of stable and structural VARs.
+
+\section{Linear instrumental variables}
+\label{sec:iv}
+
+Sources: Hayashi (2000) \S3.3--3.8; Wooldridge (2010) \S5.1--5.2. In $y = x^\top\beta + \varepsilon$ the instruments
+$z\in\R^L$ satisfy $E[z\varepsilon] = 0$.
+
+\begin{definition}[Population IV moments]
+\label{def:iv-moments}
+\lean{Econ.IV.momentZX, Econ.IV.momentZY, Econ.IV.momentSolutions}
+\leanok
+$\Sigma_{zx} = E[zx^\top]\in\R^{L\times K}$, $\sigma_{zy} = E[zy]$, and the solution set
+$\{b : \Sigma_{zx}b = \sigma_{zy}\}$ of the moment equations.
+\end{definition}
+
+\begin{theorem}[IV identification: the rank condition]
+\label{thm:iv-rank}
+\lean{Econ.IV.mem_momentSolutions, Econ.IV.momentSolutions_eq_singleton_iff}
+\leanok
+\uses{def:iv-moments}
+Assume all $z_ix_j$ and $z_i\varepsilon$ are integrable and $E[z_i\varepsilon] = 0$ for every $i$. Then $\beta$ solves the
+moment equations for $y = x^\top\beta+\varepsilon$, and it is the only solution if and only if $b\mapsto\Sigma_{zx}b$ is
+injective (Hayashi Prop.~3.1).
+\end{theorem}
+\begin{proof}
+\leanok
+$E[z_i(x^\top\beta+\varepsilon)] = \sum_j\beta_jE[z_ix_j] + E[z_i\varepsilon] = (\Sigma_{zx}\beta)_i$ by linearity of the
+integral. If the solution set is $\{\beta\}$ and $\Sigma_{zx}v = \Sigma_{zx}w$, then $\beta + (v-w)$ is also a solution,
+hence equals $\beta$, so $v = w$. Conversely, if $\Sigma_{zx}$ is injective, any solution $b$ has
+$\Sigma_{zx}b = \sigma_{zy} = \Sigma_{zx}\beta$, so $b = \beta$.
+\end{proof}
+
+\begin{definition}[2SLS]
+\label{def:tsls}
+\lean{Econ.IV.tsls}
+\leanok
+\uses{def:ols}
+$\hat\beta_{2SLS} = (X^\top P_ZX)^{-1}X^\top P_Zy$ with $P_Z = Z(Z^\top Z)^{-1}Z^\top$.
+\end{definition}
+
+\begin{theorem}[2SLS algebra]
+\label{thm:tsls}
+\lean{Econ.IV.tsls_eq_ols_fitted, Econ.IV.tsls_eq_iv}
+\leanok
+\uses{def:tsls, prop:projection}
+If $Z^\top Z$ is invertible, $\hat\beta_{2SLS}$ is the OLS coefficient of $y$ on the first-stage fitted values $P_ZX$. If
+moreover $L = K$ and $Z^\top X$ is invertible, $\hat\beta_{2SLS} = (Z^\top X)^{-1}Z^\top y$.
+\end{theorem}
+\begin{proof}
+\leanok
+$(P_ZX)^\top(P_ZX) = X^\top P_Z^\top P_ZX = X^\top P_ZX$ since $P_Z$ is symmetric and idempotent, and
+$(P_ZX)^\top = X^\top P_Z$; substitute in the OLS formula. In the just-identified case
+$X^\top P_ZX = (X^\top Z)(Z^\top Z)^{-1}(Z^\top X)$ is a product of invertible matrices with inverse
+$(Z^\top X)^{-1}(Z^\top Z)(X^\top Z)^{-1}$; multiplying by $X^\top P_Z = (X^\top Z)(Z^\top Z)^{-1}Z^\top$ cancels to
+$(Z^\top X)^{-1}Z^\top$.
+\end{proof}
+
+\section{Linear GMM}
+\label{sec:gmm}
+
+Sources: Hansen (1982); Hayashi (2000) \S3.4--3.6; Newey--McFadden (1994). Moment function $g(b) = \sigma - Gb$
+($G = \Sigma_{zx}$, $\sigma = \sigma_{zy}$, or their sample analogues) and criterion $Q_W(b) = g(b)^\top Wg(b)$.
+
+\begin{definition}[GMM criterion and estimator]
+\label{def:gmm}
+\lean{Econ.GMM.moment, Econ.GMM.criterion, Econ.GMM.estimator, Econ.GMM.avar}
+\leanok
+$g$, $Q_W$ as above; $\hat b(W) = (G^\top WG)^{-1}G^\top W\sigma$; sandwich variance
+$\mathrm{Avar}(W) = (G^\top WG)^{-1}G^\top WSWG(G^\top WG)^{-1}$.
+\end{definition}
+
+\begin{lemma}[Quadratic-form facts]
+\label{lem:gmm-aux}
+\lean{Econ.GMM.transpose_eq_of_posDef, Econ.GMM.dotProduct_mulVec_comm, Econ.GMM.mulVec_dotProduct, Econ.GMM.criterion_nonneg, Econ.GMM.criterion_of_exact, Econ.GMM.posDef_gram, Econ.GMM.isUnit_det_gram, Econ.GMM.foc, Econ.GMM.transpose_inv_gram}
+\leanok
+\uses{def:gmm}
+A real positive-definite matrix is symmetric; $x^\top Wy = y^\top Wx$ for symmetric $W$; $(Gd)^\top y = d^\top(G^\top y)$;
+$Q_W\ge 0$ for $W\succeq 0$; with $\sigma = G\beta$, $Q_W(b) = (G(\beta-b))^\top W G(\beta-b)$; $G^\top WG\succ 0$ when
+$W\succ0$ and $G$ has full column rank; the first-order condition $G^\top Wg(\hat b) = 0$; and
+$((G^\top WG)^{-1})^\top = (G^\top WG)^{-1}$ for symmetric $W$.
+\end{lemma}
+\begin{proof}
+\leanok
+Hermitian means symmetric over $\R$. The FOC: $G^\top W\sigma - (G^\top WG)(G^\top WG)^{-1}G^\top W\sigma = 0$.
+$G^\top WG = G^{\mathsf H}WG$ is positive definite by \texttt{PosDef.conjTranspose\_mul\_mul\_same}.
+\end{proof}
+
+\begin{theorem}[GMM identification]
+\label{thm:gmm-identified}
+\lean{Econ.GMM.identified_iff}
+\leanok
+\uses{lem:gmm-aux}
+Let $W\succ 0$ and $\sigma = G\beta$. Then $Q_W(\beta) = 0 < Q_W(b)$ for all $b\neq\beta$ if and only if $G$ has full
+column rank.
+\end{theorem}
+\begin{proof}
+\leanok
+$Q_W(\beta) = 0$. If $G$ is injective and $b\ne\beta$, then $G(\beta-b)\ne0$ and $Q_W(b) > 0$ by positive definiteness.
+If $Gv = Gw$ with $v\ne w$, then $b = \beta+(v-w)\neq\beta$ has $G(\beta - b) = 0$, so $Q_W(b) = 0$, contradicting
+strict minimality.
+\end{proof}
+
+\begin{theorem}[The GMM estimator is the unique minimiser]
+\label{thm:gmm-min}
+\lean{Econ.GMM.criterion_eq_add, Econ.GMM.estimator_isMin, Econ.GMM.estimator_of_exact, Econ.GMM.tsls_eq_estimator}
+\leanok
+\uses{lem:gmm-aux, def:tsls}
+For symmetric $W$ with $G^\top WG$ invertible, $Q_W(b) = Q_W(\hat b) + (b-\hat b)^\top G^\top WG(b-\hat b)$. Hence for
+$W\succ0$ and $G$ of full column rank, $Q_W(\hat b) < Q_W(b)$ for $b\ne\hat b$. With exact moments $\sigma = G\beta$,
+$\hat b = \beta$. With $G = Z^\top X$, $\sigma = Z^\top y$, $W = (Z^\top Z)^{-1}$, $\hat b$ is 2SLS.
+\end{theorem}
+\begin{proof}
+\leanok
+Write $r = g(\hat b)$ and $d = b-\hat b$, so $g(b) = r - Gd$. Expanding, the cross terms are
+$(Gd)^\top Wr = d^\top(G^\top Wr) = 0$ by the FOC and $r^\top WGd = (Gd)^\top Wr = 0$ by symmetry; the last term is
+$d^\top G^\top WGd$. The quadratic term is positive for $d\ne0$. Exact moments: $(G^\top WG)^{-1}G^\top WG\beta = \beta$.
+2SLS: $(Z^\top X)^\top(Z^\top Z)^{-1}(Z^\top X) = X^\top P_ZX$ and similarly for the right-hand side, by associativity.
+\end{proof}
+
+\begin{theorem}[Efficient weighting matrix]
+\label{thm:gmm-efficient}
+\lean{Econ.GMM.avar_inv, Econ.GMM.avar_sub_posSemidef}
+\leanok
+\uses{def:gmm, lem:gmm-aux}
+For $S\succ0$ and $G$ of full column rank, $\mathrm{Avar}(S^{-1}) = (G^\top S^{-1}G)^{-1}$, and for every $W\succ0$,
+$\mathrm{Avar}(W) - (G^\top S^{-1}G)^{-1}\succeq 0$ (Hansen 1982 Thm 3.2; Hayashi Prop.~3.5).
+\end{theorem}
+\begin{proof}
+\leanok
+With $W = S^{-1}$ the middle factor is $G^\top S^{-1}SS^{-1}G = G^\top S^{-1}G$, which cancels one outer inverse. For
+general $W$ put $V = (G^\top S^{-1}G)^{-1}$, $A = (G^\top WG)^{-1}G^\top W$, $B = VG^\top S^{-1}$. Then $AG = BG = I$,
+$BS = VG^\top$, so $BSA^\top = V(AG)^\top = V$, $BSB^\top = V$, $ASB^\top = AG V^\top = V$ (using $S^\top = S$,
+$V^\top = V$), and $ASA^\top = \mathrm{Avar}(W)$. Hence $\mathrm{Avar}(W) - V = (A-B)S(A-B)^\top\succeq0$.
+\end{proof}
+
+\section{Synthetic control}
+\label{sec:synth}
+
+Source: Abadie--Diamond--Hainmueller (2010) \S2.3; Abadie (2021).
+
+\begin{definition}[Linear factor model]
+\label{def:factor-model}
+\lean{Econ.Causal.SyntheticControl.FactorModel, Econ.Causal.SyntheticControl.FactorModel.y0, Econ.Causal.SyntheticControl.FactorModel.PreRank}
+\leanok
+$Y_t(0) = \delta_t + \theta_t^\top Z + \lambda_t^\top\mu$ for a unit with covariates $Z$ and loadings $\mu$. The
+pre-period rank condition: $\lambda_t^\top v = 0$ for all pre-periods $t$ only if $v = 0$ (equivalently
+$\sum_{t\le T_0}\lambda_t\lambda_t^\top$ is nonsingular).
+\end{definition}
+
+\begin{theorem}[Synthetic control is exact in the noiseless factor model]
+\label{thm:synth}
+\lean{Econ.Causal.SyntheticControl.FactorModel.sum_weight_y0, Econ.Causal.SyntheticControl.FactorModel.exact, Econ.Causal.SyntheticControl.FactorModel.estimator_eq_effect, Econ.Causal.SyntheticControl.FactorModel.estimator_eq_effect_observed}
+\leanok
+\uses{def:factor-model}
+If donor weights sum to one, reproduce the treated unit's covariates and its untreated outcomes in all pre-periods, and
+the rank condition holds, then they reproduce its untreated outcome in every period; hence
+$Y_{1t} - \sum_jw_jY_{jt} = \alpha_t$ when $Y_{1t} = Y_{1t}(0)+\alpha_t$ and donors are untreated. The same holds when
+pre-period fit is stated on observed outcomes and there is no anticipation ($\alpha_t = 0$ before treatment).
+\end{theorem}
+\begin{proof}
+\leanok
+Since $\sum_jw_j = 1$, $\sum_jw_jY_{jt}(0) = \delta_t + \theta_t^\top\sum_jw_jZ_j + \lambda_t^\top\sum_jw_j\mu_j$.
+Pre-period fit and $\sum_jw_jZ_j = Z_1$ give $\lambda_t^\top(\sum_jw_j\mu_j - \mu_1) = 0$ for all pre-periods, so
+$\sum_jw_j\mu_j = \mu_1$ by the rank condition, and the identity holds in every period. Subtract. In the observable
+version, no anticipation turns observed pre-period fit into fit of untreated outcomes.
+\end{proof}
+
+\begin{proposition}[Rank condition matters; non-vacuity]
+\label{prop:synth-examples}
+\lean{Econ.Causal.SyntheticControl.Example.Mbad, Econ.Causal.SyntheticControl.Example.not_exact_without_rank, Econ.Causal.SyntheticControl.Example.Mgood, Econ.Causal.SyntheticControl.Example.exact_witness}
+\leanok
+\uses{thm:synth}
+With a factor that is $0$ before treatment and $1$ after, one donor matches the treated unit perfectly before treatment
+but not after. With a constant factor, two donors with loadings $0$ and $2$ and equal weights satisfy every hypothesis.
+\end{proposition}
+\begin{proof}
+\leanok
+Direct computation.
+\end{proof}
+
+\section{Shift-share instruments}
+\label{sec:shift-share}
+
+Sources: Borusyak--Hull--Jaravel (2022); Goldsmith-Pinkham--Sorkin--Swift (2020). Locations $l$ with weights $e_l$ and
+shares $s_{ln}$; shocks $g_n$; instrument $z_l = \sum_ns_{ln}g_n$.
+
+\begin{definition}[Shift-share objects]
+\label{def:shift-share}
+\lean{Econ.Causal.ShiftShare.bartik, Econ.Causal.ShiftShare.exposure, Econ.Causal.ShiftShare.shockAvg, Econ.Causal.ShiftShare.ssiv, Econ.Causal.ShiftShare.shockIV, Econ.Causal.ShiftShare.shareIV, Econ.Causal.ShiftShare.rotemberg}
+\leanok
+$z_l$; exposure $s_n = \sum_le_ls_{ln}$; exposure-weighted average $\bar v_n = \sum_le_ls_{ln}v_l/s_n$;
+$\hat\beta = \sum e_lz_ly_l/\sum e_lz_lx_l$; the shock-level IV $\sum s_ng_n\bar y_n/\sum s_ng_n\bar x_n$; share-$n$ IV
+$\hat\beta_n = \sum_ls_{ln}y_l/\sum_ls_{ln}x_l$; Rotemberg weight
+$\alpha_n = g_n\sum_ls_{ln}x_l/\sum_{n'}g_{n'}\sum_ls_{ln'}x_l$.
+\end{definition}
+
+\begin{theorem}[BHJ equivalence]
+\label{thm:bhj}
+\lean{Econ.Causal.ShiftShare.sum_bartik_mul, Econ.Causal.ShiftShare.ssiv_eq_shockIV, Econ.Causal.ShiftShare.ssiv_sub}
+\leanok
+\uses{def:shift-share}
+If every $s_n\neq0$, $\sum_le_lz_lv_l = \sum_ns_ng_n\bar v_n$ for every $v$, so $\hat\beta$ equals the shock-level IV
+(BHJ Prop.~1). In $y = \beta x + \varepsilon$ with nonzero first stage, $\hat\beta - \beta = \sum e_lz_l\varepsilon_l /
+\sum e_lz_lx_l$.
+\end{theorem}
+\begin{proof}
+\leanok
+$s_ng_n\bar v_n = \sum_le_ls_{ln}v_lg_n$; exchange the two finite sums. The error formula is linearity of the numerator
+and $(\beta D + E)/D - \beta = E/D$.
+\end{proof}
+
+\begin{theorem}[BHJ identification with as-good-as-random shocks]
+\label{thm:bhj-ident}
+\lean{Econ.Causal.ShiftShare.integral_sum_bartik_mul, Econ.Causal.ShiftShare.integral_sum_bartik_mul_eq_zero}
+\leanok
+\uses{def:shift-share}
+If the shocks are integrable random variables with $E[g_n] = m$ for all $n$ (shares, weights and $\varepsilon$ fixed),
+$E[\sum_le_lz_l\varepsilon_l] = m\sum_le_lS_l\varepsilon_l$ with $S_l = \sum_ns_{ln}$. With complete shares and
+$\sum_le_l\varepsilon_l = 0$ the expectation is $0$.
+\end{theorem}
+\begin{proof}
+\leanok
+Write the sum as $\sum_l\sum_n(e_ls_{ln}\varepsilon_l)g_n$ and integrate term by term.
+\end{proof}
+
+\begin{theorem}[Rotemberg decomposition]
+\label{thm:rotemberg}
+\lean{Econ.Causal.ShiftShare.sum_bartik_mul_eq, Econ.Causal.ShiftShare.sum_rotemberg, Econ.Causal.ShiftShare.bartik_eq_sum_rotemberg, Econ.Causal.ShiftShare.Example.s, Econ.Causal.ShiftShare.Example.rotemberg_negative}
+\leanok
+\uses{def:shift-share}
+$\sum_lz_lv_l = \sum_ng_n\sum_ls_{ln}v_l$. With a nonzero first stage the Rotemberg weights sum to one; if every share
+has a nonzero first stage, the (equal-weight, no-controls) Bartik estimator is $\sum_n\alpha_n\hat\beta_n$ (GPSS
+Prop.~1). The weights can be negative: shares $=I_2$, $g = (2,-1)$, $x = (1,1)$ give $\alpha = (2,-1)$.
+\end{theorem}
+\begin{proof}
+\leanok
+Exchange sums. Each term $\alpha_n\hat\beta_n = g_n\sum_ls_{ln}y_l/\sum_{n'}g_{n'}\sum_ls_{ln'}x_l$ after cancelling
+$\sum_ls_{ln}x_l\ne0$; sum over $n$.
+\end{proof}
+
+\section{Asymptotics}
+\label{sec:asymptotics}
+
+Sources: van der Vaart (1998) Thm~2.7, Thm~3.1; Hayashi (2000) \S2.1--2.3. Convergence in distribution is Mathlib's
+\texttt{TendstoInDistribution}, in probability \texttt{TendstoInMeasure}.
+
+\begin{lemma}[Convergence to a constant]
+\label{lem:conv-const}
+\lean{Econ.Asymptotics.bump, Econ.Asymptotics.bump_apply, Econ.Asymptotics.tendstoInMeasure_of_tendstoInDistribution_const, Econ.Asymptotics.tendstoInDistribution_const_iff, Econ.Asymptotics.TendstoInMeasure.comp_continuousAt, Econ.Asymptotics.tendstoInMeasure_const_seq, Econ.Asymptotics.tendsto_inv_sqrt_nat}
+\leanok
+$X_n\to_dc$ if and only if $X_n\to_pc$. If $X_n\to_pc$ and $q$ is continuous at $c$, then $q(X_n)\to_pq(c)$. A deterministic
+convergent sequence converges in probability; $1/\sqrt n\to0$.
+\end{lemma}
+\begin{proof}
+\leanok
+Let $f(x) = \min(1,|x-c|/\varepsilon)$, bounded continuous with $f(c) = 0$. Then $E f(X_n)\to0$, and by Markov's
+inequality $P(|X_n - c|\ge\varepsilon)\le P(f(X_n)\ge1)\le Ef(X_n)$. For the second claim, choose $\delta$ from
+continuity; $\{|q(X_n)-q(c)|\ge\varepsilon\}\subseteq\{|X_n-c|\ge\delta\}$. The converse direction of the
+equivalence is Mathlib's \texttt{TendstoInMeasure.tendstoInDistribution}.
+\end{proof}
+
+\begin{theorem}[Root-$n$ consistency]
+\label{thm:root-n}
+\lean{Econ.Asymptotics.tendstoInMeasure_of_sqrt}
+\leanok
+\uses{lem:conv-const}
+If $\sqrt n(T_n-\theta)\to_dZ$ then $T_n\to_p\theta$.
+\end{theorem}
+\begin{proof}
+\leanok
+By Slutsky, $(\sqrt n(T_n-\theta), 1/\sqrt n)\to_d(Z,0)$, so the product $\to_d 0$, hence $\to_p0$. For $n\ge1$ the
+product is $T_n-\theta$.
+\end{proof}
+
+\begin{theorem}[Delta method]
+\label{thm:delta}
+\lean{Econ.Asymptotics.diffQuot, Econ.Asymptotics.diffQuot_continuousAt, Econ.Asymptotics.diffQuot_measurable, Econ.Asymptotics.mul_diffQuot, Econ.Asymptotics.delta_method, Econ.Asymptotics.delta_method_clt}
+\leanok
+\uses{thm:root-n, lem:conv-const}
+If $\sqrt n(T_n-\theta)\to_dZ$ and $g$ is measurable and differentiable at $\theta$, then
+$\sqrt n(g(T_n)-g(\theta))\to_dg'(\theta)Z$. For i.i.d.\ $X_i\in L^2$ and $Y\sim N(0,\sigma^2)$,
+$\sqrt n(g(\bar X_n)-g(\mu))\to_dg'(\mu)Y$, whose law is $N(0,g'(\mu)^2\sigma^2)$.
+\end{theorem}
+\begin{proof}
+\leanok
+Let $q(t) = (g(t)-g(\theta))/(t-\theta)$ for $t\ne\theta$ and $q(\theta) = g'(\theta)$: measurable, continuous at $\theta$
+(it is the slope function updated at $\theta$, whose limit is $g'(\theta)$). Then
+$\sqrt n(g(T_n)-g(\theta)) = q(T_n)\sqrt n(T_n-\theta)$ exactly, $q(T_n)\to_pg'(\theta)$ by root-$n$ consistency and
+continuity at a point, and Slutsky gives the product limit. For the CLT version,
+$(\sqrt n)^{-1}(\sum_{k<n}X_k - n\mu) = \sqrt n(\bar X_n-\mu)$ (both $0$ when $n = 0$), Mathlib's CLT gives the input,
+and the image of $N(0,\sigma^2)$ under $y\mapsto g'y$ is $N(0,g'^2\sigma^2)$.
+\end{proof}
+
+\begin{theorem}[Strong consistency of OLS]
+\label{thm:ols-consistent}
+\lean{Econ.Asymptotics.designMatrix, Econ.Asymptotics.secondMoment, Econ.Asymptotics.gram_designMatrix, Econ.Asymptotics.transpose_designMatrix_mulVec, Econ.Asymptotics.ols_consistent, Econ.Asymptotics.ols_consistent_witness}
+\leanok
+\uses{def:ols}
+Let $(x_i,\varepsilon_i)$ be pairwise independent and identically distributed, $E|x_ax_b|<\infty$, $E|x_a\varepsilon|<\infty$,
+$E[x\varepsilon] = 0$, and $E[xx^\top]$ nonsingular. Then OLS on the first $n$ observations of $y_i = x_i^\top\beta+\varepsilon_i$
+converges to $\beta$ almost surely (Hayashi Prop.~2.1(a), i.i.d.\ case). The hypotheses hold for a constant regressor
+with zero errors.
+\end{theorem}
+\begin{proof}
+\leanok
+Apply the strong law to $x_ix_i^\top$ and $x_i\varepsilon_i$ (measurable functions of $(x_i,\varepsilon_i)$, so pairwise
+independent and identically distributed): $S_n = n^{-1}\sum x_ix_i^\top\to E[xx^\top]$ and
+$m_n = n^{-1}\sum x_i\varepsilon_i\to0$ a.s. Matrix inversion is continuous at a nonsingular matrix, so
+$S_n^{-1}(S_n\beta+m_n)\to\beta$; and since $\det$ is continuous, eventually $S_n$ is invertible, $n\ge1$, and
+$\hat\beta_n = (nS_n)^{-1}n(S_n\beta+m_n) = S_n^{-1}(S_n\beta+m_n)$.
+\end{proof}
+
+\section{Vector autoregressions}
+\label{sec:var}
+
+Sources: Hamilton (1994) \S10.1; L\"utkepohl (2005) \S2.1. $y_t = c + Ay_{t-1}+u_t$ in a Banach space $E$, $t\in\Z$;
+stability is $\sum_j\|A^j\|<\infty$ (for matrices: spectral radius $<1$).
+
+\begin{definition}[VAR paths, stability, MA($\infty$)]
+\label{def:var}
+\lean{Econ.TimeSeries.VAR.IsPath, Econ.TimeSeries.VAR.Stable, Econ.TimeSeries.VAR.mean, Econ.TimeSeries.VAR.ma}
+\leanok
+$\mu = \sum_jA^jc$ and $y^{MA}_t = \mu + \sum_{j\ge0}A^ju_{t-j}$.
+\end{definition}
+
+\begin{lemma}[Summability]
+\label{lem:var-summable}
+\lean{Econ.TimeSeries.VAR.summable_of_norm_lt_one, Econ.TimeSeries.VAR.summable_pow_apply, Econ.TimeSeries.VAR.tsum_pow_apply_eq, Econ.TimeSeries.VAR.tendsto_norm_pow}
+\leanok
+\uses{def:var}
+$\|A\|<1$ implies stability; for bounded $x_j$, $\sum_jA^jx_j$ converges absolutely and equals
+$x_0 + A\sum_jA^jx_{j+1}$; $\|A^j\|\to0$.
+\end{lemma}
+\begin{proof}
+\leanok
+$\|A^j\|\le\|A\|^j$; comparison with $\|A^j\|M$; split off $j = 0$ and pull $A$ through the convergent sum.
+\end{proof}
+
+\begin{theorem}[Wold/MA($\infty$) representation of a stable VAR]
+\label{thm:var-ma}
+\lean{Econ.TimeSeries.VAR.mean_fixed, Econ.TimeSeries.VAR.ma_isPath, Econ.TimeSeries.VAR.ma_bounded, Econ.TimeSeries.VAR.isPath_unique, Econ.TimeSeries.VAR.fixed_unique}
+\leanok
+\uses{lem:var-summable}
+For a stable VAR and bounded shocks, $\mu = c + A\mu$ is the unique fixed point, the MA($\infty$) process is a bounded
+solution, and any two bounded solutions coincide (L\"utkepohl Prop.~2.1).
+\end{theorem}
+\begin{proof}
+\leanok
+Apply the splitting lemma to $x_j = c$ and to $x_j = u_{t-j}$. For uniqueness, $d = y - z$ satisfies $d_t = Ad_{t-1}$,
+hence $d_t = A^nd_{t-n}$ and $\|d_t\|\le\|A^n\|(K+K')\to0$. The fixed point is the constant bounded path with $u = 0$.
+\end{proof}
+
+\begin{theorem}[Impulse responses]
+\label{thm:irf}
+\lean{Econ.TimeSeries.VAR.ma_impulse, Econ.TimeSeries.VAR.tendsto_irf_zero}
+\leanok
+\uses{thm:var-ma}
+Adding $v$ to the shock at date $s$ changes $y^{MA}_{s+h}$ by $A^hv$, and $A^hv\to0$.
+\end{theorem}
+\begin{proof}
+\leanok
+The difference of the two MA sums is $\sum_jA^j\mathbf 1\{s+h-j = s\}v = A^hv$; and $\|A^hv\|\le\|A^h\|\|v\|$.
+\end{proof}
+
+\section{Structural VARs: recursive identification}
+\label{sec:svar}
+
+Sources: Sims (1980); Kilian--L\"utkepohl (2017) \S8.2. $u_t = B\varepsilon_t$ with $\mathrm{Var}(\varepsilon_t) = I$,
+so the data reveal $\Sigma_u = BB^\top$.
+
+\begin{definition}[Recursive impact matrix]
+\label{def:recursive}
+\lean{Econ.TimeSeries.SVAR.IsRecursive, Econ.TimeSeries.SVAR.lower_apply}
+\leanok
+$B$ lower triangular with positive diagonal.
+\end{definition}
+
+\begin{theorem}[Recursive identification]
+\label{thm:svar}
+\lean{Econ.TimeSeries.SVAR.observationallyEquivalent, Econ.TimeSeries.SVAR.recursive_unique, Econ.TimeSeries.SVAR.recursive_exists, Econ.TimeSeries.SVAR.recursive_existsUnique, Econ.TimeSeries.SVAR.not_identified, Econ.TimeSeries.SVAR.sign_normalization_needed}
+\leanok
+\uses{def:recursive}
+$BQ(BQ)^\top = BB^\top$ for orthogonal $Q$, so $B$ is not identified without restrictions (a $90^\circ$ rotation of $I_2$
+is an explicit example, and $\mathrm{diag}(-1,1)$ shows that triangularity alone is not enough without the sign
+normalisation). For every $\Sigma\succ0$ there is exactly one recursive $B$ with $BB^\top = \Sigma$.
+\end{theorem}
+\begin{proof}
+\leanok
+Uniqueness: $B_2$ is invertible (determinant = product of positive diagonal). $M = B_2^{-1}B_1$ is lower triangular,
+$B_2M = B_1$ and $MM^\top = B_2^{-1}B_1B_1^\top B_2^{-\top} = I$. So $M^\top = M^{-1}$ is lower triangular, hence $M$ is
+diagonal; $B_{1,ii} = B_{2,ii}M_{ii}$ gives $M_{ii}>0$ and $M_{ii}^2 = 1$, so $M = I$. Existence: Mathlib's LDL
+decomposition $\Sigma = LDL^\top$ with $L$ lower triangular invertible and $D = L^{-1}\Sigma L^{-\top}\succ0$ diagonal;
+put $B = L\,\mathrm{diag}(v)$ with $v_i = \sqrt{d_i}\,|L_{ii}|/L_{ii}$, so $v_i^2 = d_i$ and $B_{ii} = \sqrt{d_i}|L_{ii}|>0$.
+\end{proof}

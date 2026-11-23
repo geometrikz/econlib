@@ -47,6 +47,12 @@ public import EconLean.Behavioral.StochasticChoice
 public import EconLean.Networks.KeyPlayer
 public import EconLean.Information.Persuasion
 public import EconLean.BoundedRationality.Existence
+public import EconLean.Behavioral.Falmagne
+public import EconLean.Behavioral.SocialPreferences
+public import EconLean.Behavioral.Salience
+public import EconLean.Behavioral.ShroudedAttributes
+public import EconLean.Behavioral.ContractDesign
+public import EconLean.Information.PersuasionExistence
 public import EconLean.Foundations.SupportingHyperplane
 public import EconLean.GE.Exchange
 public import EconLean.GE.SecondWelfare
@@ -59,6 +65,8 @@ public import EconLean.Bridges.Aggregation.Gorman
 public import EconLean.Bridges.Aggregation.Examples
 public import EconLean.Foundations.FixedPoint
 public import EconLean.GE.ExistenceGeneral
+public import EconLean.GE.ExistenceInterior
+public import EconLean.GE.ExistencePreferences
 
 public import EconLean.Producer.Production
 public import EconLean.Producer.Cost
@@ -83,12 +91,23 @@ public import EconLean.Econometrics.Causal.TWFE
 public import EconLean.Econometrics.Causal.RD
 public import EconLean.Econometrics.Causal.Bounds
 public import EconLean.Econometrics.Causal.Witnesses
+public import EconLean.Econometrics.IV
+public import EconLean.Econometrics.GMM
+public import EconLean.Econometrics.Causal.SyntheticControl
+public import EconLean.Econometrics.Causal.ShiftShare
+public import EconLean.Econometrics.Asymptotics.DeltaMethod
+public import EconLean.Econometrics.Asymptotics.OLSConsistency
+public import EconLean.Econometrics.TimeSeries.VAR
+public import EconLean.Econometrics.TimeSeries.SVAR
 public import EconLean.Macro.Growth.RamseyGlobal
 public import EconLean.Macro.DP.StochasticPlan
 public import EconLean.Macro.DP.InvariantMeasure
 public import EconLean.Macro.DP.StochasticConcavity
 public import EconLean.Macro.DP.StationaryDist
 public import EconLean.Macro.HA.StochSavings
+public import EconLean.Macro.DP.Doeblin
+public import EconLean.Macro.DP.ParamInvariant
+public import EconLean.Macro.HA.Aiyagari
 public import EconLean.Bridges.Aggregation.Tatonnement
 public import EconLean.Games.Strategic
 public import EconLean.Games.Mixed
@@ -97,5 +116,21 @@ public import EconLean.Games.Correlated
 public import EconLean.Games.Rationalizability
 public import EconLean.Games.Bayesian
 public import EconLean.Games.Extensive
+public import EconLean.Games.Repeated
+public import EconLean.Information.Lemons
+public import EconLean.Information.Signaling
+public import EconLean.Information.Screening
+public import EconLean.Information.MoralHazard
+public import EconLean.Mechanism.Revelation
+public import EconLean.Mechanism.VCG
+public import EconLean.Mechanism.Myerson
+public import EconLean.Mechanism.OptimalMechanism
+public import EconLean.Mechanism.BilateralTrade
+public import EconLean.Matching.GaleShapley
+public import EconLean.Macro.Consumption.Precautionary
+public import EconLean.Macro.Consumption.PIH
+public import EconLean.Finance.SequentialMarkets
+public import EconLean.Finance.LucasTree
+public import EconLean.Macro.NK.ThreeEquation
 
 @[expose] public section

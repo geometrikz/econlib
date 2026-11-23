@@ -515,12 +515,13 @@ $m(x) = m_1(x)$ for $x \ge c$ and $m_0(x)$ for $x < c$.
 \leanok
 \uses{def:sharp-rd}
 If $m_0, m_1$ are continuous at $c$, then $m(x)\to m_1(c)$ as $x\downarrow c$ and $m(x)\to m_0(c)$ as $x\uparrow c$.
-Two such structures with the same $m$ have the same $m_1(c) - m_0(c)$. Without continuity identification fails: a jump of $m_0$ at the cutoff mimics a treatment effect.
+Two such structures whose $m$ agree near $c$ except possibly at $c$ (data identify $E[Y\mid X=x]$ only almost everywhere) have the same $m_1(c)$, $m_0(c)$ and $m_1(c) - m_0(c)$. Without continuity identification fails: a jump of $m_0$ at the cutoff mimics a treatment effect.
 \end{theorem}
 \begin{proof}
 \leanok
 On $[c,\infty)$, $m = m_1$, so the right limit is that of $m_1$ (\texttt{tendsto\_congr'}); likewise on the left.
-Identification: limits along the non-trivial filters $\mathcal N_{\ge}(c)$, $\mathcal N_{<}(c)$ are unique
+Identification: the two observed functions agree on the punctured neighbourhoods $\mathcal N_{>}(c)$, $\mathcal N_{<}(c)$,
+where $m$ tends to $m_1(c)$ and $m_0(c)$ respectively, and limits along these non-trivial filters are unique
 (\texttt{tendsto\_nhds\_unique}). Counterexample: $(m_0,m_1) = (0, 1)$, effect $1$, and $(\mathbf 1\{x\ge 0\}, 1)$, effect $0$, give the same $m$; only the second $m_0$ jumps.
 \end{proof}
 

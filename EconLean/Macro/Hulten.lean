@@ -1,5 +1,5 @@
 /-
-# Hulten's theorem
+# Hulten's theorem in two Cobb–Douglas economies
 
 Hulten (1978), "Growth Accounting with Intermediate Inputs", REStud;
 Baqaee–Farhi (2019) §2; Acemoglu–Carvalho–Ozdaglar–Tahbaz-Salehi (2012).

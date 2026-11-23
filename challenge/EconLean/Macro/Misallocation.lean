@@ -86,6 +86,12 @@ theorem tfpr_eq {s : ι → ℝ} {i : ι} (hsi : 0 < s i) :
     I.tfpr s i = (s i / I.wt i) ^ (I.ρ - 1) := by
   sorry
 
+def tfprAvg (s : ι → ℝ) : ℝ := ∑ i, (I.A i * s i) ^ I.ρ
+
+theorem tfp_eq_hk [Nonempty ι] {s : ι → ℝ} (hpos : ∀ i, 0 < s i) :
+    I.tfp s = (∑ i, (I.A i * I.tfprAvg s / I.tfpr s i) ^ (I.σ - 1)) ^ (1 / (I.σ - 1)) := by
+  sorry
+
 theorem tfpr_equal_iff [Nonempty ι] {s : ι → ℝ} (hs : IsAlloc s) (hpos : ∀ i, 0 < s i) :
     (∀ i j, I.tfpr s i = I.tfpr s j) ↔ I.tfp s = I.tfpEfficient := by
   sorry

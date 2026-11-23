@@ -79,3 +79,14 @@ Reports: `Audit/independent/review-G.md` (fixed points, general existence),
   arbitrary k̄ and has no interest rate, wage or equilibrium (not yet
   Aiyagari / LS ch. 18). `policy_of_optimal` covers date 0 only (SLP 9.5 is
   every date). `value_concave` gives weak, not strict, concavity (SLP 9.8).
+
+## Follow-up, 2026-11-23 11:20 UTC: interior existence (MWG 17.C.1)
+Report: `Audit/independent/review-interior.md`.
+`exists_equilibrium_of_boundaryCondition` (GE/ExistenceInterior) is a faithful
+statement of the first sentence of MWG 17.C.1, slightly more general because
+homogeneity is not needed; the boundary condition and lower bound match
+17.B.2(iv)–(v); a Cobb–Douglas exchange economy meets every hypothesis. This
+closes the abstract part of I1. Still open: MWG 17.B.2 (an economy with
+continuous, strictly convex, strongly monotone preferences and Σω ≫ 0 has an
+excess demand satisfying (i)–(v)) and the economy-level corollary.
+Machine checks on the 10:55 UTC tree: 1,064 theorems, all six kernels accept.

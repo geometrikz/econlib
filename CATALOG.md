@@ -345,12 +345,12 @@ design. New foundation items, added to PLAN.md §2: **F25** uniform LLN
 | ID | Model / result | Key theorems | Source | Deps | Diff | MS | Status |
 |---|---|---|---|---|---|---|---|
 | C2.1 | Convergence toolkit | CMT, Slutsky, O_p/o_p calculus | van der Vaart 2 | Mathlib | M | ME2 | 🟢 |
-| C2.2 | OLS consistency | under SLLN, full-rank moments | Hayashi 2 | Mathlib SLLN | E–M | ME2 | 🟢 |
+| C2.2 | OLS consistency | under SLLN, full-rank moments | Hayashi 2 | Mathlib SLLN | E–M | ME2 | ✅ (i.i.d.) |
 | C2.3 | OLS asymptotic normality | √n (β̂ − β) ⇒ N(0, V) | Hayashi 2 | F27 | M | ME2 | 🟡 |
-| C2.4 | Delta method | scalar and vector | van der Vaart 3 | C2.1 (reuse Coretto) | M | ME2 | 🟢 |
+| C2.4 | Delta method | scalar and vector | van der Vaart 3 | C2.1 (reuse Coretto) | M | ME2 | 🟢 (scalar done; vector open) |
 | C2.5 | Extremum estimators | consistency (identification + ULLN) | Newey–McFadden 1994 | F25 | M | ME2 | 🟡 |
 | C2.6 | MLE | information equality, Cramér–Rao, asymptotic efficiency | Lehmann–Casella; Newey–McFadden | C2.5 | M–H | ME2 | 🟡 |
-| C2.7 | GMM | consistency, asymptotic normality, efficient weight, J-test | Hansen 1982 (Nobel 2013) | C2.5, F27 | M–H | ME2 | 🟡 |
+| C2.7 | GMM | consistency, asymptotic normality, efficient weight, J-test | Hansen 1982 (Nobel 2013) | C2.5, F27 | M–H | ME2 | 🟡 (identification, estimator, efficient weight done; asymptotics and J-test open) |
 | C2.8 | Robust SEs | HC and Newey–West PSD | White 1980; Newey–West 1987 | Mathlib | E–M | ME2 | 🟢 |
 | C2.9 | Bootstrap | consistency for the mean | Efron 1979; Bickel–Freedman 1981 | F27 | H | ME2 | 🟡 |
 | C2.10 | Weak instruments | Staiger–Stock asymptotics | Staiger–Stock 1997 | F27 | H | ME2 | 🟡 |
@@ -360,16 +360,16 @@ design. New foundation items, added to PLAN.md §2: **F25** uniform LLN
 |---|---|---|---|---|---|---|---|
 | C3.1 | Potential outcomes | randomization identifies ATE; SUTVA | Rubin 1974; Imbens–Rubin 2015 | Mathlib expectation | E | ME1 | ✅ |
 | C3.2 | Selection on observables | unconfoundedness + overlap ⇒ ATE; IPW identity | Rosenbaum–Rubin 1983 | Mathlib cond. expectation | E–M | ME1 | ✅ |
-| C3.3 | Linear IV | rank condition identification; 2SLS = IV | Wright 1928; Hayashi 3 | C1.1 | E | ME1 | 🟢 |
+| C3.3 | Linear IV | rank condition identification; 2SLS = IV | Wright 1928; Hayashi 3 | C1.1 | E | ME1 | ✅ |
 | C3.4 | LATE | Wald = complier ATE under monotonicity | Imbens–Angrist 1994 (Nobel 2021) | Mathlib | E–M | ME1 | ✅ |
 | C3.5 | MTE | LATE/ATE/ATT as MTE weighted averages | Heckman–Vytlacil 2005 | C3.4 | M | ME1 | 🟢 |
 | C3.6 | DiD (2×2) | parallel trends ⇒ ATT | Card–Krueger 1994 (Nobel 2021) | Mathlib | E | ME1 | ✅ |
 | C3.7 | TWFE with staggered timing | decomposition; negative weights | Goodman-Bacon 2021; de Chaisemartin–D'Haultfœuille 2020 | C1.1 | M | ME1 | 🟡 (dCDH done; Goodman-Bacon open) |
 | C3.8 | Heterogeneity-robust DiD | Callaway–Sant'Anna / Sun–Abraham identification | Callaway–Sant'Anna 2021; Sun–Abraham 2021 | C3.6 | M | ME1 | 🟢 |
 | C3.9 | Regression discontinuity | continuity ⇒ identification (sharp, fuzzy) | Hahn–Todd–van der Klaauw 2001 | Mathlib limits | M | ME1 | ✅ |
-| C3.10 | Synthetic control | bias bound under factor model | Abadie–Diamond–Hainmueller 2010 | Mathlib | M–H | ME1 | 🟢 |
+| C3.10 | Synthetic control | bias bound under factor model | Abadie–Diamond–Hainmueller 2010 | Mathlib | M–H | ME1 | 🟢 (noiseless exactness done; bias bound open) |
 | C3.11 | Partial identification | Manski worst-case bounds; sharpness | Manski 1990 | Mathlib | E | ME1 | ✅ |
-| C3.12 | Shift-share IV | identification from shocks | Borusyak–Hull–Jaravel 2022; Goldsmith-Pinkham et al. 2020 | C3.3 | M | ME1 | 🟢 |
+| C3.12 | Shift-share IV | identification from shocks | Borusyak–Hull–Jaravel 2022; Goldsmith-Pinkham et al. 2020 | C3.3 | M | ME1 | ✅ (BHJ equivalence and mean exclusion; GPSS Rotemberg; consistency open) |
 | C3.13 | Causal graphs | backdoor criterion; do-calculus soundness | Pearl 1995, 2009 | Mathlib (finite) | M–H | ME1 | 🟢 |
 | C3.14 | Double/debiased ML | Neyman orthogonality ⇒ √n inference | Chernozhukov et al. 2018 | C2.1 | M | ME2 | 🟢 (algebraic part) |
 | C3.15 | Conformal prediction | finite-sample marginal coverage | Vovk et al. 2005; Lei et al. 2018 | Mathlib (exchangeability) | E–M | ME1 | 🟢 |
@@ -379,8 +379,8 @@ design. New foundation items, added to PLAN.md §2: **F25** uniform LLN
 | ID | Model / result | Key theorems | Source | Deps | Diff | MS | Status |
 |---|---|---|---|---|---|---|---|
 | C4.1 | ARMA | stationarity ⟺ roots outside unit circle; MA(∞) | Hamilton 3; Brockwell–Davis | Mathlib polynomials | M | ME3 | 🟢 |
-| C4.2 | VAR | companion-form stability; impulse responses | Sims 1980 (Nobel 2011) | B1.9 | M | ME3 | 🟢 |
-| C4.3 | SVAR identification | recursive, long-run, sign restrictions | Blanchard–Quah 1989; Uhlig 2005 | C4.2 | M | ME3 | 🟢 |
+| C4.2 | VAR | companion-form stability; impulse responses | Sims 1980 (Nobel 2011) | B1.9 | M | ME3 | 🟢 (stability, MA(∞), IRFs done for bounded shocks; companion form open) |
+| C4.3 | SVAR identification | recursive, long-run, sign restrictions | Blanchard–Quah 1989; Uhlig 2005 | C4.2 | M | ME3 | 🟢 (recursive done; long-run and sign restrictions open) |
 | C4.4 | LP = VAR | equivalence of population IRFs | Plagborg-Møller–Wolf 2021 | C4.2 | M | ME3 | 🟢 |
 | C4.5 | Kalman filter | optimal linear filter | Kalman 1960 | Mathlib Gaussian | M | ME3 | 🟢 |
 | C4.6 | Wold decomposition | every covariance-stationary process | Wold 1938 | Hilbert spaces in Mathlib | H | ME3 | 🟢 |

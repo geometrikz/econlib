@@ -31,7 +31,8 @@ Mathlib's strict Jensen.
 **Deviations from the paper.** Labour is the only input (HK also have capital
 with a separate capital wedge; the labour-only case already contains the
 mechanism). The firm problem leading to `wedgeAlloc` is not re-derived; we
-start from the resulting labour allocation. HK's log-normal approximation
+start from the resulting labour allocation. HK's TFP formula (their eq. (16)) is
+`tfp_eq_hk`; the log-normal approximation
 `log TFP_e − log TFP = (σ/2) var(log TFPR)` is not formalized.
 -/
 module
@@ -213,6 +214,40 @@ theorem tfpr_eq {s : ι → ℝ} {i : ι} (hsi : 0 < s i) :
   rw [tfpr, I.term_eq i hsi.le, rpow_sub_one (div_pos hsi (I.wt_pos i)).ne']
   have := I.wt_pos i
   field_simp
+
+/-- Aggregate revenue per unit of labour, `TFPR̄ ∝ Σᵢ Yᵢ^ρ` (total labour is `1`). -/
+def tfprAvg (s : ι → ℝ) : ℝ := ∑ i, (I.A i * s i) ^ I.ρ
+
+/-- **Hsieh–Klenow eq. (16).** Industry TFP in terms of physical productivity
+and TFPR dispersion: `TFP = (Σᵢ (Aᵢ · TFPR̄ / TFPRᵢ)^{σ−1})^{1/(σ−1)}`. When
+TFPR is equalized this is the efficient TFP `(Σ Aᵢ^{σ−1})^{1/(σ−1)}`. The
+identity holds for any positive labour vector; for an allocation (`IsAlloc`,
+labour summing to `1`) `tfp s` is industry TFP and `tfprAvg s` is total revenue
+per unit of labour, HK's average TFPR. Labour is the only input (no capital
+wedge). -/
+theorem tfp_eq_hk [Nonempty ι] {s : ι → ℝ} (hpos : ∀ i, 0 < s i) :
+    I.tfp s = (∑ i, (I.A i * I.tfprAvg s / I.tfpr s i) ^ (I.σ - 1)) ^ (1 / (I.σ - 1)) := by
+  have hσ := I.hσ
+  have hρ : I.ρ = (I.σ - 1) / I.σ := rfl
+  have hx : ∀ i, 0 < I.A i * s i := fun i => mul_pos (I.hA i) (hpos i)
+  set S := I.tfprAvg s
+  have hS : 0 < S := Finset.sum_pos (fun i _ => rpow_pos_of_pos (hx i) _) univ_nonempty
+  have key : ∀ i, (I.A i * S / I.tfpr s i) ^ (I.σ - 1) =
+      (I.A i * s i) ^ I.ρ * S ^ (I.σ - 1) := fun i => by
+    have h1 : I.A i * S / I.tfpr s i = (I.A i * s i) ^ (1 - I.ρ) * S := by
+      rw [tfpr, rpow_sub (hx i), rpow_one]
+      have := rpow_pos_of_pos (hx i) I.ρ
+      have := hpos i
+      field_simp
+    rw [h1, mul_rpow (rpow_nonneg (hx i).le _) hS.le, ← rpow_mul (hx i).le]
+    congr 2
+    rw [hρ]; field_simp; ring
+  simp only [key]
+  rw [← sum_mul]
+  change I.tfp s = (S * S ^ (I.σ - 1)) ^ (1 / (I.σ - 1))
+  rw [← rpow_one_add' hS.le (ne_of_gt (by linarith)), ← rpow_mul hS.le, tfp]
+  congr 1
+  rw [hρ]; field_simp; ring
 
 /-- **Efficiency ⟺ TFPR equalized.** For an allocation with all firms active,
 TFP is efficient iff revenue productivity is the same in every firm. -/

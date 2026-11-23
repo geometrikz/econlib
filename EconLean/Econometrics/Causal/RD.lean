@@ -81,18 +81,26 @@ theorem sharp_rd {m₀ m₁ : ℝ → ℝ} {c : ℝ} (h₀ : ContinuousAt m₀ c
   ⟨tendsto_sharpMean_right h₁, tendsto_sharpMean_left h₀⟩
 
 /-- **Identification form.** Two structures with continuous conditional means
-that generate the same observed regression function have the same treatment
-effect at the cutoff. So `m₁ c − m₀ c` is a functional of the observed
-distribution. -/
+whose observed regression functions agree near the cutoff, except possibly at
+`c` itself, have the same untreated and treated means at the cutoff, hence the
+same treatment effect. Agreement at `c` is not required because data identify
+`E[Y | X = x]` only almost everywhere; continuity of both `m₀` and `m₁` is what
+pins down `m₀ c` and `m₁ c`. -/
 theorem sharp_rd_identified {m₀ m₁ m₀' m₁' : ℝ → ℝ} {c : ℝ} (h₀ : ContinuousAt m₀ c)
     (h₁ : ContinuousAt m₁ c) (h₀' : ContinuousAt m₀' c) (h₁' : ContinuousAt m₁' c)
-    (hobs : sharpMean m₀ m₁ c = sharpMean m₀' m₁' c) :
-    m₁ c - m₀ c = m₁' c - m₀' c := by
-  have hr := tendsto_nhds_unique (tendsto_sharpMean_right (m₀ := m₀) h₁)
-    (hobs ▸ tendsto_sharpMean_right (m₀ := m₀') h₁')
-  have hl := tendsto_nhds_unique (tendsto_sharpMean_left (m₁ := m₁) h₀)
-    (hobs ▸ tendsto_sharpMean_left (m₁ := m₁') h₀')
-  rw [hr, hl]
+    (hobs : ∀ᶠ x in 𝓝[≠] c, sharpMean m₀ m₁ c x = sharpMean m₀' m₁' c x) :
+    m₁ c = m₁' c ∧ m₀ c = m₀' c ∧ m₁ c - m₀ c = m₁' c - m₀' c := by
+  have hgt : ∀ {f g : ℝ → ℝ}, ContinuousAt g c →
+      Tendsto (sharpMean f g c) (𝓝[>] c) (𝓝 (g c)) := fun hg =>
+    (tendsto_sharpMean_right hg).mono_left (nhdsWithin_mono _ Ioi_subset_Ici_self)
+  have heqR : sharpMean m₀ m₁ c =ᶠ[𝓝[>] c] sharpMean m₀' m₁' c :=
+    nhdsWithin_mono _ (show Ioi c ⊆ {c}ᶜ from fun x (hx : c < x) => hx.ne') hobs
+  have heqL : sharpMean m₀ m₁ c =ᶠ[𝓝[<] c] sharpMean m₀' m₁' c :=
+    nhdsWithin_mono _ (show Iio c ⊆ {c}ᶜ from fun x (hx : x < c) => hx.ne) hobs
+  have hr := tendsto_nhds_unique ((hgt (f := m₀) h₁).congr' heqR) (hgt (f := m₀') h₁')
+  have hl := tendsto_nhds_unique ((tendsto_sharpMean_left (m₁ := m₁) h₀).congr' heqL)
+    (tendsto_sharpMean_left (m₁ := m₁') h₀')
+  exact ⟨hr, hl, by rw [hr, hl]⟩
 
 /-- Without continuity there is no identification: a jump in `m₀` at the
 cutoff is indistinguishable from a treatment effect. A structure with effect

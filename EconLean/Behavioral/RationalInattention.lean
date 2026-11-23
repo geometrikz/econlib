@@ -34,12 +34,20 @@ rule already was that optimum.
 Actions never chosen (`P i = 0`) are allowed, as in MM: for them both sides
 of the formula are `0`. For that case the per-state Gibbs bound is redone
 for defaults that may vanish (`objective_le0`, `eq_gl_of_optimal0`).
-**Not formalized:** existence of an optimal rule (it exists by compactness)
-and MM's characterization of the optimal marginal itself.
+**Existence** (`exists_isOptimalRule`): an optimal rule exists, since the
+rules form a compact set and mutual information is continuous
+(`mutualInfo_eq`, using continuity of `x log x` at `0`). Combined with
+Theorem 1 this gives an optimal rule of generalized-logit form
+(`exists_optimal_generalizedLogit`). **Not formalized:** MM's
+characterization of the optimal marginal itself (their Corollary 1 on
+symmetric problems needs convexity of mutual information in the rule).
 -/
 module
 
 public import EconLean.Behavioral.Logit
+public import Mathlib.Analysis.SpecialFunctions.Log.NegMulLog
+public import Mathlib.Topology.Order.Compact
+public import Mathlib.Topology.Algebra.Module.FiniteDimension
 
 @[expose] public section
 
@@ -381,6 +389,86 @@ theorem optimal_is_softmax_of_uniform [Nonempty ι] [DecidableEq Ω] {lam : ℝ}
   funext i
   simp only [generalizedLogit, Z, softmax, hunif, ← mul_sum]
   field_simp
+
+/-! ### Existence of an optimal rule -/
+
+/-- Mutual information as entropy terms: `I(p) = Σ_ω g_ω Σ_i p log p − Σ_i P log P`. -/
+theorem mutualInfo_eq (g : Ω → ℝ) (p : Ω → ι → ℝ) :
+    mutualInfo g p = ∑ ω, g ω * ∑ i, p ω i * log (p ω i) -
+      ∑ i, marginal g p i * log (marginal g p i) := by
+  unfold mutualInfo kl
+  have h : ∀ i, marginal g p i * log (marginal g p i) =
+      ∑ ω, g ω * (p ω i * log (marginal g p i)) := by
+    intro i
+    unfold marginal
+    rw [sum_mul]
+    exact sum_congr rfl fun ω _ => by ring
+  simp_rw [h]
+  rw [sum_comm (s := univ) (t := univ)
+    (f := fun i ω => g ω * (p ω i * log (marginal g p i))), ← sum_sub_distrib]
+  refine sum_congr rfl fun ω _ => ?_
+  rw [← mul_sum, ← mul_sub, ← sum_sub_distrib]
+
+omit [Fintype ι] in
+theorem continuous_marginal (g : Ω → ℝ) (i : ι) : Continuous fun p : Ω → ι → ℝ => marginal g p i :=
+  continuous_finsetSum _ fun ω _ =>
+    continuous_const.mul ((continuous_apply i).comp (continuous_apply ω))
+
+theorem continuous_riObjective (lam : ℝ) (g : Ω → ℝ) (v : Ω → ι → ℝ) :
+    Continuous (riObjective lam g v) := by
+  have hpo : ∀ ω i, Continuous fun p : Ω → ι → ℝ => p ω i :=
+    fun ω i => (continuous_apply i).comp (continuous_apply ω)
+  have hI : Continuous (mutualInfo (ι := ι) g) := by
+    have e : mutualInfo (ι := ι) g = fun p => ∑ ω, g ω * ∑ i, p ω i * log (p ω i) -
+        ∑ i, marginal g p i * log (marginal g p i) := funext (mutualInfo_eq g)
+    rw [e]
+    refine Continuous.sub (continuous_finsetSum _ fun ω _ => continuous_const.mul
+      (continuous_finsetSum _ fun i _ => continuous_mul_log.comp (hpo ω i)))
+      (continuous_finsetSum _ fun i _ => continuous_mul_log.comp (continuous_marginal g i))
+  unfold riObjective
+  exact (continuous_finsetSum _ fun ω _ => continuous_const.mul (continuous_finsetSum _
+    fun i _ => (hpo ω i).mul continuous_const)).sub (continuous_const.mul hI)
+
+omit [Fintype Ω] in
+/-- The set of choice rules is compact. -/
+theorem isCompact_rules : IsCompact {p : Ω → ι → ℝ | IsRule p} := by
+  have hcl : IsClosed {p : Ω → ι → ℝ | IsRule p} := by
+    have e : {p : Ω → ι → ℝ | IsRule p} = (⋂ ω, ⋂ i, {p | 0 ≤ p ω i}) ∩
+        ⋂ ω, {p | ∑ i, p ω i = 1} := by
+      ext p; simp [IsRule, IsProb, forall_and]
+    rw [e]
+    refine IsClosed.inter (isClosed_iInter fun ω => isClosed_iInter fun i => ?_)
+      (isClosed_iInter fun ω => ?_)
+    · exact isClosed_le continuous_const ((continuous_apply i).comp (continuous_apply ω))
+    · exact isClosed_eq (continuous_finsetSum _ fun i _ =>
+        (continuous_apply i).comp (continuous_apply ω)) continuous_const
+  have hsub : {p : Ω → ι → ℝ | IsRule p} ⊆
+      Set.pi Set.univ fun _ => Set.pi Set.univ fun _ => Set.Icc (0 : ℝ) 1 := by
+    intro p hp ω _ i _
+    refine ⟨(hp ω).1 i, ?_⟩
+    rw [← (hp ω).2]
+    exact single_le_sum (f := p ω) (fun j _ => (hp ω).1 j) (mem_univ i)
+  exact (isCompact_univ_pi fun _ => isCompact_univ_pi fun _ => isCompact_Icc).of_isClosed_subset
+    hcl hsub
+
+/-- **Existence of an optimal rule** (for any `λ`, prior and payoffs). -/
+theorem exists_isOptimalRule [Nonempty ι] (lam : ℝ) (g : Ω → ℝ) (v : Ω → ι → ℝ) :
+    ∃ p, IsOptimalRule lam g v p := by
+  have hne : {p : Ω → ι → ℝ | IsRule p}.Nonempty := by
+    refine ⟨fun _ _ => 1 / Fintype.card ι, fun _ => ⟨fun _ => by positivity, ?_⟩⟩
+    simp only [sum_const, card_univ, nsmul_eq_mul]
+    have : (0 : ℝ) < Fintype.card ι := by exact_mod_cast Fintype.card_pos
+    field_simp
+  obtain ⟨p, hp, hmax⟩ := isCompact_rules.exists_isMaxOn hne
+    (continuous_riObjective lam g v).continuousOn
+  exact ⟨p, hp, fun p' hp' => hmax hp'⟩
+
+/-- **An optimal generalized-logit rule exists** (existence plus MM Theorem 1). -/
+theorem exists_optimal_generalizedLogit [Nonempty ι] [DecidableEq Ω] {lam : ℝ} (hlam : 0 < lam)
+    {g : Ω → ℝ} (hg : IsPrior g) (v : Ω → ι → ℝ) :
+    ∃ p, IsOptimalRule lam g v p ∧ ∀ ω, p ω = generalizedLogit lam (marginal g p) (v ω) := by
+  obtain ⟨p, hp⟩ := exists_isOptimalRule lam g v
+  exact ⟨p, hp, optimal_is_generalizedLogit hlam hg hp⟩
 
 end RationalInattention
 

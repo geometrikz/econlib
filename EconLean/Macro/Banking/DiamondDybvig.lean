@@ -34,8 +34,8 @@ depositor, who takes `f` as given:
   (`multiple_equilibria`): a run is a self-fulfilling prophecy.
 * `suspension_waiting_strictly_better`: with **suspension of convertibility**
   (the bank pays at most the fraction `λ` at date 1), waiting is strictly
-  better for a patient depositor whatever others do, so the run equilibrium
-  disappears.
+  better for a patient depositor whatever others do; `suspension_unique`: so
+  under suspension "all wait" is an equilibrium and "all run" is not.
 
 **Deviations from the paper.** Payments at date 1 are pro rata when the bank
 fails (no sequential-service queue); equilibria are in symmetric pure
@@ -292,6 +292,26 @@ theorem suspension_waiting_strictly_better (h : B.r₁ * (1 - B.lam + B.lam * B.
   unfold suspensionEarlyPay
   have hq : 0 < B.lam / f := div_pos B.hlam₀ hf0
   nlinarith
+
+/-- Under suspension, "all patient depositors wait" is an equilibrium: only the
+impatient withdraw (`f = λ`), everyone who asks at date 1 is served, and a
+patient depositor gets at least as much by waiting. -/
+def SuspensionGoodEquilibrium : Prop := B.suspensionEarlyPay B.lam ≤ B.latePay B.lam
+
+/-- Under suspension, "all depositors run" (`f = 1`) is an equilibrium: running
+is a best response for a patient depositor when everyone runs. -/
+def SuspensionRunEquilibrium : Prop := B.latePay B.lam ≤ B.suspensionEarlyPay 1
+
+/-- **Suspension of convertibility implements the good outcome uniquely.** If
+`r₁ (1 − λ + λR) < R` (e.g. the CRRA optimum), then under suspension the
+all-wait profile is an equilibrium and the all-run profile is not: the only
+symmetric pure-strategy equilibrium gives impatient depositors `r₁` and
+patient depositors `latePay λ`, the allocation the contract was designed for.
+Partial runs (any `f ≥ λ`) are ruled out by `suspension_waiting_strictly_better`. -/
+theorem suspension_unique (h : B.r₁ * (1 - B.lam + B.lam * B.R) < B.R) :
+    B.SuspensionGoodEquilibrium ∧ ¬ B.SuspensionRunEquilibrium :=
+  ⟨(B.suspension_waiting_strictly_better h le_rfl).le,
+    not_le.2 (B.suspension_waiting_strictly_better h B.hlam₁.le)⟩
 
 end Bank
 

@@ -489,7 +489,8 @@ Lemma~\ref{lem:strictConcave_calculus}(i) gives $u(f(k') - y') - u(f(k) - y') < 
 \leanok
 \uses{thm:rck_monotone_policy, thm:principle_of_optimality, lem:orbit_monotone, thm:orbit_tendsto_fixedPoint}
 From any $k_0$, the plan $k_{t+1} = g(k_t)$ attains $V(k_0)$ and is the only feasible plan that does; it is monotone and
-converges to a steady state $k_\infty = g(k_\infty)$.
+converges to a steady state $k_\infty = g(k_\infty)$. This is weak on purpose: $g(0)=0$ always, so it does not
+exclude $k_t\to0$; convergence to the positive $k^*$ is Theorem~\ref{thm:rck_global_convergence}.
 \end{theorem}
 \begin{proof}
 \leanok

@@ -5,6 +5,7 @@ public import EconLean.Bridges.Aggregation.GrossSubstitutes
 public import EconLean.Bridges.Aggregation.LawOfDemand
 public import EconLean.Bridges.Aggregation.Gorman
 public import EconLean.Bridges.Aggregation.Tatonnement
+public import EconLean.GE.ExistenceInterior
 public import Mathlib.Analysis.SpecialFunctions.Trigonometric.ArctanDeriv
 public import Mathlib.Analysis.SpecialFunctions.ExpDeriv
 public import EconLean.GE.Production
@@ -33,6 +34,30 @@ theorem zCD_unique {p : Fin 2 → ℝ} (hp : PositivePrices p) (hz : zCD p = 0) 
 
 theorem zCD_warp : ExcessWARP zCD {p | PositivePrices p} := by
   sorry
+
+section Boundary
+
+open Filter Topology
+
+theorem zCD_continuousOn : ContinuousOn zCD {p | PositivePrices p} := by
+  sorry
+
+theorem zCD_boundedBelow : ExcessBoundedBelow zCD := by
+  sorry
+
+theorem eventually_lt_div_sub_one {a b : ℕ → ℝ} {B : ℝ} (ha : ∀ n, 0 < a n)
+    (halim : Tendsto a atTop (𝓝 0)) (hblim : Tendsto b atTop (𝓝 B)) (hB : 0 < B) (M : ℝ) :
+    ∀ᶠ n in atTop, M < b n / a n - 1 := by
+  sorry
+
+theorem zCD_boundary : BoundaryCondition zCD := by
+  sorry
+
+example : ∃ p, PositivePrices p ∧ zCD p = 0 :=
+  exists_equilibrium_of_boundaryCondition zCD_continuousOn (fun p hp => zCD_walras p hp)
+    zCD_boundedBelow zCD_boundary
+
+end Boundary
 
 theorem zCD_cost_pos {q : Fin 2 → ℝ} (hq : PositivePrices q) (hz : zCD q ≠ 0) :
     0 < cost (fun _ => (1 : ℝ)) (zCD q) := by

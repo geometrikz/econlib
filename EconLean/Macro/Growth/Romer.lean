@@ -22,9 +22,10 @@ held by a monopolist.
 * On a balanced growth path with log utility, consumption grows at the gross
   rate `β (1 + r)` (the household's Euler equation). We **define**
   `eulerGrowth = β (1 + η a L)`, the Euler-implied growth factor at the
-  free-entry interest rate. We do not construct the decentralized dynamic
-  equilibrium (household problem with wage and asset income, market clearing)
-  in Lean.
+  free-entry interest rate. `household_optimal` derives it: a log-utility
+  household whose wealth earns `1 + η a L` optimally lets consumption grow at
+  `eulerGrowth`. We do not construct the full decentralized dynamic
+  equilibrium (wage income, market clearing) in Lean.
 
 **The planner** chooses machines and consumption every period
 (`PlannerPlan`). Its static choice is `x_S = (1 − a)^{−1/a} L > L`
@@ -215,6 +216,22 @@ theorem freeEntry_iff {r : ℝ} (hr : 0 < r) : E.η * (E.monoProfit 1 / r) = 1 �
 /-- Equilibrium growth factor of consumption (and output) on the balanced
 growth path, from the log-utility Euler equation `g = β (1 + r)`. -/
 def eulerGrowth : ℝ := E.β * (1 + E.rEq)
+
+/-- **The Euler growth rate comes from household optimization.** A household
+with log utility whose wealth `k₀ > 0` earns the gross free-entry return
+`1 + r = 1 + η a L` (an AK budget `k_{t+1} = (1 + r) k_t − c_t`) does best with
+the plan `AK.cstar`, whose consumption grows at exactly `eulerGrowth`. (Wage
+income is left out: this derives the Euler growth rate of a wealth-only
+household, not the equilibrium path of output or varieties; the growth claim
+is `AK.cstar_succ` at `R = 1 + η a L`.) -/
+theorem household_optimal {k₀ : ℝ} (hk : 0 < k₀) :
+    (∀ (P : AK.Plan (1 + E.rEq) k₀) {W : ℝ},
+      HasSum (fun t => E.β ^ t * log (P.c t)) W →
+        W ≤ ∑' t, E.β ^ t * log (AK.cstar E.β (1 + E.rEq) k₀ t)) ∧
+    ∀ t, AK.cstar E.β (1 + E.rEq) k₀ (t + 1) = E.eulerGrowth * AK.cstar E.β (1 + E.rEq) k₀ t := by
+  have hR : 0 < 1 + E.rEq := by
+    have := E.hη; have := E.ha₀; have := E.hL; unfold rEq; positivity
+  exact ⟨fun P _ hW => AK.optimal E.hβ₀ E.hβ₁ hR hk P hW, fun t => AK.cstar_succ _ _ _ t⟩
 
 /-! ## The planner -/
 

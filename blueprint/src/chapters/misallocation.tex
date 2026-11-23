@@ -124,6 +124,24 @@ $s_i/\pi_i = (1-\tau_i)^\sigma/Z$, so $\mathrm{TFPR}_i = (1-\tau_i)^{\sigma(\rho
 $\sigma(\rho - 1) = -1$.
 \end{proof}
 
+\begin{theorem}[Hsieh--Klenow eq.~(16)]
+\label{thm:tfp_eq_hk}
+\lean{Econ.Misallocation.Industry.tfprAvg, Econ.Misallocation.Industry.tfp_eq_hk}
+\leanok
+\uses{def:tfpr}
+Let $\overline{\mathrm{TFPR}} = \sum_i (A_is_i)^\rho$ (aggregate revenue per unit of labour, total labour $1$).
+If every $s_i > 0$, then
+$\mathrm{TFP}(s) = \bigl(\sum_i (A_i\,\overline{\mathrm{TFPR}}/\mathrm{TFPR}_i)^{\sigma-1}\bigr)^{1/(\sigma-1)}$.
+\end{theorem}
+\begin{proof}
+\leanok
+Write $S = \overline{\mathrm{TFPR}} > 0$ and $x_i = A_is_i > 0$. Since $\mathrm{TFPR}_i = x_i^\rho/s_i$,
+$A_iS/\mathrm{TFPR}_i = x_i^{1-\rho}S$ (\texttt{rpow\_sub}). Raising to $\sigma - 1$ and using
+$(1-\rho)(\sigma-1) = \rho$ gives $x_i^\rho S^{\sigma-1}$ (\texttt{mul\_rpow}, \texttt{rpow\_mul}). Summing gives
+$S\cdot S^{\sigma-1} = S^\sigma$ (\texttt{rpow\_one\_add'}), and $(S^\sigma)^{1/(\sigma-1)} = S^{1/\rho} = \mathrm{TFP}(s)$
+because $\sigma/(\sigma-1) = 1/\rho$.
+\end{proof}
+
 \begin{theorem}[Wedges distort iff they differ]
 \label{thm:wedgeAlloc_efficient_iff}
 \lean{Econ.Misallocation.Industry.wedgeAlloc_efficient_iff}

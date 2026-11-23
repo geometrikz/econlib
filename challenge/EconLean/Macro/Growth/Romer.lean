@@ -72,6 +72,13 @@ theorem freeEntry_iff {r : ℝ} (hr : 0 < r) : E.η * (E.monoProfit 1 / r) = 1 �
 
 def eulerGrowth : ℝ := E.β * (1 + E.rEq)
 
+theorem household_optimal {k₀ : ℝ} (hk : 0 < k₀) :
+    (∀ (P : AK.Plan (1 + E.rEq) k₀) {W : ℝ},
+      HasSum (fun t => E.β ^ t * log (P.c t)) W →
+        W ≤ ∑' t, E.β ^ t * log (AK.cstar E.β (1 + E.rEq) k₀ t)) ∧
+    ∀ t, AK.cstar E.β (1 + E.rEq) k₀ (t + 1) = E.eulerGrowth * AK.cstar E.β (1 + E.rEq) k₀ t := by
+  sorry
+
 def netOutput (x : ℝ) : ℝ := E.finalProfit E.ψ x
 
 def xPlan : ℝ := E.demand E.ψ

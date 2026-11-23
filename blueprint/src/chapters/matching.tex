@@ -1,0 +1,54 @@
+% Lean: EconLean/Matching/GaleShapley.lean
+\chapter{Matching}
+\label{chap:matching}
+
+Source: Gale--Shapley (1962); Roth--Sotomayor (1990), Ch.~2.
+
+\begin{definition}[Matching, blocking pair, stability]
+\label{def:stable-matching}
+\lean{Econ.IsMatching, Econ.IsBlocking, Econ.IsStableMatching}
+\leanok
+Finite sets $M, W$ with strict preferences (injective utilities $u_m$, $u_w$); all partners acceptable. A matching is
+$\mu : M \to W \cup \{\varnothing\}$ assigning no woman twice. $(m,w)$ blocks $\mu$ if $m$ strictly prefers $w$ to
+$\mu(m)$ (or is unmatched) and $w$ strictly prefers $m$ to her partner (or is unmatched). $\mu$ is stable if
+nothing blocks it.
+\end{definition}
+
+\begin{definition}[Deferred acceptance]
+\label{def:da}
+\lean{Econ.proposal, Econ.Rejected, Econ.daStep, Econ.DAInv, Econ.OptInv}
+\leanok
+State: for each man the set $R_m$ of women who rejected him. Each man proposes to his favourite woman outside
+$R_m$; each woman keeps her favourite proposer and rejects the rest, who add her to $R_m$.
+\end{definition}
+
+\begin{lemma}[Invariants and termination]
+\label{lem:da}
+\lean{Econ.proposal_spec, Econ.proposal_eq_none, Econ.proposal_isSome, Econ.exists_best_proposer, Econ.subset_daStep, Econ.daInv_daStep, Econ.card_lt_daStep, Econ.sum_card_le, Econ.exists_terminal, Econ.optInv_daStep}
+\leanok
+\uses{def:da, def:stable-matching}
+(i) Every woman in $R_m$ currently holds a proposal from a man she prefers to $m$, and this is preserved by a round.
+(ii) No man is ever rejected by a woman matched to him in some stable matching (preserved by a round).
+(iii) $\sum_m |R_m| \le |M||W|$ strictly increases while someone is rejected, so the algorithm stops.
+\end{lemma}
+\begin{proof}
+\leanok
+(i) A woman's favourite proposer is not rejected and keeps proposing to her, so her held proposal only improves.
+(ii) If $w$ rejects $m$ for $m'$ and $\nu(m) = w$ with $\nu$ stable, then $m'$ prefers $w$ to $\nu(m')$
+(all women he prefers to $w$ rejected him and are not his stable partners), and $w$ prefers $m'$ to $m$: $(m',w)$ blocks $\nu$.
+\end{proof}
+
+\begin{theorem}[Gale--Shapley]
+\label{thm:gale-shapley}
+\lean{Econ.exists_menOptimal_stable_matching, Econ.exists_stable_matching}
+\leanok
+\uses{lem:da}
+A stable matching exists; the men-proposing deferred acceptance matching is stable and men-optimal: each
+man weakly prefers it to his partner in any stable matching.
+\end{theorem}
+\begin{proof}
+\leanok
+At termination proposals are one-to-one (a woman with two proposers would reject one). If $m$ prefers $w$ to his
+assignment then $w \in R_m$, so she holds (and is matched to) a man she prefers to $m$: no blocking pair. If
+$\nu(m) = w'$ in a stable $\nu$ then $w' \notin R_m$ by (ii), so $m$'s final proposal is at least as good as $w'$.
+\end{proof}

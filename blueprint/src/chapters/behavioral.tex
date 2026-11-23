@@ -1,4 +1,4 @@
-% Lean: EconLean/Behavioral/{PresentBias,RankDependent,ReferenceDependence,Temptation,Logit,RationalInattention,Ambiguity,GilboaSchmeidler,StochasticChoice}.lean
+% Lean: EconLean/Behavioral/{PresentBias,RankDependent,ReferenceDependence,Temptation,Logit,RationalInattention,Ambiguity,GilboaSchmeidler,StochasticChoice,Falmagne,SocialPreferences,Salience,ShroudedAttributes,ContractDesign}.lean
 \chapter{Behavioral Decision Theory}
 \label{chap:behavioral}
 
@@ -171,29 +171,35 @@ telescopes the loss part. The fair coin's CPT value is $w^+(\tfrac12)v_2+w^-(\tf
 
 \begin{definition}[K\H{o}szegi--Rabin utility and equilibria]
 \label{def:beh-kr}
-\lean{Econ.ReferenceDependence.u, Econ.ReferenceDependence.U, Econ.ReferenceDependence.IsPE, Econ.ReferenceDependence.IsPPE, Econ.ReferenceDependence.IsCPE, Econ.ReferenceDependence.IsPEDet, Econ.ReferenceDependence.μLin}
+\lean{Econ.ReferenceDependence.consumptionUtility, Econ.ReferenceDependence.gainLoss, Econ.ReferenceDependence.u, Econ.ReferenceDependence.U, Econ.ReferenceDependence.IsPPEDet, Econ.ReferenceDependence.μLin_le, Econ.ReferenceDependence.U_pure, Econ.ReferenceDependence.u_self, Econ.ReferenceDependence.IsLotterySet, Econ.ReferenceDependence.IsPE, Econ.ReferenceDependence.IsPPE, Econ.ReferenceDependence.IsCPE, Econ.ReferenceDependence.IsPEDet, Econ.ReferenceDependence.μLin, Econ.ReferenceDependence.allLotteries}
 \leanok
-$u(c\mid r)=\sum_k m_k(c_k)+\sum_k\mu(m_k(c_k)-m_k(r_k))$; $U(F\mid G)$ averages it. $F$ is a PE if no $F'\in D$ does
+$u(c\mid r)=\sum_k m_k(c_k)+\sum_k\mu(m_k(c_k)-m_k(r_k))$; $U(F\mid G)$ averages it. The choice set $D$ is a set of
+lotteries (probability vectors) over finitely many outcomes. $F$ is a PE if no $F'\in D$ does
 better given expectation $F$; a PPE is a best PE; a CPE maximizes $U(F\mid F)$. Linear $\mu$: slope $\eta$ on gains,
 $\eta\lambda$ on losses.
 \end{definition}
 
 \begin{theorem}[Existence and multiplicity]
 \label{thm:beh-kr-exist}
-\lean{Econ.ReferenceDependence.exists_ppe, Econ.ReferenceDependence.exists_cpe, Econ.ReferenceDependence.isPEDet_of_isMax, Econ.ReferenceDependence.exists_ppeDet, Econ.ReferenceDependence.two_PE_example}
+\lean{Econ.ReferenceDependence.exists_ppe, Econ.ReferenceDependence.exists_cpe, Econ.ReferenceDependence.U_eq_sum, Econ.ReferenceDependence.continuous_U, Econ.ReferenceDependence.exists_pe, Econ.ReferenceDependence.exists_ppe_of_convex, Econ.ReferenceDependence.exists_ppe_allLotteries, Econ.ReferenceDependence.isPEDet_of_isMax, Econ.ReferenceDependence.exists_ppeDet, Econ.ReferenceDependence.two_PE_example}
 \leanok
-\uses{def:beh-kr}
-On finite choice sets a PPE exists whenever a PE does and a CPE exists. In riskless choice with $\eta\ge0$,
-$\lambda\ge1$ the consumption-utility maximizer is a PE. PE need not be unique.
+\uses{def:beh-kr, thm:kakutani}
+For any gain--loss function $\mu$: on a convex compact nonempty set of lotteries a PE and a PPE exist (in particular
+when $D$ is the whole simplex); on a finite set a PPE exists whenever a PE does, and a CPE exists. In riskless choice
+with $\eta\ge0$, $\lambda\ge1$ the consumption-utility maximizer is a PE. PE need not be unique.
 \end{theorem}
 \begin{proof}
 \leanok
-Maxima over finite sets. For the riskless PE, $\mu(x)\le\eta x$ gives $u(c'\mid c)\le(1+\eta)m(c')-\eta m(c)\le m(c)$.
+$U(F'\mid F)=\sum_{i,j}F'_iF_j\,u(c_i\mid c_j)$ is bilinear, hence continuous and linear in $F'$. The best-reply
+correspondence $F\mapsto\arg\max_{F'\in D}U(F'\mid F)$ is nonempty, convex-valued and has closed graph on the
+convex compact $D$, so Kakutani gives a fixed point, which is a PE. The PE set is closed in compact $D$, so
+$U(F\mid F)$ attains a maximum on it: a PPE. Finite cases are maxima over finite sets. For the riskless PE,
+$\mu(x)\le\eta x$ gives $u(c'\mid c)\le(1+\eta)m(c')-\eta m(c)\le m(c)$.
 \end{proof}
 
 \begin{theorem}[Endowment effect]
 \label{thm:beh-endowment}
-\lean{Econ.ReferenceDependence.sell_iff, Econ.ReferenceDependence.buy_iff, Econ.ReferenceDependence.endowment_effect, Econ.ReferenceDependence.keep_isPE_iff, Econ.ReferenceDependence.sell_isPE_iff}
+\lean{Econ.ReferenceDependence.mugMoney, Econ.ReferenceDependence.WTA, Econ.ReferenceDependence.WTP, Econ.ReferenceDependence.keep, Econ.ReferenceDependence.sell, Econ.ReferenceDependence.sell_iff, Econ.ReferenceDependence.buy_iff, Econ.ReferenceDependence.endowment_effect, Econ.ReferenceDependence.keep_isPE_iff, Econ.ReferenceDependence.sell_isPE_iff}
 \leanok
 \uses{def:beh-kr}
 With the status quo as reference, $\mathrm{WTA}=v(1+\eta\lambda)/(1+\eta)$, $\mathrm{WTP}=v(1+\eta)/(1+\eta\lambda)$ and
@@ -238,7 +244,7 @@ strictly unless $p_i=q_i$; sum over $i$.
 
 \begin{theorem}[Mutual information is the minimal average divergence]
 \label{thm:beh-mi}
-\lean{Econ.RationalInattention.avgKL_eq, Econ.RationalInattention.mutualInfo_le_avgKL, Econ.RationalInattention.kl_nonneg, Econ.RationalInattention.kl_eq_zero_iff, Econ.RationalInattention.marginal_isProb}
+\lean{Econ.RationalInattention.kl, Econ.RationalInattention.IsRule, Econ.RationalInattention.IsPrior, Econ.RationalInattention.marginal, Econ.RationalInattention.mutualInfo, Econ.RationalInattention.avgKL, Econ.RationalInattention.riObjective, Econ.RationalInattention.IsOptimalRule, Econ.RationalInattention.avgKL_eq, Econ.RationalInattention.mutualInfo_le_avgKL, Econ.RationalInattention.kl_nonneg, Econ.RationalInattention.kl_eq_zero_iff, Econ.RationalInattention.marginal_isProb}
 \leanok
 \uses{thm:beh-gibbs}
 $\sum_\omega g_\omega\,\mathrm{KL}(p_\omega\|Q)=I(p)+\mathrm{KL}(P\|Q)\ge I(p)$, $P$ the marginal.
@@ -282,6 +288,21 @@ $\mathrm{KL}(P'\|P)\ge0$. The objective of $p$ equals the per-state Gibbs
 objectives with default $P$; that of the deviation is at least its per-state Gibbs objectives
 (Theorem~\ref{thm:beh-mi}). By uniqueness in the Gibbs problem the deviation is strictly better unless
 $p_{\omega_0}$ already is the generalized logit.
+\end{proof}
+
+\begin{theorem}[Existence of an optimal attention strategy]
+\label{thm:beh-ri-exist}
+\lean{Econ.RationalInattention.mutualInfo_eq, Econ.RationalInattention.continuous_marginal, Econ.RationalInattention.continuous_riObjective, Econ.RationalInattention.isCompact_rules, Econ.RationalInattention.exists_isOptimalRule, Econ.RationalInattention.exists_optimal_generalizedLogit}
+\leanok
+\uses{thm:beh-mm}
+For every $\lambda$, prior and payoffs an optimal choice rule exists; for $\lambda>0$ and a full-support prior there is
+one of generalized-logit form.
+\end{theorem}
+\begin{proof}
+\leanok
+$I(p)=\sum_\omega g_\omega\sum_ip_{\omega i}\log p_{\omega i}-\sum_iP_i\log P_i$, and $x\log x$ is continuous on
+$[0,\infty)$, so the objective is continuous on the compact set of rules (a product of simplices). Combine with
+Theorem~\ref{thm:beh-mm}.
 \end{proof}
 
 \section{Ambiguity}
@@ -424,4 +445,182 @@ and everything outside $A$ is ranked above $a$; in particular $\mathrm{BM}\ge0$ 
 Fix a ranking. For $B=A\cup C$ with $C\subseteq X\setminus A$, $a$ is best in $B$ iff it is best in $A$ and $C$
 avoids the alternatives outside $A$ ranked above $a$. So the alternating sum runs over subsets of
 $D=\{c\notin A: a\text{ above }c\}$ and equals $[D=\emptyset]$. Average over rankings.
+\end{proof}
+
+\begin{lemma}[Möbius inversion and flow conservation]
+\label{lem:beh-bm-flow}
+\lean{Econ.StochasticChoice.sum_powerset_disjoint, Econ.StochasticChoice.sum_neg_one_pow, Econ.StochasticChoice.sum_bm, Econ.StochasticChoice.sum_powerset_mem, Econ.StochasticChoice.sum_bm_menu}
+\leanok
+\uses{def:beh-rum}
+For any $P$, $P(a,A)=\sum_{B\supseteq A}\mathrm{BM}(a,B)$. For a choice rule and $\emptyset\ne A\ne X$,
+$\sum_{x\in A}\mathrm{BM}(x,A)=\sum_{b\notin A}\mathrm{BM}(b,A\cup\{b\})$.
+\end{lemma}
+\begin{proof}
+\leanok
+Reindex pairs $C\subseteq X\setminus A$, $D\subseteq X\setminus(A\cup C)$ by $E=C\cup D$; the inner sum
+$\sum_{D\subseteq E}(-1)^{|D|}$ is $[E=\emptyset]$. For the second identity write $\sum_{x\in A}P(x,A\cup C)=1-\sum_{c\in C}P(c,A\cup C)$,
+use $\sum_{C\subseteq S}(-1)^{|C|}=0$ for $S\ne\emptyset$, and reindex $c\in C$ by $C=\{c\}\cup C'$.
+\end{proof}
+
+\begin{lemma}[A Markov chain on upper sets]
+\label{lem:beh-falmagne-chain}
+\lean{Econ.StochasticChoice.Falmagne.ords, Econ.StochasticChoice.Falmagne.mem_ords, Econ.StochasticChoice.Falmagne.sum_ords_empty, Econ.StochasticChoice.Falmagne.sum_ords, Econ.StochasticChoice.Falmagne.sum_ords_compl, Econ.StochasticChoice.Falmagne.T, Econ.StochasticChoice.Falmagne.w, Econ.StochasticChoice.Falmagne.W, Econ.StochasticChoice.Falmagne.G, Econ.StochasticChoice.Falmagne.reach, Econ.StochasticChoice.Falmagne.hit, Econ.StochasticChoice.Falmagne.R, Econ.StochasticChoice.Falmagne.H, Econ.StochasticChoice.Falmagne.reach_sub, Econ.StochasticChoice.Falmagne.hit_sub, Econ.StochasticChoice.Falmagne.G_univ, Econ.StochasticChoice.Falmagne.G_step, Econ.StochasticChoice.Falmagne.R_step, Econ.StochasticChoice.Falmagne.R_self, Econ.StochasticChoice.Falmagne.R_univ, Econ.StochasticChoice.Falmagne.H_univ, Econ.StochasticChoice.Falmagne.H_step, Econ.StochasticChoice.Falmagne.H_self, Econ.StochasticChoice.Falmagne.H_eq_zero, Econ.StochasticChoice.Falmagne.R_eq_zero, Econ.StochasticChoice.Falmagne.flow, Econ.StochasticChoice.Falmagne.flow_nonneg, Econ.StochasticChoice.Falmagne.T_nonneg, Econ.StochasticChoice.Falmagne.flow_le_T, Econ.StochasticChoice.Falmagne.w_nonneg, Econ.StochasticChoice.Falmagne.W_nonneg, Econ.StochasticChoice.Falmagne.T_mul_w, Econ.StochasticChoice.Falmagne.sum_flow_in, Econ.StochasticChoice.Falmagne.T_empty, Econ.StochasticChoice.Falmagne.inflow_le, Econ.StochasticChoice.Falmagne.G_eq_one, Econ.StochasticChoice.Falmagne.G_eq_one', Econ.StochasticChoice.Falmagne.hit_eq, Econ.StochasticChoice.Falmagne.reach_eq_sum_hit, Econ.StochasticChoice.Falmagne.reach_eq_T, Econ.StochasticChoice.Falmagne.hit_empty_eq}
+\leanok
+\uses{lem:beh-bm-flow}
+Let $q(B,x)=\mathrm{BM}(x,X\setminus B)\ge0$ for $x\notin B$ and $T(B)=\sum_{x\notin B}q(B,x)$. Build rankings top-down,
+moving from the placed set $B$ to $B\cup\{x\}$ with probability $q(B,x)/T(B)$. Then $T(\emptyset)=1$, inflow equals
+outflow at every $\emptyset\ne B\ne X$, from any $B$ with $T(B)>0$ the chain completes surely, the chain reaches
+$B$ with probability $T(B)$, and the probability that $x$ comes right after the set $B$ is $q(B,x)$.
+\end{lemma}
+\begin{proof}
+\leanok
+Sums over orderings of a set decompose by the first element, so every quantity satisfies a one-step recursion.
+Markov property: reaching $D$ and then adding $b$ has probability $\Pr(\text{reach }D)\,q(D,b)/T(D)$ (same
+recursion, matching base cases). Last step: to reach $D\supsetneq C$ the walk passes through exactly one $D\setminus b$
+and then adds $b$ (induction on $|D\setminus C|$, swapping two sums over distinct pairs). Then by induction on $|D|$,
+$\Pr(\text{reach }D)=\sum_{b\in D}T(D\setminus b)\,q(D\setminus b,b)/T(D\setminus b)=\sum_bq(D\setminus b,b)=T(D)$.
+\end{proof}
+
+\begin{theorem}[Falmagne 1978]
+\label{thm:beh-falmagne}
+\lean{Econ.StochasticChoice.Falmagne.toList, Econ.StochasticChoice.Falmagne.toList_mem, Econ.StochasticChoice.Falmagne.toList_injective, Econ.StochasticChoice.Falmagne.image_toList, Econ.StochasticChoice.Falmagne.sum_rankings, Econ.StochasticChoice.Falmagne.hit_iff, Econ.StochasticChoice.Falmagne.mem_take_toList, Econ.StochasticChoice.Falmagne.bmEvent_iff, Econ.StochasticChoice.falmagne, Econ.StochasticChoice.isRUM_iff_bm_nonneg}
+\leanok
+\uses{thm:beh-bm, lem:beh-falmagne-chain}
+A stochastic choice rule on a finite set is a random utility model iff all its Block--Marschak polynomials are
+nonnegative.
+\end{theorem}
+\begin{proof}
+\leanok
+Necessity is Theorem~\ref{thm:beh-bm}. For sufficiency take the chain of Lemma~\ref{lem:beh-falmagne-chain}
+(Fiorini's flow argument); rankings correspond to orderings of $X$, and ``the set above $a$ is exactly $X\setminus A$''
+is the event that $a$ comes right after $X\setminus A$. So the chain's BM polynomials equal those of $P$, and by
+Möbius inversion (Lemma~\ref{lem:beh-bm-flow}) so do the choice probabilities.
+\end{proof}
+
+\section{Social preferences}
+\label{sec:beh-social}
+
+\begin{definition}[Fehr--Schmidt and ERC utility]
+\label{def:beh-fs}
+\lean{Econ.SocialPreferences.fs, Econ.SocialPreferences.fs2, Econ.SocialPreferences.fs_two, Econ.SocialPreferences.fs2_self, Econ.SocialPreferences.pgPayoff, Econ.SocialPreferences.relShare, Econ.SocialPreferences.erc, Econ.SocialPreferences.relShare_split, Econ.SocialPreferences.relShare_zero}
+\leanok
+Fehr--Schmidt: $U_i(x)=x_i-\frac{\alpha_i}{n-1}\sum_j\max(x_j-x_i,0)-\frac{\beta_i}{n-1}\sum_j\max(x_i-x_j,0)$.
+ERC: $v(x_i,\sigma_i)$ with relative share $\sigma_i=x_i/\sum_jx_j$ ($1/n$ if the total is $0$).
+\end{definition}
+
+\begin{theorem}[Fehr--Schmidt: ultimatum and dictator games]
+\label{thm:beh-fs-ultimatum}
+\lean{Econ.SocialPreferences.accepts_iff, Econ.SocialPreferences.threshold, Econ.SocialPreferences.threshold_nonneg, Econ.SocialPreferences.threshold_lt_half, Econ.SocialPreferences.proposerValue, Econ.SocialPreferences.proposerValue_of_le, Econ.SocialPreferences.proposerValue_of_lt, Econ.SocialPreferences.fs2_offer_le_half, Econ.SocialPreferences.fs2_offer_ge_half, Econ.SocialPreferences.ultimatum_offer_unique, Econ.SocialPreferences.ultimatum_offer_half, Econ.SocialPreferences.ultimatum_offer_half_unique, Econ.SocialPreferences.dictator_selfish, Econ.SocialPreferences.dictator_half}
+\leanok
+\uses{def:beh-fs}
+A responder with $\alpha\ge0$, $\beta\le1$ accepts a share $s\le1$ iff $s\ge\alpha/(1+2\alpha)$. If the proposer's
+$\beta<1/2$ the threshold is the unique optimal offer; if $\beta>1/2$ the equal split is the unique optimal offer. A dictator with
+$\beta<1/2$ keeps everything; with $\beta>1/2$ she splits equally.
+\end{theorem}
+\begin{proof}
+\leanok
+Below one half the responder gets $s-\alpha(1-2s)$; above it, $s-\beta(2s-1)\ge1-s\ge0$. The proposer's accepted
+payoff on $[0,1/2]$ is $(1-\beta)+s(2\beta-1)$, monotone in $s$ with the sign of $2\beta-1$, and at most $1-s<1/2$
+above one half.
+\end{proof}
+
+\begin{theorem}[Fehr--Schmidt: free riding in public goods]
+\label{thm:beh-fs-pg}
+\lean{Econ.SocialPreferences.publicGood_freeRide}
+\leanok
+\uses{def:beh-fs}
+With marginal per-capita return $a$ and $n\ge2$, if $\alpha,\beta\ge0$ and $a+\beta<1$, raising one's own
+contribution strictly lowers one's utility whatever the others do.
+\end{theorem}
+\begin{proof}
+\leanok
+Raising $g_i$ by $d$ changes $x_i$ by $-(1-a)d$ and every $x_j$ by $ad$: envy weakly rises and each guilt term falls by
+at most $d$, so utility falls by at least $(1-a-\beta)d>0$.
+\end{proof}
+
+\begin{theorem}[Bolton--Ockenfels ERC]
+\label{thm:beh-erc}
+\lean{Econ.SocialPreferences.erc_dictator_le_half, Econ.SocialPreferences.erc_accepts_half, Econ.SocialPreferences.erc_rejects_small}
+\leanok
+\uses{def:beh-fs}
+If $v$ is strictly increasing in own payoff and nondecreasing in the relative share below $1/2$, dictators never give
+more than half. Equal splits are accepted. If the zero offer is rejected and $v$ is continuous at $(0,0)$, all small
+positive offers are rejected.
+\end{theorem}
+\begin{proof}
+\leanok
+Giving $g>1/2$ is beaten by giving $1/2$: more own payoff and a share closer to $1/2$. The last claim is continuity
+of $s\mapsto v(s,s)$ at $0$.
+\end{proof}
+
+\section{Salience}
+\label{sec:beh-salience}
+
+\begin{definition}[Salience and salient choice]
+\label{def:beh-salience}
+\lean{Econ.Salience.sigma, Econ.Salience.rank, Econ.Salience.salience, Econ.Salience.factor, Econ.Salience.weight, Econ.Salience.value, Econ.Salience.Prefers, Econ.Salience.IsFullProb, Econ.Salience.probs, Econ.Salience.longShot, Econ.Salience.sure}
+\leanok
+$\sigma(x,y)=|x-y|/(|x|+|y|+\theta)$. A state with $k$ strictly more salient states gets weight proportional to
+$\pi_s\delta^k$; the salient thinker prefers $x$ to $y$ iff $\sum_s\pi_s\delta^{k_s}(x_s-y_s)\ge0$.
+\end{definition}
+
+\begin{theorem}[Properties of the salience function and of salient choice]
+\label{thm:beh-salience-props}
+\lean{Econ.Salience.sigma_symm, Econ.Salience.sigma_neg, Econ.Salience.sigma_ordering, Econ.Salience.sigma_dimSens, Econ.Salience.factor_symm, Econ.Salience.factor_pos, Econ.Salience.norm_pos, Econ.Salience.prefers_iff_value, Econ.Salience.value_one, Econ.Salience.prefers_of_dominates}
+\leanok
+\uses{def:beh-salience}
+$\sigma$ is symmetric, reflection invariant, satisfies ordering and diminishing sensitivity for nonnegative payoffs
+($\theta>0$). Preference equals comparison of normalized salient values; $\delta=1$ gives expected value; state-wise
+dominance is respected.
+\end{theorem}
+\begin{proof}
+\leanok
+Cross-multiply; $\sigma$ is decreasing in the lower and increasing in the upper payoff on $[0,\infty)$.
+\end{proof}
+
+\begin{theorem}[BGS Proposition 1: long shots]
+\label{thm:beh-longshot}
+\lean{Econ.Salience.win_more_salient_iff, Econ.Salience.longShot_sum, Econ.Salience.rank_fin2, Econ.Salience.longShot_iff, Econ.Salience.longShot_small_p, Econ.Salience.longShot_large_G}
+\leanok
+\uses{thm:beh-salience-props}
+For $\delta<1$, a lottery paying $G$ with probability $p$ is strictly preferred to $pG$ for sure iff
+$2p^2G<\theta(1-2p)$: risk seeking for unlikely gains, risk aversion for large stakes.
+\end{theorem}
+\begin{proof}
+\leanok
+The distorted difference is $p(1-p)G(\delta^{k_1}-\delta^{k_2})$, positive iff the winning state is strictly more
+salient, which after cross-multiplying is the stated inequality.
+\end{proof}
+
+\section{Behavioral industrial organization}
+\label{sec:beh-io}
+
+\begin{theorem}[Gabaix--Laibson: shrouding and the curse of debiasing]
+\label{thm:beh-gl}
+\lean{Econ.Shrouding.Market, Econ.Shrouding.Market.pStar, Econ.Shrouding.Market.pStar_lt, Econ.Shrouding.Market.zero_profit, Econ.Shrouding.Market.profitShrouded, Econ.Shrouding.Market.profitUnshrouded, Econ.Shrouding.Market.shrouded_no_deviation, Econ.Shrouding.Market.curse_of_debiasing, Econ.Shrouding.Market.profitUnshrouded_nonpos, Econ.Shrouding.Market.unshroud_profitable}
+\leanok
+With a share $\alpha$ of myopes, add-on price $\hat v$ and zero-profit base price $p^*=c-\alpha(\hat v-\hat c)$ (a loss
+leader), no shrouded deviation is profitable when $e-\hat c\le\alpha(\hat v-\hat c)$; if moreover $\hat c\le e$ and the
+inequality is strict, an unshrouding firm loses money on every educated consumer it attracts. If
+$\alpha(\hat v-\hat c)<e-\hat c$, unshrouding is profitable.
+\end{theorem}
+\begin{proof}
+\leanok
+An educated consumer pays $p+\min(\hat p,e)\le p^*+e$; the firm earns $p-c$ plus $\hat p-\hat c$ if $\hat p\le e$, at most
+$e-\hat c-\alpha(\hat v-\hat c)$ or $p^*-c$.
+\end{proof}
+
+\begin{theorem}[DellaVigna--Malmendier: contracts for present-biased consumers]
+\label{thm:beh-dm}
+\lean{Econ.ContractDesign.Gym, Econ.ContractDesign.cdf, Econ.ContractDesign.surplus, Econ.ContractDesign.cdf_of_mem, Econ.ContractDesign.surplus_eq, Econ.ContractDesign.Gym.thr, Econ.ContractDesign.Gym.thrh, Econ.ContractDesign.Gym.fee, Econ.ContractDesign.Gym.profit, Econ.ContractDesign.Gym.welfare, Econ.ContractDesign.Gym.Region, Econ.ContractDesign.Gym.pOpt, Econ.ContractDesign.Gym.profit_eq, Econ.ContractDesign.Gym.isMaxOn_pOpt, Econ.ContractDesign.Gym.pOpt_unique, Econ.ContractDesign.Gym.pOpt_lt_cost, Econ.ContractDesign.Gym.pOpt_eq_cost, Econ.ContractDesign.Gym.overestimate, Econ.ContractDesign.Gym.profit_lt_of_naive, Econ.ContractDesign.Gym.welfare_lt, Econ.ContractDesign.Gym.welfare_soph}
+\leanok
+With attendance costs uniform on $[0,1]$ and the fee set by the believed participation constraint, the unique
+optimal per-use price is $p^*=a-(1-\beta)\delta b$, below marginal cost when $\beta<1$. Naive consumers
+overestimate attendance by $(\hat\beta-\beta)\delta b$, the firm's profit rises with naivet\'e, and a strictly naive
+consumer's welfare falls below her reservation utility.
+\end{theorem}
+\begin{proof}
+\leanok
+$\int_0^t(D-c)\,dc=tD-t^2/2$, so profit is the concave quadratic $\Pi(p^*)-(p-p^*)^2/2$ on the interior region.
+The believed surplus $tD-t^2/2$ increases in $t\le D$.
 \end{proof}

@@ -48,7 +48,8 @@ namespace Econ
 
 namespace BoundedRationality
 
-open Finset Real Logit RationalInattention
+open Finset Logit RationalInattention
+open Real (log exp)
 
 variable {X Y Θ : Type*} [Fintype X] [Fintype Y] [Fintype Θ]
 

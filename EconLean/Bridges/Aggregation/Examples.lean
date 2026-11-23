@@ -26,6 +26,7 @@ public import EconLean.Bridges.Aggregation.GrossSubstitutes
 public import EconLean.Bridges.Aggregation.LawOfDemand
 public import EconLean.Bridges.Aggregation.Gorman
 public import EconLean.Bridges.Aggregation.Tatonnement
+public import EconLean.GE.ExistenceInterior
 public import Mathlib.Analysis.SpecialFunctions.Trigonometric.ArctanDeriv
 public import Mathlib.Analysis.SpecialFunctions.ExpDeriv
 public import EconLean.GE.Production
@@ -116,6 +117,73 @@ theorem zCD_warp : ExcessWARP zCD {p | PositivePrices p} := by
       nlinarith
   rw [← e2] at hgoal
   exact pos_of_mul_pos_left hgoal (by positivity)
+
+/-! #### MWG Prop. 17.C.1: `zCD` satisfies the boundary-condition hypotheses
+
+`zCD` blows up at the boundary of the price simplex, like the excess demand of a
+Cobb–Douglas economy, so the closed-simplex existence theorem does not apply to
+it, but `exists_equilibrium_of_boundaryCondition` does. -/
+
+section Boundary
+
+open Filter Topology
+
+theorem zCD_continuousOn : ContinuousOn zCD {p | PositivePrices p} := by
+  refine continuousOn_pi.2 fun i => ?_
+  have h0 : ContinuousOn (fun p : Fin 2 → ℝ => p 0) {p | PositivePrices p} :=
+    (continuous_apply 0).continuousOn
+  have h1 : ContinuousOn (fun p : Fin 2 → ℝ => p 1) {p | PositivePrices p} :=
+    (continuous_apply 1).continuousOn
+  fin_cases i
+  · exact (h1.div h0 fun p hp => (hp 0).ne').sub continuousOn_const
+  · exact (h0.div h1 fun p hp => (hp 1).ne').sub continuousOn_const
+
+theorem zCD_boundedBelow : ExcessBoundedBelow zCD := by
+  refine ⟨1, fun p hp l => ?_⟩
+  fin_cases l
+  · have := div_pos (hp 1) (hp 0); simp [zCD]; linarith
+  · have := div_pos (hp 0) (hp 1); simp [zCD]; linarith
+
+/-- If `aₙ → 0⁺` and `bₙ → B > 0`, then `bₙ / aₙ − 1` eventually exceeds any `M`. -/
+theorem eventually_lt_div_sub_one {a b : ℕ → ℝ} {B : ℝ} (ha : ∀ n, 0 < a n)
+    (halim : Tendsto a atTop (𝓝 0)) (hblim : Tendsto b atTop (𝓝 B)) (hB : 0 < B) (M : ℝ) :
+    ∀ᶠ n in atTop, M < b n / a n - 1 := by
+  have ha' : Tendsto a atTop (𝓝[>] 0) :=
+    tendsto_nhdsWithin_iff.2 ⟨halim, Eventually.of_forall ha⟩
+  have hinv : Tendsto (fun n => (a n)⁻¹) atTop atTop := tendsto_inv_nhdsGT_zero.comp ha'
+  have hprod : Tendsto (fun n => b n * (a n)⁻¹) atTop atTop := hblim.pos_mul_atTop hB hinv
+  filter_upwards [hprod.eventually_gt_atTop (M + 1)] with n hn
+  rw [div_eq_mul_inv]; linarith
+
+theorem zCD_boundary : BoundaryCondition zCD := by
+  intro pn pbar hpos hlim hne ⟨l, hl⟩ M
+  have hcoord : ∀ i, Tendsto (fun n => pn n i) atTop (𝓝 (pbar i)) := fun i =>
+    ((continuous_apply i).tendsto pbar).comp hlim
+  have hnonneg : ∀ i, 0 ≤ pbar i := fun i =>
+    ge_of_tendsto' (hcoord i) fun n => (hpos n i).le
+  -- The other price is strictly positive in the limit.
+  have hother : ∀ k, k ≠ l → 0 < pbar k := by
+    intro k hk
+    refine lt_of_le_of_ne (hnonneg k) fun h => hne ?_
+    funext i
+    fin_cases i <;> fin_cases k <;> fin_cases l <;> simp_all
+  have hl0 : Tendsto (fun n => pn n l) atTop (𝓝 0) := hl ▸ hcoord l
+  fin_cases l
+  · have h := eventually_lt_div_sub_one (fun n => hpos n 0) (by simpa using hl0)
+      (hcoord 1) (hother 1 (by decide)) M
+    filter_upwards [h] with n hn
+    exact ⟨0, by simpa [zCD] using hn⟩
+  · have h := eventually_lt_div_sub_one (fun n => hpos n 1) (by simpa using hl0)
+      (hcoord 0) (hother 0 (by decide)) M
+    filter_upwards [h] with n hn
+    exact ⟨1, by simpa [zCD] using hn⟩
+
+/-- MWG Prop. 17.C.1 applied to `zCD`: an equilibrium with positive prices exists. -/
+example : ∃ p, PositivePrices p ∧ zCD p = 0 :=
+  exists_equilibrium_of_boundaryCondition zCD_continuousOn (fun p hp => zCD_walras p hp)
+    zCD_boundedBelow zCD_boundary
+
+end Boundary
 
 /-- **Tâtonnement, two goods.** For `zCD`, gross substitutes gives
 `p* · z(q) > 0` at every disequilibrium price, with `p* = (1, 1)`. -/

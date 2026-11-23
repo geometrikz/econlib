@@ -2,6 +2,9 @@
 module
 
 public import EconLean.Behavioral.Logit
+public import Mathlib.Analysis.SpecialFunctions.Log.NegMulLog
+public import Mathlib.Topology.Order.Compact
+public import Mathlib.Topology.Algebra.Module.FiniteDimension
 
 @[expose] public section
 
@@ -127,6 +130,33 @@ theorem optimal_is_softmax_of_uniform [Nonempty ι] [DecidableEq Ω] {lam : ℝ}
     {g : Ω → ℝ} (hg : IsPrior g) {v : Ω → ι → ℝ} {p : Ω → ι → ℝ}
     (hopt : IsOptimalRule lam g v p) {c : ℝ} (hunif : ∀ i, marginal g p i = c)
     (ω : Ω) : p ω = softmax lam (v ω) := by
+  sorry
+
+theorem mutualInfo_eq (g : Ω → ℝ) (p : Ω → ι → ℝ) :
+    mutualInfo g p = ∑ ω, g ω * ∑ i, p ω i * log (p ω i) -
+      ∑ i, marginal g p i * log (marginal g p i) := by
+  sorry
+
+omit [Fintype ι] in
+theorem continuous_marginal (g : Ω → ℝ) (i : ι) : Continuous fun p : Ω → ι → ℝ => marginal g p i := by
+  sorry
+
+theorem continuous_riObjective (lam : ℝ) (g : Ω → ℝ) (v : Ω → ι → ℝ) :
+    Continuous (riObjective lam g v) := by
+  sorry
+
+omit [Fintype Ω] in
+
+theorem isCompact_rules : IsCompact {p : Ω → ι → ℝ | IsRule p} := by
+  sorry
+
+theorem exists_isOptimalRule [Nonempty ι] (lam : ℝ) (g : Ω → ℝ) (v : Ω → ι → ℝ) :
+    ∃ p, IsOptimalRule lam g v p := by
+  sorry
+
+theorem exists_optimal_generalizedLogit [Nonempty ι] [DecidableEq Ω] {lam : ℝ} (hlam : 0 < lam)
+    {g : Ω → ℝ} (hg : IsPrior g) (v : Ω → ι → ℝ) :
+    ∃ p, IsOptimalRule lam g v p ∧ ∀ ω, p ω = generalizedLogit lam (marginal g p) (v ω) := by
   sorry
 
 end RationalInattention

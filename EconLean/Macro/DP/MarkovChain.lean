@@ -22,9 +22,16 @@ state. Stationary distributions are the backbone of heterogeneous-agent
   from any initial `μ`, `μQ^n → π` geometrically in ℓ¹ (twice total
   variation): `Σ_z |μQ^n(z) - π(z)| ≤ 2 (1 - |Z| ε)^n`.
 
-**Documented deviation.** Doeblin is proved under the one-step condition
-`Q(z, z') ≥ ε` for all `z, z'`, stronger than SL's Condition D / Thm 11.4
-(an `N`-step minorization).
+* `doeblin_pow` (SL Condition D, `N`-step form): it is enough that the
+  `N`-step matrix `Q^N` has every entry at least `ε > 0`. Then the invariant
+  distribution is unique and `‖μQ^n - π‖₁ ≤ 2 (1 - |Z| ε)^⌊n/N⌋`. This covers
+  every irreducible aperiodic chain, such as `[[0, 1], [1/2, 1/2]]`, which has a
+  zero one-step entry but `Q² > 0`.
+
+**General minorization.** Doeblin's condition with a minorizing measure
+(`Q^N(z, ·) ≥ ε φ` for one probability `φ`, not entrywise) on a general state
+space is `Econ.unique_invariant_of_pow` / `Econ.doeblin_convergence` in
+`Macro/DP/Doeblin.lean`.
 -/
 module
 
@@ -247,5 +254,62 @@ theorem doeblin [Nonempty Z] [DecidableEq Z] {Q : Matrix Z Z ℝ} (hQ : IsStocha
       simpa using (tendsto_pow_atTop_nhds_zero_of_lt_one hr0 hr1).mul_const 2
     have h0 : l1Dist π' π ≤ 0 := ge_of_tendsto' hlim hle
     exact l1Dist_eq_zero (le_antisymm h0 (sum_nonneg fun z _ => abs_nonneg _))
+
+/-- Powers of a stochastic matrix are stochastic. -/
+theorem IsStochastic.pow [DecidableEq Z] {Q : Matrix Z Z ℝ} (hQ : IsStochastic Q) :
+    ∀ n : ℕ, IsStochastic (Q ^ n)
+  | 0 => by
+    refine ⟨fun z z' => ?_, fun z => ?_⟩
+    · rw [pow_zero, Matrix.one_apply]; split_ifs <;> norm_num
+    · simp [Matrix.one_apply]
+  | n + 1 => by
+    obtain ⟨h0, h1⟩ := hQ.pow n
+    refine ⟨fun z z' => ?_, fun z => ?_⟩
+    · rw [pow_succ, Matrix.mul_apply]
+      exact sum_nonneg fun k _ => mul_nonneg (h0 z k) (hQ.1 k z')
+    · simp only [pow_succ, Matrix.mul_apply]
+      rw [Finset.sum_comm]
+      simp only [← mul_sum, hQ.2, mul_one, h1]
+
+theorem IsInvariant.pow [DecidableEq Z] {Q : Matrix Z Z ℝ} {π : Z → ℝ} (h : IsInvariant Q π)
+    (n : ℕ) : IsInvariant (Q ^ n) π := by
+  refine ⟨h.1, ?_⟩
+  induction n with
+  | zero => simp
+  | succ m ihm => rw [pow_succ, ← vecMul_vecMul, ihm, h.2]
+
+/-- **Doeblin's theorem, `N`-step form** (SL Condition D / Thm 11.4, finite
+case). If some power `Q^N` has every entry at least `ε > 0`, then
+`Q` has a **unique** invariant distribution `π`, and every initial
+distribution converges to it geometrically:
+`‖μQ^n - π‖₁ ≤ 2 (1 - |Z| ε)^⌊n/N⌋`. -/
+theorem doeblin_pow [Nonempty Z] [DecidableEq Z] {Q : Matrix Z Z ℝ} (hQ : IsStochastic Q)
+    {N : ℕ} {ε : ℝ} (hε0 : 0 < ε) (hε : ∀ z z', ε ≤ (Q ^ N) z z') :
+    ∃ π, IsInvariant Q π ∧ (∀ π', IsInvariant Q π' → π' = π) ∧ ∀ μ ∈ Distributions Z, ∀ n : ℕ,
+      l1Dist (μ ᵥ* (Q ^ n)) π ≤ 2 * (1 - Fintype.card Z * ε) ^ (n / N) := by
+  obtain ⟨π, hπ⟩ := exists_invariant hQ
+  obtain ⟨π₀, hπ₀, huniq, hconv⟩ := doeblin (hQ.pow N) hε0 hε
+  have hinvN : ∀ π', IsInvariant Q π' → IsInvariant (Q ^ N) π' := fun π' h => h.pow N
+  have hπeq : π = π₀ := huniq π (hinvN π hπ)
+  subst hπeq
+  refine ⟨π, hπ, fun π' h => huniq π' (hinvN π' h), fun μ hμ n => ?_⟩
+  have hsplit : Q ^ n = Q ^ (n % N) * (Q ^ N) ^ (n / N) := by
+    rw [← pow_mul, ← pow_add, Nat.mod_add_div]
+  rw [hsplit, ← vecMul_vecMul]
+  exact hconv _ (hQ.pow_vecMul_mem hμ _) _
+
+/-- The chain `[[0, 1], [1/2, 1/2]]` has a zero one-step entry but `Q² > 0`,
+so `doeblin_pow` applies with `N = 2`, `ε = 1/4`. -/
+example : ∃ π, IsInvariant !![(0 : ℝ), 1; 1 / 2, 1 / 2] π ∧
+    ∀ π', IsInvariant !![(0 : ℝ), 1; 1 / 2, 1 / 2] π' → π' = π := by
+  have hQ : IsStochastic !![(0 : ℝ), 1; 1 / 2, 1 / 2] := by
+    refine ⟨fun z z' => ?_, fun z => ?_⟩
+    · fin_cases z <;> fin_cases z' <;> simp
+    · fin_cases z <;> simp [Fin.sum_univ_two]; norm_num
+  obtain ⟨π, hπ, hu, -⟩ := doeblin_pow hQ (N := 2) (ε := 1 / 4) (by norm_num)
+    (fun z z' => by
+      rw [sq]
+      fin_cases z <;> fin_cases z' <;> simp [Matrix.mul_apply, Fin.sum_univ_two] <;> norm_num)
+  exact ⟨π, hπ, hu⟩
 
 end Econ

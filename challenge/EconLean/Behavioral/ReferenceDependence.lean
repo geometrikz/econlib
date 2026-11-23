@@ -8,6 +8,8 @@ public import Mathlib.Basic.Real.Basic
 public import Mathlib.Tactic.FieldSimp
 public import Mathlib.Tactic.Linarith
 public import Mathlib.Tactic.Positivity
+public import EconLean.Behavioral.Logit
+public import EconLean.Foundations.FixedPoint
 
 @[expose] public section
 
@@ -39,21 +41,47 @@ variable {ι : Type*} [Fintype ι] (bundle : ι → K → ℝ)
 def U (μ : ℝ → ℝ) (m : K → ℝ → ℝ) (F G : ι → ℝ) : ℝ :=
   ∑ i, ∑ j, F i * G j * u μ m (bundle i) (bundle j)
 
+def IsLotterySet (D : Set (ι → ℝ)) : Prop := ∀ G ∈ D, Logit.IsProb G
+
 def IsPE (μ : ℝ → ℝ) (m : K → ℝ → ℝ) (D : Set (ι → ℝ)) (F : ι → ℝ) : Prop :=
-  F ∈ D ∧ ∀ F' ∈ D, U bundle μ m F' F ≤ U bundle μ m F F
+  IsLotterySet D ∧ F ∈ D ∧ ∀ F' ∈ D, U bundle μ m F' F ≤ U bundle μ m F F
 
 def IsPPE (μ : ℝ → ℝ) (m : K → ℝ → ℝ) (D : Set (ι → ℝ)) (F : ι → ℝ) : Prop :=
   IsPE bundle μ m D F ∧ ∀ F', IsPE bundle μ m D F' → U bundle μ m F' F' ≤ U bundle μ m F F
 
 def IsCPE (μ : ℝ → ℝ) (m : K → ℝ → ℝ) (D : Set (ι → ℝ)) (F : ι → ℝ) : Prop :=
-  F ∈ D ∧ ∀ F' ∈ D, U bundle μ m F' F' ≤ U bundle μ m F F
+  IsLotterySet D ∧ F ∈ D ∧ ∀ F' ∈ D, U bundle μ m F' F' ≤ U bundle μ m F F
 
 theorem exists_ppe {μ : ℝ → ℝ} {m : K → ℝ → ℝ} {D : Set (ι → ℝ)} (hD : D.Finite)
     (hPE : ∃ F, IsPE bundle μ m D F) : ∃ F, IsPPE bundle μ m D F := by
   sorry
 
-theorem exists_cpe {μ : ℝ → ℝ} {m : K → ℝ → ℝ} {D : Set (ι → ℝ)} (hD : D.Finite)
-    (hne : D.Nonempty) : ∃ F, IsCPE bundle μ m D F := by
+theorem exists_cpe {μ : ℝ → ℝ} {m : K → ℝ → ℝ} {D : Set (ι → ℝ)} (hL : IsLotterySet D)
+    (hD : D.Finite) (hne : D.Nonempty) : ∃ F, IsCPE bundle μ m D F := by
+  sorry
+
+theorem U_eq_sum (μ : ℝ → ℝ) (m : K → ℝ → ℝ) (F' F : ι → ℝ) :
+    U bundle μ m F' F = ∑ i, F' i * ∑ j, F j * u μ m (bundle i) (bundle j) := by
+  sorry
+
+theorem continuous_U (μ : ℝ → ℝ) (m : K → ℝ → ℝ) :
+    Continuous fun p : (ι → ℝ) × (ι → ℝ) => U bundle μ m p.1 p.2 := by
+  sorry
+
+theorem exists_pe {μ : ℝ → ℝ} {m : K → ℝ → ℝ} {D : Set (ι → ℝ)} (hL : IsLotterySet D)
+    (hconv : Convex ℝ D) (hcomp : IsCompact D) (hne : D.Nonempty) :
+    ∃ F, IsPE bundle μ m D F := by
+  sorry
+
+theorem exists_ppe_of_convex {μ : ℝ → ℝ} {m : K → ℝ → ℝ} {D : Set (ι → ℝ)}
+    (hL : IsLotterySet D) (hconv : Convex ℝ D) (hcomp : IsCompact D) (hne : D.Nonempty) :
+    ∃ F, IsPPE bundle μ m D F := by
+  sorry
+
+def allLotteries (ι : Type*) [Fintype ι] : Set (ι → ℝ) := {F | Logit.IsProb F}
+
+theorem exists_ppe_allLotteries [Nonempty ι] (μ : ℝ → ℝ) (m : K → ℝ → ℝ) :
+    ∃ F, IsPPE bundle μ m (allLotteries ι) F := by
   sorry
 
 theorem U_pure [DecidableEq ι] (μ : ℝ → ℝ) (m : K → ℝ → ℝ) (i j : ι) :

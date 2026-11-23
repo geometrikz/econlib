@@ -30,10 +30,10 @@ optimal value is `3/5` (`prosecutor_V`), attained by a signal that sends
 "guilty" always when guilty and with probability `3/7` when innocent
 (`prosecutor_signal`).
 
-**Not formalized.** Existence of an optimal signal attaining `V` (KG use
-upper semicontinuity of `v̂`, which follows from sender-preferred
-tie-breaking); only the supremum is characterized. The receiver's problem is
-not modelled: `v̂` is taken as given. The bound of `|Ω|` messages.
+Existence of an optimal signal attaining `V` when `v̂` is upper
+semicontinuous is in `PersuasionExistence.lean` (with `|Ω| + 2` messages).
+**Not formalized.** The receiver's problem is not modelled: `v̂` is taken as
+given. KG's sharper bound of `|Ω|` messages.
 -/
 module
 

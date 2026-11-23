@@ -1,4 +1,4 @@
-% Lean: EconLean/Information/Persuasion.lean
+% Lean: EconLean/Information/{Persuasion,PersuasionExistence}.lean
 \chapter{Information Design}
 \label{chap:information}
 
@@ -56,4 +56,20 @@ attained by the signal that says ``guilty'' always when guilty and with probabil
 \leanok
 Upper bound: $\min(1,2\mu(\text{guilty}))$ is concave and above $\hat v$, and equals $3/5$ at the prior. Lower bound:
 split into posteriors $0$ and $1/2$ with weights $2/5$, $3/5$.
+\end{proof}
+
+\begin{theorem}[Existence of an optimal signal]
+\label{thm:info-exist}
+\lean{Econ.Persuasion.isCompact_beliefs, Econ.Persuasion.uscOn_mul, Econ.Persuasion.N, Econ.Persuasion.bounded, Econ.Persuasion.toSplitting, Econ.Persuasion.bValue, Econ.Persuasion.isCompact_bounded, Econ.Persuasion.sum_extend, Econ.Persuasion.exists_small, Econ.Persuasion.exists_optimal_splitting, Econ.Persuasion.exists_optimal_signal, Econ.Persuasion.convict_usc, Econ.Persuasion.prosecutor_exists_optimal}
+\leanok
+\uses{thm:info-concav, thm:info-prosecutor}
+If $\hat v$ is upper semicontinuous on $\Delta(\Omega)$, some signal with $|\Omega|+2$ messages attains $V(\mu_0)$. In
+particular the prosecutor has an optimal signal.
+\end{theorem}
+\begin{proof}
+\leanok
+Carathéodory in $\mathbb{R}^\Omega\times\mathbb{R}$: $(\mu_0,\sum\tau_k\hat v(\nu_k))$ is a convex combination of at most
+$|\Omega|+2$ of the points $(\nu_k,\hat v(\nu_k))$, so every value is achieved with $|\Omega|+2$ posteriors (pad with zero
+weights). Such splittings form a compact set on which $\sum\tau_k\hat v(\nu_k)$ is upper semicontinuous
+(a nonnegative continuous weight times an u.s.c.\ function), so the maximum is attained.
 \end{proof}

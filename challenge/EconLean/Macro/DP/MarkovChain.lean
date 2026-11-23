@@ -64,4 +64,30 @@ theorem doeblin [Nonempty Z] [DecidableEq Z] {Q : Matrix Z Z ℝ} (hQ : IsStocha
       l1Dist (μ ᵥ* (Q ^ n)) π ≤ 2 * (1 - Fintype.card Z * ε) ^ n := by
   sorry
 
+theorem IsStochastic.pow [DecidableEq Z] {Q : Matrix Z Z ℝ} (hQ : IsStochastic Q) :
+    ∀ n : ℕ, IsStochastic (Q ^ n) := by
+  sorry
+
+theorem IsInvariant.pow [DecidableEq Z] {Q : Matrix Z Z ℝ} {π : Z → ℝ} (h : IsInvariant Q π)
+    (n : ℕ) : IsInvariant (Q ^ n) π := by
+  sorry
+
+theorem doeblin_pow [Nonempty Z] [DecidableEq Z] {Q : Matrix Z Z ℝ} (hQ : IsStochastic Q)
+    {N : ℕ} {ε : ℝ} (hε0 : 0 < ε) (hε : ∀ z z', ε ≤ (Q ^ N) z z') :
+    ∃ π, IsInvariant Q π ∧ (∀ π', IsInvariant Q π' → π' = π) ∧ ∀ μ ∈ Distributions Z, ∀ n : ℕ,
+      l1Dist (μ ᵥ* (Q ^ n)) π ≤ 2 * (1 - Fintype.card Z * ε) ^ (n / N) := by
+  sorry
+
+example : ∃ π, IsInvariant !![(0 : ℝ), 1; 1 / 2, 1 / 2] π ∧
+    ∀ π', IsInvariant !![(0 : ℝ), 1; 1 / 2, 1 / 2] π' → π' = π := by
+  have hQ : IsStochastic !![(0 : ℝ), 1; 1 / 2, 1 / 2] := by
+    refine ⟨fun z z' => ?_, fun z => ?_⟩
+    · fin_cases z <;> fin_cases z' <;> simp
+    · fin_cases z <;> simp [Fin.sum_univ_two]; norm_num
+  obtain ⟨π, hπ, hu, -⟩ := doeblin_pow hQ (N := 2) (ε := 1 / 4) (by norm_num)
+    (fun z z' => by
+      rw [sq]
+      fin_cases z <;> fin_cases z' <;> simp [Matrix.mul_apply, Fin.sum_univ_two] <;> norm_num)
+  exact ⟨π, hπ, hu⟩
+
 end Econ

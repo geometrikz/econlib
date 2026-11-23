@@ -90,6 +90,14 @@ theorem suspension_waiting_strictly_better (h : B.r₁ * (1 - B.lam + B.lam * B.
     B.suspensionEarlyPay f < B.latePay B.lam := by
   sorry
 
+def SuspensionGoodEquilibrium : Prop := B.suspensionEarlyPay B.lam ≤ B.latePay B.lam
+
+def SuspensionRunEquilibrium : Prop := B.latePay B.lam ≤ B.suspensionEarlyPay 1
+
+theorem suspension_unique (h : B.r₁ * (1 - B.lam + B.lam * B.R) < B.R) :
+    B.SuspensionGoodEquilibrium ∧ ¬ B.SuspensionRunEquilibrium := by
+  sorry
+
 end Bank
 
 example : (1 : ℝ) < c1star (1 / 2) 2 2 := (crra_optimum (by norm_num) (by norm_num) (by norm_num)

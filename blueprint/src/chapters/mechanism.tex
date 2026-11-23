@@ -1,0 +1,178 @@
+% Lean: EconLean/Mechanism/{Revelation,VCG,Myerson,OptimalMechanism,BilateralTrade}.lean
+\chapter{Mechanism Design}
+\label{chap:mechanism}
+
+Source: MWG Ch.~23; Myerson (1981).
+
+\section{Implementation and the revelation principle}
+\label{sec:revelation}
+
+\begin{definition}[Dominant-strategy equilibrium, DSIC, BIC; MWG Defs.~23.B.5, 23.B.6, 23.D.1]
+\label{def:dsic}
+\lean{Econ.IsDominantEq, Econ.IsDSIC, Econ.IsBIC, Econ.mechGame}
+\leanok
+\uses{def:bne}
+A mechanism $g : \prod_i M_i \to X$ with strategies $s_i : \Theta_i \to M_i$ is in dominant-strategy equilibrium if
+$s_i(\theta_i)$ is optimal for type $\theta_i$ against every message profile of the others. A social choice function
+$f$ is DSIC if truth-telling is optimal against every report of the others, and BIC for prior $p$ if for every
+$i, \theta_i, \theta_i'$: $\sum_{\theta : \theta_i \text{ fixed}} p(\theta)\, u_i(f(\theta_i', \theta_{-i}), \theta_i) \le
+\sum_{\theta : \theta_i \text{ fixed}} p(\theta)\, u_i(f(\theta), \theta_i)$.
+\end{definition}
+
+\begin{theorem}[Revelation principle; MWG Props.~23.C.1, 23.D.1]
+\label{thm:revelation}
+\lean{Econ.play_update', Econ.revelation_dominant, Econ.revelation_bayesian}
+\leanok
+\uses{def:dsic, thm:bne}
+If $s$ is a dominant-strategy equilibrium (resp.\ Bayesian Nash equilibrium) of $g$, then
+$f = g \circ s$ is DSIC (resp.\ BIC).
+\end{theorem}
+\begin{proof}
+\leanok
+A report $\theta_i'$ in the direct mechanism has the same effect as the message $s_i(\theta_i')$ in $g$, which is not
+profitable. For BNE use the interim characterisation.
+\end{proof}
+
+\section{Groves and VCG mechanisms}
+\label{sec:vcg}
+
+\begin{definition}[Groves and Clarke transfers]
+\label{def:groves}
+\lean{Econ.IsEfficientRule, Econ.IgnoresOwn, Econ.grovesTransfer, Econ.othersMax, Econ.clarkeTransfer, Econ.auctionValue, Econ.highBidder}
+\leanok
+$k$ is efficient if it maximizes $\sum_i v_i(x,\theta_i)$. The Groves transfer is
+$t_i(\theta) = \sum_{j\ne i} v_j(k(\theta),\theta_j) + h_i(\theta_{-i})$; Clarke takes
+$h_i = -\max_x \sum_{j\ne i} v_j(x,\theta_j)$.
+\end{definition}
+
+\begin{theorem}[Groves mechanisms are strategy-proof; MWG Props.~23.C.4--23.C.5]
+\label{thm:groves}
+\lean{Econ.groves_truthful, Econ.othersMax_ignoresOwn, Econ.clarke_truthful, Econ.clarke_transfer_nonpos, Econ.clarke_individuallyRational}
+\leanok
+\uses{def:groves}
+Truth-telling is dominant in every Groves mechanism; Clarke transfers are nonpositive, and with
+nonnegative valuations truthful agents get nonnegative payoffs.
+\end{theorem}
+\begin{proof}
+\leanok
+Agent $i$'s payoff is the reported total value of $k(\theta_i', \theta_{-i})$ evaluated at $i$'s true type,
+plus a term independent of $\theta_i'$; efficiency at the true report maximizes it.
+\end{proof}
+
+\section{Myerson's lemma and revenue equivalence}
+\label{sec:myerson}
+
+\begin{lemma}[Integral from a monotone sandwich]
+\label{lem:sandwich}
+\lean{Econ.sub_eq_integral_of_sandwich}
+\leanok
+If $f$ is monotone on $[a,b]$ and $f(x)(y-x) \le U(y) - U(x) \le f(y)(y-x)$ for $a \le x \le y \le b$, then
+$U(b) - U(a) = \int_a^b f$.
+\end{lemma}
+\begin{proof}
+\leanok
+On a uniform partition with $N$ cells, telescoping and monotonicity place both $U(b)-U(a)$ and $\int_a^b f$ between the
+lower and upper Riemann sums, whose gap is $(b-a)(f(b)-f(a))/N$. Let $N\to\infty$.
+\end{proof}
+
+\begin{definition}[Incentive compatible direct mechanism]
+\label{def:ic-mech}
+\lean{Econ.infoRent, Econ.IsICMech}
+\leanok
+Types $\theta \in [a,b]$; report $r$ gives allocation $q(r)$ for payment $p(r)$. IC: $\theta q(r) - p(r) \le
+\theta q(\theta) - p(\theta)$ for all $\theta, r$. Rent $U(\theta) = \theta q(\theta) - p(\theta)$.
+\end{definition}
+
+\begin{theorem}[Myerson's lemma; MWG Prop.~23.D.2]
+\label{thm:myerson-lemma}
+\lean{Econ.myerson_ic_iff}
+\leanok
+\uses{def:ic-mech, lem:sandwich}
+$(q,p)$ is IC on $[a,b]$ iff $q$ is nondecreasing and $U(\theta) = U(a) + \int_a^\theta q$ for all $\theta \in [a,b]$.
+\end{theorem}
+\begin{proof}
+\leanok
+IC for $x \le y$ both ways gives $q(x)(y-x) \le U(y) - U(x) \le q(y)(y-x)$; hence $q$ is monotone and the sandwich
+lemma gives the envelope formula. Conversely $U(\theta) - U(r) = \int_r^\theta q \ge (\theta - r) q(r)$ by monotonicity,
+which is IC.
+\end{proof}
+
+\begin{theorem}[Revenue equivalence, single-agent interim form; MWG Prop.~23.D.3]
+\label{thm:revenue-equivalence}
+\lean{Econ.revenue_equivalence, Econ.expected_revenue_eq}
+\leanok
+\uses{thm:myerson-lemma}
+Two IC mechanisms with the same allocation rule and the same rent for the lowest type charge every type
+the same payment, hence earn the same expected revenue under any type distribution on $[a,b]$.
+\end{theorem}
+\begin{proof}
+\leanok
+Both payments equal $\theta q(\theta) - U(a) - \int_a^\theta q$.
+\end{proof}
+
+\section{Optimal selling mechanism}
+\label{sec:optimal-mechanism}
+
+\begin{definition}[Virtual weights, discrete types]
+\label{def:virtual-weight}
+\lean{Econ.upperMass, Econ.virtualWeight, Econ.IsICDiscrete, Econ.IsIRDiscrete, Econ.rentFloor, Econ.postedQ, Econ.postedP}
+\leanok
+Types $\theta_0 \le \dots \le \theta_{n-1}$ with probabilities $f_j$. Virtual weight
+$w_j = f_j\theta_j - (\theta_{j+1}-\theta_j)\sum_{k>j} f_k$ ($= f_j$ times the discrete virtual value).
+IC and IR are imposed for all pairs of types. The posted price $\theta_m$ sells to types $j \ge m$ at price $\theta_m$.
+\end{definition}
+
+\begin{theorem}[Revenue identity and Myerson bound]
+\label{thm:myerson-bound}
+\lean{Econ.sum_mul_sum_range_lt, Econ.revenue_eq_virtual_sub, Econ.rentFloor_le, Econ.revenue_le_virtual}
+\leanok
+\uses{def:virtual-weight}
+$\sum_k f_k p_k = \sum_j q_j w_j - \sum_k f_k\bigl(U_k - \sum_{i<k}(\theta_{i+1}-\theta_i)q_i\bigr)$; downward IC and IR
+make the subtracted term nonnegative, so every IC and IR mechanism earns at most $\sum_j q_j w_j$.
+\end{theorem}
+\begin{proof}
+\leanok
+Exchange the order of summation in $\sum_k f_k \sum_{i<k}(\theta_{i+1}-\theta_i)q_i$; induct on $k$ for the rent floor.
+\end{proof}
+
+\begin{theorem}[Optimality of a posted price; Riley--Zeckhauser]
+\label{thm:posted-price}
+\lean{Econ.postedPrice_rent_eq, Econ.postedPrice_revenue, Econ.postedPrice_IC_IR, Econ.postedPrice_optimal, Econ.postedPrice_isOptimal}
+\leanok
+\uses{thm:myerson-bound}
+A posted price attains the Myerson bound with equality and is IC and IR for nondecreasing types. If the
+virtual weights are $\le 0$ below $m$ and $\ge 0$ from $m$ on, the posted price $\theta_m$ maximizes expected
+revenue among all IC and IR mechanisms with $q \in [0,1]$.
+\end{theorem}
+\begin{proof}
+\leanok
+The posted-price rent equals the IC floor (telescoping), so the identity gives equality. For any feasible $q$,
+$\sum_j q_j w_j \le \sum_{j \ge m} w_j$ term by term.
+\end{proof}
+
+\section{Bilateral trade}
+\label{sec:bilateral-trade}
+
+\begin{definition}[Bilateral trade mechanism]
+\label{def:trade-mech}
+\lean{Econ.TradeMechanism, Econ.TradeMechanism.IsEfficient, Econ.TradeMechanism.BuyerDSIC, Econ.TradeMechanism.SellerDSIC, Econ.TradeMechanism.IsBudgetBalanced}
+\leanok
+Buyer value $v$ and seller cost $c$ in $[a,b]$; a mechanism gives trade probability $x(v,c)$, buyer payment
+$t_B$ and seller receipt $t_S$. Efficiency: $x = 1$ if $c < v$, $x = 0$ if $v < c$. Budget balance: $t_B = t_S$.
+\end{definition}
+
+\begin{theorem}[No efficient, strategy-proof, budget-balanced trade; Hurwicz, Green--Laffont]
+\label{thm:bilateral-trade}
+\lean{Econ.eq_of_squeeze, Econ.TradeMechanism.tB_eq_of_trade, Econ.TradeMechanism.tB_eq_of_noTrade, Econ.TradeMechanism.tS_eq_of_trade, Econ.TradeMechanism.tS_eq_of_noTrade, Econ.TradeMechanism.tB_sub_eq, Econ.TradeMechanism.tS_sub_eq, Econ.no_efficient_dsic_budgetBalanced_trade}
+\leanok
+\uses{def:trade-mech}
+If $a < b$ no mechanism is efficient, DSIC for both traders, and budget balanced. (This is the
+dominant-strategy counterpart of Myerson--Satterthwaite; the Bayesian version is not formalized.)
+\end{theorem}
+\begin{proof}
+\leanok
+At an interior seller report $c$, buyer IC pins the payment difference between trading and non-trading buyers
+to exactly $c$; symmetrically at buyer report $v$ the seller's receipt difference is $v$. Take $x<y<z<w$ in $(a,b)$:
+budget balance links $t_B(x,y) = t_S(x,y) = t_S(x,w) = t_B(x,w) = t_B(z,w) = t_S(z,w)$, and then
+$y = t_B(z,y) - t_B(x,y) = t_S(z,y) - t_S(z,w) = z$, a contradiction.
+\end{proof}

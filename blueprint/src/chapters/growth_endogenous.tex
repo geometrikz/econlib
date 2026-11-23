@@ -250,7 +250,22 @@ $R_S = 1 + \eta a x_S$ and $x_S > L$ (Theorem~\ref{thm:romer_planner_static}); m
 effect is monotonicity of $\beta(1 + \eta aL)$ in $L$.
 \end{proof}
 
+\begin{theorem}[The Euler growth rate from household optimization]
+\label{thm:romer_household}
+\lean{Econ.Romer.Economy.household_optimal}
+\leanok
+\uses{def:romer, thm:ak_optimal}
+A log-utility household whose wealth $k_0 > 0$ earns the gross free-entry return $1 + \eta aL$ (budget
+$k_{t+1} = (1 + \eta aL)k_t - c_t$) does best with the AK plan $c^*$, and $c^*_{t+1} = \beta(1 + \eta aL)\,c^*_t$:
+consumption grows at the equilibrium growth factor.
+\end{theorem}
+\begin{proof}
+\leanok
+$1 + \eta aL > 0$, so Theorem~\ref{thm:ak_optimal} applies with $R = 1 + \eta aL$; the growth of $c^*$ is
+Lemma~\texttt{cstar\_succ}.
+\end{proof}
+
 \begin{remark}
-The equilibrium growth factor is the household's log-utility Euler equation at the free-entry interest rate; the
-decentralized dynamic equilibrium is not constructed in Lean.
+Theorem~\ref{thm:romer_household} derives the Euler growth rate from the household's problem with asset income
+only; wage income and market clearing (the full decentralized dynamic equilibrium) are not constructed in Lean.
 \end{remark}

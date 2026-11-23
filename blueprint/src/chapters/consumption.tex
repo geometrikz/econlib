@@ -1,0 +1,184 @@
+% Lean: EconLean/Macro/Consumption/Precautionary.lean, EconLean/Macro/Consumption/PIH.lean
+\chapter{Consumption and Saving}
+\label{chap:consumption}
+
+\section{Precautionary saving and prudence}
+\label{sec:precautionary}
+
+Sources: Leland (1968); Sandmo (1970); Kimball (1990); Ljungqvist--Sargent ch.~17.
+
+\begin{definition}[Two-period saving problem]
+\label{def:prec_problem}
+\lean{Econ.Precautionary.Problem, Econ.Precautionary.Problem.V, Econ.Precautionary.Problem.Feasible, Econ.Precautionary.Problem.IsOptimal, Econ.Precautionary.Problem.ybar, Econ.Precautionary.Problem.certain, Econ.Precautionary.Problem.marg}
+\leanok
+Wealth $w$, saving $s$, gross return $R > 0$, discount factor $\beta > 0$, income $y_i$ with probabilities
+$\pi_i \ge 0$, $\sum_i\pi_i = 1$. Utility $u$ is differentiable on $(0,\infty)$ with $u'$ strictly decreasing.
+$V(s) = u(w - s) + \beta\sum_i\pi_iu(Rs + y_i)$; $s$ is feasible if $w - s > 0$ and $Rs + y_i > 0$ for all $i$.
+The certainty problem replaces income by its mean $\bar y = \sum_i\pi_iy_i$. The marginal value of saving is
+$\mathrm{marg}(s) = \beta R\sum_i\pi_iu'(Rs + y_i) - u'(w - s)$.
+\end{definition}
+
+\begin{lemma}[Derivative of lifetime utility]
+\label{lem:prec_deriv}
+\lean{Econ.Precautionary.Problem.hasDerivAt_V, Econ.Precautionary.Problem.isOpen_feasible}
+\leanok
+\uses{def:prec_problem}
+At a feasible $s$, $V'(s) = \mathrm{marg}(s)$; the feasible set is open.
+\end{lemma}
+\begin{proof}
+\leanok
+Chain rule for each term (\texttt{HasDerivAt.comp}, \texttt{HasDerivAt.fun\_sum}). The feasible set is a finite
+intersection of open half-lines.
+\end{proof}
+
+\begin{theorem}[Euler equation: necessary and sufficient]
+\label{thm:prec_foc}
+\lean{Econ.Precautionary.Problem.foc, Econ.Precautionary.Problem.u_le_tangent, Econ.Precautionary.Problem.isOptimal_of_foc}
+\leanok
+\uses{lem:prec_deriv}
+An optimal $s$ satisfies $u'(w - s) = \beta R\sum_i\pi_iu'(Rs + y_i)$. Conversely a feasible $s$ satisfying this
+equation is optimal.
+\end{theorem}
+\begin{proof}
+\leanok
+Necessity: an interior maximum on an open set is a local maximum, so $V'(s) = 0$ (\texttt{IsLocalMax.hasDerivAt\_eq\_zero}).
+Sufficiency: by the mean value theorem and $u'$ decreasing, $u(x) \le u(c) + u'(c)(x - c)$ for $x, c > 0$. Apply this
+to every term of $V(s')$ around the consumption levels at $s$; the linear terms cancel by the Euler equation.
+\end{proof}
+
+\begin{lemma}[Monotone marginal value; Jensen under prudence]
+\label{lem:prec_marg}
+\lean{Econ.Precautionary.Problem.marg_strictAnti, Econ.Precautionary.Problem.marg_certain_le}
+\leanok
+\uses{def:prec_problem}
+$\mathrm{marg}$ is strictly decreasing on the feasible set. If $u'$ is convex on $(0,\infty)$ (prudence), the
+certainty problem's marginal value is at most the risky one's at every feasible $s$.
+\end{lemma}
+\begin{proof}
+\leanok
+Both terms move the right way since $u'$ is decreasing. For the second claim, Jensen's inequality
+(\texttt{ConvexOn.map\_sum\_le}) gives $u'(Rs + \bar y) \le \sum_i\pi_iu'(Rs + y_i)$.
+\end{proof}
+
+\begin{theorem}[Precautionary saving]
+\label{thm:precautionary}
+\lean{Econ.Precautionary.Problem.precautionary, Econ.Precautionary.Problem.precautionary_strict}
+\leanok
+\uses{thm:prec_foc, lem:prec_marg}
+If $u'$ is convex, optimal saving under income risk is at least optimal saving in the certainty problem. If $u'$ is
+strictly convex, all $\pi_i > 0$ and income is not constant, it is strictly larger.
+\end{theorem}
+\begin{proof}
+\leanok
+Let $s_c$ and $s_r$ be the two optima. If $s_c$ is not feasible for the risky problem, some $Rs_c + y_i \le 0 < Rs_r + y_i$,
+so $s_c < s_r$. Otherwise suppose $s_r < s_c$: then $0 = \mathrm{marg}(s_r) > \mathrm{marg}(s_c) \ge
+\mathrm{marg}_{\mathrm{certain}}(s_c) = 0$, a contradiction (Lemma~\ref{lem:prec_marg}, Theorem~\ref{thm:prec_foc}).
+The strict version uses strict Jensen (\texttt{StrictConvexOn.map\_sum\_lt}) to rule out $s_r = s_c$ as well.
+\end{proof}
+
+\begin{definition}[Example]
+\label{def:prec_example}
+\lean{Econ.Precautionary.example₁}
+\leanok
+\uses{def:prec_problem}
+The Lean file checks log utility, $\beta = R = 1$, $w = 2$, income $1/2$ or $3/2$: optimal saving is $1/2$ under
+certainty and $(\sqrt{11} - 1)/4$ under risk, and all hypotheses of the strict theorem hold.
+\end{definition}
+
+\section{The permanent income hypothesis}
+\label{sec:pih}
+
+Sources: Hall (1978); Ljungqvist--Sargent ch.~17; Deaton, \emph{Understanding Consumption}, ch.~3.
+
+\begin{definition}[Event tree]
+\label{def:pih_tree}
+\lean{Econ.PIH.layer, Econ.PIH.mem_layer, Econ.PIH.sum_layer_succ}
+\leanok
+A node is a list of shocks, newest first; the children of $h$ are $s :: h$, and $\mathrm{layer}(t)$ is the finite set
+of nodes of length $t$. A sum over $\mathrm{layer}(t+1)$ is a sum over $h \in \mathrm{layer}(t)$ and $s$ of the term
+at $s :: h$.
+\end{definition}
+\begin{proof}
+\leanok
+Membership by induction on $t$; the sum by \texttt{Finset.sum\_biUnion} (children of different nodes are disjoint)
+and \texttt{Finset.sum\_image} ($s \mapsto s :: h$ is injective).
+\end{proof}
+
+\begin{definition}[Consumption problem]
+\label{def:pih_problem}
+\lean{Econ.PIH.Problem, Econ.PIH.Problem.prob, Econ.PIH.Problem.prob_nonneg, Econ.PIH.Problem.Feasible, Econ.PIH.Problem.U, Econ.PIH.Problem.IsOptimal}
+\leanok
+\uses{def:pih_tree}
+Horizon $N$, discount factor $\beta > 0$, gross return $R$, initial assets $a_0$, transition probabilities
+$\pi(h, s)$, income $y(h)$, and $u$ differentiable on $\R$. $\mathrm{prob}(s :: h) = \mathrm{prob}(h)\pi(h,s)$. A plan
+$(c, a)$ is feasible if $a([\,]) = a_0$, $a(s :: h) = R(a(h) + y(h) - c(h))$ at nodes of length $< N$, and
+$c(h) \le a(h) + y(h)$ at nodes of length $N$. Utility is $\sum_{t \le N}\sum_{h \in \mathrm{layer}(t)}
+\beta^t\mathrm{prob}(h)u(c(h))$.
+\end{definition}
+
+\begin{lemma}[A feasible perturbation]
+\label{lem:pih_perturb}
+\lean{Econ.PIH.Problem.child, Econ.PIH.Problem.child_cons, Econ.PIH.Problem.dc, Econ.PIH.Problem.da, Econ.PIH.Problem.not_child_self, Econ.PIH.Problem.feasible_perturb, Econ.PIH.Problem.sum_child, Econ.PIH.Problem.sum_self}
+\leanok
+\uses{def:pih_problem}
+At a node $h_0$ with $|h_0| < N$, lowering $c(h_0)$ by $\varepsilon$ and raising consumption and assets at every
+child by $R\varepsilon$ keeps the plan feasible. Sums over a layer of terms supported on $h_0$ or on its children
+reduce to the single term or the sum over children.
+\end{lemma}
+\begin{proof}
+\leanok
+The budget at $h_0$ absorbs $-\varepsilon$ into $+R\varepsilon$ of assets at each child, which the child consumes;
+no other constraint changes, and a terminal node is never $h_0$ since $|h_0| < N$. The sums follow from
+\texttt{Finset.sum\_ite\_eq'} and Definition~\ref{def:pih_tree}.
+\end{proof}
+
+\begin{theorem}[Euler equation]
+\label{thm:pih_euler}
+\lean{Econ.PIH.Problem.euler}
+\leanok
+\uses{lem:pih_perturb}
+If $(c,a)$ is optimal, $|h_0| < N$ and $\mathrm{prob}(h_0) > 0$, then
+$u'(c(h_0)) = \beta R\sum_s\pi(h_0, s)u'(c(s :: h_0))$.
+\end{theorem}
+\begin{proof}
+\leanok
+$g(\varepsilon) = U(c + \varepsilon\,dc)$ has a maximum at $0$ (Lemma~\ref{lem:pih_perturb}), so $g'(0) = 0$.
+Differentiating term by term, $g'(0) = \beta^{|h_0|}\mathrm{prob}(h_0)\bigl(\beta R\sum_s\pi(h_0,s)u'(c(s::h_0)) -
+u'(c(h_0))\bigr)$, and the prefactor is positive.
+\end{proof}
+
+\begin{theorem}[Sufficiency]
+\label{thm:pih_sufficient}
+\lean{Econ.PIH.Problem.u_le_tangent, Econ.PIH.Problem.isOptimal_of_euler}
+\leanok
+\uses{def:pih_problem}
+If $u'$ is decreasing, $(c,a)$ is feasible, satisfies the Euler equation at every node of length $< N$, consumes
+all wealth at the terminal date, and has $u'(c) \ge 0$ there, then it is optimal.
+\end{theorem}
+\begin{proof}
+\leanok
+Let $\lambda(h) = \beta^{|h|}\mathrm{prob}(h)u'(c(h))$ and $A_t = \sum_{h \in \mathrm{layer}(t)}\lambda(h)(a'(h) - a(h))$ for
+another feasible plan $(c', a')$. Concavity (tangent line by the mean value theorem) gives
+$U(c') - U(c) \le \sum_t\sum_h\lambda(h)(c'(h) - c(h))$. At interior nodes the budget and Euler equation give
+$\lambda(h)(c' - c)(h) = \lambda(h)(a' - a)(h) - \sum_s\lambda(s::h)(a' - a)(s::h)$, so the interior layers
+telescope to $A_0 - A_N = -A_N$; at the terminal layer $c' - c \le a' - a$ and $\lambda \ge 0$, so it contributes at
+most $A_N$. The total is $\le 0$.
+\end{proof}
+
+\begin{theorem}[Hall's random walk]
+\label{thm:pih_hall}
+\lean{Econ.PIH.Problem.hall}
+\leanok
+\uses{thm:pih_euler}
+With quadratic utility, $u'(c) = \kappa - \gamma c$ with $\gamma \ne 0$, and $\beta R = 1$, an optimal plan satisfies
+$c(h_0) = \sum_s\pi(h_0,s)c(s::h_0)$ at every reachable non-terminal node: consumption is a martingale.
+\end{theorem}
+\begin{proof}
+\leanok
+Substitute into Theorem~\ref{thm:pih_euler} and use $\sum_s\pi(h_0,s) = 1$; cancel $\gamma$.
+\end{proof}
+
+\begin{remark}
+The Lean file checks a two-period example (fair coin, $\beta = R = 1$, $u(c) = 10c - c^2/2$) where consuming
+$1/2$ today and $1/2 \pm 1$ tomorrow is optimal, via Theorem~\ref{thm:pih_sufficient}.
+\end{remark}

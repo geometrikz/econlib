@@ -20,7 +20,8 @@ on a finite list of possible bundles) utility is the double average
     U(F | G) = Σ_c Σ_r F(c) G(r) u(c | r).
 
 The reference point is the agent's recent *expectations*. Given a choice set
-`D` of lotteries:
+`D` of lotteries (`IsLotterySet D`: every element is a probability vector;
+the equilibrium notions require it):
 * `F` is a **personal equilibrium (PE)** if `F ∈ D` and `U(F' | F) ≤ U(F | F)`
   for all `F' ∈ D`: expecting `F`, the agent is willing to choose `F`.
 * `F` is a **preferred personal equilibrium (PPE)** if it is a PE and
@@ -35,7 +36,12 @@ results for KR's piecewise-linear specification `μ(x) = η x` for gains,
 applications.
 
 Results:
-* `exists_ppe`: on a finite choice set with a PE, a PPE exists;
+* `exists_pe`, `exists_ppe_of_convex`: on a nonempty, compact, convex set of
+  lotteries (e.g. all lotteries over finitely many bundles,
+  `exists_ppe_allLotteries`) a PE and a PPE exist, for any gain–loss function
+  `μ` (Kakutani; `U(F' | F)` is linear in `F'`);
+* `exists_ppe`: on a finite choice set with a PE, a PPE exists (on a finite
+  set a PE need not exist);
 * `exists_cpe`: on a finite nonempty choice set, a CPE exists;
 * `isPE_det_of_isMax`: with linear `μ`, `η ≥ 0`, `λ ≥ 1`, in riskless choice
   the consumption-utility maximizer is a PE (so PE and PPE exist);
@@ -53,6 +59,8 @@ public import Mathlib.Basic.Real.Basic
 public import Mathlib.Tactic.FieldSimp
 public import Mathlib.Tactic.Linarith
 public import Mathlib.Tactic.Positivity
+public import EconLean.Behavioral.Logit
+public import EconLean.Foundations.FixedPoint
 
 @[expose] public section
 
@@ -103,12 +111,14 @@ compared with every reference outcome drawn from `G`. -/
 def U (μ : ℝ → ℝ) (m : K → ℝ → ℝ) (F G : ι → ℝ) : ℝ :=
   ∑ i, ∑ j, F i * G j * u μ m (bundle i) (bundle j)
 
+/-- A choice set of lotteries: every element is a probability vector on `ι`. -/
+def IsLotterySet (D : Set (ι → ℝ)) : Prop := ∀ G ∈ D, Logit.IsProb G
+
 /-- **Personal equilibrium** (KR 2006, Def. 1), in the static form "choose
-from `D` given expectations" (KR 2007's unacclimating PE). `D` is meant to be
-a set of probability vectors; the definitions do not require it, and the
-existence results below hold for any finite `D`. -/
+from `D` given expectations" (KR 2007's unacclimating PE). `D` must be a set
+of lotteries. -/
 def IsPE (μ : ℝ → ℝ) (m : K → ℝ → ℝ) (D : Set (ι → ℝ)) (F : ι → ℝ) : Prop :=
-  F ∈ D ∧ ∀ F' ∈ D, U bundle μ m F' F ≤ U bundle μ m F F
+  IsLotterySet D ∧ F ∈ D ∧ ∀ F' ∈ D, U bundle μ m F' F ≤ U bundle μ m F F
 
 /-- **Preferred personal equilibrium** (KR 2006, Def. 2). -/
 def IsPPE (μ : ℝ → ℝ) (m : K → ℝ → ℝ) (D : Set (ι → ℝ)) (F : ι → ℝ) : Prop :=
@@ -116,28 +126,142 @@ def IsPPE (μ : ℝ → ℝ) (m : K → ℝ → ℝ) (D : Set (ι → ℝ)) (F :
 
 /-- **Choice-acclimating personal equilibrium** (KR 2007). -/
 def IsCPE (μ : ℝ → ℝ) (m : K → ℝ → ℝ) (D : Set (ι → ℝ)) (F : ι → ℝ) : Prop :=
-  F ∈ D ∧ ∀ F' ∈ D, U bundle μ m F' F' ≤ U bundle μ m F F
+  IsLotterySet D ∧ F ∈ D ∧ ∀ F' ∈ D, U bundle μ m F' F' ≤ U bundle μ m F F
 
 /-- On a finite choice set, if a personal equilibrium exists then a preferred
-personal equilibrium exists. (Existence of PE itself in the stochastic case,
-which needs mixing and a fixed-point argument, is not formalized here; in
-riskless choice it is `isPEDet_of_isMax`.) -/
+personal equilibrium exists. (On a finite set a PE need not exist; on a
+convex compact set of lotteries it always does, `exists_pe`.) -/
 theorem exists_ppe {μ : ℝ → ℝ} {m : K → ℝ → ℝ} {D : Set (ι → ℝ)} (hD : D.Finite)
     (hPE : ∃ F, IsPE bundle μ m D F) : ∃ F, IsPPE bundle μ m D F := by
   classical
-  have hS : {F | IsPE bundle μ m D F}.Finite := hD.subset fun F hF => hF.1
+  have hS : {F | IsPE bundle μ m D F}.Finite := hD.subset fun F hF => hF.2.1
   obtain ⟨F, hF, hmax⟩ := hS.toFinset.exists_max_image (fun F => U bundle μ m F F)
     (hS.toFinset_nonempty.2 hPE)
   rw [Set.Finite.mem_toFinset] at hF
   exact ⟨F, hF, fun F' hF' => hmax F' (by simpa using hF')⟩
 
-/-- On a finite nonempty choice set a choice-acclimating PE exists. -/
-theorem exists_cpe {μ : ℝ → ℝ} {m : K → ℝ → ℝ} {D : Set (ι → ℝ)} (hD : D.Finite)
-    (hne : D.Nonempty) : ∃ F, IsCPE bundle μ m D F := by
+/-- On a finite nonempty choice set of lotteries a choice-acclimating PE
+exists. -/
+theorem exists_cpe {μ : ℝ → ℝ} {m : K → ℝ → ℝ} {D : Set (ι → ℝ)} (hL : IsLotterySet D)
+    (hD : D.Finite) (hne : D.Nonempty) : ∃ F, IsCPE bundle μ m D F := by
   obtain ⟨F, hF, hmax⟩ := hD.toFinset.exists_max_image (fun F => U bundle μ m F F)
     (by simpa using hne)
   rw [Set.Finite.mem_toFinset] at hF
-  exact ⟨F, hF, fun F' hF' => hmax F' (by simpa using hF')⟩
+  exact ⟨F, hL, hF, fun F' hF' => hmax F' (by simpa using hF')⟩
+
+/-- `U(F' | F)` is linear in the outcome lottery: `Σᵢ F'ᵢ wᵢ(F)`. -/
+theorem U_eq_sum (μ : ℝ → ℝ) (m : K → ℝ → ℝ) (F' F : ι → ℝ) :
+    U bundle μ m F' F = ∑ i, F' i * ∑ j, F j * u μ m (bundle i) (bundle j) := by
+  unfold U
+  exact sum_congr rfl fun i _ => by rw [mul_sum]; exact sum_congr rfl fun j _ => by ring
+
+theorem continuous_U (μ : ℝ → ℝ) (m : K → ℝ → ℝ) :
+    Continuous fun p : (ι → ℝ) × (ι → ℝ) => U bundle μ m p.1 p.2 := by
+  unfold U
+  exact continuous_finsetSum _ fun i _ => continuous_finsetSum _ fun j _ =>
+    (((continuous_apply i).comp continuous_fst).mul
+      ((continuous_apply j).comp continuous_snd)).mul continuous_const
+
+/- Note (review 2026-11-23): convexity of `D` lets the agent randomize among
+lotteries; KR choice sets such as "buy or not" are not convex, and on them a
+PE need not exist. The PE found here may be a mixture. -/
+/-- **Existence of personal equilibrium** (KR 2006). On a nonempty, compact,
+convex set of lotteries (e.g. all lotteries over finitely many bundles) a
+personal equilibrium exists, for any gain–loss function `μ`: `U(F' | F)` is
+linear in `F'` and continuous, so Kakutani applies to the best-reply
+correspondence `F ↦ argmax_{F' ∈ D} U(F' | F)`. -/
+theorem exists_pe {μ : ℝ → ℝ} {m : K → ℝ → ℝ} {D : Set (ι → ℝ)} (hL : IsLotterySet D)
+    (hconv : Convex ℝ D) (hcomp : IsCompact D) (hne : D.Nonempty) :
+    ∃ F, IsPE bundle μ m D F := by
+  let φ : (ι → ℝ) → Set (ι → ℝ) := fun F =>
+    {F' | F' ∈ D ∧ ∀ G ∈ D, U bundle μ m G F ≤ U bundle μ m F' F}
+  have hcU : ∀ F, Continuous fun G => U bundle μ m G F := fun F =>
+    (continuous_U bundle μ m).comp (continuous_id.prodMk continuous_const)
+  have hmaps : ∀ F ∈ D, φ F ⊆ D := fun F _ F' h => h.1
+  have hφne : ∀ F ∈ D, (φ F).Nonempty := by
+    intro F _
+    obtain ⟨F', hF', hmax⟩ := hcomp.exists_isMaxOn hne (hcU F).continuousOn
+    exact ⟨F', hF', fun G hG => hmax hG⟩
+  have hφconv : ∀ F ∈ D, Convex ℝ (φ F) := by
+    intro F _ F₁ h₁ F₂ h₂ a b ha hb hab
+    refine ⟨hconv h₁.1 h₂.1 ha hb hab, fun G hG => ?_⟩
+    have e : U bundle μ m (a • F₁ + b • F₂) F =
+        a * U bundle μ m F₁ F + b * U bundle μ m F₂ F := by
+      simp only [U_eq_sum, Pi.add_apply, Pi.smul_apply, smul_eq_mul, add_mul, sum_add_distrib,
+        mul_sum, mul_assoc]
+    rw [e]
+    have k1 := mul_le_mul_of_nonneg_left (h₁.2 G hG) ha
+    have k2 := mul_le_mul_of_nonneg_left (h₂.2 G hG) hb
+    have : U bundle μ m G F = a * U bundle μ m G F + b * U bundle μ m G F := by
+      rw [← add_mul, hab, one_mul]
+    linarith
+  have hgraph : IsClosed {p : (ι → ℝ) × (ι → ℝ) | p.1 ∈ D ∧ p.2 ∈ φ p.1} := by
+    have e : {p : (ι → ℝ) × (ι → ℝ) | p.1 ∈ D ∧ p.2 ∈ φ p.1} =
+        (Prod.fst ⁻¹' D) ∩ (Prod.snd ⁻¹' D) ∩
+          ⋂ G ∈ D, {p | U bundle μ m G p.1 ≤ U bundle μ m p.2 p.1} := by
+      ext p
+      simp only [Set.mem_ofPred_eq, Set.mem_inter_iff, Set.mem_preimage, Set.mem_iInter, φ]
+      tauto
+    rw [e]
+    have hcl := hcomp.isClosed
+    refine ((hcl.preimage continuous_fst).inter (hcl.preimage continuous_snd)).inter
+      (isClosed_biInter fun G _ => isClosed_le ?_ ?_)
+    · exact (continuous_U bundle μ m).comp (continuous_const.prodMk continuous_fst)
+    · exact (continuous_U bundle μ m).comp (continuous_snd.prodMk continuous_fst)
+  obtain ⟨F, hF, hfix⟩ := kakutani_fixedPoint hconv hcomp hne hmaps hφne hφconv hgraph
+  exact ⟨F, hL, hF, fun G hG => hfix.2 G hG⟩
+
+/-- **Existence of preferred personal equilibrium** on a nonempty, compact,
+convex set of lotteries: the PE set is closed, hence compact, and `U(F | F)`
+is continuous. -/
+theorem exists_ppe_of_convex {μ : ℝ → ℝ} {m : K → ℝ → ℝ} {D : Set (ι → ℝ)}
+    (hL : IsLotterySet D) (hconv : Convex ℝ D) (hcomp : IsCompact D) (hne : D.Nonempty) :
+    ∃ F, IsPPE bundle μ m D F := by
+  set P := {F | IsPE bundle μ m D F}
+  have hPcl : IsClosed P := by
+    have e : P = D ∩ ⋂ G ∈ D, {F | U bundle μ m G F ≤ U bundle μ m F F} := by
+      ext F; simp [P, IsPE, hL]
+    rw [e]
+    refine hcomp.isClosed.inter (isClosed_biInter fun G _ => isClosed_le ?_ ?_)
+    · exact (continuous_U bundle μ m).comp (continuous_const.prodMk continuous_id)
+    · exact (continuous_U bundle μ m).comp (continuous_id.prodMk continuous_id)
+  have hPc : IsCompact P := hcomp.of_isClosed_subset hPcl fun F hF => hF.2.1
+  obtain ⟨F, hF, hmax⟩ := hPc.exists_isMaxOn (exists_pe bundle hL hconv hcomp hne)
+    ((continuous_U bundle μ m).comp (continuous_id.prodMk continuous_id)).continuousOn
+  exact ⟨F, hF, fun F' hF' => hmax hF'⟩
+
+/-- The set of all lotteries over `ι`. -/
+def allLotteries (ι : Type*) [Fintype ι] : Set (ι → ℝ) := {F | Logit.IsProb F}
+
+/-- Non-vacuity: with all lotteries over a nonempty finite set of bundles
+available, a preferred personal equilibrium exists. -/
+theorem exists_ppe_allLotteries [Nonempty ι] (μ : ℝ → ℝ) (m : K → ℝ → ℝ) :
+    ∃ F, IsPPE bundle μ m (allLotteries ι) F := by
+  classical
+  have hL : IsLotterySet (allLotteries ι) := fun G hG => hG
+  have hconv : Convex ℝ (allLotteries ι) := by
+    intro p hp q hq a b ha hb hab
+    refine ⟨fun s => ?_, ?_⟩
+    · simp only [Pi.add_apply, Pi.smul_apply, smul_eq_mul]
+      exact add_nonneg (mul_nonneg ha (hp.1 s)) (mul_nonneg hb (hq.1 s))
+    · simp only [Pi.add_apply, Pi.smul_apply, smul_eq_mul, sum_add_distrib, ← mul_sum, hp.2,
+        hq.2]
+      linarith
+  have hcl : IsClosed (allLotteries ι) := by
+    have e : allLotteries ι = (⋂ s, {p : ι → ℝ | 0 ≤ p s}) ∩ {p | ∑ s, p s = 1} := by
+      ext p; simp [allLotteries, Logit.IsProb]
+    rw [e]
+    exact (isClosed_iInter fun s => isClosed_le continuous_const (continuous_apply s)).inter
+      (isClosed_eq (continuous_finsetSum _ fun s _ => continuous_apply s) continuous_const)
+  have hcomp : IsCompact (allLotteries ι) := by
+    refine (isCompact_univ_pi fun _ => isCompact_Icc (a := (0 : ℝ)) (b := 1)).of_isClosed_subset
+      hcl fun p hp s _ => ⟨hp.1 s, ?_⟩
+    rw [← hp.2]
+    exact single_le_sum (f := p) (fun c _ => hp.1 c) (mem_univ s)
+  obtain ⟨i⟩ := ‹Nonempty ι›
+  have hne : (allLotteries ι).Nonempty :=
+    ⟨Pi.single i 1, fun j => by by_cases h : j = i <;> simp [h], by simp⟩
+  exact exists_ppe_of_convex bundle hL hconv hcomp hne
 
 /-- For degenerate lotteries, `U` reduces to `u`. -/
 theorem U_pure [DecidableEq ι] (μ : ℝ → ℝ) (m : K → ℝ → ℝ) (i j : ι) :

@@ -124,3 +124,19 @@ The hypothesis is equivalent to $r_1 < \mathrm{latePay}(\lambda)$. The early pay
 $\lambda/f$ on $r_1$ and the rest on $\mathrm{latePay}(\lambda)$, hence strictly smaller. The Lean file also checks
 $c_1^* > 1$ for $\lambda = 1/2$, $R = 2$, $\gamma = 2$.
 \end{proof}
+
+\begin{theorem}[Suspension implements the good outcome uniquely]
+\label{thm:dd_suspension_unique}
+\lean{Econ.DiamondDybvig.Bank.SuspensionGoodEquilibrium, Econ.DiamondDybvig.Bank.SuspensionRunEquilibrium, Econ.DiamondDybvig.Bank.suspension_unique}
+\leanok
+\uses{thm:dd_suspension}
+Under suspension, ``all patient depositors wait'' is an equilibrium when
+$\mathrm{earlyPay}(\lambda) \le \mathrm{latePay}(\lambda)$, and ``all run'' is an equilibrium when
+$\mathrm{latePay}(\lambda) \le \mathrm{earlyPay}(1)$. If $r_1(1 - \lambda + \lambda R) < R$, the first holds and the
+second fails: the only symmetric pure-strategy equilibrium gives impatient depositors $r_1$ and patient depositors
+$\mathrm{latePay}(\lambda)$.
+\end{theorem}
+\begin{proof}
+\leanok
+Apply Theorem~\ref{thm:dd_suspension} with $f = \lambda$ (weakly) and with $f = 1 \ge \lambda$ (strictly).
+\end{proof}

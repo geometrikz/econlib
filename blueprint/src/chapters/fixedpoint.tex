@@ -73,3 +73,170 @@ continuous on all of $\Delta$, so strongly monotone economies (MWG Prop.~17.C.1)
 \leanok
 Supply Lemma~\ref{lem:priceSimplex_brouwer} as the Brouwer hypothesis of the conditional theorems.
 \end{proof}
+
+\section{Existence with a boundary condition}
+\label{sec:existence_boundary}
+
+\begin{definition}[Bounded below; boundary condition; MWG Prop.~17.B.2(iv),(v)]
+\label{def:boundary_condition}
+\lean{Econ.ExcessBoundedBelow, Econ.BoundaryCondition, Econ.PositivePrices}
+\leanok
+$z$ is \emph{bounded below} if there is $s$ with $z_l(p) > -s$ for all $p \gg 0$ and all $l$. $z$ satisfies the
+\emph{boundary condition} if whenever $p^n \gg 0$, $p^n \to \bar p \ne 0$ and $\bar p_l = 0$ for some $l$, then for every
+$M$, eventually $z_l(p^n) > M$ for some $l$ (that is, $\max_l z_l(p^n) \to \infty$).
+\end{definition}
+
+\begin{lemma}[Shrinking the simplex]
+\label{lem:shrink_price}
+\lean{Econ.shrinkPrice, Econ.isOpen_positivePrices, Econ.continuous_shrinkPrice, Econ.shrinkPrice_mem,
+  Econ.cost_shrinkPrice}
+\leanok
+\uses{def:priceSimplex}
+Let $N$ be the number of goods and $r_\varepsilon(p) = (1 - N\varepsilon)p + \varepsilon \mathbf 1$. For $0 < \varepsilon$,
+$N\varepsilon \le 1$, $r_\varepsilon$ is continuous and maps $\Delta$ into strictly positive prices in $\Delta$, and
+$r_\varepsilon(p) \cdot x = (1 - N\varepsilon)\, p \cdot x + \varepsilon \sum_k x_k$. The set of strictly positive prices
+is open.
+\end{lemma}
+\begin{proof}
+\leanok
+Coordinates are $(1 - N\varepsilon)p_i + \varepsilon \ge \varepsilon > 0$, and they sum to $(1 - N\varepsilon) + N\varepsilon = 1$.
+The cost identity is linearity. Positive prices are a finite intersection of open half-spaces.
+\end{proof}
+
+\begin{lemma}[Approximate equilibria]
+\label{lem:approx_equilibrium}
+\lean{Econ.exists_approx_equilibrium}
+\leanok
+\uses{lem:shrink_price, thm:existence_unconditional}
+If $z$ is continuous on $p \gg 0$ with Walras' law there, then for $0 < \varepsilon$, $N\varepsilon \le 1$ there is
+$x \gg 0$ in $\Delta$ with $(1 - N\varepsilon) z_l(x) + \varepsilon \sum_k z_k(x) \le 0$ for every $l$.
+\end{lemma}
+\begin{proof}
+\leanok
+Let $w(p)_l = (1 - N\varepsilon) z_l(r_\varepsilon p) + \varepsilon \sum_k z_k(r_\varepsilon p)$, continuous on $\Delta$. Since
+$\sum_i p_i = 1$, $p \cdot w(p) = (1 - N\varepsilon)\, p \cdot z(r_\varepsilon p) + \varepsilon \sum_k z_k(r_\varepsilon p)
+= r_\varepsilon(p) \cdot z(r_\varepsilon p) = 0$. The unconditional Gale--Nikaido--Debreu lemma gives $p \in \Delta$ with
+$w(p) \le 0$; take $x = r_\varepsilon(p)$.
+\end{proof}
+
+\begin{theorem}[Existence of equilibrium; MWG Prop.~17.C.1]
+\label{thm:existence_boundary}
+\lean{Econ.exists_equilibrium_of_boundaryCondition}
+\leanok
+\uses{def:boundary_condition, lem:approx_equilibrium, lem:priceSimplex_brouwer}
+If $z$ is continuous on $p \gg 0$, satisfies Walras' law there, is bounded below and satisfies the boundary condition,
+then $z(p) = 0$ for some $p \gg 0$. (Homogeneity is not needed.)
+\end{theorem}
+\begin{proof}
+\leanok
+Replace $s$ by $S = \max(s, 0)$. Let $\varepsilon_n = \frac{1}{2N(n+1)}$, so $N\varepsilon_n \le \frac12$ and
+$\varepsilon_n \to 0$, and let $x_n$ be the approximate equilibria of Lemma~\ref{lem:approx_equilibrium}.
+
+\emph{Upper bound.} If $z_l(x_n) > S$, then since $\sum_k z_k(x_n) > -NS$,
+$0 \ge (1 - N\varepsilon_n) z_l(x_n) + \varepsilon_n \sum_k z_k(x_n) > \tfrac12 S - N\varepsilon_n S \ge 0$, a contradiction. So
+$z_l(x_n) \le S$ for all $n, l$.
+
+\emph{Limit.} $\Delta$ is compact, so a subsequence $x_{\varphi(n)} \to \bar p \in \Delta$, and $\bar p \ne 0$. If
+$\bar p_l = 0$ for some $l$, the boundary condition with $M = S$ gives $z_k(x_{\varphi(n)}) > S$ for some $n, k$,
+contradicting the upper bound. So $\bar p \gg 0$, $z$ is continuous at $\bar p$, and letting $n \to \infty$ in
+$(1 - N\varepsilon) z_l(x) + \varepsilon \sum_k z_k(x) \le 0$ gives $z_l(\bar p) \le 0$ for every $l$.
+
+\emph{Equilibrium.} Walras' law $\sum_i \bar p_i z_i(\bar p) = 0$ is a sum of nonpositive terms, so each is $0$, and
+$\bar p_i > 0$ gives $z_i(\bar p) = 0$.
+\end{proof}
+
+\begin{theorem}[Boundary-condition example]
+\label{thm:zcd_boundary}
+\lean{Econ.AggregationExamples.zCD_continuousOn, Econ.AggregationExamples.zCD_boundedBelow,
+  Econ.AggregationExamples.eventually_lt_div_sub_one, Econ.AggregationExamples.zCD_boundary}
+\leanok
+\uses{thm:existence_boundary, thm:zcd_example}
+$z(p) = (p_1/p_0 - 1, p_0/p_1 - 1)$ is continuous on $p \gg 0$, bounded below by $-1$, and satisfies the boundary
+condition, so Theorem~\ref{thm:existence_boundary} applies. It is undefined (blows up) at the corners of $\Delta$, so the
+closed-simplex theorem does not.
+\end{theorem}
+\begin{proof}
+\leanok
+Continuity: quotients of coordinates with nonzero denominators. Lower bound: $p_1/p_0 > 0$. Boundary: if
+$p^n \to \bar p \ne 0$ with $\bar p_l = 0$, then $\bar p \ge 0$ forces the other coordinate $\bar p_k > 0$; as
+$p^n_l \to 0^+$, $1/p^n_l \to \infty$, and $p^n_k \to \bar p_k > 0$, so $z_l(p^n) = p^n_k/p^n_l - 1 \to \infty$.
+\end{proof}
+
+\begin{theorem}[Existence in an exchange economy, excess-demand form]
+\label{thm:existence_boundary_economy}
+\lean{Econ.ExchangeEconomy.exists_walrasianEquilibrium_of_boundaryCondition}
+\leanok
+\uses{thm:existence_boundary, lem:agg_walras}
+With locally nonsatiated consumers and a demand selection on $p \gg 0$ whose aggregate excess demand is continuous there,
+bounded below and satisfies the boundary condition, a Walrasian equilibrium with $p \gg 0$ exists.
+\end{theorem}
+\begin{proof}
+\leanok
+Walras' law for aggregate excess demand follows from local nonsatiation (Lemma~\ref{lem:agg_walras}). Theorem~\ref{thm:existence_boundary}
+gives $p \gg 0$ with zero excess demand, which is a Walrasian equilibrium.
+\end{proof}
+
+\section{Existence from preferences}
+\label{sec:existence_preferences}
+
+\begin{lemma}[Boundary condition from strong monotonicity; MWG Prop.~17.B.2(v)]
+\label{lem:boundary_from_prefs}
+\lean{Econ.ExchangeEconomy.boundaryCondition_excessDemand}
+\leanok
+\uses{def:boundary_condition}
+If utilities are continuous, preferences strongly monotone and $\bar\omega \gg 0$, aggregate excess demand of any demand
+selection on $p \gg 0$ satisfies the boundary condition.
+\end{lemma}
+\begin{proof}
+\leanok
+Let $p^n \gg 0$, $p^n \to \bar p \ne 0$, $\bar p_l = 0$. Then $\bar p \ge 0$, and $\bar p \cdot \bar\omega > 0$, so some consumer
+$a$ has $\bar p \cdot \omega_a > 0$.
+
+\emph{Claim: for every $M'$, eventually $d_{a,k}(p^n) > M'$ for some $k$.} Otherwise, frequently $d_a(p^n) \le M'$
+coordinatewise; extract a subsequence along which $d_a(p^n)$ lies in the box $[0, M']^\iota$, and a further one along which
+$x_n = d_a(p^n) \to \bar x \ge 0$. Passing to the limit in $p^n \cdot x_n \le p^n \cdot \omega_a$ gives
+$\bar p \cdot \bar x \le \bar p \cdot \omega_a$. Let $e = e_l$; since $\bar p_l = 0$, $\bar p \cdot e = 0$, and by strong monotonicity
+$u_a(\bar x + e) > u_a(\bar x)$. By continuity in $t$ there is $t \in [0, 1)$ with $u_a(t\bar x + e) > u_a(\bar x)$. Then
+$y = t\bar x + e \ge 0$ and $\bar p \cdot y = t\, \bar p \cdot \bar x \le t\, \bar p \cdot \omega_a < \bar p \cdot \omega_a$. By continuity
+of costs, $p^n \cdot y < p^n \cdot \omega_a$ for large $n$, so $y$ is affordable and $u_a(x_n) \ge u_a(y)$. In the limit
+$u_a(\bar x) \ge u_a(y) > u_a(\bar x)$, a contradiction.
+
+\emph{Aggregate.} Demands are nonnegative, so $z_k(p^n) \ge d_{a,k}(p^n) - \bar\omega_k \ge d_{a,k}(p^n) - \sum_j \bar\omega_j$.
+Apply the claim with $M' = M + \sum_j \bar\omega_j$.
+\end{proof}
+
+\begin{theorem}[Existence from preferences; MWG Props.~17.B.2 and 17.C.1]
+\label{thm:existence_preferences}
+\lean{Econ.ExchangeEconomy.wealth_pos, Econ.ExchangeEconomy.exists_walrasianEquilibrium_of_preferences}
+\leanok
+\uses{lem:boundary_from_prefs, thm:existence_boundary_economy}
+In an exchange economy where each consumer has a continuous, strictly quasiconcave utility representing strongly
+monotone preferences and a nonzero endowment, and $\bar\omega \gg 0$, a Walrasian equilibrium with $p \gg 0$ exists.
+\end{theorem}
+\begin{proof}
+\leanok
+At $p \gg 0$ each consumer's wealth $p \cdot \omega_a$ is positive (nonzero, nonnegative endowment). Strict quasiconcavity
+gives a unique demand, which is continuous in $(p, w)$ by Berge's theorem; composing with $p \mapsto (p, p \cdot \omega_a)$
+gives a demand selection continuous on $p \gg 0$, so excess demand is continuous there. It is bounded below by
+$-\sum_j \bar\omega_j - 1$ since demands are nonnegative. Strong monotonicity gives local nonsatiation and, by
+Lemma~\ref{lem:boundary_from_prefs}, the boundary condition. Apply Theorem~\ref{thm:existence_boundary_economy}.
+\end{proof}
+
+\begin{theorem}[Square-root economy]
+\label{thm:sqrt_economy}
+\lean{Econ.GEExamples.uSqrt, Econ.GEExamples.continuous_uSqrt, Econ.GEExamples.strictlyQuasiconcave_uSqrt,
+  Econ.GEExamples.stronglyMonotone_uSqrt, Econ.GEExamples.sqrtEconomy,
+  Econ.GEExamples.sqrtEconomy_exists_equilibrium}
+\leanok
+\uses{thm:existence_preferences}
+With $u(x) = \sqrt{x_0} + \sqrt{x_1}$ for both consumers and endowments $(1,2), (2,1)$, a Walrasian equilibrium with
+strictly positive prices exists. Demand does not exist at prices with a zero coordinate, so the closed-simplex theorem
+does not apply.
+\end{theorem}
+\begin{proof}
+\leanok
+$\sqrt{\cdot}$ is continuous and strictly concave on $[0, \infty)$ and strictly increasing there. Strict quasiconcavity:
+$t u(x) + (1 - t) u(y) \le u(tx + (1-t)y)$ coordinatewise by concavity, strictly in a coordinate where $x, y$ differ, and
+$\min(u(x), u(y)) \le t u(x) + (1-t) u(y)$. Strong monotonicity: each square root weakly increases and one strictly. Apply
+Theorem~\ref{thm:existence_preferences}.
+\end{proof}

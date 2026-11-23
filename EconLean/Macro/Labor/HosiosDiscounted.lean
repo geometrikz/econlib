@@ -25,7 +25,8 @@ iff `θ` solves the job-creation condition of `DMP.lean` with interest rate
 `r = 1/δ − 1`. So existence, uniqueness and comparative statics carry over.
 
 **The planner** chooses any path of tightness `θ₀, θ₁, …` (`Feasible`: each
-`θₜ ≥ 0` and `f(θₜ) ≤ 1`, so unemployment stays in `[0, 1]`).
+`θₜ ≥ 0`, `f(θₜ) ≤ 1` and `q(θₜ) ≤ 1`, so unemployment stays in `[0, 1]`
+and matches never exceed vacancies).
 `isOptimal_stationary`: the stationary path at the equilibrium tightness with
 `β = η` is optimal from every initial unemployment rate; `welfare_lt`: any
 feasible path that starts with a different tightness does strictly worse when
@@ -36,11 +37,15 @@ unemployment into a job.
 **Hosios** (`hosios`): for every `r > 0`, the equilibrium path is optimal iff
 `β = η`.
 
-**Deviations.** Discrete time: the job-finding rate is a probability, hence the
-feasibility constraint `f(θ) ≤ 1`, which `hosios` assumes at the efficient
-tightness (the example at the end shows it holds for a standard calibration).
-`IsSearchEqm` does not itself require `f(θ), q(θ) ≤ 1`. It requires `θ > 0`,
-which also rules out Lean's junk value `q(0) = A·0^{−η} = 0`. Strict
+**Deviations.** Discrete time: the matching rates are probabilities, so both
+`Feasible` and `IsSearchEqm` require `f(θ) ≤ 1` and `q(θ) ≤ 1`; `hosios`
+assumes both at the efficient tightness (the example at the end checks them for
+a standard calibration). The rates are Cobb–Douglas and are constrained, not
+capped with `min(1, ·)`: the planner chooses among tightness levels where both
+are probabilities, and an economy whose job-creation solution violates a bound
+has no search equilibrium (rather than a corner one). Existence of the search
+equilibrium is therefore a hypothesis of `existsUnique_searchEqm`. `IsSearchEqm` requires `θ > 0`, which also rules out
+Lean's junk value `q(0) = A·0^{−η} = 0`. Strict
 inferiority (`welfare_lt`) is proved for paths whose *first-period* tightness
 differs from `θp`. Cobb–Douglas matching; wages are constant along the stationary equilibrium
 (we compare the stationary equilibrium path to all planner paths).
@@ -88,10 +93,14 @@ theorem findRate_nonneg {θ : ℝ} (hθ : 0 ≤ θ) : 0 ≤ D.findRate θ :=
 
 /-- A **stationary search equilibrium** at tightness `θ` with worker bargaining
 power `β`: values `J` (filled job), `E` (employed), `U` (unemployed) and the
-wage `w` satisfy the Bellman equations, Nash bargaining and free entry. Matches
+wage `w` satisfy the Bellman equations, Nash bargaining and free entry, and the
+matching rates `f(θ)`, `q(θ)` are probabilities. Matches
 formed this period produce from next period on. -/
 structure IsSearchEqm (β θ J E U w : ℝ) : Prop where
   pos : 0 < θ
+  /-- The job-finding and vacancy-filling rates are probabilities. -/
+  findLe : D.findRate θ ≤ 1
+  fillLe : D.fillRate θ ≤ 1
   firm : J = D.y - w + D.δ * (1 - D.s) * J
   worker : E = w + D.δ * ((1 - D.s) * E + D.s * U)
   unemployed : U = D.b + D.δ * (D.findRate θ * E + (1 - D.findRate θ) * U)
@@ -117,11 +126,12 @@ theorem jc_rate {β θ : ℝ} (hθ : 0 < θ) :
 exists at `θ` iff `θ` solves the job-creation condition of `DMP.lean` with
 interest rate `r = 1/δ − 1`. -/
 theorem isSearchEqm_iff {β θ : ℝ} (hβ₀ : 0 ≤ β) :
-    (∃ J E U w, D.IsSearchEqm β θ J E U w) ↔ D.IsEquilibrium D.rate β θ := by
+    (∃ J E U w, D.IsSearchEqm β θ J E U w) ↔
+      D.IsEquilibrium D.rate β θ ∧ D.findRate θ ≤ 1 ∧ D.fillRate θ ≤ 1 := by
   have hδ := D.hδ₀; have hδ1 := D.hδ₁; have hs := D.hs
   constructor
   · rintro ⟨J, E, U, w, h⟩
-    refine ⟨h.pos, ?_⟩
+    refine ⟨⟨h.pos, ?_⟩, h.findLe, h.fillLe⟩
     have hq : 0 < D.fillRate θ := mul_pos D.hA (rpow_pos_of_pos h.pos _)
     have hk := D.jc_rate (β := β) h.pos
     have hf := D.findRate_nonneg (θ := θ) h.pos.le
@@ -134,7 +144,7 @@ theorem isSearchEqm_iff {β θ : ℝ} (hβ₀ : 0 ≤ β) :
     have hpos : 0 < D.δ * D.fillRate θ := mul_pos hδ hq
     rw [← hk] at key
     exact mul_right_cancel₀ hpos.ne' (key.trans (mul_comm _ _))
-  · rintro ⟨hθ, hjc⟩
+  · rintro ⟨⟨hθ, hjc⟩, hf1, hq1⟩
     have hq : 0 < D.fillRate θ := mul_pos D.hA (rpow_pos_of_pos hθ _)
     have hf := D.findRate_nonneg (θ := θ) hθ.le
     set f := D.findRate θ
@@ -149,7 +159,7 @@ theorem isSearchEqm_iff {β θ : ℝ} (hβ₀ : 0 ≤ β) :
       rw [← D.jc_rate hθ, hjc]; ring
     refine ⟨(1 - β) * S, (D.b + D.δ * f * (β * S)) / (1 - D.δ) + β * S,
       (D.b + D.δ * f * (β * S)) / (1 - D.δ), D.y - (1 - D.δ * (1 - D.s)) * ((1 - β) * S),
-      ⟨hθ, by ring, ?_, ?_, by ring, ?_⟩⟩
+      ⟨hθ, hf1, hq1, by ring, ?_, ?_, by ring, ?_⟩⟩
     · have h1 : (1 - D.δ) ≠ 0 := by linarith
       field_simp
       linear_combination (1 - D.δ) * hS
@@ -158,11 +168,15 @@ theorem isSearchEqm_iff {β θ : ℝ} (hβ₀ : 0 ≤ β) :
       ring
     · rw [← mul_left_inj' hK.ne', hc, mul_assoc, mul_assoc, ← hS]; ring
 
-/-- **Existence and uniqueness of the search equilibrium.** -/
-theorem existsUnique_searchEqm {β : ℝ} (hβ₀ : 0 ≤ β) (hβ₁ : β < 1) :
-    ∃! θ, ∃ J E U w, D.IsSearchEqm β θ J E U w := by
-  simp_rw [D.isSearchEqm_iff hβ₀]
-  exact D.existsUnique_equilibrium D.rate_pos.le hβ₀ hβ₁
+/-- **Existence and uniqueness of the search equilibrium.** If the unique
+solution `θ` of the job-creation condition has matching rates that are
+probabilities, it is the unique search equilibrium tightness. (If it does not,
+`isSearchEqm_iff` shows there is no search equilibrium.) -/
+theorem existsUnique_searchEqm {β θ : ℝ} (hβ₀ : 0 ≤ β) (hβ₁ : β < 1)
+    (hθ : D.IsEquilibrium D.rate β θ) (hf : D.findRate θ ≤ 1) (hq : D.fillRate θ ≤ 1) :
+    ∃! θ', ∃ J E U w, D.IsSearchEqm β θ' J E U w :=
+  ⟨θ, (D.isSearchEqm_iff hβ₀).2 ⟨hθ, hf, hq⟩, fun _ h' =>
+    (D.existsUnique_equilibrium D.rate_pos.le hβ₀ hβ₁).unique ((D.isSearchEqm_iff hβ₀).1 h').1 hθ⟩
 
 /-! ## The planner -/
 
@@ -177,9 +191,12 @@ def upath (u₀ : ℝ) (θ : ℕ → ℝ) : ℕ → ℝ
 /-- Net output in a period: `y (1 − u) + b u − c θ u`. -/
 def reward (u θ : ℝ) : ℝ := D.y * (1 - u) + D.b * u - D.c * θ * u
 
-/-- A tightness path is feasible if `θₜ ≥ 0` and the job-finding rate is a
-probability, `f(θₜ) ≤ 1` (matches cannot exceed the unemployed). -/
-def Feasible (θ : ℕ → ℝ) : Prop := ∀ t, 0 ≤ θ t ∧ D.findRate (θ t) ≤ 1
+/-- A tightness path is feasible if `θₜ ≥ 0` and both matching rates are
+probabilities: `f(θₜ) ≤ 1` (matches cannot exceed the unemployed) and
+`q(θₜ) ≤ 1` (matches cannot exceed vacancies). At `θ = 0` there are no
+vacancies and Lean's `q(0) = 0` makes the second constraint vacuous, as it should be. -/
+def Feasible (θ : ℕ → ℝ) : Prop :=
+  ∀ t, 0 ≤ θ t ∧ D.findRate (θ t) ≤ 1 ∧ D.fillRate (θ t) ≤ 1
 
 /-- Present value of net output from `u₀` under `θ`. -/
 def welfare (u₀ : ℝ) (θ : ℕ → ℝ) : ℝ := ∑' t, D.δ ^ t * D.reward (D.upath u₀ θ t) (θ t)
@@ -196,7 +213,7 @@ theorem upath_mem {u₀ : ℝ} (hu : u₀ ∈ Icc (0 : ℝ) 1) {θ : ℕ → ℝ
   | succ t ih =>
     obtain ⟨h0, h1⟩ := ih
     have hf := D.findRate_nonneg (hθ t).1
-    have hsf := (hθ t).2
+    have hsf := (hθ t).2.1
     have hs := D.hs
     have hs1 := D.hs₁
     simp only [upath, next]
@@ -220,7 +237,7 @@ theorem summable_welfare {u₀ : ℝ} (hu : u₀ ∈ Icc (0 : ℝ) 1) {θ : ℕ 
   refine Summable.of_norm_bounded
     ((summable_geometric_of_lt_one D.hδ₀.le D.hδ₁).mul_right M) fun t => ?_
   obtain ⟨u0, u1⟩ := D.upath_mem hu hθ t
-  have hb := D.le_bound (hθ t).1 (hθ t).2
+  have hb := D.le_bound (hθ t).1 (hθ t).2.1
   have hθ0 := (hθ t).1
   set u := D.upath u₀ θ t
   rw [Real.norm_eq_abs, abs_mul, abs_of_pos (pow_pos D.hδ₀ t)]
@@ -413,9 +430,9 @@ theorem tendsto_gaps {u₀ : ℝ} (hu : u₀ ∈ Icc (0 : ℝ) 1)
 
 /-- The stationary path at `θp` attains `V(u₀)`. -/
 theorem welfare_stationary (hp : D.IsEquilibrium D.rate D.η θp)
-    (hfp : D.findRate θp ≤ 1) {u₀ : ℝ} (hu : u₀ ∈ Icc (0 : ℝ) 1) :
+    (hfp : D.findRate θp ≤ 1) (hqp : D.fillRate θp ≤ 1) {u₀ : ℝ} (hu : u₀ ∈ Icc (0 : ℝ) 1) :
     D.welfare u₀ (fun _ => θp) = D.value θp u₀ := by
-  have hθ : D.Feasible fun _ => θp := fun _ => ⟨hp.1.le, hfp⟩
+  have hθ : D.Feasible fun _ => θp := fun _ => ⟨hp.1.le, hfp, hqp⟩
   have h := D.tendsto_gaps (θp := θp) hu hθ
   simp only [D.gap_self hp, mul_zero, sum_const_zero, add_zero] at h
   exact tendsto_nhds_unique h tendsto_const_nhds
@@ -456,16 +473,16 @@ end Verification
 `r = 1/δ − 1` with `β = η`, and be feasible. Then staying at `θp` forever is
 optimal from every initial unemployment rate `u₀ ∈ [0, 1]`. -/
 theorem isOptimal_stationary {θp : ℝ} (hp : D.IsEquilibrium D.rate D.η θp)
-    (hfp : D.findRate θp ≤ 1) {u₀ : ℝ} (hu : u₀ ∈ Icc (0 : ℝ) 1) :
+    (hfp : D.findRate θp ≤ 1) (hqp : D.fillRate θp ≤ 1) {u₀ : ℝ} (hu : u₀ ∈ Icc (0 : ℝ) 1) :
     D.IsOptimal u₀ (fun _ => θp) :=
-  ⟨fun _ => ⟨hp.1.le, hfp⟩, fun _ hθ => (D.welfare_le hp hu hθ).trans
-    (D.welfare_stationary hp hfp hu).ge⟩
+  ⟨fun _ => ⟨hp.1.le, hfp, hqp⟩, fun _ hθ => (D.welfare_le hp hu hθ).trans
+    (D.welfare_stationary hp hfp hqp hu).ge⟩
 
 /-- **Any other first-period tightness is strictly worse.** -/
 theorem welfare_lt {θp : ℝ} (hp : D.IsEquilibrium D.rate D.η θp)
-    (hfp : D.findRate θp ≤ 1) {u₀ : ℝ} (hu : u₀ ∈ Ioc (0 : ℝ) 1) {θ : ℕ → ℝ}
+    (hfp : D.findRate θp ≤ 1) (hqp : D.fillRate θp ≤ 1) {u₀ : ℝ} (hu : u₀ ∈ Ioc (0 : ℝ) 1) {θ : ℕ → ℝ}
     (hθ : D.Feasible θ) (hne : θ 0 ≠ θp) : D.welfare u₀ θ < D.welfare u₀ (fun _ => θp) := by
-  rw [D.welfare_stationary hp hfp ⟨hu.1.le, hu.2⟩]
+  rw [D.welfare_stationary hp hfp hqp ⟨hu.1.le, hu.2⟩]
   exact D.welfare_lt_value hp hu hθ hne
 
 /-- **The Hosios condition with discounting.** Take any interest rate
@@ -476,17 +493,17 @@ initial unemployment rate `u₀ ∈ (0, 1]`, the equilibrium path is optimal iff
 `β = η`. -/
 theorem hosios {β θe θp u₀ : ℝ} (hβ₀ : 0 ≤ β) (hβ₁ : β < 1)
     (he : ∃ J E U w, D.IsSearchEqm β θe J E U w)
-    (hp : D.IsEquilibrium D.rate D.η θp) (hfp : D.findRate θp ≤ 1)
+    (hp : D.IsEquilibrium D.rate D.η θp) (hfp : D.findRate θp ≤ 1) (hqp : D.fillRate θp ≤ 1)
     (hu : u₀ ∈ Ioc (0 : ℝ) 1) :
     D.IsOptimal u₀ (fun _ => θe) ↔ β = D.η := by
-  rw [D.isSearchEqm_iff hβ₀] at he
+  replace he := ((D.isSearchEqm_iff hβ₀).1 he).1
   have hη₀ := D.hη₀; have hη₁ := D.hη₁
   constructor
   · intro hopt
     have heq : θe = θp := by
       by_contra hne
-      have h1 := D.welfare_lt hp hfp hu hopt.1 hne
-      have h2 := hopt.2 _ (fun _ => ⟨hp.1.le, hfp⟩)
+      have h1 := D.welfare_lt hp hfp hqp hu hopt.1 hne
+      have h2 := hopt.2 _ (fun _ => ⟨hp.1.le, hfp, hqp⟩)
       linarith
     subst heq
     by_contra hβ
@@ -496,7 +513,7 @@ theorem hosios {β θe θp u₀ : ℝ} (hβ₀ : 0 ≤ β) (hβ₁ : β < 1)
   · rintro rfl
     have : θe = θp := (D.existsUnique_equilibrium D.rate_pos.le hβ₀ hβ₁).unique he hp
     subst this
-    exact D.isOptimal_stationary hp hfp ⟨hu.1.le, hu.2⟩
+    exact D.isOptimal_stationary hp hfp hqp ⟨hu.1.le, hu.2⟩
 
 /-- **Non-vacuity.** With `A = 1/4`, `η = 1/2`, `s = 1/10`, `c = 1`, `y = 1`,
 `b = 0` and `δ = 9/10`, the efficient tightness exists and is feasible, so
@@ -505,7 +522,7 @@ example : ∃ θp, (⟨⟨1 / 4, 1 / 2, 1 / 10, 1, 1, 0, by norm_num, by norm_nu
     by norm_num, by norm_num, by norm_num⟩, 9 / 10, by norm_num, by norm_num, by norm_num⟩ : Discrete).IsEquilibrium
       (Discrete.rate ⟨⟨1 / 4, 1 / 2, 1 / 10, 1, 1, 0, by norm_num, by norm_num, by norm_num,
         by norm_num, by norm_num, by norm_num⟩, 9 / 10, by norm_num, by norm_num, by norm_num⟩) (1 / 2) θp ∧
-      1 / 4 * θp ^ (1 - 1 / 2 : ℝ) ≤ 1 := by
+      1 / 4 * θp ^ (1 - 1 / 2 : ℝ) ≤ 1 ∧ 1 / 4 * θp ^ (-(1 / 2) : ℝ) ≤ 1 := by
   set D : Discrete := ⟨⟨1 / 4, 1 / 2, 1 / 10, 1, 1, 0, by norm_num, by norm_num, by norm_num,
     by norm_num, by norm_num, by norm_num⟩, 9 / 10, by norm_num, by norm_num, by norm_num⟩
   obtain ⟨θp, hp, -⟩ := D.existsUnique_equilibrium D.rate_pos.le (β := 1 / 2) (by norm_num)
@@ -525,7 +542,27 @@ example : ∃ θp, (⟨⟨1 / 4, 1 / 2, 1 / 10, 1, 1, 0, by norm_num, by norm_nu
     rw [e1, e2] at hjc
     linarith
   have : θp ^ (1 - 1 / 2 : ℝ) ≤ 1 := rpow_le_one hθ.le h1 (by norm_num)
-  linarith
+  refine ⟨by linarith, ?_⟩
+  -- `q(θp) ≤ 1` iff `√θp ≥ 1/4`; the JC condition rules out `θp < 1/16`
+  set x := θp ^ (1 / 2 : ℝ)
+  have hx0 : 0 < x := rpow_pos_of_pos hθ _
+  have hx2 : x ^ 2 = θp := by
+    rw [← rpow_natCast, ← rpow_mul hθ.le]; norm_num
+  have hx : 1 / 4 ≤ x := by
+    by_contra hlt; push Not at hlt
+    simp only [Economy.jc] at hjc
+    have e1 : D.c = 1 := rfl
+    have e2 : D.y - D.b = 1 := by norm_num [D]
+    have e3 : D.η = 1 / 2 := rfl
+    have e4 : D.A = 1 / 4 := rfl
+    have e5 : D.s = 1 / 10 := rfl
+    have e6 : D.rate = 1 / 9 := by simp only [Discrete.rate]; norm_num [D]
+    rw [e1, e2, e3, e4, e5, e6] at hjc
+    change 1 * (1 / 9 + 1 / 10) * x / (1 / 4) + 1 / 2 * 1 * θp = (1 - 1 / 2) * 1 at hjc
+    nlinarith
+  rw [rpow_neg hθ.le]
+  change 1 / 4 * x⁻¹ ≤ 1
+  rw [← div_eq_mul_inv, div_le_one hx0]; linarith
 
 end Discrete
 

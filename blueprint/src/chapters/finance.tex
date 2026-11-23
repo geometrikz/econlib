@@ -66,3 +66,156 @@ nonzero linear functional $g$ vanishes on it (\texttt{Submodule.exists\_le\_ker\
 $\sum_s z_sX_{si} = 0$ for every $i$ and $z \ne 0$. With $c = \min_s m_s$ and $\varepsilon = c/(\sum|z_s| + 1)$,
 $m + \varepsilon z$ is another strictly positive state-price vector, contradicting uniqueness.
 \end{proof}
+
+\section{Arrow--Debreu versus sequential markets}
+\label{sec:seqmarkets}
+
+Sources: Arrow (1953); MWG \S19.D--19.E; LeRoy--Werner ch.~4.
+
+\begin{definition}[Budget sets]
+\label{def:seq_budgets}
+\lean{Econ.AssetPricing.Bundle, Econ.AssetPricing.adBudget, Econ.AssetPricing.Market.SeqBudget}
+\leanok
+\uses{def:ftap_market}
+A bundle is $(x_0, x) \in \R \times \R^\sigma$. The Arrow--Debreu budget at state prices $m$ with endowment $e$ is
+$x_0 + \sum_sm_sx_s \le e_0 + \sum_sm_se_s$. The sequential budget is: some portfolio $h$ has $x_0 + q\cdot h \le e_0$
+and $x_s \le e_s + (Xh)_s$ for all $s$.
+\end{definition}
+
+\begin{lemma}[Linearity of payoffs]
+\label{lem:seq_payoff}
+\lean{Econ.AssetPricing.Market.payoff_add, Econ.AssetPricing.Market.payoff_sum, Econ.AssetPricing.Market.payoff_neg}
+\leanok
+\uses{def:ftap_market}
+$X(h + k) = Xh + Xk$, $X(\sum_ah_a) = \sum_aXh_a$ and $X(-h) = -Xh$.
+\end{lemma}
+\begin{proof}
+\leanok
+Distribute and exchange finite sums.
+\end{proof}
+
+\begin{theorem}[Budget equivalence]
+\label{thm:seq_budget}
+\lean{Econ.AssetPricing.Market.seqBudget_adBudget, Econ.AssetPricing.Market.adBudget_seqBudget, Econ.AssetPricing.Market.seqBudget_iff_adBudget, Econ.AssetPricing.Market.complete_iff_budget_eq}
+\leanok
+\uses{def:seq_budgets, lem:ftap_cost_eq}
+Let $m$ be a strictly positive state-price vector. Every sequential-feasible bundle is AD-feasible. With complete
+markets the two budget sets coincide; conversely, if they coincide for every endowment, markets are complete.
+\end{theorem}
+\begin{proof}
+\leanok
+If $h$ finances $x$, then $\sum_sm_sx_s \le \sum_sm_se_s + \sum_sm_s(Xh)_s = \sum_sm_se_s + q\cdot h$
+(Lemma~\ref{lem:ftap_cost_eq}). With complete markets choose $h$ with $Xh = x - e$; its cost is
+$\sum_sm_s(x_s - e_s)$, affordable by the AD budget. For the converse, take $e = 0$ and the AD-affordable bundle
+$(-\sum_sm_sz_s, z)$; a financing $h$ has $Xh \ge z$ and $\sum_sm_s((Xh)_s - z_s) \le 0$, so with $m \gg 0$,
+$Xh = z$.
+\end{proof}
+
+\begin{definition}[AD and Radner equilibrium]
+\label{def:seq_equilibria}
+\lean{Econ.AssetPricing.Economy, Econ.AssetPricing.Economy.Clears, Econ.AssetPricing.Economy.IsAD, Econ.AssetPricing.Economy.IsRadner}
+\leanok
+\uses{def:seq_budgets}
+Agents $a$ have endowments $e_a$ and utilities $U_a$. An AD equilibrium at $m$: each $x_a$ maximizes $U_a$ on the AD
+budget and goods markets clear at both dates. A Radner equilibrium: portfolios $h_a$ finance $x_a$, each $x_a$
+maximizes $U_a$ on the sequential budget, goods markets clear and $\sum_ah_a = 0$.
+\end{definition}
+
+\begin{theorem}[Equivalence of equilibria]
+\label{thm:seq_equilibria}
+\lean{Econ.AssetPricing.Economy.isRadner_of_isAD, Econ.AssetPricing.Economy.isAD_of_isRadner, Econ.AssetPricing.Economy.exists_isAD_of_isRadner}
+\leanok
+\uses{thm:seq_budget, lem:seq_payoff, def:seq_equilibria, thm:ftap}
+With complete markets and state prices $m$ for $q$, an allocation is an AD equilibrium allocation at $m$ iff it is a
+Radner equilibrium allocation at $q$ (with some portfolios). Under no arbitrage such $m$ exists.
+\end{theorem}
+\begin{proof}
+\leanok
+(AD $\Rightarrow$ Radner) Choose $g_a$ with $Xg_a = x_a - e_a$. The aggregate $G = \sum_ag_a$ pays
+$\sum_a(x_a - e_a) = 0$, so give agent $a_0$ the portfolio $g_{a_0} - G$: payoffs are unchanged and asset markets clear.
+Each portfolio costs $\sum_sm_s(x_{as} - e_{as})$, affordable; optimality transfers because the sequential budget is
+inside the AD budget. (Radner $\Rightarrow$ AD) The budgets coincide (Theorem~\ref{thm:seq_budget}). The last claim
+is Theorem~\ref{thm:ftap}.
+\end{proof}
+
+\section{The Lucas tree}
+\label{sec:lucastree}
+
+Sources: Lucas (1978); Ljungqvist--Sargent ch.~13; Cochrane ch.~1 and 5; Hansen--Jagannathan (1991).
+
+\begin{definition}[Conditional moments]
+\label{def:lt_moments}
+\lean{Econ.LucasTree.expect, Econ.LucasTree.cov, Econ.LucasTree.var}
+\leanok
+For weights $w$: $E[f] = \sum_zw_zf_z$, $\mathrm{Cov}(f,g) = E[(f - Ef)(g - Eg)]$, $\mathrm{Var}(f) = \mathrm{Cov}(f,f)$.
+\end{definition}
+
+\begin{lemma}[Moment identities]
+\label{lem:lt_moments}
+\lean{Econ.LucasTree.expect_mul_eq, Econ.LucasTree.cov_sq_le, Econ.LucasTree.expect_const, Econ.LucasTree.var_sub_const, Econ.LucasTree.hj_bound}
+\leanok
+\uses{def:lt_moments}
+If $\sum w = 1$: $E[fg] = E[f]E[g] + \mathrm{Cov}(f,g)$, $E[c] = c$, $\mathrm{Var}(f - c) = \mathrm{Var}(f)$. If $w \ge 0$:
+$\mathrm{Cov}(f,g)^2 \le \mathrm{Var}(f)\mathrm{Var}(g)$. Hence (Hansen--Jagannathan) for any $r$ with $E[mr] = 1$ and
+$E[m] > 0$: $(E r - 1/E m)^2 \le \frac{\mathrm{Var}(m)}{(Em)^2}\mathrm{Var}(r)$.
+\end{lemma}
+\begin{proof}
+\leanok
+Expand and collect sums. Cauchy--Schwarz in the form \texttt{Finset.sum\_sq\_le\_sum\_mul\_sum\_of\_sq\_le\_mul}
+with $r_z = w_z(f_z - Ef)(g_z - Eg)$. For the bound, $1 = E[m]E[r] + \mathrm{Cov}(m,r)$ gives
+$Er - 1/Em = -\mathrm{Cov}(m,r)/Em$; square and apply Cauchy--Schwarz.
+\end{proof}
+
+\begin{definition}[Lucas tree economy and equilibrium price]
+\label{def:lt_tree}
+\lean{Econ.LucasTree.Tree, Econ.LucasTree.Tree.mu, Econ.LucasTree.Tree.mu_pos, Econ.LucasTree.Tree.IsPrice, Econ.LucasTree.Tree.sdf, Econ.LucasTree.Tree.sdf_pos}
+\leanok
+\uses{def:lt_moments}
+A stochastic matrix $Q$ (\texttt{Econ.IsStochastic}), dividends $d > 0$, marginal utility $u' > 0$ on $(0,\infty)$,
+$\beta \in (0,1)$. With consumption $= d$, $p$ is an equilibrium price if
+$u'(d_z)p_z = \beta\sum_{z'}Q_{zz'}u'(d_{z'})(p_{z'} + d_{z'})$. The SDF is $m_{zz'} = \beta u'(d_{z'})/u'(d_z) > 0$.
+\end{definition}
+
+\begin{theorem}[Euler pricing; existence and uniqueness]
+\label{thm:lt_price}
+\lean{Econ.LucasTree.Tree.isPrice_iff_sdf, Econ.LucasTree.Tree.op, Econ.LucasTree.Tree.eq_zero_of_fixed, Econ.LucasTree.Tree.op_apply, Econ.LucasTree.Tree.op_injective, Econ.LucasTree.Tree.isPrice_iff_op, Econ.LucasTree.Tree.existsUnique_price, Econ.LucasTree.Tree.price_pos}
+\leanok
+\uses{def:lt_tree}
+$p$ is an equilibrium price iff $p_z = E_z[m(p' + d')]$. There is exactly one equilibrium price, and it is
+strictly positive.
+\end{theorem}
+\begin{proof}
+\leanok
+Divide by $u'(d_z) > 0$ for the SDF form. With $f = u'(d)p$ the equation is $(I - \beta Q)f = \beta Q(u'(d)d)$. If
+$\delta = \beta Q\delta$, take $z_0$ maximizing $|\delta|$: $|\delta_{z_0}| \le \beta|\delta_{z_0}|$, so $\delta = 0$; hence
+$I - \beta Q$ is injective, so surjective in finite dimension (\texttt{LinearMap.injective\_iff\_surjective}),
+giving existence and uniqueness. For positivity, take $z_0$ minimizing $f$: $f_{z_0} \ge \beta(f_{z_0} + G)$ with
+$G = \sum_{z'}Q_{z_0z'}u'(d_{z'})d_{z'} > 0$ (some $Q_{z_0z'} > 0$), so $f_{z_0} > 0$ and $f > 0$.
+\end{proof}
+
+\begin{theorem}[Log utility]
+\label{thm:lt_log}
+\lean{Econ.LucasTree.Tree.isPrice_log}
+\leanok
+\uses{def:lt_tree}
+If $u'(c) = 1/c$, then $p_z = \frac{\beta}{1-\beta}d_z$.
+\end{theorem}
+\begin{proof}
+\leanok
+Each term $Q_{zz'}d_{z'}^{-1}(\frac{\beta}{1-\beta}d_{z'} + d_{z'}) = Q_{zz'}/(1-\beta)$; sum rows to $1$.
+\end{proof}
+
+\begin{theorem}[Returns, risk-free rate, equity premium, Hansen--Jagannathan]
+\label{thm:lt_returns}
+\lean{Econ.LucasTree.Tree.ret, Econ.LucasTree.Tree.euler_return, Econ.LucasTree.Tree.bondPrice, Econ.LucasTree.Tree.bondPrice_pos, Econ.LucasTree.Tree.riskFree, Econ.LucasTree.Tree.euler_riskFree, Econ.LucasTree.Tree.premium_eq, Econ.LucasTree.Tree.hansen_jagannathan}
+\leanok
+\uses{thm:lt_price, lem:lt_moments}
+With $R_{zz'} = (p_{z'} + d_{z'})/p_z$ and $R^f_z = 1/E_z[m]$: $E_z[mR] = 1$, $E_z[mR^f] = 1$,
+$E_z[R] - R^f_z = -R^f_z\mathrm{Cov}_z(m, R)$, and $(E_zR - R^f_z)^2 \le \frac{\mathrm{Var}_z(m)}{(E_zm)^2}\mathrm{Var}_z(R)$.
+\end{theorem}
+\begin{proof}
+\leanok
+Divide the SDF pricing equation by $p_z > 0$. $E_z[m] > 0$ since some $Q_{zz'} > 0$. Then
+$1 = E[mR] = E[m]E[R] + \mathrm{Cov}(m,R)$ gives the premium formula; squaring it and applying
+$\mathrm{Cov}^2 \le \mathrm{Var}\cdot\mathrm{Var}$ gives the bound.
+\end{proof}

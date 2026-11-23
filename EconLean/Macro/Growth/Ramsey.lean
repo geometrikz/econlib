@@ -300,10 +300,16 @@ theorem exists_monotone_policy :
       exact h
   · rw [heq]
 
-/-- **Monotone convergence of optimal capital** (SL Thm 6.2). From any initial
-capital `k₀`, the optimal plan is `k_{t+1} = g(k_t)` (it attains the value
-and is the only plan that does); this capital path is monotone and converges
-to a steady state `k_∞ = g(k_∞)`. -/
+/-- **Monotone convergence of optimal capital to some fixed point** (SL Thm 6.2,
+first half). From any initial capital `k₀`, the optimal plan is
+`k_{t+1} = g(k_t)` (it attains the value and is the only plan that does); this
+capital path is monotone and converges to *some* fixed point `k_∞ = g(k_∞)`.
+
+**Weak on purpose.** Since `f 0 = 0`, `g 0 = 0` in every model, so this
+statement alone does not exclude `k_t → 0` from `k₀ > 0`. The textbook result,
+convergence to the modified-golden-rule capital `k* > 0` with `β f'(k*) = 1`
+for every `k₀ > 0`, is `RCKModel.global_convergence` in
+`Macro/Growth/RamseyGlobal.lean` (under Inada conditions). -/
 theorem optimal_capital_converges (k₀ : M.S) :
     ∃ g : M.S → M.S, (∀ k, M.toDynProg.policy k = {g k}) ∧ Continuous g ∧ Monotone g ∧
       M.toDynProg.payoff (planOf g k₀) = M.toDynProg.value k₀ ∧

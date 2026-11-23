@@ -36,6 +36,9 @@ theorem findRate_nonneg {θ : ℝ} (hθ : 0 ≤ θ) : 0 ≤ D.findRate θ := by
 
 structure IsSearchEqm (β θ J E U w : ℝ) : Prop where
   pos : 0 < θ
+  
+  findLe : D.findRate θ ≤ 1
+  fillLe : D.fillRate θ ≤ 1
   firm : J = D.y - w + D.δ * (1 - D.s) * J
   worker : E = w + D.δ * ((1 - D.s) * E + D.s * U)
   unemployed : U = D.b + D.δ * (D.findRate θ * E + (1 - D.findRate θ) * U)
@@ -48,11 +51,13 @@ theorem jc_rate {β θ : ℝ} (hθ : 0 < θ) :
   sorry
 
 theorem isSearchEqm_iff {β θ : ℝ} (hβ₀ : 0 ≤ β) :
-    (∃ J E U w, D.IsSearchEqm β θ J E U w) ↔ D.IsEquilibrium D.rate β θ := by
+    (∃ J E U w, D.IsSearchEqm β θ J E U w) ↔
+      D.IsEquilibrium D.rate β θ ∧ D.findRate θ ≤ 1 ∧ D.fillRate θ ≤ 1 := by
   sorry
 
-theorem existsUnique_searchEqm {β : ℝ} (hβ₀ : 0 ≤ β) (hβ₁ : β < 1) :
-    ∃! θ, ∃ J E U w, D.IsSearchEqm β θ J E U w := by
+theorem existsUnique_searchEqm {β θ : ℝ} (hβ₀ : 0 ≤ β) (hβ₁ : β < 1)
+    (hθ : D.IsEquilibrium D.rate β θ) (hf : D.findRate θ ≤ 1) (hq : D.fillRate θ ≤ 1) :
+    ∃! θ', ∃ J E U w, D.IsSearchEqm β θ' J E U w := by
   sorry
 
 def next (u θ : ℝ) : ℝ := u + D.s * (1 - u) - D.findRate θ * u
@@ -63,7 +68,8 @@ def upath (u₀ : ℝ) (θ : ℕ → ℝ) : ℕ → ℝ
 
 def reward (u θ : ℝ) : ℝ := D.y * (1 - u) + D.b * u - D.c * θ * u
 
-def Feasible (θ : ℕ → ℝ) : Prop := ∀ t, 0 ≤ θ t ∧ D.findRate (θ t) ≤ 1
+def Feasible (θ : ℕ → ℝ) : Prop :=
+  ∀ t, 0 ≤ θ t ∧ D.findRate (θ t) ≤ 1 ∧ D.fillRate (θ t) ≤ 1
 
 def welfare (u₀ : ℝ) (θ : ℕ → ℝ) : ℝ := ∑' t, D.δ ^ t * D.reward (D.upath u₀ θ t) (θ t)
 
@@ -140,7 +146,7 @@ theorem tendsto_gaps {u₀ : ℝ} (hu : u₀ ∈ Icc (0 : ℝ) 1)
   sorry
 
 theorem welfare_stationary (hp : D.IsEquilibrium D.rate D.η θp)
-    (hfp : D.findRate θp ≤ 1) {u₀ : ℝ} (hu : u₀ ∈ Icc (0 : ℝ) 1) :
+    (hfp : D.findRate θp ≤ 1) (hqp : D.fillRate θp ≤ 1) {u₀ : ℝ} (hu : u₀ ∈ Icc (0 : ℝ) 1) :
     D.welfare u₀ (fun _ => θp) = D.value θp u₀ := by
   sorry
 
@@ -155,18 +161,18 @@ theorem welfare_lt_value (hp : D.IsEquilibrium D.rate D.η θp) {u₀ : ℝ} (hu
 end Verification
 
 theorem isOptimal_stationary {θp : ℝ} (hp : D.IsEquilibrium D.rate D.η θp)
-    (hfp : D.findRate θp ≤ 1) {u₀ : ℝ} (hu : u₀ ∈ Icc (0 : ℝ) 1) :
+    (hfp : D.findRate θp ≤ 1) (hqp : D.fillRate θp ≤ 1) {u₀ : ℝ} (hu : u₀ ∈ Icc (0 : ℝ) 1) :
     D.IsOptimal u₀ (fun _ => θp) := by
   sorry
 
 theorem welfare_lt {θp : ℝ} (hp : D.IsEquilibrium D.rate D.η θp)
-    (hfp : D.findRate θp ≤ 1) {u₀ : ℝ} (hu : u₀ ∈ Ioc (0 : ℝ) 1) {θ : ℕ → ℝ}
+    (hfp : D.findRate θp ≤ 1) (hqp : D.fillRate θp ≤ 1) {u₀ : ℝ} (hu : u₀ ∈ Ioc (0 : ℝ) 1) {θ : ℕ → ℝ}
     (hθ : D.Feasible θ) (hne : θ 0 ≠ θp) : D.welfare u₀ θ < D.welfare u₀ (fun _ => θp) := by
   sorry
 
 theorem hosios {β θe θp u₀ : ℝ} (hβ₀ : 0 ≤ β) (hβ₁ : β < 1)
     (he : ∃ J E U w, D.IsSearchEqm β θe J E U w)
-    (hp : D.IsEquilibrium D.rate D.η θp) (hfp : D.findRate θp ≤ 1)
+    (hp : D.IsEquilibrium D.rate D.η θp) (hfp : D.findRate θp ≤ 1) (hqp : D.fillRate θp ≤ 1)
     (hu : u₀ ∈ Ioc (0 : ℝ) 1) :
     D.IsOptimal u₀ (fun _ => θe) ↔ β = D.η := by
   sorry
@@ -175,7 +181,7 @@ example : ∃ θp, (⟨⟨1 / 4, 1 / 2, 1 / 10, 1, 1, 0, by norm_num, by norm_nu
     by norm_num, by norm_num, by norm_num⟩, 9 / 10, by norm_num, by norm_num, by norm_num⟩ : Discrete).IsEquilibrium
       (Discrete.rate ⟨⟨1 / 4, 1 / 2, 1 / 10, 1, 1, 0, by norm_num, by norm_num, by norm_num,
         by norm_num, by norm_num, by norm_num⟩, 9 / 10, by norm_num, by norm_num, by norm_num⟩) (1 / 2) θp ∧
-      1 / 4 * θp ^ (1 - 1 / 2 : ℝ) ≤ 1 := by
+      1 / 4 * θp ^ (1 - 1 / 2 : ℝ) ≤ 1 ∧ 1 / 4 * θp ^ (-(1 / 2) : ℝ) ≤ 1 := by
   set D : Discrete := ⟨⟨1 / 4, 1 / 2, 1 / 10, 1, 1, 0, by norm_num, by norm_num, by norm_num,
     by norm_num, by norm_num, by norm_num⟩, 9 / 10, by norm_num, by norm_num, by norm_num⟩
   obtain ⟨θp, hp, -⟩ := D.existsUnique_equilibrium D.rate_pos.le (β := 1 / 2) (by norm_num)
@@ -195,7 +201,27 @@ example : ∃ θp, (⟨⟨1 / 4, 1 / 2, 1 / 10, 1, 1, 0, by norm_num, by norm_nu
     rw [e1, e2] at hjc
     linarith
   have : θp ^ (1 - 1 / 2 : ℝ) ≤ 1 := rpow_le_one hθ.le h1 (by norm_num)
-  linarith
+  refine ⟨by linarith, ?_⟩
+  
+  set x := θp ^ (1 / 2 : ℝ)
+  have hx0 : 0 < x := rpow_pos_of_pos hθ _
+  have hx2 : x ^ 2 = θp := by
+    rw [← rpow_natCast, ← rpow_mul hθ.le]; norm_num
+  have hx : 1 / 4 ≤ x := by
+    by_contra hlt; push Not at hlt
+    simp only [Economy.jc] at hjc
+    have e1 : D.c = 1 := rfl
+    have e2 : D.y - D.b = 1 := by norm_num [D]
+    have e3 : D.η = 1 / 2 := rfl
+    have e4 : D.A = 1 / 4 := rfl
+    have e5 : D.s = 1 / 10 := rfl
+    have e6 : D.rate = 1 / 9 := by simp only [Discrete.rate]; norm_num [D]
+    rw [e1, e2, e3, e4, e5, e6] at hjc
+    change 1 * (1 / 9 + 1 / 10) * x / (1 / 4) + 1 / 2 * 1 * θp = (1 - 1 / 2) * 1 at hjc
+    nlinarith
+  rw [rpow_neg hθ.le]
+  change 1 / 4 * x⁻¹ ≤ 1
+  rw [← div_eq_mul_inv, div_le_one hx0]; linarith
 
 end Discrete
 

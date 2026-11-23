@@ -102,23 +102,24 @@ example : IsStochastic Q2 ∧ ¬ ∃ ε > (0 : ℝ), ∀ z z', ε ≤ Q2 z z' :=
     norm_num [Q2] at this
     linarith
 
-/-! ### I5. Discrete DMP: `Feasible` allows a vacancy-filling probability above 1.
-In the file's own parameterisation, θ = 1/100 is feasible but q(θ) = 5/2. -/
+/-! ### I5. Discrete DMP: `Feasible` allowed a vacancy-filling probability above 1.
+In the file's own parameterisation, θ = 1/100 has q(θ) = 5/2. **Fixed:** `Feasible`
+and `IsSearchEqm` now require `f(θ) ≤ 1` and `q(θ) ≤ 1`, so this path is no
+longer feasible. -/
 noncomputable def exD : DMP.Discrete :=
   ⟨⟨1 / 4, 1 / 2, 1 / 10, 1, 1, 0, by norm_num, by norm_num, by norm_num,
     by norm_num, by norm_num, by norm_num⟩, 9 / 10, by norm_num, by norm_num, by norm_num⟩
 
--- θ = 1/100 is Feasible (findRate = 1/40 ≤ 1) but the vacancy-filling rate q(θ) = 5/2 > 1.
-example : exD.Feasible (fun _ => 1 / 100) ∧ 1 < exD.fillRate (1 / 100) := by
+-- θ = 1/100 has vacancy-filling rate q(θ) = 5/2 > 1, and is now infeasible.
+example : 1 < exD.fillRate (1 / 100) ∧ ¬ exD.Feasible (fun _ => 1 / 100) := by
   have h : ((1 / 100 : ℝ) ^ (1 / 2 : ℝ)) = 1 / 10 := by
     rw [show (1 / 100 : ℝ) = (1 / 10) ^ (2 : ℝ) by norm_num, ← Real.rpow_mul (by norm_num)]
     norm_num
   have h' : ((1 / 100 : ℝ) ^ (-(1 / 2) : ℝ)) = 10 := by
     rw [Real.rpow_neg (by norm_num), h]; norm_num
-  refine ⟨fun t => ⟨by norm_num, ?_⟩, ?_⟩
-  · simp only [DMP.Economy.findRate, exD] at *
-    norm_num [h]
-  · simp only [DMP.Economy.fillRate, exD]
+  have hq : 1 < exD.fillRate (1 / 100) := by
+    simp only [DMP.Economy.fillRate, exD]
     norm_num [h']
+  exact ⟨hq, fun hf => absurd (hf 0).2.2 (not_le.2 hq)⟩
 
 end Econ.IndependentFindings

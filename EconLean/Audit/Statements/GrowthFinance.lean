@@ -27,25 +27,26 @@ section Hosios
 open Econ.DMP
 
 theorem frozen_hd_isSearchEqm_iff (D : Discrete) {β θ : ℝ} (hβ₀ : 0 ≤ β) :
-    (∃ J E U w, D.IsSearchEqm β θ J E U w) ↔ D.IsEquilibrium D.rate β θ :=
+    (∃ J E U w, D.IsSearchEqm β θ J E U w) ↔
+      D.IsEquilibrium D.rate β θ ∧ D.findRate θ ≤ 1 ∧ D.fillRate θ ≤ 1 :=
   D.isSearchEqm_iff hβ₀
 
 theorem frozen_hd_isOptimal_stationary (D : Discrete) {θp : ℝ}
-    (hp : D.IsEquilibrium D.rate D.η θp) (hfp : D.findRate θp ≤ 1) {u₀ : ℝ}
+    (hp : D.IsEquilibrium D.rate D.η θp) (hfp : D.findRate θp ≤ 1) (hqp : D.fillRate θp ≤ 1) {u₀ : ℝ}
     (hu : u₀ ∈ Icc (0 : ℝ) 1) : D.IsOptimal u₀ (fun _ => θp) :=
-  D.isOptimal_stationary hp hfp hu
+  D.isOptimal_stationary hp hfp hqp hu
 
 theorem frozen_hd_welfare_lt (D : Discrete) {θp : ℝ} (hp : D.IsEquilibrium D.rate D.η θp)
-    (hfp : D.findRate θp ≤ 1) {u₀ : ℝ} (hu : u₀ ∈ Ioc (0 : ℝ) 1) {θ : ℕ → ℝ}
+    (hfp : D.findRate θp ≤ 1) (hqp : D.fillRate θp ≤ 1) {u₀ : ℝ} (hu : u₀ ∈ Ioc (0 : ℝ) 1) {θ : ℕ → ℝ}
     (hθ : D.Feasible θ) (hne : θ 0 ≠ θp) : D.welfare u₀ θ < D.welfare u₀ (fun _ => θp) :=
-  D.welfare_lt hp hfp hu hθ hne
+  D.welfare_lt hp hfp hqp hu hθ hne
 
 theorem frozen_hd_hosios (D : Discrete) {β θe θp u₀ : ℝ} (hβ₀ : 0 ≤ β) (hβ₁ : β < 1)
     (he : ∃ J E U w, D.IsSearchEqm β θe J E U w)
-    (hp : D.IsEquilibrium D.rate D.η θp) (hfp : D.findRate θp ≤ 1)
+    (hp : D.IsEquilibrium D.rate D.η θp) (hfp : D.findRate θp ≤ 1) (hqp : D.fillRate θp ≤ 1)
     (hu : u₀ ∈ Ioc (0 : ℝ) 1) :
     D.IsOptimal u₀ (fun _ => θe) ↔ β = D.η :=
-  D.hosios hβ₀ hβ₁ he hp hfp hu
+  D.hosios hβ₀ hβ₁ he hp hfp hqp hu
 
 end Hosios
 

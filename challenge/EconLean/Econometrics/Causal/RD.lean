@@ -28,8 +28,8 @@ theorem sharp_rd {m₀ m₁ : ℝ → ℝ} {c : ℝ} (h₀ : ContinuousAt m₀ c
 
 theorem sharp_rd_identified {m₀ m₁ m₀' m₁' : ℝ → ℝ} {c : ℝ} (h₀ : ContinuousAt m₀ c)
     (h₁ : ContinuousAt m₁ c) (h₀' : ContinuousAt m₀' c) (h₁' : ContinuousAt m₁' c)
-    (hobs : sharpMean m₀ m₁ c = sharpMean m₀' m₁' c) :
-    m₁ c - m₀ c = m₁' c - m₀' c := by
+    (hobs : ∀ᶠ x in 𝓝[≠] c, sharpMean m₀ m₁ c x = sharpMean m₀' m₁' c x) :
+    m₁ c = m₁' c ∧ m₀ c = m₀' c ∧ m₁ c - m₀ c = m₁' c - m₀' c := by
   sorry
 
 theorem sharp_rd_not_identified_without_continuity :
