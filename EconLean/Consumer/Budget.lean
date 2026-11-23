@@ -21,11 +21,15 @@ Facts proved here:
 Mathlib: it is an ordered vector space (`x ≤ y` means `∀ i, x i ≤ y i`), and a
 metric space with the *sup* distance `dist x y = maxᵢ |xᵢ - yᵢ|`.
 -/
-import Mathlib.Topology.Order.Compact
-import Mathlib.Topology.MetricSpace.Pseudo.Pi
-import Mathlib.Topology.Instances.Real.Lemmas
-import Mathlib.Analysis.Convex.Basic
-import Mathlib.Algebra.Order.Pi
+module
+
+public import Mathlib.Topology.Order.Compact
+public import Mathlib.Topology.MetricSpace.Pseudo.Pi
+public import Mathlib.Topology.Instances.Real.Lemmas
+public import Mathlib.Analysis.Convex.Basic
+public import Mathlib.Algebra.Order.Pi
+
+@[expose] public section
 
 namespace Econ
 

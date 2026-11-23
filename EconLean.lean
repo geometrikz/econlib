@@ -1,7 +1,11 @@
-import EconLean.Preferences.Basic
-import EconLean.Preferences.Utility
-import EconLean.Consumer.Budget
-import EconLean.Consumer.Demand
-import EconLean.Consumer.Duality
-import EconLean.Consumer.RevealedPreference
-import EconLean.Consumer.Envelope
+module
+
+public import EconLean.Preferences.Basic
+public import EconLean.Preferences.Utility
+public import EconLean.Consumer.Budget
+public import EconLean.Consumer.Demand
+public import EconLean.Consumer.Duality
+public import EconLean.Consumer.RevealedPreference
+public import EconLean.Consumer.Envelope
+
+@[expose] public section

@@ -19,9 +19,13 @@ The famous extension, Debreu's theorem (continuous rational preferences on
 ℝⁿ have a *continuous* utility representation), is on the roadmap; the
 countable case is the natural next step after the finite one.
 -/
-import EconLean.Preferences.Basic
-import Mathlib.Basic.Real.Basic
-import Mathlib.Data.Fintype.Card
+module
+
+public import EconLean.Preferences.Basic
+public import Mathlib.Basic.Real.Basic
+public import Mathlib.Data.Fintype.Card
+
+@[expose] public section
 
 namespace Econ
 

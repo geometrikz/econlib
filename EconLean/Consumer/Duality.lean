@@ -32,7 +32,11 @@ when the set is unbounded or empty), so the real content is in lemmas showing
 that, whenever an optimizer exists, `sSup`/`sInf` equals its value
 (`IsGreatest.csSup_eq`, `IsLeast.csInf_eq`).
 -/
-import EconLean.Consumer.Demand
+module
+
+public import EconLean.Consumer.Demand
+
+@[expose] public section
 
 namespace Econ
 

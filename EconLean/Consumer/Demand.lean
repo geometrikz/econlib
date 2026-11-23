@@ -18,8 +18,12 @@ Results:
    prices and w ≥ 0 has nonempty demand (Weierstrass's extreme value theorem).
 5. **Convexity**: convex preferences give a convex demand set.
 -/
-import EconLean.Preferences.Utility
-import EconLean.Consumer.Budget
+module
+
+public import EconLean.Preferences.Utility
+public import EconLean.Consumer.Budget
+
+@[expose] public section
 
 namespace Econ
 

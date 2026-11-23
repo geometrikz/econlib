@@ -25,7 +25,11 @@ Results:
    This is the discrete form of the negative semidefiniteness of the Slutsky
    matrix.
 -/
-import EconLean.Consumer.Demand
+module
+
+public import EconLean.Consumer.Demand
+
+@[expose] public section
 
 namespace Econ
 

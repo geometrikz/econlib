@@ -23,8 +23,12 @@ From `R` we derive
 `Prop`-valued structure, so rationality is a *structure with two proof fields*.
 Every result below is the formal version of MWG Proposition 1.B.1.
 -/
-import Mathlib.Order.Defs.Unbundled
-import Mathlib.Tactic.Tauto
+module
+
+public import Mathlib.Order.Defs.Unbundled
+public import Mathlib.Tactic.Tauto
+
+@[expose] public section
 
 namespace Econ
 

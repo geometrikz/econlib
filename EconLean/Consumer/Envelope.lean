@@ -29,13 +29,17 @@ continuous linear map L". A partial derivative `∂f/∂pⱼ` is `L` applied to
 the j-th basis vector `Pi.single j 1`. We assume differentiability as a
 hypothesis, exactly as MWG does.
 -/
-import EconLean.Consumer.Duality
-import Mathlib.Analysis.Calculus.LocalExtr.Basic
-import Mathlib.Analysis.Calculus.FDeriv.Prod
-import Mathlib.Analysis.Calculus.FDeriv.Add
-import Mathlib.Analysis.Calculus.FDeriv.Comp
-import Mathlib.Analysis.Calculus.FDeriv.Linear
-import Mathlib.Analysis.Normed.Module.FiniteDimension
+module
+
+public import EconLean.Consumer.Duality
+public import Mathlib.Analysis.Calculus.LocalExtr.Basic
+public import Mathlib.Analysis.Calculus.FDeriv.Prod
+public import Mathlib.Analysis.Calculus.FDeriv.Add
+public import Mathlib.Analysis.Calculus.FDeriv.Comp
+public import Mathlib.Analysis.Calculus.FDeriv.Linear
+public import Mathlib.Analysis.Normed.Module.FiniteDimension
+
+@[expose] public section
 
 namespace Econ
 
