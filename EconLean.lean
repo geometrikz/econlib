@@ -44,5 +44,11 @@ public import EconLean.Behavioral.ReferenceDependence
 public import EconLean.Behavioral.Temptation
 public import EconLean.Behavioral.Logit
 public import EconLean.Audit.Statements.Behavioral
+public import EconLean.Foundations.SupportingHyperplane
+public import EconLean.GE.Exchange
+public import EconLean.GE.SecondWelfare
+public import EconLean.GE.Existence
+public import EconLean.GE.Examples
+public import EconLean.Audit.Statements.GE
 
 @[expose] public section

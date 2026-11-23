@@ -1,0 +1,717 @@
+% Lean: EconLean/Macro/DP/{Blackwell,SequenceProblem,Bellman,Concavity,BrockMirman,Examples}.lean
+\chapter{Dynamic Programming}
+\label{chap:dp}
+
+Source: Stokey--Lucas (SL), \emph{Recursive Methods in Economic Dynamics}, ch.~3--4.
+A deterministic dynamic program has a state space $X$, a feasibility correspondence
+$\Gamma : X \twoheadrightarrow X$, a one-period return $F(x, y)$ and a discount factor $\beta$.
+
+\section{Blackwell's sufficient conditions}
+\label{sec:blackwell}
+
+We work in the space $C_b(X)$ of bounded continuous real functions on a topological space $X$
+with the sup distance (SL's $B(X)$ is the case of the discrete topology).
+
+\begin{theorem}[Blackwell; SL Thm~3.3]
+\label{thm:blackwell}
+\lean{Econ.blackwell}
+\leanok
+Let $0 \le \beta < 1$ and $T : C_b(X) \to C_b(X)$ satisfy
+(monotonicity) $f \le g \Rightarrow Tf \le Tg$ pointwise, and
+(discounting) $T(f + a) \le Tf + \beta a$ pointwise for every constant $a \ge 0$.
+Then $T$ is a contraction of modulus $\beta$.
+\end{theorem}
+\begin{proof}
+\leanok
+Let $a = d(f, g) = \|f - g\|_\infty \ge 0$. For any pair $f, g$ at distance $a$, we have
+$f \le g + a$ pointwise, so by monotonicity and then discounting
+$Tf \le T(g + a) \le Tg + \beta a$. Applying this to $(f, g)$ and to $(g, f)$ (same distance) gives
+$|Tf(x) - Tg(x)| \le \beta a$ for every $x$, hence $d(Tf, Tg) \le \beta\, d(f, g)$.
+\end{proof}
+
+\begin{corollary}[Contraction mapping theorem for Blackwell operators; SL Thm~3.2]
+\label{cor:blackwell_fixedPoint}
+\lean{Econ.blackwell_fixedPoint}
+\leanok
+\uses{thm:blackwell}
+Under the hypotheses of Theorem~\ref{thm:blackwell}, $T$ has a unique fixed point $v$, and for every
+$v_0$ and $n$, $d(T^n v_0, v) \le d(v_0, T v_0)\, \beta^n / (1 - \beta)$.
+\end{corollary}
+\begin{proof}
+\leanok
+$C_b(X)$ is complete, so Banach's fixed point theorem (Mathlib's \texttt{ContractingWith.fixedPoint}
+and its a priori estimate) applies to the contraction of Theorem~\ref{thm:blackwell}. Uniqueness is
+uniqueness of the contraction's fixed point.
+\end{proof}
+
+\section{The sequence problem}
+\label{sec:sequence}
+
+This section makes no topological assumptions, so it covers returns that are unbounded below, such as
+log utility. To avoid Lean's junk values for divergent series, payoffs are handled through partial sums.
+
+\begin{definition}[Plans, payoffs, optimality]
+\label{def:sequence_problem}
+\lean{Econ.IsFeasiblePlan, Econ.partialPayoff, Econ.IsOptimalValue, Econ.IsOptimalPlan}
+\leanok
+A \emph{feasible plan} from $x_0$ is a sequence $(x_t)$ with $x_0$ given and $x_{t+1} \in \Gamma(x_t)$.
+Its \emph{partial payoff} is $u_n(x) = \sum_{t < n} \beta^t F(x_t, x_{t+1})$.
+A number $w$ is the \emph{optimal value} at $x_0$ (attained) if some feasible plan has $u_n \to w$ and
+every feasible plan has $\limsup_n u_n \le w$ (i.e.\ for each $\varepsilon > 0$, eventually
+$u_n \le w + \varepsilon$). A feasible plan $x$ is \emph{optimal} if for every feasible $x'$ and
+$\varepsilon > 0$, eventually $u_n(x') \le u_n(x) + \varepsilon$.
+\end{definition}
+
+\begin{lemma}[Basic properties of optimal values]
+\label{lem:optimal_value_props}
+\lean{Econ.IsOptimalValue.unique, Econ.IsOptimalValue.isOptimalPlan, Econ.IsOptimalValue.tendsto_of_isOptimalPlan}
+\leanok
+\uses{def:sequence_problem}
+(1) The optimal value is unique. (2) A feasible plan whose payoffs converge to the optimal value is an
+optimal plan. (3) If $w$ is the optimal value, every optimal plan has $u_n \to w$.
+\end{lemma}
+\begin{proof}
+\leanok
+(1) If $w, w'$ are both optimal values, take the plan with $u_n \to w$; since eventually
+$u_n \le w' + \varepsilon$, we get $w \le w' + \varepsilon$ for all $\varepsilon > 0$, so $w \le w'$; by
+symmetry $w = w'$.
+(2) Given feasible $x'$ and $\varepsilon$: eventually $u_n(x') \le w + \varepsilon/2$, and since
+$u_n(x) \to w$, eventually $w - \varepsilon/2 < u_n(x)$; add.
+(3) Let $x^s$ be the plan attaining $w$. Eventually: $u_n(x) \le w + \varepsilon/2$ (as $w$ is the
+optimal value); $u_n(x^s) \le u_n(x) + \varepsilon/3$ (as $x$ is optimal); and
+$w - \varepsilon/3 < u_n(x^s)$. Together $|u_n(x) - w| < \varepsilon$.
+\end{proof}
+
+\begin{definition}[Policy plan]
+\label{def:planOf}
+\lean{Econ.planOf, Econ.planOf_succ, Econ.isFeasiblePlan_planOf}
+\leanok
+\uses{def:sequence_problem}
+For $g : X \to X$, the plan generated from $x_0$ is $x_t = g^t(x_0)$, so $x_{t+1} = g(x_t)$. If
+$g(x) \in \Gamma(x)$ for all $x$, it is feasible.
+\end{definition}
+
+\begin{lemma}[Telescoping identity]
+\label{lem:telescope}
+\lean{Econ.telescope}
+\leanok
+\uses{def:sequence_problem}
+For any $v : X \to \R$, plan $x$ and $n$,
+\[
+  v(x_0) = u_n(x) + \beta^n v(x_n) + \sum_{t < n} \beta^t \big(v(x_t) - F(x_t, x_{t+1}) - \beta v(x_{t+1})\big).
+\]
+\end{lemma}
+\begin{proof}
+\leanok
+Induction on $n$. For $n = 0$ both sides are $v(x_0)$. The step adds the date-$n$ terms
+$\beta^n F(x_n, x_{n+1})$ and $\beta^n(v(x_n) - F(x_n, x_{n+1}) - \beta v(x_{n+1}))$ and replaces
+$\beta^n v(x_n)$ by $\beta^{n+1} v(x_{n+1})$; the result is a ring identity.
+\end{proof}
+
+\begin{lemma}[Bellman inequality and equality along a plan]
+\label{lem:partialPayoff_bellman}
+\lean{Econ.partialPayoff_add_le, Econ.partialPayoff_add_eq}
+\leanok
+\uses{lem:telescope}
+If $\beta \ge 0$ and $F(x_t, x_{t+1}) + \beta v(x_{t+1}) \le v(x_t)$ for all $t$, then
+$u_n + \beta^n v(x_n) \le v(x_0)$. With equality at every $t$, $u_n + \beta^n v(x_n) = v(x_0)$.
+\end{lemma}
+\begin{proof}
+\leanok
+In Lemma~\ref{lem:telescope}, each gap term is $\beta^t$ times a nonnegative number (resp.\ zero).
+\end{proof}
+
+\begin{lemma}[Invariant sets]
+\label{lem:feasible_mem}
+\lean{Econ.IsFeasiblePlan.mem}
+\leanok
+\uses{def:sequence_problem}
+If $\Gamma(x) \subseteq S$ for all $x \in S$ and $x_0 \in S$, every feasible plan from $x_0$ stays in $S$.
+\end{lemma}
+\begin{proof}
+\leanok
+Induction on $t$.
+\end{proof}
+
+\begin{theorem}[Verification theorem; SL Thms~4.3--4.4]
+\label{thm:verification}
+\lean{Econ.verification}
+\leanok
+\uses{lem:partialPayoff_bellman, lem:feasible_mem, def:planOf}
+Let $\beta \ge 0$, $S$ invariant under $\Gamma$, and $v : X \to \R$, $g : X \to X$ satisfy on $S$:
+(i) $F(x, y) + \beta v(y) \le v(x)$ for $y \in \Gamma(x)$;
+(ii) $g(x) \in \Gamma(x)$ and $F(x, g(x)) + \beta v(g(x)) = v(x)$;
+(iii) for every feasible plan from $x_0 \in S$ and $\varepsilon > 0$, eventually
+$-\varepsilon \le \beta^n v(x_n)$;
+(iv) along the plan generated by $g$, eventually $\beta^n v(x_n) \le \varepsilon$.
+Then for $x_0 \in S$, $v(x_0)$ is the optimal value and the plan generated by $g$ attains it.
+\end{theorem}
+\begin{proof}
+\leanok
+\emph{Upper bound.} For a feasible plan $x$, it stays in $S$ (Lemma~\ref{lem:feasible_mem}), so by (i)
+and Lemma~\ref{lem:partialPayoff_bellman}, $u_n \le v(x_0) - \beta^n v(x_n)$, and by (iii) this is
+eventually $\le v(x_0) + \varepsilon$.
+\emph{The policy plan.} Let $x^g$ be generated by $g$. By induction it stays in $S$ (using (ii) and
+invariance), so it is feasible, and by (ii) and Lemma~\ref{lem:partialPayoff_bellman},
+$u_n(x^g) + \beta^n v(x^g_n) = v(x_0)$ for all $n$.
+\emph{Convergence.} Given $\varepsilon$, eventually $u_n(x^g) \le v(x_0) + \varepsilon/2$ (upper bound)
+and $\beta^n v(x^g_n) \le \varepsilon/2$ (by (iv)), so
+$u_n(x^g) = v(x_0) - \beta^n v(x^g_n) \ge v(x_0) - \varepsilon/2$. Hence $u_n(x^g) \to v(x_0)$, which
+with the upper bound shows $v(x_0)$ is the optimal value.
+\end{proof}
+
+\begin{lemma}[A geometric-type recursion tends to zero]
+\label{lem:tendsto_zero_rec}
+\lean{Econ.tendsto_zero_of_le_mul_add_pow}
+\leanok
+If $s_n \ge 0$, $s_{n+1} \le r s_n + d \beta^n$ with $r < 1$, $d \ge 0$ and $0 \le \beta < 1$, then
+$s_n \to 0$.
+\end{lemma}
+\begin{proof}
+\leanok
+Let $q = \max(r, \beta, \tfrac12) \in (0, 1)$. By induction, $s_n \le (s_0 + n\, d/q)\, q^n$: the step uses
+$r s_n \le q (s_0 + n d/q) q^n$ and $d \beta^n \le d q^n$, and
+$(s_0 + (n+1) d/q) q^{n+1} = q (s_0 + n d/q) q^n + d q^n$. The bound tends to $0$ because $q^n \to 0$
+and $n q^n \to 0$; squeeze.
+\end{proof}
+
+\begin{theorem}[Verification for returns unbounded below]
+\label{thm:verification_lowerBound}
+\lean{Econ.verification_of_lowerBound}
+\leanok
+\uses{lem:partialPayoff_bellman, lem:feasible_mem, lem:tendsto_zero_rec, def:planOf}
+Let $0 \le \beta < 1$ and replace (iii) in Theorem~\ref{thm:verification} by a lower bound
+$a + b F(x, y) \le v(x)$ for $x \in S$, $y \in \Gamma(x)$, with $b \ge 1$. Then the same conclusion holds.
+\end{theorem}
+\begin{proof}
+\leanok
+Only the upper bound changes. Fix a feasible plan $x$ and let $s_n = \max(u_n - v(x_0), 0) \ge 0$.
+At date $n$: Lemma~\ref{lem:partialPayoff_bellman} gives $u_n + \beta^n v(x_n) \le v(x_0)$; the lower
+bound times $\beta^n \ge 0$ gives $\beta^n a + \beta^n b F(x_n, x_{n+1}) \le \beta^n v(x_n)$; and
+$u_{n+1} = u_n + \beta^n F(x_n, x_{n+1})$. Combining,
+$b (u_{n+1} - v(x_0)) \le (b - 1)(u_n - v(x_0)) - \beta^n a \le (b - 1) s_n + |a| \beta^n$.
+Dividing by $b > 0$ and noting the right side is $\ge 0$,
+$s_{n+1} \le \frac{b-1}{b} s_n + \frac{|a|}{b} \beta^n$. Since $\frac{b-1}{b} < 1$,
+Lemma~\ref{lem:tendsto_zero_rec} gives $s_n \to 0$, so eventually $u_n - v(x_0) \le s_n < \varepsilon$.
+The policy plan is handled exactly as in Theorem~\ref{thm:verification}.
+\end{proof}
+
+\begin{theorem}[Euler equations and transversality are sufficient; SL Thm~4.15]
+\label{thm:euler_transversality}
+\lean{Econ.euler_transversality}
+\leanok
+\uses{def:sequence_problem}
+Let states lie in an ordered real vector space $E$, with feasible next states nonnegative. Let
+$F_x(x, y), F_y(x, y)$ be linear functionals with the supergradient inequality on the graph of $\Gamma$,
+\[
+  F(x', y') \le F(x, y) + F_x(x, y)(x' - x) + F_y(x, y)(y' - y),
+\]
+and $F_x(x, y) z \ge 0$ for $z \ge 0$. If a feasible plan $x^*$ satisfies the Euler equations
+$F_y(x^*_t, x^*_{t+1}) + \beta F_x(x^*_{t+1}, x^*_{t+2}) = 0$ and the transversality condition
+$\beta^t F_x(x^*_t, x^*_{t+1}) x^*_t \to 0$, and $\beta \ge 0$, then $x^*$ is optimal.
+\end{theorem}
+\begin{proof}
+\leanok
+Let $x$ be feasible, write $D^x_t = F_x(x^*_t, x^*_{t+1})$, $D^y_t = F_y(x^*_t, x^*_{t+1})$ and
+$z_t = x^*_t - x_t$, so $z_0 = 0$.
+\emph{Step 1 (concavity).} The supergradient inequality at $(x^*_t, x^*_{t+1})$ evaluated at
+$(x_t, x_{t+1})$ gives $D^x_t z_t + D^y_t z_{t+1} \le F(x^*_t, x^*_{t+1}) - F(x_t, x_{t+1})$.
+\emph{Step 2 (Euler).} By induction on $n$,
+$\sum_{t<n} \beta^t (D^x_t z_t + D^y_t z_{t+1}) = -\beta^n D^x_n z_n$: the step uses the Euler equation
+applied to $z_{n+1}$, $D^y_n z_{n+1} = -\beta D^x_{n+1} z_{n+1}$.
+\emph{Step 3.} Multiplying Step 1 by $\beta^t \ge 0$ and summing,
+$-\beta^n D^x_n z_n \le u_n(x^*) - u_n(x)$. For $n \ge 1$, $x_n \ge 0$ (it is a feasible next state), so
+$D^x_n x_n \ge 0$ and $-\beta^n D^x_n z_n \ge -\beta^n D^x_n x^*_n$. Hence
+$u_n(x) \le u_n(x^*) + \beta^n D^x_n x^*_n$.
+\emph{Step 4.} By transversality, eventually $\beta^n D^x_n x^*_n < \varepsilon$.
+\end{proof}
+
+\section{The Bellman equation with bounded returns}
+\label{sec:bellman}
+
+\begin{definition}[Dynamic program; SL Assumptions 4.3--4.4]
+\label{def:DynProg}
+\lean{Econ.DynProg, Econ.DynProg.objective, Econ.DynProg.bound}
+\leanok
+\uses{def:contCorr}
+A \emph{dynamic program} on a topological space $X$ consists of $\Gamma$ with nonempty compact values that
+is a continuous correspondence, a continuous $F : X \times X \to \R$ bounded on the graph of $\Gamma$ by
+some $M$, and $0 < \beta < 1$. Its Bellman objective is $F(x, y) + \beta v(y)$.
+\end{definition}
+
+\begin{lemma}[The objective is continuous and the maximum is attained]
+\label{lem:dp_objective}
+\lean{Econ.DynProg.continuous_objective, Econ.DynProg.abs_F_le, Econ.DynProg.isGreatest_maxValue_objective}
+\leanok
+\uses{def:DynProg, lem:isGreatest_maxValue}
+For $v \in C_b(X)$, $(x, y) \mapsto F(x, y) + \beta v(y)$ is continuous, and its maximum over $\Gamma(x)$
+is attained.
+\end{lemma}
+\begin{proof}
+\leanok
+Sum and products of continuous functions; Lemma~\ref{lem:isGreatest_maxValue}.
+\end{proof}
+
+\begin{definition}[Bellman operator]
+\label{def:bellmanOp}
+\lean{Econ.DynProg.bellmanOp, Econ.DynProg.bellmanOp_apply, Econ.DynProg.isGreatest_bellmanOp}
+\leanok
+\uses{lem:dp_objective, thm:continuous_maxValue}
+$(Tv)(x) = \max_{y \in \Gamma(x)} [F(x, y) + \beta v(y)]$. It maps $C_b(X)$ to itself: $Tv$ is continuous
+by Berge (Theorem~\ref{thm:continuous_maxValue}), and $|Tv(x)| \le M + \beta \|v\|$ since at a maximizer
+$y$, $|F(x, y) + \beta v(y)| \le |F(x, y)| + \beta |v(y)|$.
+\end{definition}
+
+\begin{theorem}[$T$ is a contraction; SL Thm~4.6]
+\label{thm:bellman_contracting}
+\lean{Econ.DynProg.contracting}
+\leanok
+\uses{def:bellmanOp, thm:blackwell}
+$T$ is a contraction of modulus $\beta$.
+\end{theorem}
+\begin{proof}
+\leanok
+Check Blackwell's conditions (Theorem~\ref{thm:blackwell}).
+Monotone: if $f \le g$, let $y$ attain $Tf(x)$; then
+$Tf(x) = F(x, y) + \beta f(y) \le F(x, y) + \beta g(y) \le Tg(x)$.
+Discounting: let $y$ attain $T(f + a)(x)$; then
+$T(f + a)(x) = F(x, y) + \beta f(y) + \beta a \le Tf(x) + \beta a$.
+\end{proof}
+
+\begin{theorem}[Existence and uniqueness of the value function; SL Thm~4.6]
+\label{thm:bellman_equation}
+\lean{Econ.DynProg.value, Econ.DynProg.bellmanOp_value, Econ.DynProg.bellman_equation, Econ.DynProg.value_unique, Econ.DynProg.iterate_converges}
+\leanok
+\uses{thm:bellman_contracting}
+Let $V$ be the fixed point of $T$. Then $V(x) = \max_{y \in \Gamma(x)} [F(x, y) + \beta V(y)]$ (attained),
+$V$ is the only bounded continuous solution of this equation, and for any $v_0$,
+$T^n v_0 \to V$ with $d(T^n v_0, V) \le d(v_0, T v_0) \beta^n / (1 - \beta)$.
+\end{theorem}
+\begin{proof}
+\leanok
+$V$ exists by Banach's theorem; $TV = V$ and Definition~\ref{def:bellmanOp} give the equation. If $w$
+solves the equation, then $Tw(x)$ and $w(x)$ are both the greatest element of the same set, so $Tw = w$
+and $w = V$ by uniqueness of fixed points. The convergence and error bound are Banach's a priori estimate.
+\end{proof}
+
+\begin{definition}[Policy correspondence]
+\label{def:policy}
+\lean{Econ.DynProg.policy, Econ.DynProg.mem_policy_iff, Econ.DynProg.policy_subset}
+\leanok
+\uses{thm:bellman_equation, def:maxValue}
+$G(x) = \operatorname{argmax}_{y \in \Gamma(x)} [F(x, y) + \beta V(y)]$. Then $y \in G(x)$ iff
+$y \in \Gamma(x)$ and $F(x, y) + \beta V(y) = V(x)$.
+\end{definition}
+\begin{proof}
+\leanok
+($\Rightarrow$) $F(x, y) + \beta V(y) \le V(x)$ by the Bellman equation, and $\ge$ the value at a
+maximizer $y_0$, which is $V(x)$. ($\Leftarrow$) for any $y' \in \Gamma(x)$,
+$F(x, y') + \beta V(y') \le V(x) = F(x, y) + \beta V(y)$.
+\end{proof}
+
+\begin{theorem}[Policy correspondence is nonempty, compact and UHC; SL Thm~4.6]
+\label{thm:policy_uhc}
+\lean{Econ.DynProg.policy_nonempty_compact_uhc, Econ.DynProg.policy_nonempty, Econ.DynProg.continuous_policy_of_singleton}
+\leanok
+\uses{def:policy, lem:argmax_props, thm:uhc_argmax, cor:continuous_argmax_singleton}
+$G$ has nonempty compact values and is UHC; if $G(x) = \{g(x)\}$ for all $x$, then $g$ is continuous.
+\end{theorem}
+\begin{proof}
+\leanok
+Berge's theorem (Lemma~\ref{lem:argmax_props}, Theorem~\ref{thm:uhc_argmax},
+Corollary~\ref{cor:continuous_argmax_singleton}) applied to the objective with $v = V$.
+\end{proof}
+
+\begin{definition}[Payoff of a plan]
+\label{def:dp_payoff}
+\lean{Econ.DynProg.payoff, Econ.DynProg.summable_payoff, Econ.DynProg.tendsto_partialPayoff}
+\leanok
+\uses{def:DynProg, def:sequence_problem}
+The payoff of a plan is $\sum_t \beta^t F(x_t, x_{t+1})$. For a feasible plan the series converges
+absolutely, being dominated by $M \beta^t$, so its partial sums $u_n$ converge to it.
+\end{definition}
+
+\begin{lemma}[Discounted values vanish]
+\label{lem:tendsto_discounted_value}
+\lean{Econ.DynProg.tendsto_discounted_value, Econ.DynProg.bellman_le}
+\leanok
+\uses{thm:bellman_equation}
+For any sequence $(x_n)$, $\beta^n V(x_n) \to 0$; and $F(x, y) + \beta V(y) \le V(x)$ for $y \in \Gamma(x)$.
+\end{lemma}
+\begin{proof}
+\leanok
+$|\beta^n V(x_n)| \le \beta^n \|V\| \to 0$. The inequality is the Bellman equation.
+\end{proof}
+
+\begin{theorem}[No plan beats $V$; plans following $G$ attain $V$; SL Thms~4.3--4.4]
+\label{thm:payoff_value}
+\lean{Econ.DynProg.payoff_le_value, Econ.DynProg.payoff_eq_value_of_policy}
+\leanok
+\uses{lem:partialPayoff_bellman, lem:tendsto_discounted_value, def:dp_payoff, def:policy}
+For a feasible plan from $x_0$, $\text{payoff} \le V(x_0)$; if moreover $x_{t+1} \in G(x_t)$ for all $t$,
+then $\text{payoff} = V(x_0)$.
+\end{theorem}
+\begin{proof}
+\leanok
+By Lemma~\ref{lem:partialPayoff_bellman}, $u_n \le V(x_0) - \beta^n V(x_n)$, whose right side tends to
+$V(x_0)$ (Lemma~\ref{lem:tendsto_discounted_value}); pass to the limit. Along a policy plan, equality
+holds at each date (Definition~\ref{def:policy}), so $u_n = V(x_0) - \beta^n V(x_n) \to V(x_0)$; limits
+are unique.
+\end{proof}
+
+\begin{theorem}[Optimal plans follow the policy; SL Thm~4.5]
+\label{thm:policy_of_optimal}
+\lean{Econ.DynProg.policy_of_payoff_eq_value}
+\leanok
+\uses{lem:telescope, lem:tendsto_discounted_value, def:policy}
+If a feasible plan has payoff $V(x_0)$, then $x_{t+1} \in G(x_t)$ for every $t$.
+\end{theorem}
+\begin{proof}
+\leanok
+Let $\mathrm{gap}_t = V(x_t) - F(x_t, x_{t+1}) - \beta V(x_{t+1}) \ge 0$ and
+$G_n = \sum_{t<n} \beta^t \mathrm{gap}_t$. By Lemma~\ref{lem:telescope},
+$G_n = V(x_0) - u_n - \beta^n V(x_n)$, which tends to $V(x_0) - \text{payoff} - 0 = 0$. $G_n$ is
+nondecreasing and tends to $0$, so $G_n \le 0$; also $G_n \ge 0$. Then
+$\beta^t \mathrm{gap}_t = G_{t+1} - G_t$ is both $\le 0$ and $\ge 0$, so $\mathrm{gap}_t = 0$ (as
+$\beta^t > 0$), which is the membership criterion of Definition~\ref{def:policy}.
+\end{proof}
+
+\begin{theorem}[Principle of optimality; SL Thms~4.2--4.5]
+\label{thm:principle_of_optimality}
+\lean{Econ.DynProg.policyPlan, Econ.DynProg.policyPlan_spec, Econ.DynProg.principle_of_optimality}
+\leanok
+\uses{thm:payoff_value, thm:policy_of_optimal, thm:policy_uhc}
+$V(x_0)$ is the greatest payoff over feasible plans from $x_0$, and a feasible plan attains it iff
+$x_{t+1} \in G(x_t)$ for all $t$.
+\end{theorem}
+\begin{proof}
+\leanok
+Choose a selection $g(x) \in G(x)$ (nonempty by Theorem~\ref{thm:policy_uhc}); the plan it generates is
+feasible and follows $G$, so it attains $V(x_0)$ by Theorem~\ref{thm:payoff_value}, which also gives the
+upper bound. The equivalence is Theorems~\ref{thm:payoff_value} and~\ref{thm:policy_of_optimal}.
+\end{proof}
+
+\begin{corollary}[Agreement with the sequence-problem notion]
+\label{cor:isOptimalValue_value}
+\lean{Econ.DynProg.isOptimalValue_value}
+\leanok
+\uses{thm:verification, lem:tendsto_discounted_value, thm:policy_uhc}
+$V(x_0)$ is the optimal value at $x_0$ in the sense of Definition~\ref{def:sequence_problem}.
+\end{corollary}
+\begin{proof}
+\leanok
+Apply Theorem~\ref{thm:verification} with $S = X$ and a selection $g$ from $G$. Conditions (iii) and (iv)
+hold because $\beta^n V(x_n) \to 0$ along every sequence (Lemma~\ref{lem:tendsto_discounted_value}).
+\end{proof}
+
+\begin{theorem}[Monotone value function; SL Thm~4.7]
+\label{thm:value_monotone}
+\lean{Econ.DynProg.value_monotone, Econ.DynProg.value_strictMono}
+\leanok
+\uses{thm:bellman_equation, lem:tendsto_discounted_value}
+Let $X$ be preordered and $\Gamma$ monotone ($x \le x' \Rightarrow \Gamma(x) \subseteq \Gamma(x')$). If
+$F(\cdot, y)$ is nondecreasing (strictly increasing), then $V$ is nondecreasing (strictly increasing).
+\end{theorem}
+\begin{proof}
+\leanok
+Let $x \le x'$ (resp.\ $x < x'$) and $y$ attain $V(x)$. Then $y \in \Gamma(x')$, so
+$V(x) = F(x, y) + \beta V(y) \le F(x', y) + \beta V(y) \le V(x')$ (with strict first inequality in the
+strict case).
+\end{proof}
+
+\section{Concavity, unique policies, and Benveniste--Scheinkman}
+\label{sec:dp_concavity}
+
+The state space is a convex set $S$ in a real normed space $E$, and the dynamic program lives on $S$.
+
+\begin{definition}[Convex technology, strictly concave returns; SL Assumptions 4.7--4.8]
+\label{def:dp_concavity}
+\lean{Econ.ConvexGraph, Econ.StrictlyConcaveReturn, Econ.StrictlyConcaveFn, Econ.ConcaveFn}
+\leanok
+$\Gamma$ has \emph{convex graph} if $y \in \Gamma(x)$, $y' \in \Gamma(x')$, $a, b > 0$, $a + b = 1$ imply
+$a y + b y' \in \Gamma(a x + b x')$. $F$ is \emph{strictly concave on the graph} if for such data
+$a F(x, y) + b F(x', y') \le F(ax + bx', ay + by')$, strictly when $x \neq x'$. A function $f$ on $S$
+is concave (strictly concave) if $a f(x) + b f(x') \le f(ax + bx')$ (strictly when $x \neq x'$).
+\end{definition}
+
+\begin{lemma}[Agreement with Mathlib's concavity]
+\label{lem:concaveFn_concaveOn}
+\lean{Econ.extendS, Econ.ConcaveFn.concaveOn}
+\leanok
+\uses{def:dp_concavity}
+Extend $f : S \to \R$ by $0$ outside $S$. If $f$ is concave in the sense above, the extension is
+\texttt{ConcaveOn} $S$.
+\end{lemma}
+\begin{proof}
+\leanok
+For $a, b \ge 0$ with $a + b = 1$: if both are positive this is the hypothesis; if $a = 0$ then $b = 1$
+and both sides equal $f(y)$; symmetrically if $b = 0$.
+\end{proof}
+
+\begin{lemma}[$T$ maps concave functions to strictly concave ones; SL Thm~4.8, key step]
+\label{lem:strictlyConcave_bellmanOp}
+\lean{Econ.DynProg.strictlyConcave_bellmanOp}
+\leanok
+\uses{def:dp_concavity, def:bellmanOp}
+Under convex technology and strictly concave returns, if $f$ is concave then $Tf$ is strictly concave.
+\end{lemma}
+\begin{proof}
+\leanok
+Let $z = ax + bx'$, and let $y, y'$ attain $Tf(x), Tf(x')$. Then $w = ay + by' \in \Gamma(z)$ by convex
+technology, so $Tf(z) \ge F(z, w) + \beta f(w)$. Now
+\[
+  a\,Tf(x) + b\,Tf(x') = [a F(x, y) + b F(x', y')] + \beta [a f(y) + b f(y')],
+\]
+and the first bracket is $\le F(z, w)$ (strictly if $x \neq x'$), the second is $\le f(w)$ by
+concavity of $f$, and $\beta > 0$.
+\end{proof}
+
+\begin{theorem}[Strictly concave value function; SL Thm~4.8]
+\label{thm:value_strictlyConcave}
+\lean{Econ.DynProg.value_strictlyConcave}
+\leanok
+\uses{lem:strictlyConcave_bellmanOp, thm:bellman_equation}
+Under convex technology and strictly concave returns, $V$ is strictly concave.
+\end{theorem}
+\begin{proof}
+\leanok
+By induction every iterate $T^n 0$ is concave (the zero function is concave;
+Lemma~\ref{lem:strictlyConcave_bellmanOp} for the step). $T^n 0 \to V$ uniformly
+(Theorem~\ref{thm:bellman_equation}), and for fixed $x, x', z, a, b$ the map
+$f \mapsto f(z) - (a f(x) + b f(x'))$ is continuous, so its nonnegativity passes to the limit: $V$ is
+concave. Then $V = TV$ is strictly concave by Lemma~\ref{lem:strictlyConcave_bellmanOp}.
+\end{proof}
+
+\begin{theorem}[Unique, continuous policy function; SL Thm~4.8]
+\label{thm:exists_continuous_policy}
+\lean{Econ.DynProg.exists_continuous_policy}
+\leanok
+\uses{thm:value_strictlyConcave, def:policy, thm:policy_uhc}
+Under convex technology and strictly concave returns there is a continuous $g : S \to S$ with
+$G(x) = \{g(x)\}$ for all $x$.
+\end{theorem}
+\begin{proof}
+\leanok
+Uniqueness: suppose $y \neq y'$ are both in $G(x)$, so $F(x, y) + \beta V(y) = V(x) = F(x, y') + \beta V(y')$.
+The midpoint $w = \tfrac12 y + \tfrac12 y'$ is feasible at $x = \tfrac12 x + \tfrac12 x$ (convex
+technology), $F(x, w) \ge \tfrac12 F(x, y) + \tfrac12 F(x, y')$, and $V(w) > \tfrac12 V(y) + \tfrac12 V(y')$
+by strict concavity of $V$ (Theorem~\ref{thm:value_strictlyConcave}) as $y \neq y'$. So
+$F(x, w) + \beta V(w) > V(x)$, contradicting the Bellman inequality. Choose $g(x) \in G(x)$ (nonempty);
+then $G(x) = \{g(x)\}$ and $g$ is continuous by Theorem~\ref{thm:policy_uhc}.
+\end{proof}
+
+\begin{lemma}[Concave function with a differentiable minorant; SL Thm~4.10, one dimension]
+\label{lem:hasDerivAt_concave_minorant}
+\lean{Econ.hasDerivAt_of_concaveOn_of_le}
+\leanok
+Let $V$ be concave on a neighbourhood $D$ of $x_0 \in \R$, $W$ differentiable at $x_0$ with derivative
+$w$, $W \le V$ near $x_0$ and $W(x_0) = V(x_0)$. Then $V$ is differentiable at $x_0$ with $V'(x_0) = w$.
+\end{lemma}
+\begin{proof}
+\leanok
+Work with difference quotients. Pick $\delta > 0$ with $(x_0 - \delta, x_0 + \delta) \subseteq D$ and
+$W \le V$ there. Since $W(x_0) = V(x_0)$:
+for $x > x_0$, $\frac{W(x) - W(x_0)}{x - x_0} \le \frac{V(x) - V(x_0)}{x - x_0}$; for $x < x_0$ the
+inequality reverses. By concavity (slopes decrease), for $x < x_0 < x''$,
+$\frac{V(x_0) - V(x)}{x_0 - x} \ge \frac{V(x'') - V(x_0)}{x'' - x_0}$.
+\emph{Left limit.} For $x < x_0$: the slope of $V$ on $[x, x_0]$ is $\le$ the slope of $W$, which tends
+to $w$; and it is $\ge$ every right slope of $V$, hence $\ge$ every right slope of $W$, whose limit is
+$w$. Squeeze: the left slope of $V$ tends to $w$.
+\emph{Right limit.} Symmetric: right slopes of $V$ are $\ge$ those of $W$ ($\to w$) and $\le$ every left
+slope of $V$, hence $\le$ every left slope of $W$ ($\to w$). The two one-sided limits agree, so $V$ is
+differentiable at $x_0$ with derivative $w$.
+\end{proof}
+
+\begin{theorem}[Benveniste--Scheinkman; SL Thm~4.11, one-dimensional state]
+\label{thm:benveniste_scheinkman}
+\lean{Econ.DynProg.hasDerivAt_value}
+\leanok
+\uses{lem:hasDerivAt_concave_minorant, thm:value_strictlyConcave, lem:concaveFn_concaveOn, def:policy}
+Let $S \subseteq \R$ be convex, with convex technology and strictly concave returns. Let $x_0$ be interior to
+$S$, $y_0 \in G(x_0)$, and suppose $y_0 \in \Gamma(x)$ for all $x \in S$ near $x_0$. If $F(\cdot, y_0)$ is
+differentiable at $x_0$ with derivative $F_x$, then $V$ is differentiable at $x_0$ and $V'(x_0) = F_x$.
+\end{theorem}
+\begin{proof}
+\leanok
+$V$ is concave on $S$ (Theorem~\ref{thm:value_strictlyConcave} and Lemma~\ref{lem:concaveFn_concaveOn}),
+and $S$ is a neighbourhood of $x_0$. Define the minorant $W(x) = F(x, y_0) + \beta V(y_0)$: keep
+tomorrow's choice fixed and vary today's state. Near $x_0$, $y_0 \in \Gamma(x)$, so $W(x) \le V(x)$ by the
+Bellman inequality; and $W(x_0) = V(x_0)$ because $y_0 \in G(x_0)$. $W$ has derivative $F_x$ at $x_0$.
+Apply Lemma~\ref{lem:hasDerivAt_concave_minorant}.
+\end{proof}
+
+\begin{remark}[Non-vacuity of the dynamic-programming hypotheses]
+\label{rem:dp_example}
+\lean{Econ.DPExample.P, Econ.DPExample.convexGraph, Econ.DPExample.strictlyConcaveReturn}
+\leanok
+\uses{def:DynProg, def:dp_concavity, thm:value_monotone, thm:exists_continuous_policy, thm:benveniste_scheinkman}
+\texttt{Macro/DP/Examples.lean} exhibits $S = [0, 1]$, $\Gamma(x) = S$, $F(x, y) = -(x - 2)^2 - y^2$,
+$\beta = 1/2$. It satisfies SL Assumptions 4.3--4.4 ($|F| \le 5$), the monotonicity hypotheses of
+Theorem~\ref{thm:value_monotone}, convex technology, and strict concavity, using the identity
+$F(ax + bx', ay + by') - [a F(x, y) + b F(x', y')] = ab[(x - x')^2 + (y - y')^2]$. Hence
+Theorems~\ref{thm:exists_continuous_policy} and~\ref{thm:benveniste_scheinkman} apply, the latter giving
+$V'(1/2) = 3$.
+\end{remark}
+
+\section{The Brock--Mirman model}
+\label{sec:brock_mirman}
+
+The planner solves $\max \sum_t \beta^t \log c_t$ with $c_t = k_t^\alpha - k_{t+1}$, $0 < \alpha, \beta < 1$,
+$k_0 > 0$.
+
+\begin{definition}[Brock--Mirman primitives]
+\label{def:brock_mirman}
+\lean{Econ.BrockMirman.Γ, Econ.BrockMirman.F, Econ.BrockMirman.A, Econ.BrockMirman.B, Econ.BrockMirman.V, Econ.BrockMirman.g}
+\leanok
+\uses{def:sequence_problem}
+Feasibility $\Gamma(k) = \{k' \mid k > 0,\ 0 < k' < k^\alpha\}$; return $F(k, k') = \log(k^\alpha - k')$;
+closed form $V(k) = A + B \log k$ with $B = \frac{\alpha}{1 - \alpha\beta}$ and
+$A = \frac{1}{1-\beta}\big[\log(1 - \alpha\beta) + \frac{\alpha\beta}{1-\alpha\beta}\log(\alpha\beta)\big]$;
+policy $g(k) = \alpha\beta k^\alpha$.
+\end{definition}
+
+\begin{lemma}[Elementary bounds]
+\label{lem:bm_ab}
+\lean{Econ.BrockMirman.ab_pos, Econ.BrockMirman.ab_lt_one, Econ.BrockMirman.Γ_subset}
+\leanok
+\uses{def:brock_mirman}
+$0 < \alpha\beta < 1$, and every feasible $k'$ is positive.
+\end{lemma}
+
+\begin{lemma}[Bellman equation at the policy]
+\label{lem:bm_bellman_eq}
+\lean{Econ.BrockMirman.bellman_eq_at_policy}
+\leanok
+\uses{lem:bm_ab}
+For $k > 0$, $F(k, g(k)) + \beta V(g(k)) = V(k)$.
+\end{lemma}
+\begin{proof}
+\leanok
+$k^\alpha - \alpha\beta k^\alpha = (1 - \alpha\beta) k^\alpha$. Expand
+$\log((1-\alpha\beta)k^\alpha) = \log(1-\alpha\beta) + \alpha\log k$ and
+$\log(\alpha\beta k^\alpha) = \log(\alpha\beta) + \alpha \log k$; the identity is then algebra in
+$\log k$, $\log(1-\alpha\beta)$, $\log(\alpha\beta)$ using the definitions of $A$ and $B$.
+\end{proof}
+
+\begin{lemma}[Bellman inequality]
+\label{lem:bm_bellman_le}
+\lean{Econ.BrockMirman.bellman_le}
+\leanok
+\uses{lem:bm_bellman_eq}
+For every $k' \in \Gamma(k)$, $F(k, k') + \beta V(k') \le V(k)$.
+\end{lemma}
+\begin{proof}
+\leanok
+Rewrite $V(k)$ by Lemma~\ref{lem:bm_bellman_eq}; we must show
+$\log c - \log c^* + \beta B (\log k' - \log k^*) \le 0$ where $c = k^\alpha - k'$,
+$c^* = (1 - \alpha\beta) k^\alpha$, $k^* = \alpha\beta k^\alpha$. By $\log z \le z - 1$,
+$\log c - \log c^* \le c/c^* - 1$ and $\log k' - \log k^* \le k'/k^* - 1$. With weight
+$\beta B = \frac{\alpha\beta}{1-\alpha\beta} \ge 0$ on the second, the combined linear bound
+$\frac{c}{c^*} - 1 + \beta B(\frac{k'}{k^*} - 1)$ is identically $0$ (field algebra).
+\end{proof}
+
+\begin{lemma}[Lower bound by the current return]
+\label{lem:bm_lowerBound}
+\lean{Econ.BrockMirman.lowerBound}
+\leanok
+\uses{lem:bm_ab}
+For $k' \in \Gamma(k)$, $A + \frac{1}{1-\alpha\beta} F(k, k') \le V(k)$.
+\end{lemma}
+\begin{proof}
+\leanok
+$0 < k^\alpha - k' \le k^\alpha$ gives $\log(k^\alpha - k') \le \alpha \log k$. Multiply by
+$\frac{1}{1 - \alpha\beta} > 0$ and note $B \log k = \frac{1}{1-\alpha\beta}(\alpha\log k)$.
+\end{proof}
+
+\begin{lemma}[The policy plan stays in a log-bounded region]
+\label{lem:bm_policy_bounds}
+\lean{Econ.BrockMirman.policy_plan_bounds}
+\leanok
+\uses{lem:bm_ab, def:planOf}
+Along $k_{t+1} = g(k_t)$ from $k_0 > 0$: $k_t > 0$ and $|\log k_t| \le |\log k_0| + \frac{|\log \alpha\beta|}{1-\alpha}$.
+\end{lemma}
+\begin{proof}
+\leanok
+Induction. $k_{t+1} = \alpha\beta k_t^\alpha > 0$ and
+$|\log k_{t+1}| = |\log\alpha\beta + \alpha \log k_t| \le |\log\alpha\beta| + \alpha(|\log k_0| + C)$
+with $C = |\log\alpha\beta|/(1-\alpha)$; since $|\log\alpha\beta| = (1-\alpha) C$ and $\alpha \le 1$, this is
+$\le |\log k_0| + C$.
+\end{proof}
+
+\begin{theorem}[Brock--Mirman closed form, value route]
+\label{thm:brockMirman_value}
+\lean{Econ.BrockMirman.brockMirman_value}
+\leanok
+\uses{thm:verification_lowerBound, lem:bm_bellman_eq, lem:bm_bellman_le, lem:bm_lowerBound, lem:bm_policy_bounds, lem:optimal_value_props}
+For $0 < \alpha, \beta < 1$ and $k_0 > 0$, $A + B\log k_0$ is the optimal value of the sequence problem,
+the plan $k_{t+1} = \alpha\beta k_t^\alpha$ is an optimal plan, and its partial payoffs converge to
+$A + B \log k_0$.
+\end{theorem}
+\begin{proof}
+\leanok
+Apply Theorem~\ref{thm:verification_lowerBound} with $S = (0, \infty)$ (invariant by
+Lemma~\ref{lem:bm_ab}), $v = V$, the policy $g$ (feasible: $0 < \alpha\beta k^\alpha < k^\alpha$), the
+Bellman inequality and equality (Lemmas~\ref{lem:bm_bellman_le}, \ref{lem:bm_bellman_eq}) and the lower
+bound with $a = A$, $b = \frac{1}{1-\alpha\beta} \ge 1$ (Lemma~\ref{lem:bm_lowerBound}). For the policy
+condition, Lemma~\ref{lem:bm_policy_bounds} bounds $V(k_n) \le C := |A| + B(|\log k_0| + |\log\alpha\beta|/(1-\alpha))$,
+so $\beta^n V(k_n) \le \beta^n C \to 0$. Optimality of the plan follows from Lemma~\ref{lem:optimal_value_props}(2).
+\end{proof}
+
+\begin{definition}[Marginal returns]
+\label{def:bm_marginal}
+\lean{Econ.BrockMirman.Fk, Econ.BrockMirman.Fk'}
+\leanok
+\uses{def:brock_mirman}
+$F_k(k, k') = \alpha k^{\alpha-1}/(k^\alpha - k')$ and $F_{k'}(k, k') = -1/(k^\alpha - k')$, as linear maps on $\R$.
+\end{definition}
+
+\begin{lemma}[Supergradient inequality]
+\label{lem:bm_supergradient}
+\lean{Econ.BrockMirman.supergradient}
+\leanok
+\uses{def:bm_marginal}
+For $y \in \Gamma(k)$ and $y' \in \Gamma(k')$,
+$F(k', y') \le F(k, y) + F_k(k, y)(k' - k) + F_{k'}(k, y)(y' - y)$.
+\end{lemma}
+\begin{proof}
+\leanok
+Two concavity facts. (Bernoulli) $k'^\alpha \le k^\alpha + \alpha k^{\alpha - 1}(k' - k)$: write
+$k' = k(1 + s)$ with $s = k'/k - 1 \ge -1$ and use $(1 + s)^\alpha \le 1 + \alpha s$ for $0 \le \alpha \le 1$.
+(Log) $\log z \le \log c + (z - c)/c$ with $c = k^\alpha - y$, $z = k'^\alpha - y'$, from
+$\log(z/c) \le z/c - 1$. Then $(z - c)/c = (k'^\alpha - k^\alpha - (y' - y))/c \le
+[\alpha k^{\alpha-1}(k' - k) - (y' - y)]/c$, which is the right-hand side.
+\end{proof}
+
+\begin{theorem}[Euler equation and transversality along the policy]
+\label{thm:bm_euler_tvc}
+\lean{Econ.BrockMirman.brockMirman_euler_equation, Econ.BrockMirman.brockMirman_transversality}
+\leanok
+\uses{lem:bm_policy_bounds}
+Along $k_{t+1} = \alpha\beta k_t^\alpha$ with $c_t = k_t^\alpha - k_{t+1}$:
+$\frac{1}{c_t} = \frac{\beta \alpha k_{t+1}^{\alpha - 1}}{c_{t+1}}$, and
+$\beta^t \frac{\alpha k_t^{\alpha-1}}{c_t} k_t \to 0$.
+\end{theorem}
+\begin{proof}
+\leanok
+Along the plan $c_t = (1 - \alpha\beta) k_t^\alpha$ and $k_t > 0$ (Lemma~\ref{lem:bm_policy_bounds}).
+Euler: substitute $c_t$, $c_{t+1}$, $k_{t+1}^{\alpha-1} = k_{t+1}^\alpha / k_{t+1}$ and
+$k_{t+1} = \alpha\beta k_t^\alpha$; both sides reduce to $\frac{1}{(1-\alpha\beta)k_t^\alpha}$.
+Transversality: the term equals $\beta^t \frac{\alpha}{1-\alpha\beta}$, which tends to $0$.
+\end{proof}
+
+\begin{theorem}[Brock--Mirman, Euler route]
+\label{thm:brockMirman_optimal_of_euler}
+\lean{Econ.BrockMirman.brockMirman_optimal_of_euler}
+\leanok
+\uses{thm:euler_transversality, lem:bm_supergradient, thm:bm_euler_tvc}
+The plan $k_{t+1} = \alpha\beta k_t^\alpha$ is optimal, independently of Theorem~\ref{thm:brockMirman_value}.
+\end{theorem}
+\begin{proof}
+\leanok
+Apply Theorem~\ref{thm:euler_transversality} with $E = \R$ and the marginal returns of
+Definition~\ref{def:bm_marginal}. The supergradient inequality is Lemma~\ref{lem:bm_supergradient};
+feasible next states are positive; $F_k \ge 0$ since $k^{\alpha-1} > 0$ and $k^\alpha - k' > 0$. The plan is
+feasible. The Euler equation $F_{k'}(k_t, k_{t+1}) + \beta F_k(k_{t+1}, k_{t+2}) = 0$ and transversality
+$\beta^t F_k(k_t, k_{t+1}) k_t = \beta^t \alpha/(1-\alpha\beta) \to 0$ are the computations of
+Theorem~\ref{thm:bm_euler_tvc}.
+\end{proof}
