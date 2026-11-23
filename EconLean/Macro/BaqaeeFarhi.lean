@@ -16,6 +16,8 @@ and sector `i`'s sales share (Domar weight) is
 **Results.**
 * `hasDerivAt_logY`: along any direction `d`, `d log Y/dt = Σ λᵢ dᵢ`:
   **Hulten's theorem** holds to first order at every point.
+* `hasDerivAt_domar`: `dλᵢ/dt = (θ − 1) λᵢ (dᵢ − Σⱼ λⱼ dⱼ)`; `second_order`:
+  `d² log Y/dt² = (θ − 1) Var_λ(d)` (Baqaee–Farhi's second-order term).
 * `logY_add_sub`: exact response `log Y(x+d) − log Y(x) = (1/(θ−1)) log Σ λᵢ e^{(θ−1)dᵢ}`.
 * `complements_le_hulten` (`θ < 1`): the exact response is **at most** the
   Hulten approximation `Σ λᵢ dᵢ` for every shock `d` — negative shocks hurt
@@ -80,22 +82,31 @@ theorem sum_domar (x : n → ℝ) : ∑ i, E.domar x i = 1 := by
   simp only [domar, ← Finset.sum_div]
   exact div_self (E.S_pos x).ne'
 
+theorem hasDerivAt_num_aux (x d : n → ℝ) (i : n) :
+    HasDerivAt (fun t : ℝ => exp ((E.θ - 1) * (x i + t * d i)))
+      (exp ((E.θ - 1) * x i) * ((E.θ - 1) * d i)) 0 := by
+  have h1 : HasDerivAt (fun t : ℝ => (E.θ - 1) * (x i + t * d i)) ((E.θ - 1) * d i) 0 := by
+    simpa using ((hasDerivAt_id (0 : ℝ)).mul_const (d i)).const_add (x i)
+      |>.const_mul (E.θ - 1)
+  have h2 := (Real.hasDerivAt_exp _).comp 0 h1
+  rw [zero_mul, add_zero] at h2
+  exact h2
+
+/-- Derivative of `S` along a line. -/
+theorem hasDerivAt_S (x d : n → ℝ) :
+    HasDerivAt (fun t : ℝ => E.S (x + t • d))
+      (∑ i, E.b i * (exp ((E.θ - 1) * x i) * ((E.θ - 1) * d i))) 0 := by
+  unfold S
+  simp only [Pi.add_apply, Pi.smul_apply, smul_eq_mul]
+  refine HasDerivAt.fun_sum fun i _ => HasDerivAt.const_mul _ ?_
+  exact E.hasDerivAt_num_aux x d i
+
 /-- **Hulten's theorem holds locally.** Along any direction of productivity
 change `d`, the derivative of log GDP is `Σ λᵢ dᵢ`. -/
 theorem hasDerivAt_logY (hθ : E.θ ≠ 1) (x d : n → ℝ) :
     HasDerivAt (fun t : ℝ => E.logY (x + t • d)) (∑ i, E.domar x i * d i) 0 := by
   have hθ' : E.θ - 1 ≠ 0 := sub_ne_zero.2 hθ
-  have hS : HasDerivAt (fun t : ℝ => E.S (x + t • d))
-      (∑ i, E.b i * (exp ((E.θ - 1) * x i) * ((E.θ - 1) * d i))) 0 := by
-    unfold S
-    simp only [Pi.add_apply, Pi.smul_apply, smul_eq_mul]
-    refine HasDerivAt.fun_sum fun i _ => HasDerivAt.const_mul _ ?_
-    have h1 : HasDerivAt (fun t : ℝ => (E.θ - 1) * (x i + t * d i)) ((E.θ - 1) * d i) 0 := by
-      simpa using ((hasDerivAt_id (0 : ℝ)).mul_const (d i)).const_add (x i)
-        |>.const_mul (E.θ - 1)
-    have h2 := (Real.hasDerivAt_exp _).comp 0 h1
-    rw [zero_mul, add_zero] at h2
-    exact h2
+  have hS := E.hasDerivAt_S x d
   have hS0 : E.S (x + (0 : ℝ) • d) = E.S x := by simp
   have hne : E.S (x + (0 : ℝ) • d) ≠ 0 := by rw [hS0]; exact (E.S_pos x).ne'
   have hlog := (hS.log hne).const_mul (E.θ - 1)⁻¹
@@ -105,6 +116,59 @@ theorem hasDerivAt_logY (hθ : E.θ ≠ 1) (x d : n → ℝ) :
   simp only [domar, Finset.sum_div, mul_sum]
   refine sum_congr rfl fun i _ => ?_
   field_simp
+
+/-- **Domar weights move with relative productivity** (Baqaee–Farhi): along a
+direction `d`, `dλᵢ/dt = (θ − 1) λᵢ (dᵢ − Σⱼ λⱼ dⱼ)`. -/
+theorem hasDerivAt_domar (x d : n → ℝ) (i : n) :
+    HasDerivAt (fun t : ℝ => E.domar (x + t • d) i)
+      ((E.θ - 1) * E.domar x i * (d i - ∑ j, E.domar x j * d j)) 0 := by
+  have hS := E.hasDerivAt_S x d
+  have hS0 : E.S (x + (0 : ℝ) • d) = E.S x := by simp
+  have hne : E.S (x + (0 : ℝ) • d) ≠ 0 := by rw [hS0]; exact (E.S_pos x).ne'
+  have hN := (E.hasDerivAt_num_aux x d i).const_mul (E.b i)
+  have hq := hN.div hS hne
+  convert hq using 1
+  · funext t; simp [domar, Pi.add_apply, Pi.smul_apply, smul_eq_mul]
+  · have hSx := (E.S_pos x).ne'
+    rw [hS0]
+    simp only [zero_mul, add_zero, domar]
+    have e1 : ∑ j, E.b j * exp ((E.θ - 1) * x j) / E.S x * d j =
+        (∑ j, E.b j * exp ((E.θ - 1) * x j) * d j) / E.S x := by
+      rw [Finset.sum_div]; exact sum_congr rfl fun j _ => by ring
+    have e2 : ∑ j, E.b j * (exp ((E.θ - 1) * x j) * ((E.θ - 1) * d j)) =
+        (E.θ - 1) * ∑ j, E.b j * exp ((E.θ - 1) * x j) * d j := by
+      rw [mul_sum]; exact sum_congr rfl fun j _ => by ring
+    rw [e1, e2]
+    field_simp
+
+/-- The first derivative of log GDP along `d` at every point of the line. -/
+theorem deriv_logY_line (hθ : E.θ ≠ 1) (x d : n → ℝ) :
+    deriv (fun t : ℝ => E.logY (x + t • d)) = fun t => ∑ i, E.domar (x + t • d) i * d i := by
+  funext t
+  have h := E.hasDerivAt_logY hθ (x + t • d) d
+  rw [← sub_self t] at h
+  have hc := h.comp_sub_const t t
+  have e : (fun s : ℝ => E.logY (x + t • d + (s - t) • d)) = fun s => E.logY (x + s • d) := by
+    funext s; congr 1; funext i; simp only [Pi.add_apply, Pi.smul_apply, smul_eq_mul]; ring
+  rw [e] at hc
+  exact hc.deriv
+
+/-- **The second-order term** (Baqaee–Farhi 2019): the second derivative of log
+GDP along `d` is `(θ − 1) Var_λ(d) = (θ − 1)(Σ λᵢ dᵢ² − (Σ λᵢ dᵢ)²)`. Hulten's
+first-order approximation is exact only when `θ = 1` or shocks are uniform. -/
+theorem second_order (hθ : E.θ ≠ 1) (x d : n → ℝ) :
+    deriv (deriv fun t : ℝ => E.logY (x + t • d)) 0 =
+      (E.θ - 1) * (∑ i, E.domar x i * d i ^ 2 - (∑ i, E.domar x i * d i) ^ 2) := by
+  rw [E.deriv_logY_line hθ]
+  have h := HasDerivAt.fun_sum (u := univ) fun i _ => (E.hasDerivAt_domar x d i).mul_const (d i)
+  rw [h.deriv]
+  set m := ∑ j, E.domar x j * d j
+  calc ∑ i, (E.θ - 1) * E.domar x i * (d i - m) * d i
+      = ∑ i, ((E.θ - 1) * (E.domar x i * d i ^ 2) - (E.θ - 1) * m * (E.domar x i * d i)) :=
+        sum_congr rfl fun i _ => by ring
+    _ = (E.θ - 1) * ∑ i, E.domar x i * d i ^ 2 - (E.θ - 1) * m * m := by
+        rw [sum_sub_distrib, ← mul_sum, ← mul_sum]
+    _ = _ := by ring
 
 /-- **Exact response** to a shock `d` in terms of initial Domar weights. -/
 theorem logY_add_sub (hθ : E.θ ≠ 1) (x d : n → ℝ) :

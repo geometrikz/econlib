@@ -136,18 +136,25 @@ variable [Fintype σ] {A : Type*} [Fintype A] (E : Economy A σ)
 def Clears (x : A → Bundle σ) : Prop :=
   ∑ a, (x a).1 = ∑ a, (E.e a).1 ∧ ∀ s, ∑ a, (x a).2 s = ∑ a, (E.e a).2 s
 
+omit [Fintype σ] in
+/-- The **consumption set**: consumption is non-negative today and in every state. -/
+def Consumable (y : Bundle σ) : Prop := 0 ≤ y.1 ∧ ∀ s, 0 ≤ y.2 s
+
 /-- **Arrow–Debreu equilibrium** at state prices `m`: each agent maximizes
-utility over the AD budget set, and goods markets clear. -/
+utility over the AD budget set within the consumption set, and goods markets clear. -/
 def IsAD (m : σ → ℝ) (x : A → Bundle σ) : Prop :=
-  (∀ a, adBudget m (E.e a) (x a) ∧ ∀ y, adBudget m (E.e a) y → E.U a y ≤ E.U a (x a)) ∧
+  (∀ a, Consumable (x a) ∧ adBudget m (E.e a) (x a) ∧
+      ∀ y, Consumable y → adBudget m (E.e a) y → E.U a y ≤ E.U a (x a)) ∧
     E.Clears x
 
 /-- **Radner (sequential-markets) equilibrium** at asset market `M`:
 portfolios `h` finance each agent's choice, each agent maximizes over the
-sequential budget set, goods markets clear, and every asset is in zero net supply. -/
+sequential budget set within the consumption set, goods markets clear, and
+every asset is in zero net supply. -/
 def IsRadner (M : Market σ ι) (x : A → Bundle σ) (h : A → ι → ℝ) : Prop :=
-  (∀ a, ((x a).1 + M.cost (h a) ≤ (E.e a).1 ∧ ∀ s, (x a).2 s ≤ (E.e a).2 s + M.payoff (h a) s) ∧
-      ∀ y, M.SeqBudget (E.e a) y → E.U a y ≤ E.U a (x a)) ∧
+  (∀ a, Consumable (x a) ∧
+      ((x a).1 + M.cost (h a) ≤ (E.e a).1 ∧ ∀ s, (x a).2 s ≤ (E.e a).2 s + M.payoff (h a) s) ∧
+      ∀ y, Consumable y → M.SeqBudget (E.e a) y → E.U a y ≤ E.U a (x a)) ∧
     E.Clears x ∧ ∀ i, ∑ a, h a i = 0
 
 variable {E} {M : Market σ ι} {m : σ → ℝ}
@@ -170,11 +177,11 @@ theorem isRadner_of_isAD [Nonempty A] (hm : M.IsStatePrice m) (hc : M.Complete)
     split_ifs
     · rw [M.payoff_neg, hG, hg]; ring
     · rw [hg]; simp [Market.payoff]
-  refine ⟨h, fun a => ⟨⟨?_, fun s => by rw [hh]; linarith⟩, fun y hy =>
-    (hx.1 a).2 y (Market.seqBudget_adBudget hm hy)⟩, hx.2, fun i => ?_⟩
+  refine ⟨h, fun a => ⟨(hx.1 a).1, ⟨?_, fun s => by rw [hh]; linarith⟩, fun y hy0 hy =>
+    (hx.1 a).2.2 y hy0 (Market.seqBudget_adBudget hm hy)⟩, hx.2, fun i => ?_⟩
   · rw [M.cost_eq hm]
     simp only [hh, mul_sub, sum_sub_distrib]
-    have := (hx.1 a).1; unfold adBudget at this; linarith
+    have := (hx.1 a).2.1; unfold adBudget at this; linarith
   · have : ∀ a, (if a = a₀ then -G else 0) i = if a = a₀ then -G i else 0 := fun a => by
       split_ifs <;> rfl
     simp only [h, Pi.add_apply, sum_add_distrib, this, Finset.sum_ite_eq', mem_univ, ite_true, G,
@@ -185,8 +192,8 @@ theorem isRadner_of_isAD [Nonempty A] (hm : M.IsStatePrice m) (hc : M.Complete)
 asset prices with state prices `m` is an Arrow–Debreu equilibrium allocation at `m`. -/
 theorem isAD_of_isRadner (hm : M.IsStatePrice m) (hc : M.Complete) {x : A → Bundle σ}
     {h : A → ι → ℝ} (hx : E.IsRadner M x h) : E.IsAD m x :=
-  ⟨fun a => ⟨Market.seqBudget_adBudget hm ⟨h a, (hx.1 a).1⟩, fun y hy =>
-    (hx.1 a).2 y (Market.adBudget_seqBudget hm hc hy)⟩, hx.2.1⟩
+  ⟨fun a => ⟨(hx.1 a).1, Market.seqBudget_adBudget hm ⟨h a, (hx.1 a).2.1⟩, fun y hy0 hy =>
+    (hx.1 a).2.2 y hy0 (Market.adBudget_seqBudget hm hc hy)⟩, hx.2.1⟩
 
 /-- With complete markets and no arbitrage, every Radner equilibrium allocation
 is an AD equilibrium allocation at some strictly positive state prices. -/
@@ -206,9 +213,11 @@ example : ∃ h, (⟨fun a : Bool => if a then (1, fun s => if s then 2 else 0) 
       (fun a => if a then (1, fun s => if s then 2 else 0) else
         (1, fun s => if s then 0 else 2)) h := by
   refine Economy.isRadner_of_isAD (m := fun _ => 1 / 2) ⟨fun _ => by norm_num, fun i => ?_⟩
-    (fun z => ⟨z, funext fun s => ?_⟩) ⟨fun a => ⟨le_rfl, fun y hy => hy⟩, ?_⟩
+    (fun z => ⟨z, funext fun s => ?_⟩) ⟨fun a => ⟨?_, le_rfl, fun y _ hy => hy⟩, ?_⟩
   · simp
   · simp [Market.payoff]
+  · refine ⟨by cases a <;> norm_num, fun s => ?_⟩
+    cases a <;> cases s <;> norm_num
   · refine ⟨by simp, fun s => ?_⟩
     cases s <;> simp
 

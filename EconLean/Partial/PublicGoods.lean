@@ -12,7 +12,7 @@ Main results:
 * `lindahl_efficient` (MWG §11.D): a Lindahl equilibrium (personalised prices summing
   to marginal cost, every consumer demanding the same level) is efficient.
 * `voluntary_underprovision` (MWG Prop. 11.C.1): with at least two consumers, strictly
-  decreasing positive marginal benefits and unit cost, voluntary contributions provide
+  decreasing positive marginal benefits on `G > 0` and unit cost, voluntary contributions provide
   strictly less than the efficient level.
 -/
 module
@@ -23,6 +23,9 @@ public import Mathlib.Analysis.Calculus.Deriv.Add
 public import Mathlib.Analysis.Calculus.Deriv.Mul
 public import Mathlib.Analysis.Calculus.Deriv.Shift
 public import Mathlib.Algebra.Order.BigOperators.Group.Finset
+public import Mathlib.Analysis.SpecialFunctions.Log.Deriv
+public import Mathlib.Tactic.FinCases
+public import Mathlib.Data.Fin.VecNotation
 
 @[expose] public section
 
@@ -111,13 +114,14 @@ def IsVoluntaryEq (φ : I → ℝ → ℝ) (g : I → ℝ) : Prop :=
 
 /-- **Private provision is inefficiently low** (MWG Prop. 11.C.1). Suppose there are at least
 two consumers, unit cost, and marginal benefits `d i` that are positive and strictly
-decreasing. If `Gstar` satisfies the Samuelson condition `∑ᵢ dᵢ(Gstar) = 1` and the voluntary
+decreasing at positive levels `G > 0` (so `√G`, `log G`, `log (1 + G)` qualify). If
+`Gstar > 0` satisfies the Samuelson condition `∑ᵢ dᵢ(Gstar) = 1` and the voluntary
 contributions equilibrium provides a positive amount, it provides strictly less than
 `Gstar`. -/
 theorem voluntary_underprovision [DecidableEq I] {φ d : I → ℝ → ℝ}
-    (hd : ∀ i x, HasDerivAt (φ i) (d i x) x) (hpos : ∀ i x, 0 < d i x)
-    (hanti : ∀ i, StrictAnti (d i)) (htwo : 1 < Fintype.card I) {g : I → ℝ}
-    (heq : IsVoluntaryEq φ g) (hGpos : 0 < ∑ j, g j) {Gstar : ℝ}
+    (hd : ∀ i, ∀ x > 0, HasDerivAt (φ i) (d i x) x) (hpos : ∀ i, ∀ x > 0, 0 < d i x)
+    (hanti : ∀ i, StrictAntiOn (d i) (Ioi 0)) (htwo : 1 < Fintype.card I) {g : I → ℝ}
+    (heq : IsVoluntaryEq φ g) (hGpos : 0 < ∑ j, g j) {Gstar : ℝ} (hGstar : 0 < Gstar)
     (hsam : ∑ i, d i Gstar = 1) : ∑ j, g j < Gstar := by
   set Ge := ∑ j, g j
   -- Some consumer contributes a positive amount.
@@ -134,7 +138,8 @@ theorem voluntary_underprovision [DecidableEq I] {φ d : I → ℝ → ℝ}
       simp only [ψ, sub_add_cancel]
       exact this
     have hψ : HasDerivAt ψ (d i Ge - 1) (g i) := by
-      have h2 := HasDerivAt.comp_const_add (Ge - g i) (g i) (hd i (Ge - g i + g i))
+      have h2 := HasDerivAt.comp_const_add (Ge - g i) (g i)
+        (hd i (Ge - g i + g i) (by rw [sub_add_cancel]; exact hGpos))
       simp only [sub_add_cancel] at h2
       exact h2.sub (hasDerivAt_id _)
     linarith [hmax.hasDerivAt_eq_zero hψ]
@@ -147,12 +152,44 @@ theorem voluntary_underprovision [DecidableEq I] {φ d : I → ℝ → ℝ}
   have hsum : 1 < ∑ k, d k Ge := by
     rw [← add_sum_erase _ _ (mem_univ i), hfoc]
     have : 0 < ∑ k ∈ univ.erase i, d k Ge :=
-      sum_pos (fun k _ => hpos k Ge) ⟨j, mem_erase.2 ⟨hji, mem_univ j⟩⟩
+      sum_pos (fun k _ => hpos k Ge hGpos) ⟨j, mem_erase.2 ⟨hji, mem_univ j⟩⟩
     linarith
   by_contra hge
   push Not at hge
   have : ∑ k, d k Ge ≤ ∑ k, d k Gstar :=
-    sum_le_sum fun k _ => (hanti k).antitone hge
+    sum_le_sum fun k _ => (hanti k).antitoneOn hGstar hGpos hge
   linarith
+
+/-- Witness: two consumers with `φ(G) = 2 log (1 + G)`, so `d(G) = 2 / (1 + G)`, satisfy the
+hypotheses; `g = (1, 0)` is a voluntary equilibrium with `G = 1`, and the Samuelson level is
+`Gstar = 3`. -/
+example : (∀ _i : Fin 2, ∀ x > (0:ℝ), HasDerivAt (fun G => 2 * Real.log (1 + G)) (2 / (1 + x)) x) ∧
+    (∀ _i : Fin 2, ∀ x > (0:ℝ), 0 < 2 / (1 + x)) ∧
+    (∀ _i : Fin 2, StrictAntiOn (fun x : ℝ => 2 / (1 + x)) (Ioi 0)) ∧
+    IsVoluntaryEq (fun (_ : Fin 2) G => 2 * Real.log (1 + G)) ![1, 0] ∧
+    ∑ _i : Fin 2, 2 / (1 + (3:ℝ)) = 1 := by
+  refine ⟨fun _ x hx => ?_, fun _ x hx => by positivity, fun _ a ha b hb hab => ?_, ⟨?_, ?_⟩, ?_⟩
+  · have := ((hasDerivAt_id x).const_add 1).log (by simp; linarith)
+    convert this.const_mul 2 using 1
+    · rfl
+    show 2 / (1 + x) = 2 * (1 / (1 + x)); ring
+  · simp only [Set.mem_Ioi] at ha hb
+    exact div_lt_div_of_pos_left (by norm_num) (by linarith) (by linarith)
+  · intro i; fin_cases i <;> simp
+  · intro i t ht
+    have key : ∀ a b : ℝ, 0 < a → 0 < b → Real.log a - Real.log b ≤ a / b - 1 := by
+      intro a b ha hb
+      rw [← Real.log_div ha.ne' hb.ne']
+      exact Real.log_le_sub_one_of_pos (by positivity)
+    fin_cases i
+    · simp
+      have := key (1 + t) 2 (by linarith) (by norm_num)
+      norm_num at this ⊢
+      linarith
+    · simp
+      have := key (1 + (1 + t)) 2 (by linarith) (by norm_num)
+      norm_num at this ⊢
+      linarith
+  · norm_num
 
 end Econ

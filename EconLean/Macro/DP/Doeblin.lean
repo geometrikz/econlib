@@ -24,6 +24,8 @@ case) or `exists_invariant` (finite chains).
 * `doeblin_convergence`: if `π` is `K`-invariant, then from any initial
   distribution `μ`, `|μKⁿ(A) - π(A)| ≤ (1 - ε)ⁿ` for every measurable `A`
   (geometric convergence in total variation).
+* `doeblin_convergence_pow`: the same under an `N`-step minorization, at rate
+  `(1 - ε)^⌊n/N⌋`.
 * `doeblin_unique` / `unique_invariant_of_pow`: the invariant distribution is
   unique. The second form applies to a kernel whose `N`-th power satisfies
   the minorization.
@@ -230,5 +232,37 @@ theorem unique_invariant_of_pow {κ : Kernel X X} [IsMarkovKernel κ] {N : ℕ} 
     (hπ : Kernel.Invariant κ π) (hπ' : Kernel.Invariant κ π') : π' = π := by
   have := isMarkovKernel_pow κ N
   exact doeblin_unique hε0 hε1 hmin (invariant_pow hπ N) (invariant_pow hπ' N)
+
+theorem iterComp_add_pow (κ : Kernel X X) [IsMarkovKernel κ] (μ : Measure X) (m : ℕ) :
+    ∀ N : ℕ, iterComp κ μ (m + N) = (κ ^ N) ∘ₘ iterComp κ μ m
+  | 0 => by
+    rw [pow_zero, Nat.add_zero]
+    exact (Measure.id_comp (μ := iterComp κ μ m)).symm
+  | N + 1 => by
+    show κ ∘ₘ iterComp κ μ (m + N) = _
+    rw [iterComp_add_pow κ μ m N, pow_succ', show κ * κ ^ N = κ ∘ₖ (κ ^ N) from rfl,
+      Measure.comp_assoc]
+
+theorem iterComp_pow (κ : Kernel X X) [IsMarkovKernel κ] (μ : Measure X) (N a : ℕ) :
+    ∀ b : ℕ, iterComp κ μ (a + N * b) = iterComp (κ ^ N) (iterComp κ μ a) b
+  | 0 => by simp [iterComp]
+  | b + 1 => by
+    rw [show a + N * (b + 1) = (a + N * b) + N by ring, iterComp_add_pow, iterComp_pow κ μ N a b]
+    rfl
+
+/-- **Doeblin's theorem under an `N`-step minorization: geometric convergence**
+(SL Thm 11.12, minorization case). If `κ^N(x, ·) ≥ ε φ` for all `x` and `π` is
+`κ`-invariant, then from every initial distribution
+`|μκⁿ(A) - π(A)| ≤ (1 - ε)^⌊n/N⌋`. -/
+theorem doeblin_convergence_pow {κ : Kernel X X} [IsMarkovKernel κ] {N : ℕ} {φ : Measure X}
+    [IsProbabilityMeasure φ] {ε : ℝ} (hε0 : 0 ≤ ε) (hε1 : ε ≤ 1)
+    (hmin : ∀ x A, MeasurableSet A → ENNReal.ofReal ε * φ A ≤ (κ ^ N) x A)
+    {π : Measure X} [IsProbabilityMeasure π] (hπ : Kernel.Invariant κ π)
+    (μ : Measure X) [IsProbabilityMeasure μ] (n : ℕ) {A : Set X} (hA : MeasurableSet A) :
+    |(iterComp κ μ n).real A - π.real A| ≤ (1 - ε) ^ (n / N) := by
+  have := isMarkovKernel_pow κ N
+  have := isProbabilityMeasure_iterComp κ μ (n % N)
+  rw [← Nat.mod_add_div n N, iterComp_pow, Nat.mod_add_div n N]
+  exact doeblin_convergence hε0 hε1 hmin (invariant_pow hπ N) _ _ hA
 
 end Econ

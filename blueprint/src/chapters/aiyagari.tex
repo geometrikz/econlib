@@ -130,6 +130,33 @@ Both invariant measures are $K^N$-invariant (Lemma~\ref{lem:kernel_pow}); apply
 Theorem~\ref{thm:doeblin_unique} to $K^N$.
 \end{proof}
 
+\begin{lemma}[Iterates along powers]
+\label{lem:iterComp_pow}
+\lean{Econ.iterComp_add_pow, Econ.iterComp_pow}
+\leanok
+\uses{def:iterComp}
+$\mu K^{m+N} = K^N\circ(\mu K^m)$, and $\mu K^{a + Nb} = (\mu K^a)(K^N)^b$.
+\end{lemma}
+\begin{proof}
+\leanok
+Induction on $N$ using $K^{N+1} = K\circ K^N$ and \texttt{Measure.comp\_assoc}; then induction on $b$.
+\end{proof}
+
+\begin{theorem}[Geometric convergence under an $N$-step minorization]
+\label{thm:doeblin_convergence_pow}
+\lean{Econ.doeblin_convergence_pow}
+\leanok
+If $K^N(x,\cdot)\ge\varepsilon\varphi$ for all $x$ and $\pi$ is $K$-invariant, then for every probability $\mu$,
+$|\mu K^n(A) - \pi(A)| \le (1-\varepsilon)^{\lfloor n/N\rfloor}$.
+\end{theorem}
+\begin{proof}
+\leanok
+\uses{lem:iterComp_pow, lem:kernel_pow, thm:doeblin_convergence}
+Write $n = (n \bmod N) + N\lfloor n/N\rfloor$, so $\mu K^n = (\mu K^{n\bmod N})(K^N)^{\lfloor n/N\rfloor}$
+(Lemma~\ref{lem:iterComp_pow}). $\pi$ is $K^N$-invariant (Lemma~\ref{lem:kernel_pow}); apply
+Theorem~\ref{thm:doeblin_convergence} to $K^N$.
+\end{proof}
+
 \begin{lemma}[Powers of stochastic matrices]
 \label{lem:stochastic_pow}
 \lean{Econ.IsStochastic.pow, Econ.IsInvariant.pow}

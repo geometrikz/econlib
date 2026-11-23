@@ -40,10 +40,12 @@ more than half of the peaks are $\le m$ and more than half are $\ge m$.
 \leanok
 \uses{def:single-peaked}
 For any number of voters, a weak median peak (at least half of the peaks on each side) exists and is not defeated
-by any alternative: at most half of the voters strictly prefer the alternative. A strict median (more than half on
+by any alternative: at most half of the voters strictly prefer the alternative, and they are no more numerous
+than those who strictly prefer $m$ ($\#\{y \succ m\} \le \#\{m \succ y\}$). A strict median (more than half on
 each side, which exists for an odd number of voters) beats every other alternative by a strict majority.
 \end{theorem}
 \begin{proof}
 \leanok
-Against $y > m$, every voter with peak $\le m$ strictly prefers $m$; symmetrically for $y < m$.
+Against $y > m$, every voter with peak $\le m$ strictly prefers $m$, and these are at least half of the voters,
+so the rest, who include everyone preferring $y$, are no more numerous; symmetrically for $y < m$.
 \end{proof}

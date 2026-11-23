@@ -32,6 +32,9 @@ Documented, not changed (open items):
 - Goodman-Bacon: decomposition is over unit pairs (equal cell weights); the timing-group version
   with `n_k n_l` weights is open.
 - SVAR: horizon-K sign restrictions, RWZ rank condition and Haar draws are open.
+  The second isolated review (`independent/review-M.md`) adds that the order condition
+  (n(n−1)/2 zero restrictions) is not sufficient: its n = 3 example meets the count but admits no
+  `B`. Any future order-condition statement must be paired with RWZ's rank condition (Thm 1).
 - Gauss–Markov: fixed design; `Cov(b, e) = 0` and `E[s²] = σ²` are open; witness has `n = Unit`.
 - GMM: variance estimation, J-test, two-step and nonlinear GMM are open.
 

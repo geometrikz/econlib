@@ -122,9 +122,11 @@ if $\bar u \le \mathbb{E}_H\nu - g_H$ (IR) and $\mathbb{E}_L\nu - g_L \le \mathb
 \lean{Econ.outcomeMean_const, Econ.fullInsurance_optimal, Econ.implementsHigh_nonconstant, Econ.implementsHigh_cost_gt, Econ.sellTheFirm}
 \leanok
 \uses{def:moral-hazard}
-(i) With observable effort and convex increasing $\varphi$, the constant contract $\bar u + g$ is cheapest.
-(ii) With hidden effort no constant contract implements $H$, and if $\varphi$ is strictly convex and $f_H$ has full
-support every implementing contract costs strictly more than $\varphi(\bar u + g_H)$.
+(i) With observable effort and $\varphi$ convex and increasing on an interval $U$ of utility levels containing the
+contract's utilities and $\bar u + g$, the constant contract $\bar u + g$ is cheapest.
+(ii) With hidden effort no constant contract implements $H$, and if $\varphi$ is strictly convex and increasing on such
+a $U$ and $f_H$ has full support, every implementing contract with utilities in $U$ costs strictly more than
+$\varphi(\bar u + g_H)$.
 (iii) With a risk-neutral agent, selling the firm at $\alpha = \mathbb{E}_H\pi - g_H - \bar u$ implements $H$ when it is
 efficient and gives the principal the first-best profit.
 \end{theorem}

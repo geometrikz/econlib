@@ -82,8 +82,8 @@ As for Gale--Shapley, along an explicit sequence of states.
 \lean{Econ.gs_blocking_lemma, Econ.daMatching_strategyproof}
 \leanok
 \uses{lem:da-trace}
-If some men strictly prefer a matching $\mu'$ to the DA matching $\mu$, some pair $(m_0, w)$ blocks $\mu'$ with $m_0$
-not strictly preferring $\mu'$. Hence no man can get a strictly better partner by misreporting.
+If some men $M'$ strictly prefer a matching $\mu'$ to the DA matching $\mu$, some pair $(m_0, w)$ blocks $\mu'$ with
+$m_0 \notin M'$ and $w \in \mu'(M')$ (Roth--Sotomayor 1990, Lemma 3.5). Hence no man can get a strictly better partner by misreporting.
 \end{theorem}
 \begin{proof}
 \leanok
@@ -98,7 +98,8 @@ and that is stable for the reported profile, contradicting the lemma applied to 
 \label{thm:becker}
 \lean{Econ.HasIncreasingDifferences, Econ.matchingSurplus, Econ.movedSet, Econ.becker_pam}
 \leanok
-With sorted types on both sides and a surplus with increasing differences, positive assortative matching maximizes
+With sorted types on both sides and a surplus with increasing differences on the types that occur (so, e.g.,
+$\log x \log y$ on $[1,\infty)^2$ qualifies), positive assortative matching maximizes
 total surplus over all one-to-one matchings.
 \end{theorem}
 \begin{proof}

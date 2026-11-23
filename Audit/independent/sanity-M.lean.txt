@@ -1,0 +1,174 @@
+import EconLean
+
+/-!
+Sanity tests for statement review M.
+Each `example` illustrates one concern raised in `statement_review.md`.
+Proofs are kept short; `sorry` marks steps that are routine but not checked here
+(Lean is not installed on the review machine).
+-/
+
+open Econ
+
+open MeasureTheory ProbabilityTheory Filter Topology Matrix Finset
+
+/-! ## 1. SequentialMarkets: consumption set is all of ℝ × ℝ^σ.
+With textbook log utility (Mathlib: `Real.log (-x) = Real.log x`, `Real.log 0 = 0`)
+NO allocation is ever an Arrow–Debreu equilibrium: an agent can always pick a very
+negative date-0 consumption, which is cheaper and gives higher junk "log" utility.
+So the equilibrium notions `IsAD` / `IsRadner` are empty for standard CRRA economies;
+the equivalence theorems hold, but only as statements about economies the
+definitions admit (linear, CARA, ...). -/
+section SeqMarkets
+open Econ.AssetPricing
+
+noncomputable def logEcon : Economy Unit Bool :=
+  ⟨fun _ => (1, fun _ => 1), fun _ y => Real.log y.1 + ∑ s, Real.log (y.2 s)⟩
+
+example (m : Bool → ℝ) (x : Unit → Bundle Bool) : ¬ logEcon.IsAD m x := by
+  rintro ⟨hopt, -⟩
+  obtain ⟨hb, hmax⟩ := hopt ()
+  set a := (x ()).1 with ha
+  let y : Bundle Bool := (-(|a| + 2), (x ()).2)
+  have hy : adBudget m (logEcon.e ()) y := by
+    unfold adBudget at hb ⊢
+    have : -(|a| + 2) ≤ a := by linarith [neg_abs_le a]
+    simp only [y]
+    linarith
+  have h1 : Real.log a < Real.log (|a| + 2) := by
+    rcases eq_or_ne a 0 with h | h
+    · rw [h]; simp only [Real.log_zero, abs_zero, zero_add]; exact Real.log_pos (by norm_num)
+    · rw [← Real.log_abs]; exact Real.log_lt_log (abs_pos.2 h) (by linarith)
+  have h2 := hmax y hy
+  simp only [logEcon, y, Real.log_neg_eq_log] at h2
+  linarith
+
+end SeqMarkets
+
+/-! ## 2. Extremum: `mle_unique_max` has no likelihood content.
+`Q₀` is an arbitrary function assumed (via `hgap`) to equal minus the KL gap.
+The theorem is then two lines from `klDiv_pos_of_identified`; expected
+log-likelihood, E|ln f| < ∞ and the Gibbs/Jensen step linking them are never stated. -/
+section MLE
+open Econ.Asymptotics
+
+example {Θ α : Type*} {mα : MeasurableSpace α} {Pθ : Θ → Measure α}
+    [∀ θ, IsFiniteMeasure (Pθ θ)] (hinj : Function.Injective Pθ) {θ₀ : Θ}
+    (hfin : ∀ θ, InformationTheory.klDiv (Pθ θ₀) (Pθ θ) ≠ ⊤) :
+    -- Q₀ chosen *by definition* as minus the KL divergence; no data, no likelihood
+    let Q₀ : Θ → ℝ := fun θ => -(InformationTheory.klDiv (Pθ θ₀) (Pθ θ)).toReal
+    ∀ θ, θ ≠ θ₀ → Q₀ θ < Q₀ θ₀ := by
+  intro Q₀
+  refine mle_unique_max hinj (Q₀ := Q₀) (fun θ => ?_) hfin
+  simp [Q₀, InformationTheory.klDiv_self]
+
+end MLE
+
+/-! ## 3. Extremum: `z_estimator_asymptotic` is pure Slutsky algebra.
+The "score" `S` and "Hessian" `H` are arbitrary random objects; nothing ties them
+to a criterion, to consistency of θhat, to θ₀ being interior, or to a mean-value
+expansion. Defining `S := -H₀ (θhat - θ₀)` makes `hexp` hold trivially, and the
+theorem collapses to the continuous-mapping theorem. -/
+section ZEst
+open Econ.Asymptotics
+
+variable {Ω Ω' : Type*} {mΩ : MeasurableSpace Ω} {mΩ' : MeasurableSpace Ω'}
+  {P : Measure Ω} {P' : Measure Ω'} {k : Type*} [Fintype k] [DecidableEq k]
+
+example [IsProbabilityMeasure P] [IsProbabilityMeasure P']
+    {θhat : ℕ → Ω → k → ℝ} {θ₀ : k → ℝ} {H₀ : k → k → ℝ} {L : Ω' → k → ℝ}
+    (hH₀ : IsUnit (Matrix.of H₀).det)
+    (hS : TendstoInDistribution
+      (fun (n : ℕ) ω => Real.sqrt n • (-(Matrix.of H₀ *ᵥ (θhat n ω - θ₀)))) atTop L
+      (fun _ => P) P')
+    (hθm : ∀ n, AEMeasurable (θhat n) P) :
+    TendstoInDistribution (fun (n : ℕ) ω => Real.sqrt n • (θhat n ω - θ₀)) atTop
+      (fun ω => -((Matrix.of H₀)⁻¹ *ᵥ L ω)) (fun _ => P) P' :=
+  z_estimator_asymptotic (S := fun n ω => -(Matrix.of H₀ *ᵥ (θhat n ω - θ₀)))
+    (H := fun _ _ => H₀) hH₀ (by simp) (by sorry /- constant sequence → in measure -/)
+    (fun _ => aemeasurable_const) hS hθm
+
+end ZEst
+
+/-! ## 4. Goodman–Bacon: weights only sum to one when treatment varies.
+`baconWeight_nonneg` is unconditional only because `x / 0 = 0`; with no treatment
+variation all weights are 0 (sum 0, not 1). Harmless (theorem `sum_baconWeight`
+carries `hv`, and `goodman_bacon` carries `hden`, which implies `hv`). -/
+section Bacon
+open Econ.Causal.TWFE
+
+example : ∑ g : Fin 2, ∑ h : Fin 2,
+    baconWeight (fun (_ : Fin 2) (_ : Fin 3) => (0 : ℝ)) g h = 0 := by
+  simp [baconWeight, pairVar, dm, rowMean]
+
+/-- `hden → hv`: so `goodman_bacon` does have nonnegative weights summing to one.
+(Positive check; uses `sum_eps_mul_eq_pairs` with `Y = D` and `pairNum_self`.) -/
+example {G T : Type*} [Fintype G] [Fintype T] [Nonempty G] [Nonempty T]
+    (D : G → T → ℝ) (hden : ∑ g, ∑ t, eps D g t * D g t ≠ 0) :
+    ∑ g, ∑ h, pairVar D g h ≠ 0 := by
+  intro h0
+  apply hden
+  rw [sum_eps_mul_eq_pairs D D]
+  simp [pairNum_self, h0]
+
+end Bacon
+
+/-! ## 5. Gauss–Markov: `hX` is redundant given `hC : C * X = 1`
+(a left inverse forces full column rank). Not an error; noted for completeness. -/
+section GM
+example {n k : Type*} [Fintype n] [Fintype k] [DecidableEq k]
+    (X : Matrix n k ℝ) (C : Matrix k n ℝ) (hC : C * X = 1) : IsUnit (Xᵀ * X).det := by
+  sorry
+end GM
+
+/-! ## 6. BLP: the contraction mapping is NOT stated anywhere.
+Statement that would be expected (BLP 1995, Appendix I; Berry 1994): the map
+δ ↦ δ + log s - log σ(δ) is a sup-norm contraction (modulus < 1) on a suitable set,
+and for every s in the open simplex there EXISTS δ with mixedShare δ = s. Only
+injectivity (`mixedShare_injective`) is in the file. -/
+section BLP
+open Econ.Structural.BLP
+
+/-- Missing existence half of the mixed-logit inversion (should be provable; not in file). -/
+example {J I : Type*} [Fintype J] [Fintype I] [Nonempty I] {w : I → ℝ}
+    (hw : ∀ i, 0 < w i) (hw1 : ∑ i, w i = 1) (μ : I → J → ℝ)
+    {s : J → ℝ} (hs : ∀ j, 0 < s j) (hsum : ∑ j, s j < 1) :
+    ∃ δ, mixedShare w μ δ = s := by
+  sorry
+
+/-- `mixedShare` does not require weights to sum to one, so it need not be a share
+vector: with w = 2 the "shares" sum above 1. -/
+example : ∑ j : Unit, mixedShare (fun _ : Unit => (2 : ℝ)) (fun _ => 0) (fun _ => (5 : ℝ)) j > 1 := by
+  sorry
+
+end BLP
+
+/-! ## 7. SVAR: no counting (order/rank) result.
+Expected (Rubio-Ramírez–Waggoner–Zha 2010; Kilian–Lütkepohl ch. 8): exact
+identification needs n(n-1)/2 restrictions (order condition), which is necessary
+but not sufficient. A counterexample to sufficiency (3 zero restrictions for n = 3,
+all in the same column) shows why a rank condition is needed. Nothing like this is
+stated in `SVARRestrictions.lean`. -/
+section SVAR
+open Econ.TimeSeries.SVAR
+
+/-- n = 3, three zero restrictions all in column 0 (B 0 0 = B 1 0 = B 2 0 = 0) meet the
+order count n(n-1)/2 = 3, yet NO B with B Bᵀ = 1 satisfies them (B would be singular).
+Hence order condition ≠ identification; the file has no rank condition. -/
+example : ¬ ∃ B : Matrix (Fin 3) (Fin 3) ℝ, B * Bᵀ = 1 ∧ B 0 0 = 0 ∧ B 1 0 = 0 ∧ B 2 0 = 0 := by
+  sorry
+
+end SVAR
+
+/-! ## 8. Lucas tree: `u'` is an arbitrary positive function (not tied to a concave u,
+nor decreasing). Increasing "marginal utility" is admitted. The pricing results stay
+correct (they only need u' > 0), so this is a documented generalization. -/
+section Lucas
+open Econ.LucasTree
+
+example : ∃ T : Tree Bool, StrictMono T.u' := by
+  refine ⟨⟨fun _ _ => 1 / 2, ⟨fun _ _ => by norm_num, fun _ => by norm_num⟩,
+    fun _ => 1, fun _ => by norm_num, fun c => Real.exp c, fun c _ => Real.exp_pos c,
+    1 / 2, by norm_num, by norm_num⟩, ?_⟩
+  exact Real.exp_strictMono
+
+end Lucas

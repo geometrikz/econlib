@@ -76,4 +76,20 @@ theorem unique_invariant_of_pow {κ : Kernel X X} [IsMarkovKernel κ] {N : ℕ} 
     (hπ : Kernel.Invariant κ π) (hπ' : Kernel.Invariant κ π') : π' = π := by
   sorry
 
+theorem iterComp_add_pow (κ : Kernel X X) [IsMarkovKernel κ] (μ : Measure X) (m : ℕ) :
+    ∀ N : ℕ, iterComp κ μ (m + N) = (κ ^ N) ∘ₘ iterComp κ μ m := by
+  sorry
+
+theorem iterComp_pow (κ : Kernel X X) [IsMarkovKernel κ] (μ : Measure X) (N a : ℕ) :
+    ∀ b : ℕ, iterComp κ μ (a + N * b) = iterComp (κ ^ N) (iterComp κ μ a) b := by
+  sorry
+
+theorem doeblin_convergence_pow {κ : Kernel X X} [IsMarkovKernel κ] {N : ℕ} {φ : Measure X}
+    [IsProbabilityMeasure φ] {ε : ℝ} (hε0 : 0 ≤ ε) (hε1 : ε ≤ 1)
+    (hmin : ∀ x A, MeasurableSet A → ENNReal.ofReal ε * φ A ≤ (κ ^ N) x A)
+    {π : Measure X} [IsProbabilityMeasure π] (hπ : Kernel.Invariant κ π)
+    (μ : Measure X) [IsProbabilityMeasure μ] (n : ℕ) {A : Set X} (hA : MeasurableSet A) :
+    |(iterComp κ μ n).real A - π.real A| ≤ (1 - ε) ^ (n / N) := by
+  sorry
+
 end Econ

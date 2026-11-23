@@ -4,6 +4,7 @@ module
 public import Mathlib.Analysis.SpecialFunctions.Log.Basic
 public import Mathlib.Analysis.SpecificLimits.Basic
 public import Mathlib.Analysis.Calculus.Deriv.Mul
+public import Mathlib.Analysis.Normed.Ring.InfiniteSum
 
 @[expose] public section
 
@@ -74,6 +75,36 @@ theorem kernel_mono (P Q : Params) (hL : P.φL = Q.φL) (h0 : P.φ0 = Q.φ0) (h�
 
 theorem kernel_unbounded (P : Params) (hL : 0 < P.φL) (M : ℝ) :
     ∃ Q : Params, Q.φL = P.φL ∧ Q.φ0 = P.φ0 ∧ Q.φ = P.φ ∧ Q.γ = P.γ ∧ M < Q.kernel := by
+  sorry
+
+def logYcap (α : ℝ) (a S : ℕ → ℝ) (k0 e : ℝ) : ℕ → ℝ
+  | 0 => -P.γ * (S 0 + P.remain 0 * e) + a 0 + α * k0
+  | j + 1 => -P.γ * (S (j + 1) + P.remain (j + 1) * e) + a (j + 1) +
+      α * (log (α * P.β) + logYcap α a S k0 e j)
+
+def welfareCap (α : ℝ) (a S : ℕ → ℝ) (k0 e : ℝ) : ℝ :=
+  ∑' j : ℕ, P.β ^ j * (log ((1 - α * P.β) * exp (P.logYcap α a S k0 e j)) -
+    log ((1 - α * P.β) * exp (P.logYcap α a S k0 0 j)))
+
+theorem logYcap_sub (α : ℝ) (a S : ℕ → ℝ) (k0 e : ℝ) (j : ℕ) :
+    P.logYcap α a S k0 e j - P.logYcap α a S k0 0 j =
+      -P.γ * e * ∑ k ∈ Finset.range (j + 1), α ^ (j - k) * P.remain k := by
+  sorry
+
+theorem tsum_cauchy {α : ℝ} (hα : 0 ≤ α) (hα1 : α < 1) :
+    ∑' j : ℕ, P.β ^ j * ∑ k ∈ Finset.range (j + 1), α ^ (j - k) * P.remain k =
+      P.kernel / (1 - α * P.β) := by
+  sorry
+
+theorem welfareCap_eq {α : ℝ} (hα : 0 ≤ α) (hα1 : α < 1) (a S : ℕ → ℝ) (k0 e : ℝ) :
+    P.welfareCap α a S k0 e = -P.γ * e * (P.kernel / (1 - α * P.β)) := by
+  sorry
+
+def sccCap (α : ℝ) (a S : ℕ → ℝ) (k0 : ℝ) : ℝ :=
+  -((1 - α * P.β) * exp (P.logYcap α a S k0 0 0)) * deriv (P.welfareCap α a S k0) 0
+
+theorem sccCap_eq {α : ℝ} (hα : 0 ≤ α) (hα1 : α < 1) (a S : ℕ → ℝ) (k0 : ℝ) :
+    P.sccCap α a S k0 = P.γ * exp (P.logYcap α a S k0 0 0) * P.kernel := by
   sorry
 
 end Params

@@ -34,7 +34,7 @@ noncomputable def discPayoff (u : I → (∀ j, S j) → ℝ) (δ : ℝ) (σ : R
   (1 - δ) * ∑' t, δ ^ t * u i (pathFrom σ h t)
 
 def IsRepeatedSPE (u : I → (∀ j, S j) → ℝ) (δ : ℝ) (σ : RepeatedProfile S) : Prop :=
-  ∀ (h : List (∀ j, S j)) (i : I) (τ : List (∀ j, S j) → S i),
+  0 ≤ δ ∧ δ < 1 ∧ ∀ (h : List (∀ j, S j)) (i : I) (τ : List (∀ j, S j) → S i),
     discPayoff u δ (update σ i τ) h i ≤ discPayoff u δ σ h i
 
 lemma summable_disc {δ M : ℝ} (hδ0 : 0 ≤ δ) (hδ1 : δ < 1) {g : ℕ → ℝ}

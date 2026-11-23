@@ -1,0 +1,107 @@
+import EconLean
+
+open Econ MeasureTheory Set
+
+/-! Sanity tests for the Mechanism/* and Matching/* statement review. -/
+
+/-! ## Assortative: `HasIncreasingDifferences` over all of ℝ² excludes standard surpluses.
+`log x * log y` is supermodular on `[1,∞)²` (product of two nonnegative increasing functions),
+but fails the ℝ²-wide definition because Mathlib has `Real.log (-x) = Real.log x`. -/
+example : ¬ HasIncreasingDifferences (fun x y => Real.log x * Real.log y) := by
+  intro h
+  have he : (1 : ℝ) ≤ Real.exp 1 := by
+    have := Real.add_one_le_exp (1 : ℝ); linarith
+  have := h (-Real.exp 1) (-1) 1 (Real.exp 1) (by linarith) he
+  simp [Real.log_neg_eq_log, Real.log_exp] at this
+
+-- The same function restricted to the economically relevant domain is supermodular.
+example : ∀ x x' y y' : ℝ, 1 ≤ x → 1 ≤ y → x ≤ x' → y ≤ y' →
+    Real.log x * Real.log y' + Real.log x' * Real.log y ≤
+      Real.log x * Real.log y + Real.log x' * Real.log y' := by
+  intro x x' y y' hx hy hxx hyy
+  have h1 : Real.log x ≤ Real.log x' := Real.log_le_log (by linarith) hxx
+  have h2 : Real.log y ≤ Real.log y' := Real.log_le_log (by linarith) hyy
+  nlinarith
+
+/-! ## OptimalMechanism: for a non-regular discrete distribution no threshold `m` satisfies
+`hlow ∧ hhigh`, so `postedPrice_optimal` says nothing (no ironing / Riley–Zeckhauser). -/
+noncomputable def θ3 : ℕ → ℝ := fun j => (j : ℝ) + 1
+noncomputable def f3 : ℕ → ℝ := fun j => if j = 0 then 3 / 5 else if j = 1 then 1 / 10 else 3 / 10
+
+example : ∀ m : ℕ, ¬ ((∀ j < 3, j < m → virtualWeight 3 θ3 f3 j ≤ 0) ∧
+    (∀ j < 3, m ≤ j → 0 ≤ virtualWeight 3 θ3 f3 j)) := by
+  have w0 : virtualWeight 3 θ3 f3 0 = 1 / 5 := by
+    simp [virtualWeight, upperMass, θ3, f3, Finset.sum_Ico_succ_top]; norm_num
+  have w1 : virtualWeight 3 θ3 f3 1 = -1 / 10 := by
+    simp [virtualWeight, upperMass, θ3, f3, Finset.sum_Ico_succ_top]; norm_num
+  rintro m ⟨hl, hh⟩
+  rcases Nat.lt_or_ge m 1 with h | h
+  · have := hh 1 (by norm_num) (by omega); rw [w1] at this; norm_num at this
+  · have := hl 0 (by norm_num) (by omega); rw [w0] at this; norm_num at this
+
+/-! ## Myerson–Satterthwaite: off-support constraints.
+Buyer `U[1,2]`, seller `U[0,1]`, common interval `[0,2]`. The textbook theorem does not apply
+(supports do not overlap) and a posted price at 1 is efficient on the supports, DSIC, IR and BB.
+The formal theorem's distributional hypotheses all hold, and it excludes the posted price only
+because `IsEfficient 0 2` also requires trade at off-support pairs such as (1/2, 1/4). -/
+noncomputable def postedOne : TradeMechanism :=
+  ⟨fun v c => if c ≤ 1 ∧ 1 ≤ v then 1 else 0,
+   fun v c => if c ≤ 1 ∧ 1 ≤ v then 1 else 0,
+   fun v c => if c ≤ 1 ∧ 1 ≤ v then 1 else 0⟩
+
+-- Efficient on the actual supports.
+example : ∀ v ∈ Icc (1 : ℝ) 2, ∀ c ∈ Icc (0 : ℝ) 1, c < v → postedOne.x v c = 1 := by
+  intro v hv c hc _
+  simp [postedOne, hc.2, hv.1]
+
+-- But not efficient on the common interval `[0,2]²` that the theorem forces.
+example : ¬ postedOne.IsEfficient 0 2 := by
+  intro h
+  have := (h (1 / 2) ⟨by norm_num, by norm_num⟩ (1 / 4) ⟨by norm_num, by norm_num⟩).1 (by norm_num)
+  norm_num [postedOne] at this
+
+-- The distributional hypotheses of `myerson_satterthwaite` hold for this non-overlapping pair.
+example :
+    let μB := volume.restrict (Icc (1 : ℝ) 2)
+    let μS := volume.restrict (Icc (0 : ℝ) 1)
+    IsProbabilityMeasure μB ∧ IsProbabilityMeasure μS ∧
+    (∀ᵐ v ∂μB, v ∈ Icc (0 : ℝ) 2) ∧ (∀ᵐ c ∂μS, c ∈ Icc (0 : ℝ) 2) ∧
+    (∀ v, μB {v} = 0) ∧ (∀ c, μS {c} = 0) ∧
+    0 < ∫ v, ∫ c, (if c < v then v - c else 0) ∂μS ∂μB := by
+  sorry
+
+/-! ## Bilateral trade: the non-BB hypotheses are jointly satisfiable (pivot mechanism),
+so the impossibility is not vacuous for the wrong reason. -/
+noncomputable def pivotTrade : TradeMechanism :=
+  ⟨fun v c => if c < v then 1 else 0, fun v c => if c < v then c else 0,
+   fun v c => if c < v then v else 0⟩
+
+example (a b : ℝ) : pivotTrade.IsEfficient a b ∧ pivotTrade.BuyerDSIC a b ∧
+    pivotTrade.SellerDSIC a b := by
+  refine ⟨fun v _ c _ => ⟨fun h => by simp [pivotTrade, h],
+      fun h => by simp [pivotTrade, not_lt.mpr h.le]⟩, ?_, ?_⟩
+  · intro c _ v _ v' _
+    simp only [pivotTrade]
+    split_ifs <;> linarith
+  · intro v _ c _ c' _
+    simp only [pivotTrade]
+    split_ifs <;> linarith
+
+-- ... but it is not budget balanced (tB = c ≠ v = tS when trade occurs).
+example : ¬ pivotTrade.IsBudgetBalanced 0 1 := by
+  intro h
+  have := h 1 ⟨by norm_num, by norm_num⟩ 0 ⟨by norm_num, by norm_num⟩
+  norm_num [pivotTrade] at this
+
+/-! ## Myerson.lean: `expected_revenue_eq` only quantifies over finitely supported
+distributions; the uniform distribution on [0,1] is not a `SimpleLottery`. (Documented; no
+Lean test needed beyond noting `SimpleLottery.prob : ℝ →₀ ℝ`.) -/
+
+/-! ## Matching: the blocking lemma as stated omits `w ∈ μ'(M')`. The canonical form would be: -/
+example {M W : Type*} [Fintype M] [Fintype W] [DecidableEq W] (um : M → W → ℝ) (uw : W → M → ℝ)
+    (hum : ∀ m, Function.Injective (um m)) (huw : ∀ w, Function.Injective (uw w))
+    (μ' : M → Option W) (hμ' : IsMatching μ')
+    (hM' : ∃ m, Improves um (daMatching um uw) μ' m) :
+    ∃ m₀ w, ¬ Improves um (daMatching um uw) μ' m₀ ∧ IsBlocking um uw μ' m₀ w ∧
+      ∃ m₁, Improves um (daMatching um uw) μ' m₁ ∧ μ' m₁ = some w := by
+  sorry -- canonical Gale–Sotomayor blocking lemma; strictly stronger than `gs_blocking_lemma`

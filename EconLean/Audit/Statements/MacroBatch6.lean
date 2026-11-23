@@ -114,6 +114,17 @@ theorem frozen_tsum_kernel (P : Econ.Climate.Params) :
     ∑' j : ℕ, P.β ^ j * P.remain j = P.kernel :=
   P.tsum_kernel
 
+theorem frozen_sccCap_eq (P : Econ.Climate.Params) {α : ℝ} (hα : 0 ≤ α) (hα1 : α < 1)
+    (a S : ℕ → ℝ) (k0 : ℝ) :
+    P.sccCap α a S k0 = P.γ * Real.exp (P.logYcap α a S k0 0 0) * P.kernel :=
+  P.sccCap_eq hα hα1 a S k0
+
+theorem frozen_bf_second_order {n : Type*} [Fintype n] (E : Econ.BaqaeeFarhi.Economy n)
+    (hθ : E.θ ≠ 1) (x d : n → ℝ) :
+    deriv (deriv fun t : ℝ => E.logY (x + t • d)) 0 =
+      (E.θ - 1) * (∑ i, E.domar x i * d i ^ 2 - (∑ i, E.domar x i * d i) ^ 2) :=
+  E.second_order hθ x d
+
 end Econ.Audit
 
 end

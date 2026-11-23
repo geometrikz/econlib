@@ -17,8 +17,10 @@ Main results:
   `∑ q w`.
 * `postedPrice_revenue`: a posted price `θ m` attains the bound with equality.
 * `postedPrice_isOptimal` (Riley–Zeckhauser): with nondecreasing types, if the virtual
-  weights cross zero once, from below, at `m`, then the posted price `θ m` is an optimal mechanism among all IC and IR
-  mechanisms with `q ∈ [0, 1]`; randomisation does not help.
+  weights cross zero once, from below, at `m`, then the posted price `θ m` is an optimal
+  mechanism among all IC and IR mechanisms with `q ∈ [0, 1]`; randomisation does not help.
+* `postedPrice_isOptimal_of_regular` (Myerson): under regularity (nondecreasing virtual
+  values, `IsRegularDiscrete`) the single crossing holds, so some posted price is optimal.
 -/
 module
 
@@ -28,6 +30,7 @@ public import Mathlib.Basic.Real.Basic
 public import Mathlib.Algebra.BigOperators.Ring.Finset
 public import Mathlib.Tactic.Linarith
 public import Mathlib.Tactic.Ring
+public import Mathlib.Tactic.IntervalCases
 
 @[expose] public section
 
@@ -165,8 +168,8 @@ theorem postedPrice_IC_IR (hθ : MonotoneOn θ (Set.Iio n)) (m : ℕ) :
     · simp [hjm]
 
 /-- **Revenue bound by the posted price** (Riley–Zeckhauser 1983; Myerson 1981). If the
-virtual weights are `≤ 0` below `m` and `≥ 0` from `m` on (single crossing, e.g. under
-regularity), no IC and IR mechanism with sale probabilities in `[0, 1]` earns more than the
+virtual weights are `≤ 0` below `m` and `≥ 0` from `m` on (single crossing; regularity implies
+it, see `postedPrice_isOptimal_of_regular`), no IC and IR mechanism with sale probabilities in `[0, 1]` earns more than the
 posted price `θ m`. (That the posted price is itself feasible needs nondecreasing types: see
 `postedPrice_isOptimal`.) -/
 theorem postedPrice_optimal (hf : ∀ k < n, 0 ≤ f k) (m : ℕ)
@@ -199,6 +202,44 @@ theorem postedPrice_isOptimal (hθ : MonotoneOn θ (Set.Iio n)) (hf : ∀ k < n,
   ⟨(postedPrice_IC_IR hθ m).1, (postedPrice_IC_IR hθ m).2,
     fun _ _ hq hIC hIR => postedPrice_optimal hf m hlow hhigh hq hIC hIR⟩
 
+/-- **Regularity** (Myerson 1981), discrete form: the virtual values `w j / f j` are
+nondecreasing in the type. -/
+def IsRegularDiscrete (n : ℕ) (θ f : ℕ → ℝ) : Prop :=
+  MonotoneOn (fun j => virtualWeight n θ f j / f j) (Set.Iio n)
+
+/-- **Optimal mechanism under regularity** (Myerson 1981; Riley–Zeckhauser 1983). With
+nondecreasing types, positive probabilities and regular virtual values, some posted price
+`θ m` (`m ≤ n`; `m = n` means not selling) is IC, IR and earns at least as much as every IC
+and IR mechanism with sale probabilities in `[0, 1]`. The cutoff `m` is the first type with
+nonnegative virtual value. -/
+theorem postedPrice_isOptimal_of_regular (hθ : MonotoneOn θ (Set.Iio n))
+    (hf : ∀ k < n, 0 < f k) (hreg : IsRegularDiscrete n θ f) :
+    ∃ m ≤ n, IsICDiscrete n θ (postedQ m) (postedP θ m) ∧
+      IsIRDiscrete n θ (postedQ m) (postedP θ m) ∧
+      ∀ q p : ℕ → ℝ, (∀ j < n, 0 ≤ q j ∧ q j ≤ 1) → IsICDiscrete n θ q p →
+        IsIRDiscrete n θ q p →
+        ∑ k ∈ range n, f k * p k ≤ ∑ k ∈ range n, f k * postedP θ m k := by
+  classical
+  have hex : ∃ j, n ≤ j ∨ 0 ≤ virtualWeight n θ f j / f j := ⟨n, Or.inl le_rfl⟩
+  set m := Nat.find hex
+  have hm : n ≤ m ∨ 0 ≤ virtualWeight n θ f m / f m := Nat.find_spec hex
+  have hmn : m ≤ n := Nat.find_min' hex (Or.inl le_rfl)
+  have hlow : ∀ j < n, j < m → virtualWeight n θ f j ≤ 0 := by
+    intro j hj hjm
+    have h := Nat.find_min hex hjm
+    push Not at h
+    have := (div_neg_iff.1 h.2)
+    rcases this with h' | h'
+    · exact absurd h'.2 (not_lt.2 (hf j hj).le)
+    · exact h'.1.le
+  have hhigh : ∀ j < n, m ≤ j → 0 ≤ virtualWeight n θ f j := by
+    intro j hj hmj
+    have hm' : 0 ≤ virtualWeight n θ f m / f m := hm.resolve_left (by omega)
+    have := hreg (show m ∈ Set.Iio n from lt_of_le_of_lt hmj hj) hj hmj
+    have h2 : 0 ≤ virtualWeight n θ f j / f j := hm'.trans this
+    exact (div_nonneg_iff.1 h2).elim (fun h => h.1) fun h => absurd h.2 (not_le.2 (hf j hj))
+  exact ⟨m, hmn, postedPrice_isOptimal hθ (fun k hk => (hf k hk).le) m hlow hhigh⟩
+
 /-- **Witness.** Three equally likely values `1, 2, 3`: the virtual weights are
 `−1/3, 1/3, 1`, crossing zero at `m = 1`, so the posted price `2` is optimal. -/
 example : virtualWeight 3 (fun j => (j : ℝ) + 1) (fun _ => 1 / 3) 0 = -1 / 3 ∧
@@ -206,5 +247,12 @@ example : virtualWeight 3 (fun j => (j : ℝ) + 1) (fun _ => 1 / 3) 0 = -1 / 3 �
     virtualWeight 3 (fun j => (j : ℝ) + 1) (fun _ => 1 / 3) 2 = 1 := by
   simp only [virtualWeight, upperMass]
   refine ⟨?_, ?_, ?_⟩ <;> simp <;> norm_num
+
+/-- The same three-type distribution is regular: the virtual values are `−1, 1, 3`. -/
+example : IsRegularDiscrete 3 (fun j => (j : ℝ) + 1) (fun _ => 1 / 3) := by
+  intro a ha b hb hab
+  simp only [Set.mem_Iio] at ha hb
+  simp only [virtualWeight, upperMass]
+  interval_cases a <;> interval_cases b <;> simp at hab ⊢ <;> norm_num [Finset.sum_Ico_eq_sum_range]
 
 end Econ

@@ -47,6 +47,14 @@ theorem frozen_unique_invariant_of_pow {κ : Kernel X X} [IsMarkovKernel κ] {N 
     (hπ : Kernel.Invariant κ π) (hπ' : Kernel.Invariant κ π') : π' = π :=
   unique_invariant_of_pow hε0 hε1 hmin hπ hπ'
 
+theorem frozen_doeblin_convergence_pow {κ : Kernel X X} [IsMarkovKernel κ] {N : ℕ}
+    {φ : Measure X} [IsProbabilityMeasure φ] {ε : ℝ} (hε0 : 0 ≤ ε) (hε1 : ε ≤ 1)
+    (hmin : ∀ x A, MeasurableSet A → ENNReal.ofReal ε * φ A ≤ (κ ^ N) x A)
+    {π : Measure X} [IsProbabilityMeasure π] (hπ : Kernel.Invariant κ π)
+    (μ : Measure X) [IsProbabilityMeasure μ] (n : ℕ) {A : Set X} (hA : MeasurableSet A) :
+    |(iterComp κ μ n).real A - π.real A| ≤ (1 - ε) ^ (n / N) :=
+  doeblin_convergence_pow hε0 hε1 hmin hπ μ n hA
+
 end Doeblin
 
 section FiniteDoeblin

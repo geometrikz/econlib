@@ -21,8 +21,9 @@ theorem outcomeMean_const {f : Ω → ℝ} (hf : f ∈ lotteries Ω) (k : ℝ) :
     outcomeMean f (fun _ => k) = k := by
   sorry
 
-theorem fullInsurance_optimal {f : Ω → ℝ} (hf : f ∈ lotteries Ω) {φ : ℝ → ℝ}
-    (hconv : ConvexOn ℝ Set.univ φ) (hmono : Monotone φ) {ν : Ω → ℝ} {ū g : ℝ}
+theorem fullInsurance_optimal {f : Ω → ℝ} (hf : f ∈ lotteries Ω) {U : Set ℝ} {φ : ℝ → ℝ}
+    (hconv : ConvexOn ℝ U φ) (hmono : MonotoneOn φ U) {ν : Ω → ℝ} (hν : ∀ ω, ν ω ∈ U)
+    {ū g : ℝ} (hU : ū + g ∈ U)
     (hIR : ū + g ≤ outcomeMean f ν) : φ (ū + g) ≤ outcomeMean f (fun ω => φ (ν ω)) := by
   sorry
 
@@ -32,9 +33,10 @@ theorem implementsHigh_nonconstant {fL fH : Ω → ℝ} (hfL : fL ∈ lotteries 
   sorry
 
 theorem implementsHigh_cost_gt {fL fH : Ω → ℝ} (hfL : fL ∈ lotteries Ω)
-    (hfH : fH ∈ lotteries Ω) (hfull : ∀ ω, 0 < fH ω) {φ : ℝ → ℝ}
-    (hconv : StrictConvexOn ℝ Set.univ φ) (hmono : Monotone φ) {gL gH ū : ℝ} (hg : gL < gH)
-    {ν : Ω → ℝ} (h : ImplementsHigh fL fH gL gH ū ν) :
+    (hfH : fH ∈ lotteries Ω) (hfull : ∀ ω, 0 < fH ω) {U : Set ℝ} {φ : ℝ → ℝ}
+    (hconv : StrictConvexOn ℝ U φ) (hmono : MonotoneOn φ U) {gL gH ū : ℝ} (hg : gL < gH)
+    (hU : ū + gH ∈ U) {ν : Ω → ℝ} (hν : ∀ ω, ν ω ∈ U)
+    (h : ImplementsHigh fL fH gL gH ū ν) :
     φ (ū + gH) < outcomeMean fH (fun ω => φ (ν ω)) := by
   sorry
 

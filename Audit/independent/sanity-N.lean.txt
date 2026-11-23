@@ -1,0 +1,88 @@
+import EconLean
+
+open Econ
+
+/-! Sanity tests for reviewer N (Macro targets). `sorry` marks steps not checked (Lean not run). -/
+
+namespace SanityN
+
+open Matrix
+
+/-- BK coverage gap: a saddle-path system (one predetermined, one jump variable) is
+BK-determinate, yet `DeterminateN` fails, because it treats every variable as a jump variable. -/
+example : ¬ NK.DeterminateN (Matrix.diagonal ![(1 / 2 : ℝ), 2]) := by
+  intro h
+  have hz := h (fun t => ![(1 / 2 : ℝ) ^ t, 0])
+    (fun t => by
+      funext i; rw [mulVec_diagonal]
+      fin_cases i <;> simp [pow_succ] <;> ring)
+    ⟨1, fun t i => by
+      fin_cases i
+      · simp only [Fin.zero_eta, Matrix.cons_val_zero]
+        rw [abs_of_pos (by positivity)]; exact pow_le_one₀ (by norm_num) (by norm_num)
+      · simp⟩ 0
+  simpa using congrFun hz 0
+
+/-- Chamley–Judd: `IsRamseyFOC` holds for sequences unrelated to any Ramsey problem.
+Nothing ties `Wc` to a planner's objective, so the theorem is limit algebra. -/
+example : ChamleyJudd.IsRamseyFOC (1 / 2) (fun _ => 1) (fun _ => 1) (fun _ => 1) (fun _ => 0) := by
+  intro t; norm_num
+
+/-- `chamley_judd` applied to the trivial sequences above. -/
+example : (0 : ℝ) = 0 :=
+  ChamleyJudd.chamley_judd (β := 1 / 2) (by norm_num)
+    (uc := fun _ => 1) (Wc := fun _ => 1) (r := fun _ => 1) (τ := fun _ => 0)
+    (by intro t; norm_num) one_pos one_pos one_ne_zero
+    tendsto_const_nhds tendsto_const_nhds tendsto_const_nhds tendsto_const_nhds
+
+/-- SCC MISMATCH: the Lean SCC differs from GHKT's γ·Y₀·kernel whenever s > 0. -/
+theorem scc_ne_ghkt (P : Climate.Params) (hs : 0 < P.s) (hL : 0 < P.φL)
+    {Y S : ℕ → ℝ} (hY : ∀ j, 0 < Y j) :
+    P.scc Y S ≠ P.γ * P.outputAfter Y S 0 0 * P.kernel := by
+  rw [P.scc_eq hY]
+  intro h
+  have hk := P.kernel_pos_of hL
+  have hY0 : 0 < P.outputAfter Y S 0 0 := by
+    unfold Climate.Params.outputAfter; exact mul_pos (Real.exp_pos _) (hY 0)
+  have hγ := P.hγ
+  have : 0 < P.γ * P.outputAfter Y S 0 0 * P.kernel * P.s := by positivity
+  nlinarith
+
+/-- Baqaee–Farhi junk: at θ = 1 (Cobb–Douglas), `logY` is identically 0 instead of Σ bᵢ xᵢ. -/
+example {n : Type*} [Fintype n] (E : BaqaeeFarhi.Economy n) (hθ : E.θ = 1) (x : n → ℝ) :
+    E.logY x = 0 := by
+  simp [BaqaeeFarhi.Economy.logY, hθ]
+
+/-- SLP Thm 11.4 is not covered: Q = [[1,0],[1,0]] has a strictly positive column
+(and a unique invariant distribution), but every power has a zero entry, so the
+hypothesis of `doeblin_pow` (all entries of Q^N ≥ ε > 0) never holds. -/
+theorem slp114_not_covered :
+    ∀ N : ℕ, (!![(1 : ℝ), 0; 1, 0] ^ N) 0 1 = 0 := by
+  intro N
+  induction N with
+  | zero => simp
+  | succ N ih =>
+    rw [pow_succ, Matrix.mul_apply, Fin.sum_univ_two]
+    simp
+
+example (N : ℕ) : ¬ ∃ ε : ℝ, 0 < ε ∧ ∀ z z', ε ≤ (!![(1 : ℝ), 0; 1, 0] ^ N) z z' := by
+  rintro ⟨ε, hε, h⟩
+  have := h 0 1
+  rw [slp114_not_covered N] at this
+  linarith
+
+/-- Romer: the equilibrium interest rate is a definition, not derived from an equilibrium. -/
+example (E : Romer.Economy) : E.rEq = E.η * E.a * E.L := rfl
+
+/-- Aiyagari: the `noReturn` family (income independent of r and of assets) still
+yields an "equilibrium r" from `exists_asset_market_clearing`. This is the example
+already in Aiyagari.lean, so the theorem reduces to the IVT. -/
+example : ∃ r : Set.Icc (0 : ℝ) 1, ∃ (g : ParamSavings.noReturn.S × Fin 2 → ParamSavings.noReturn.S)
+    (hg : Measurable g) (π : MeasureTheory.ProbabilityMeasure (ParamSavings.noReturn.S × Fin 2)),
+    (∀ s, (ParamSavings.noReturn.slice r).toStochDynProg.policy s = {g s}) ∧
+    ProbabilityTheory.Kernel.Invariant (policyKernel ParamSavings.noReturn.Q g hg) π ∧
+    ∫ s, ParamSavings.noReturn.assets s
+      ∂(π : MeasureTheory.Measure (ParamSavings.noReturn.S × Fin 2)) = 1 - r := by
+  sorry -- identical to the closing example in Aiyagari.lean
+
+end SanityN

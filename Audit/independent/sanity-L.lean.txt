@@ -1,0 +1,98 @@
+import EconLean
+
+open Econ Finset
+
+namespace Econ.ReviewL
+
+/-! §1. Cobb–Douglas fails the hypotheses of `exists_walrasianEquilibrium_of_preferences`. -/
+
+noncomputable def cdU (x : Fin 2 → ℝ) : ℝ := Real.sqrt (x 0 * x 1)
+
+-- Not strongly monotone: 0 ≤ (1,0), 0 ≠ (1,0), but both have utility 0.
+example : ¬ StronglyMonotone (prefOf cdU) := by
+  intro h
+  have hle : (0 : Fin 2 → ℝ) ≤ ![1, 0] := by
+    intro i; fin_cases i <;> simp
+  have hne : (0 : Fin 2 → ℝ) ≠ ![1, 0] := by
+    intro h'; have := congrFun h' 0; simp at this
+  have := h 0 ![1, 0] le_rfl hle hne
+  simp [P, prefOf, cdU] at this
+
+-- Not strictly quasiconcave: x = (0,1), y = (0,2), t = 1/2, all utilities are 0.
+example : ¬ StrictlyQuasiconcave cdU := by
+  intro h
+  have hx : (0 : Fin 2 → ℝ) ≤ ![0, 1] := by intro i; fin_cases i <;> simp
+  have hy : (0 : Fin 2 → ℝ) ≤ ![0, 2] := by intro i; fin_cases i <;> simp
+  have hne : (![0, 1] : Fin 2 → ℝ) ≠ ![0, 2] := by
+    intro h'; have := congrFun h' 1; norm_num at this
+  have := h ![0, 1] ![0, 2] hx hy hne (1 / 2) (by norm_num) (by norm_num)
+  simp [cdU] at this
+
+-- The canonical (MWG 17.B.2) hypotheses do not need `hωa`; this economy has
+-- Σω ≫ 0 but a consumer with zero endowment, so the Lean theorem does not apply.
+def endowZ : Fin 2 → Fin 2 → ℝ := ![![3, 3], 0]
+
+example : ¬ ∀ a : Fin 2, endowZ a ≠ 0 := by
+  intro h; exact h 1 (by simp [endowZ])
+
+/-! §3. `voluntary_underprovision` excludes φ(G) = log(1+G) (also √G, log G). -/
+
+example (d : ℝ → ℝ) (hpos : ∀ x, 0 < d x)
+    (hd : ∀ x, HasDerivAt (fun x => Real.log (1 + x)) (d x) x) : False := by
+  have h1 := hd (-2)
+  have h2 : HasDerivAt (fun x => Real.log (1 + x)) (1 / (1 + -2)) (-2) :=
+    ((hasDerivAt_id (-2 : ℝ)).const_add 1).log (by norm_num)
+  have := h1.unique h2
+  have := hpos (-2)
+  norm_num at *
+  linarith
+
+/-! §4. `median_not_defeated`: the canonical strict-vs-strict form is provable
+under the same hypotheses but is not what the file states. -/
+
+example {I : Type*} [Fintype I] {peak : I → ℝ} {u : I → ℝ → ℝ}
+    (hsp : ∀ i, SinglePeaked (u i) (peak i)) {m : ℝ} (hm : IsWeakMedianPeak peak m) (y : ℝ) :
+    (univ.filter fun i => u i m < u i y).card ≤ (univ.filter fun i => u i y < u i m).card := by
+  sorry
+
+-- Nondegenerate instance of `SinglePeaked` (hypotheses are satisfiable).
+example (x : ℝ) : SinglePeaked (fun y => -|y - x|) x := by
+  constructor
+  · intro y z hyz hzx
+    simp only
+    rw [abs_of_neg (by linarith), abs_of_nonpos (by linarith)]
+    linarith
+  · intro y z hxy hyz
+    simp only
+    rw [abs_of_pos (by linarith), abs_of_nonneg (by linarith)]
+    linarith
+
+/-! §5. Stackelberg: the "(a-c)^2/(9b)" literal is the Cournot duopoly profit,
+but the file never connects them. -/
+
+example {a b c : ℝ} (hb : 0 < b) (i : Fin 2) :
+    cournotProfit a b c i (fun _ : Fin 2 => cournotQ a b c 2) = (a - c) ^ 2 / (9 * b) := by
+  sorry
+
+/-! §6. Core includes ∅ as a coalition: v ∅ > 0 empties the core (and kills balancedness). -/
+
+example {N : Type*} [Fintype N] [DecidableEq N] (v : TUGame N) (h : 0 < v ∅) :
+    ¬ ∃ x, IsInCore v x := by
+  rintro ⟨x, -, hS⟩
+  have := hS ∅
+  simp at this
+  linarith
+
+example {N : Type*} [Fintype N] [DecidableEq N] (v : TUGame N) (h : 0 < v ∅) :
+    ¬ IsBalanced v := by
+  intro hb
+  -- weight 1 on every singleton (balanced) plus a huge weight on ∅
+  sorry
+
+/-! §7. Diamond: only symmetric profiles are expressible; the statement is about
+a firm's deviation when all rivals charge p. Sanity check of the iff at p = u. -/
+
+example {n c u s : ℝ} (hn : 0 < n) (hcu : c < u) (hs : 0 < s) : IsSearchEq n c u s u :=
+  (diamond_paradox hn hcu hs u).2 rfl
+
+end Econ.ReviewL

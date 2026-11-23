@@ -14,7 +14,8 @@ risk averse (linear when risk neutral).
 Main results:
 * `fullInsurance_optimal` (MWG Prop. 14.B.2, observable effort): any contract that gives the
   agent at least `ū + g` in expectation under `f` costs at least the constant contract
-  `φ(ū + g)`: with observable effort the risk-averse agent is fully insured.
+  `φ(ū + g)`: with observable effort the risk-averse agent is fully insured. Convexity and
+  monotonicity of `φ = u⁻¹` are required only on an interval `U` of utility levels.
 * `implementsHigh_nonconstant`, `implementsHigh_cost_gt` (MWG Prop. 14.B.4, hidden effort):
   if `fH` has full support, a contract implementing high effort cannot be constant, and if
   `φ` is strictly convex it costs strictly more than the first-best `φ(ū + gH)`.
@@ -47,16 +48,22 @@ theorem outcomeMean_const {f : Ω → ℝ} (hf : f ∈ lotteries Ω) (k : ℝ) :
     outcomeMean f (fun _ => k) = k := by
   simp [outcomeMean, ← Finset.sum_mul, hf.2]
 
-/-- **Observable effort: full insurance is optimal** (MWG Prop. 14.B.2). If `φ` is convex and
-monotone, any contract giving expected utility at least `ū + g` under `f` costs at least
-`φ(ū + g)`, the cost of the constant contract. -/
-theorem fullInsurance_optimal {f : Ω → ℝ} (hf : f ∈ lotteries Ω) {φ : ℝ → ℝ}
-    (hconv : ConvexOn ℝ Set.univ φ) (hmono : Monotone φ) {ν : Ω → ℝ} {ū g : ℝ}
+/-- **Observable effort: full insurance is optimal** (MWG Prop. 14.B.2). Let `U` be an
+interval containing the agent's attainable utility levels (the range of `u`), on which
+`φ = u⁻¹` is convex and monotone. Any contract with utilities `ν ω ∈ U` giving expected
+utility at least `ū + g ∈ U` under `f` costs at least `φ(ū + g)`, the cost of the constant
+contract. (Only `U` matters, so CARA utility, with range `(−∞, 0)`, and `√w`, with range
+`[0, ∞)`, are covered.) -/
+theorem fullInsurance_optimal {f : Ω → ℝ} (hf : f ∈ lotteries Ω) {U : Set ℝ} {φ : ℝ → ℝ}
+    (hconv : ConvexOn ℝ U φ) (hmono : MonotoneOn φ U) {ν : Ω → ℝ} (hν : ∀ ω, ν ω ∈ U)
+    {ū g : ℝ} (hU : ū + g ∈ U)
     (hIR : ū + g ≤ outcomeMean f ν) : φ (ū + g) ≤ outcomeMean f (fun ω => φ (ν ω)) := by
   have hJ := hconv.map_sum_le (t := univ) (w := f) (p := ν) (fun ω _ => hf.1 ω) hf.2
-    (fun ω _ => Set.mem_univ _)
-  simp only [smul_eq_mul] at hJ
-  exact (hmono hIR).trans hJ
+    (fun ω _ => hν ω)
+  have hmem : ∑ ω, f ω • ν ω ∈ U :=
+    hconv.1.sum_mem (fun ω _ => hf.1 ω) hf.2 (fun ω _ => hν ω)
+  simp only [smul_eq_mul] at hJ hmem
+  exact (hmono hU hmem hIR).trans hJ
 
 /-- **Hidden effort: incentives require risk.** If `gL < gH` and the outcome distributions
 are lotteries, no constant contract implements high effort. -/
@@ -68,12 +75,14 @@ theorem implementsHigh_nonconstant {fL fH : Ω → ℝ} (hfL : fL ∈ lotteries 
   linarith
 
 /-- **Hidden effort is costly** (MWG Prop. 14.B.4). If the agent is strictly risk averse
-(`φ` strictly convex and monotone), `fH` has full support and `gL < gH`, every contract
+(`φ = u⁻¹` strictly convex and monotone on an interval `U` containing the attainable utility
+levels), `fH` has full support and `gL < gH`, every contract with utilities in `U`
 implementing high effort costs strictly more than the first-best `φ(ū + gH)`. -/
 theorem implementsHigh_cost_gt {fL fH : Ω → ℝ} (hfL : fL ∈ lotteries Ω)
-    (hfH : fH ∈ lotteries Ω) (hfull : ∀ ω, 0 < fH ω) {φ : ℝ → ℝ}
-    (hconv : StrictConvexOn ℝ Set.univ φ) (hmono : Monotone φ) {gL gH ū : ℝ} (hg : gL < gH)
-    {ν : Ω → ℝ} (h : ImplementsHigh fL fH gL gH ū ν) :
+    (hfH : fH ∈ lotteries Ω) (hfull : ∀ ω, 0 < fH ω) {U : Set ℝ} {φ : ℝ → ℝ}
+    (hconv : StrictConvexOn ℝ U φ) (hmono : MonotoneOn φ U) {gL gH ū : ℝ} (hg : gL < gH)
+    (hU : ū + gH ∈ U) {ν : Ω → ℝ} (hν : ∀ ω, ν ω ∈ U)
+    (h : ImplementsHigh fL fH gL gH ū ν) :
     φ (ū + gH) < outcomeMean fH (fun ω => φ (ν ω)) := by
   -- `ν` is not constant, so Jensen's inequality is strict.
   have hnc : ∃ j ∈ (univ : Finset Ω), ∃ k ∈ (univ : Finset Ω), ν j ≠ ν k := by
@@ -87,11 +96,13 @@ theorem implementsHigh_cost_gt {fL fH : Ω → ℝ} (hfL : fL ∈ lotteries Ω)
     have : ν = fun _ => ν ω₀ := funext fun ω => hc ω (mem_univ _) ω₀ (mem_univ _)
     exact implementsHigh_nonconstant hfL hfH hg (this ▸ h)
   have hJ := hconv.map_sum_lt (t := univ) (w := fH) (p := ν) (fun ω _ => hfull ω) hfH.2
-    (fun ω _ => Set.mem_univ _) hnc
-  simp only [smul_eq_mul] at hJ
+    (fun ω _ => hν ω) hnc
+  have hmem : ∑ ω, fH ω • ν ω ∈ U :=
+    hconv.1.sum_mem (fun ω _ => (hfull ω).le) hfH.2 (fun ω _ => hν ω)
+  simp only [smul_eq_mul] at hJ hmem
   have hIR : ū + gH ≤ ∑ ω, fH ω * ν ω := by
     have := h.1; simp only [outcomeMean] at this; linarith
-  exact (hmono hIR).trans_lt hJ
+  exact (hmono hU hmem hIR).trans_lt hJ
 
 /-- **Risk-neutral agent: sell the firm** (MWG Prop. 14.B.1). With `φ = id`, if high effort
 is efficient (`E_L[π] − gL ≤ E_H[π] − gH`), the contract `w = π − α` with

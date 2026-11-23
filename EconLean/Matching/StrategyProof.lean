@@ -13,7 +13,7 @@ Main results:
 * `daMatching_isStable`, `daMatching_menOptimal`: the DA matching is stable and men-optimal.
 * `gs_blocking_lemma` (Gale–Sotomayor 1985 blocking lemma): if `μ'` is any matching that some
   men strictly prefer to the DA matching `μ`, then some pair `(m₀, w)` blocks `μ'`, where `m₀`
-  does **not** strictly prefer `μ'` to `μ`.
+  does **not** strictly prefer `μ'` to `μ` and `w` is matched under `μ'` to a man who does.
 * `daMatching_strategyproof` (Dubins–Freedman; Roth): no man can obtain a strictly better
   partner by misreporting his preferences, whatever the others report (individual
   manipulation, with every partner acceptable: truncation reports and coalitional
@@ -218,13 +218,13 @@ theorem daMatching_menOptimal (hum : ∀ m, Function.Injective (um m))
 
 /-- **Blocking lemma** (Gale–Sotomayor 1985). Let `μ` be the men-proposing DA matching and
 `μ'` any matching that some man strictly prefers. Then some pair `(m₀, w)` blocks `μ'`, where
-`m₀` does not strictly prefer `μ'` to `μ`. (Gale and Sotomayor also show that `w` is matched
-under `μ` to a man who improves; that part is not stated here, since strategy-proofness only
-needs the conclusion above.) -/
+`m₀` does not strictly prefer `μ'` to `μ`, and `w ∈ μ'(M')`: she is matched under `μ'` to a
+man who strictly prefers `μ'` (Roth–Sotomayor 1990, Lemma 3.5). -/
 theorem gs_blocking_lemma (hum : ∀ m, Function.Injective (um m))
     (huw : ∀ w, Function.Injective (uw w)) (μ' : M → Option W) (hμ' : IsMatching μ')
     (hM' : ∃ m, Improves um (daMatching um uw) μ' m) :
-    ∃ m₀ w, ¬ Improves um (daMatching um uw) μ' m₀ ∧ IsBlocking um uw μ' m₀ w := by
+    ∃ m₀ w, ¬ Improves um (daMatching um uw) μ' m₀ ∧ IsBlocking um uw μ' m₀ w ∧
+      ∃ m', Improves um (daMatching um uw) μ' m' ∧ μ' m' = some w := by
   classical
   set μ := daMatching um uw with hμdef
   set Rf := daFinal um uw
@@ -252,7 +252,7 @@ theorem gs_blocking_lemma (hum : ∀ m, Function.Injective (um m))
       rintro rfl; exact lt_irrefl _ (himp w hm''w)
     have hlt : uw w m' < uw w m'' := lt_of_le_of_ne hle ((huw w).ne hne.symm)
     have hm''S : ¬ Improves um μ μ' m'' := fun h => hwS m'' hm''w (mem_filter.2 ⟨mem_univ _, h⟩)
-    refine ⟨m'', w, hm''S, fun w'' h'' => ?_, fun m3 h3 => ?_⟩
+    refine ⟨m'', w, hm''S, ⟨fun w'' h'' => ?_, fun m3 h3 => ?_⟩, m', (mem_filter.1 hm'S).2, hm'w⟩
     · obtain ⟨w₀, hw₀, hle'⟩ := notImp m'' w'' hm''S h''
       rw [hm''w, Option.some.injEq] at hw₀
       subst hw₀
@@ -339,7 +339,7 @@ theorem gs_blocking_lemma (hum : ∀ m, Function.Injective (um m))
       have := hstay b hbS (k + 1) (by have := hmax b hbS; omega)
       rw [hb1'] at this
       exact hbne (hstab.1 _ _ _ this.symm hμw)
-    refine ⟨b, w, hbS, fun w'' h'' => ?_, fun m3 h3 => ?_⟩
+    refine ⟨b, w, hbS, ⟨fun w'' h'' => ?_, fun m3 h3 => ?_⟩, m', (mem_filter.1 hm'S).2, hm'w⟩
     · obtain ⟨w₀, hw₀, hle₀⟩ := notImp b w'' hbS h''
       have hw₀ne : w₀ ≠ w := by
         rintro rfl; exact hbne (hstab.1 _ _ _ hw₀ hμw)
@@ -364,7 +364,7 @@ theorem daMatching_strategyproof (um um' : M → W → ℝ) (uw : W → M → �
     ¬ Improves um (daMatching um uw) (daMatching um' uw) m := by
   intro himp
   have hstab' : IsStableMatching um' uw (daMatching um' uw) := daMatching_isStable huw
-  obtain ⟨m₀, w, hn, hblock⟩ := gs_blocking_lemma hum huw _ hstab'.1 ⟨m, himp⟩
+  obtain ⟨m₀, w, hn, hblock, -⟩ := gs_blocking_lemma hum huw _ hstab'.1 ⟨m, himp⟩
   have hne : m₀ ≠ m := by rintro rfl; exact hn himp
   refine hstab'.2 m₀ w ⟨fun w'' h => ?_, hblock.2⟩
   rw [hsame m₀ hne]

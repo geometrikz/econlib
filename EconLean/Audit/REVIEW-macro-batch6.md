@@ -27,3 +27,9 @@ GHKT kernel) and found no false statement.
 - leanchecker: all 7 modules and the frozen-statements module return rc = 0.
 - nanoda: 49,781 declarations, no typechecker errors (the "Unable to print axioms" message is the known, harmless one).
 - Comparator: the frozen statements compile against the library theorems.
+
+## Follow-up: independent review (Audit/independent/review-N.md, review-M.md)
+- SCC lacked the capital channel. Added the GHKT economy with capital (`logYcap`, `welfareCap`, `sccCap`). `sccCap_eq` now derives SCC = γY₀·kernel: the 1/(1−αβ) feedback (a Cauchy product, `tsum_cauchy`) cancels C₀/Y₀ = 1−αβ. Frozen as `frozen_sccCap_eq`.
+- The Baqaee–Farhi second-order term was missing. Added `hasDerivAt_domar` (dλᵢ = (θ−1)λᵢ(dᵢ−Σλd)), `deriv_logY_line` and `second_order` (d²logY = (θ−1)Var_λ(d)). Frozen as `frozen_bf_second_order`.
+- Finance/SequentialMarkets (batch 5): `IsAD`/`IsRadner` had no consumption set, so with log or CRRA utility they were vacuous. Added `Consumable` (x ≥ 0) to both, on the chosen bundle and on competing bundles. The equivalence theorems and the example still hold.
+- Left open (documented): `chamley_judd` assumes the planner's FOC (no Ramsey problem is formalized); Blanchard–Kahn covers only the all-jump case (no predetermined block); θ = 1 is a junk value in Baqaee–Farhi.

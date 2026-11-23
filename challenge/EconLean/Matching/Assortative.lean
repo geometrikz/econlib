@@ -8,6 +8,7 @@ public import Mathlib.GroupTheory.Perm.Basic
 public import Mathlib.Basic.Real.Basic
 public import Mathlib.Order.Fin.Basic
 public import Mathlib.Tactic.Linarith
+public import Mathlib.Analysis.SpecialFunctions.Log.Basic
 
 @[expose] public section
 
@@ -15,16 +16,16 @@ namespace Econ
 
 open Finset
 
-def HasIncreasingDifferences (f : ℝ → ℝ → ℝ) : Prop :=
-  ∀ x x' y y', x ≤ x' → y ≤ y' → f x y' + f x' y ≤ f x y + f x' y'
+def HasIncreasingDifferences (f : ℝ → ℝ → ℝ) (X Y : Set ℝ) : Prop :=
+  ∀ x ∈ X, ∀ x' ∈ X, ∀ y ∈ Y, ∀ y' ∈ Y, x ≤ x' → y ≤ y' → f x y' + f x' y ≤ f x y + f x' y'
 
 def matchingSurplus {n : ℕ} (f : ℝ → ℝ → ℝ) (x y : Fin n → ℝ) (σ : Equiv.Perm (Fin n)) : ℝ :=
   ∑ i, f (x i) (y (σ i))
 
 def movedSet {n : ℕ} (σ : Equiv.Perm (Fin n)) : Finset (Fin n) := univ.filter fun i => σ i ≠ i
 
-theorem becker_pam {n : ℕ} {f : ℝ → ℝ → ℝ} (hf : HasIncreasingDifferences f)
-    {x y : Fin n → ℝ} (hx : Monotone x) (hy : Monotone y) (σ : Equiv.Perm (Fin n)) :
+theorem becker_pam {n : ℕ} {f : ℝ → ℝ → ℝ} {x y : Fin n → ℝ}
+    (hf : HasIncreasingDifferences f (Set.range x) (Set.range y)) (hx : Monotone x) (hy : Monotone y) (σ : Equiv.Perm (Fin n)) :
     matchingSurplus f x y σ ≤ matchingSurplus f x y 1 := by
   sorry
 
@@ -32,5 +33,13 @@ example : matchingSurplus (fun a b => a * b) (fun i : Fin 2 => (i : ℝ)) (fun i
       (Equiv.swap 0 1) = 0 ∧
     matchingSurplus (fun a b => a * b) (fun i : Fin 2 => (i : ℝ)) (fun i => (i : ℝ)) 1 = 1 := by
   simp [matchingSurplus, Fin.sum_univ_two]
+
+example : HasIncreasingDifferences (fun a b => Real.log a * Real.log b) (Set.Ici 1)
+    (Set.Ici 1) := by
+  intro x hx x' hx' y hy y' hy' hxx hyy
+  simp only [Set.mem_Ici] at hx hx' hy hy'
+  have h1 : Real.log x ≤ Real.log x' := Real.log_le_log (by linarith) hxx
+  have h2 : Real.log y ≤ Real.log y' := Real.log_le_log (by linarith) hyy
+  nlinarith [mul_nonneg (sub_nonneg.2 h1) (sub_nonneg.2 h2)]
 
 end Econ

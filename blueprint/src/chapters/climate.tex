@@ -27,6 +27,21 @@ $\mathrm{SCC} = \gamma C_0\sum_j\beta^jr_j$.
 Each log difference equals $-\gamma r_je$ because $\tilde Y$ and $s$ cancel. Sum the two geometric series.
 \end{proof}
 
+\begin{theorem}[GHKT with capital]
+\label{thm:scc_capital}
+\lean{Econ.Climate.Params.logYcap, Econ.Climate.Params.welfareCap, Econ.Climate.Params.sccCap, Econ.Climate.Params.logYcap_sub, Econ.Climate.Params.tsum_cauchy, Econ.Climate.Params.welfareCap_eq, Econ.Climate.Params.sccCap_eq}
+\leanok
+\uses{thm:scc}
+With $Y_j = e^{-\gamma S_j}A_jK_j^\alpha$, full depreciation and saving rate $\alpha\beta$, an extra unit of
+emissions lowers $\log Y_j$ by $\gamma\sum_{k\le j}\alpha^{j-k}r_k$, and $\mathrm{SCC} = \gamma Y_0\sum_j\beta^jr_j$.
+\end{theorem}
+\begin{proof}
+\leanok
+Induct on $j$ using $y_{j+1} = -\gamma(S_{j+1}+r_{j+1}e) + a_{j+1} + \alpha(\log\alpha\beta + y_j)$. The discounted
+sum is a Cauchy product of $\sum(\alpha\beta)^m$ and $\sum\beta^kr_k$, which equals $\mathrm{kernel}/(1-\alpha\beta)$.
+Multiplying by $C_0 = (1-\alpha\beta)Y_0$ cancels the factor.
+\end{proof}
+
 \begin{theorem}[Discounting]
 \label{thm:scc_discount}
 \lean{Econ.Climate.Params.kernel_pos_of, Econ.Climate.Params.kernel_mono, Econ.Climate.Params.kernel_unbounded}

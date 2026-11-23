@@ -81,6 +81,20 @@ candidate vector satisfies market clearing and apply uniqueness. Finally, $m/(m+
 $\log Y(x) = (\theta-1)^{-1}\log\sum_ib_ie^{(\theta-1)x_i}$ and $\lambda_i(x) = b_ie^{(\theta-1)x_i}/\sum_jb_je^{(\theta-1)x_j}$.
 \end{definition}
 
+\begin{theorem}[Second-order term]
+\label{thm:bf_second}
+\lean{Econ.BaqaeeFarhi.Economy.hasDerivAt_num_aux, Econ.BaqaeeFarhi.Economy.hasDerivAt_S, Econ.BaqaeeFarhi.Economy.hasDerivAt_domar, Econ.BaqaeeFarhi.Economy.deriv_logY_line, Econ.BaqaeeFarhi.Economy.second_order}
+\leanok
+\uses{def:bf_economy}
+Along $d$, $d\lambda_i/dt = (\theta-1)\lambda_i(d_i - \sum_j\lambda_jd_j)$ and
+$d^2\log Y/dt^2 = (\theta-1)\bigl(\sum\lambda_id_i^2 - (\sum\lambda_id_i)^2\bigr)$.
+\end{theorem}
+\begin{proof}
+\leanok
+Use the quotient rule on $\lambda_i = b_ie^{(\theta-1)x_i}/S$. The first derivative at $t$ is $\sum\lambda_i(x+td)d_i$
+(translate Theorem~\ref{thm:bf} along the line); differentiate it again and expand.
+\end{proof}
+
 \begin{theorem}[Baqaee--Farhi]
 \label{thm:bf}
 \lean{Econ.BaqaeeFarhi.Economy.hasDerivAt_logY, Econ.BaqaeeFarhi.Economy.logY_add_sub, Econ.BaqaeeFarhi.Economy.jensen, Econ.BaqaeeFarhi.Economy.complements_le_hulten, Econ.BaqaeeFarhi.Economy.substitutes_ge_hulten, Econ.BaqaeeFarhi.Economy.complements_asymmetry}

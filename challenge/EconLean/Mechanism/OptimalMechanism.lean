@@ -7,6 +7,7 @@ public import Mathlib.Basic.Real.Basic
 public import Mathlib.Algebra.BigOperators.Ring.Finset
 public import Mathlib.Tactic.Linarith
 public import Mathlib.Tactic.Ring
+public import Mathlib.Tactic.IntervalCases
 
 @[expose] public section
 
@@ -83,10 +84,28 @@ theorem postedPrice_isOptimal (hθ : MonotoneOn θ (Set.Iio n)) (hf : ∀ k < n,
         ∑ k ∈ range n, f k * p k ≤ ∑ k ∈ range n, f k * postedP θ m k := by
   sorry
 
+def IsRegularDiscrete (n : ℕ) (θ f : ℕ → ℝ) : Prop :=
+  MonotoneOn (fun j => virtualWeight n θ f j / f j) (Set.Iio n)
+
+theorem postedPrice_isOptimal_of_regular (hθ : MonotoneOn θ (Set.Iio n))
+    (hf : ∀ k < n, 0 < f k) (hreg : IsRegularDiscrete n θ f) :
+    ∃ m ≤ n, IsICDiscrete n θ (postedQ m) (postedP θ m) ∧
+      IsIRDiscrete n θ (postedQ m) (postedP θ m) ∧
+      ∀ q p : ℕ → ℝ, (∀ j < n, 0 ≤ q j ∧ q j ≤ 1) → IsICDiscrete n θ q p →
+        IsIRDiscrete n θ q p →
+        ∑ k ∈ range n, f k * p k ≤ ∑ k ∈ range n, f k * postedP θ m k := by
+  sorry
+
 example : virtualWeight 3 (fun j => (j : ℝ) + 1) (fun _ => 1 / 3) 0 = -1 / 3 ∧
     virtualWeight 3 (fun j => (j : ℝ) + 1) (fun _ => 1 / 3) 1 = 1 / 3 ∧
     virtualWeight 3 (fun j => (j : ℝ) + 1) (fun _ => 1 / 3) 2 = 1 := by
   simp only [virtualWeight, upperMass]
   refine ⟨?_, ?_, ?_⟩ <;> simp <;> norm_num
+
+example : IsRegularDiscrete 3 (fun j => (j : ℝ) + 1) (fun _ => 1 / 3) := by
+  intro a ha b hb hab
+  simp only [Set.mem_Iio] at ha hb
+  simp only [virtualWeight, upperMass]
+  interval_cases a <;> interval_cases b <;> simp at hab ⊢ <;> norm_num [Finset.sum_Ico_eq_sum_range]
 
 end Econ

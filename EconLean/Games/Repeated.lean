@@ -58,11 +58,13 @@ noncomputable def discPayoff (u : I → (∀ j, S j) → ℝ) (δ : ℝ) (σ : R
     (h : List (∀ j, S j)) (i : I) : ℝ :=
   (1 - δ) * ∑' t, δ ^ t * u i (pathFrom σ h t)
 
-/-- **Subgame perfect equilibrium** of the repeated game: after every history, no player gains
-by switching to any other strategy of the repeated game. (`discPayoff` uses `tsum`, so this is
+/-- **Subgame perfect equilibrium** of the repeated game with discount factor `δ ∈ [0, 1)`:
+after every history, no player gains by switching to any other strategy of the repeated game.
+The range of `δ` is part of the definition: at `δ = 1` the normalized payoff `(1 − δ) ∑ …` is
+identically `0` and every profile would qualify. (`discPayoff` uses `tsum`, so this is
 meaningful for bounded stage payoffs, which every theorem below assumes.) -/
 def IsRepeatedSPE (u : I → (∀ j, S j) → ℝ) (δ : ℝ) (σ : RepeatedProfile S) : Prop :=
-  ∀ (h : List (∀ j, S j)) (i : I) (τ : List (∀ j, S j) → S i),
+  0 ≤ δ ∧ δ < 1 ∧ ∀ (h : List (∀ j, S j)) (i : I) (τ : List (∀ j, S j) → S i),
     discPayoff u δ (update σ i τ) h i ≤ discPayoff u δ σ h i
 
 /-- Bounded stage payoffs give summable discounted streams. -/
@@ -183,6 +185,7 @@ theorem grimTrigger_isSPE {u : I → (∀ j, S j) → ℝ} {δ M : ℝ} (hδ0 : 
     (hM : ∀ i b, |u i b| ≤ M) (he : IsNash u e)
     (hdev : ∀ i (s : S i), (1 - δ) * u i (update a i s) + δ * u i e ≤ u i a) :
     IsRepeatedSPE u δ (grimTrigger a e) := by
+  refine ⟨hδ0, hδ1, ?_⟩
   intro h i τ
   rw [discPayoff_grimTrigger hδ0 hδ1]
   set σ' := update (grimTrigger a e) i τ

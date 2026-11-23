@@ -113,12 +113,12 @@ $Xh = z$.
 
 \begin{definition}[AD and Radner equilibrium]
 \label{def:seq_equilibria}
-\lean{Econ.AssetPricing.Economy, Econ.AssetPricing.Economy.Clears, Econ.AssetPricing.Economy.IsAD, Econ.AssetPricing.Economy.IsRadner}
+\lean{Econ.AssetPricing.Economy, Econ.AssetPricing.Economy.Clears, Econ.AssetPricing.Economy.Consumable, Econ.AssetPricing.Economy.IsAD, Econ.AssetPricing.Economy.IsRadner}
 \leanok
 \uses{def:seq_budgets}
-Agents $a$ have endowments $e_a$ and utilities $U_a$. An AD equilibrium at $m$: each $x_a$ maximizes $U_a$ on the AD
-budget and goods markets clear at both dates. A Radner equilibrium: portfolios $h_a$ finance $x_a$, each $x_a$
-maximizes $U_a$ on the sequential budget, goods markets clear and $\sum_ah_a = 0$.
+Agents $a$ have endowments $e_a$ and utilities $U_a$. Consumption is non-negative ($x_a \ge 0$). An AD equilibrium at $m$: each $x_a \ge 0$ maximizes $U_a$ over
+non-negative bundles in the AD budget and goods markets clear at both dates. A Radner equilibrium: portfolios $h_a$ finance $x_a$, each $x_a \ge 0$
+maximizes $U_a$ over non-negative bundles in the sequential budget, goods markets clear and $\sum_ah_a = 0$.
 \end{definition}
 
 \begin{theorem}[Equivalence of equilibria]

@@ -6,8 +6,9 @@ types `x₀ ≤ x₁ ≤ … ≤ x_{n−1}` are matched one-to-one with women of
 `y₀ ≤ … ≤ y_{n−1}`; a match between types `x` and `y` produces surplus `f x y`. A matching is
 a permutation `σ` (man `i` marries woman `σ i`), and its total surplus is `∑ᵢ f(xᵢ, y_{σ i})`.
 
-The surplus has **increasing differences** (is supermodular) if
-`f x y' + f x' y ≤ f x y + f x' y'` whenever `x ≤ x'` and `y ≤ y'`: types are complements.
+The surplus has **increasing differences** (is supermodular) on the types that occur if
+`f x y' + f x' y ≤ f x y + f x' y'` whenever `x ≤ x'` and `y ≤ y'` are men's and women's
+types: types are complements.
 
 * `becker_pam`: with supermodular surplus, positive assortative matching (the identity: the
   `i`-th lowest man marries the `i`-th lowest woman) maximizes total surplus. In the
@@ -25,6 +26,7 @@ public import Mathlib.GroupTheory.Perm.Basic
 public import Mathlib.Basic.Real.Basic
 public import Mathlib.Order.Fin.Basic
 public import Mathlib.Tactic.Linarith
+public import Mathlib.Analysis.SpecialFunctions.Log.Basic
 
 @[expose] public section
 
@@ -32,9 +34,10 @@ namespace Econ
 
 open Finset
 
-/-- **Increasing differences** (supermodularity on `ℝ × ℝ`). -/
-def HasIncreasingDifferences (f : ℝ → ℝ → ℝ) : Prop :=
-  ∀ x x' y y', x ≤ x' → y ≤ y' → f x y' + f x' y ≤ f x y + f x' y'
+/-- **Increasing differences** (supermodularity) of `f` on the type sets `X × Y`. Only the
+types that occur matter, so e.g. `log x · log y` on `[1, ∞)²` qualifies. -/
+def HasIncreasingDifferences (f : ℝ → ℝ → ℝ) (X Y : Set ℝ) : Prop :=
+  ∀ x ∈ X, ∀ x' ∈ X, ∀ y ∈ Y, ∀ y' ∈ Y, x ≤ x' → y ≤ y' → f x y' + f x' y ≤ f x y + f x' y'
 
 /-- Total surplus of the matching `σ`. -/
 def matchingSurplus {n : ℕ} (f : ℝ → ℝ → ℝ) (x y : Fin n → ℝ) (σ : Equiv.Perm (Fin n)) : ℝ :=
@@ -45,8 +48,8 @@ def movedSet {n : ℕ} (σ : Equiv.Perm (Fin n)) : Finset (Fin n) := univ.filter
 
 /-- **Becker's theorem.** With increasing differences and types sorted on both sides, the
 positive assortative matching maximizes total surplus. -/
-theorem becker_pam {n : ℕ} {f : ℝ → ℝ → ℝ} (hf : HasIncreasingDifferences f)
-    {x y : Fin n → ℝ} (hx : Monotone x) (hy : Monotone y) (σ : Equiv.Perm (Fin n)) :
+theorem becker_pam {n : ℕ} {f : ℝ → ℝ → ℝ} {x y : Fin n → ℝ}
+    (hf : HasIncreasingDifferences f (Set.range x) (Set.range y)) (hx : Monotone x) (hy : Monotone y) (σ : Equiv.Perm (Fin n)) :
     matchingSurplus f x y σ ≤ matchingSurplus f x y 1 := by
   induction hk : (movedSet σ).card using Nat.strong_induction_on generalizing σ with
   | _ k ih =>
@@ -90,7 +93,8 @@ theorem becker_pam {n : ℕ} {f : ℝ → ℝ → ℝ} (hf : HasIncreasingDiffer
       refine Fintype.sum_eq_add j c hjc fun i hi => ?_
       rw [hτo i hi.1 hi.2, sub_self]
     rw [hτj, hτc, hj] at hd
-    have := hf (x j) (x c) (y (σ c)) (y c) (hx hjlt.le) (hy hσc.le)
+    have := hf (x j) ⟨j, rfl⟩ (x c) ⟨c, rfl⟩ (y (σ c)) ⟨σ c, rfl⟩ (y c) ⟨c, rfl⟩
+      (hx hjlt.le) (hy hσc.le)
     linarith
   -- `τ` moves fewer people.
   have hsub : movedSet τ ⊂ movedSet σ := by
@@ -111,5 +115,15 @@ example : matchingSurplus (fun a b => a * b) (fun i : Fin 2 => (i : ℝ)) (fun i
       (Equiv.swap 0 1) = 0 ∧
     matchingSurplus (fun a b => a * b) (fun i : Fin 2 => (i : ℝ)) (fun i => (i : ℝ)) 1 = 1 := by
   simp [matchingSurplus, Fin.sum_univ_two]
+
+/-- Witness that only the type sets matter: `log x · log y` has increasing differences on
+`[1, ∞)²` (it does not on all of `ℝ²`, since Mathlib's `log` is even). -/
+example : HasIncreasingDifferences (fun a b => Real.log a * Real.log b) (Set.Ici 1)
+    (Set.Ici 1) := by
+  intro x hx x' hx' y hy y' hy' hxx hyy
+  simp only [Set.mem_Ici] at hx hx' hy hy'
+  have h1 : Real.log x ≤ Real.log x' := Real.log_le_log (by linarith) hxx
+  have h2 : Real.log y ≤ Real.log y' := Real.log_le_log (by linarith) hyy
+  nlinarith [mul_nonneg (sub_nonneg.2 h1) (sub_nonneg.2 h2)]
 
 end Econ

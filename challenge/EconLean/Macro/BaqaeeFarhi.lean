@@ -42,8 +42,32 @@ theorem domar_pos (x : n → ℝ) (i : n) : 0 < E.domar x i := by
 theorem sum_domar (x : n → ℝ) : ∑ i, E.domar x i = 1 := by
   sorry
 
+theorem hasDerivAt_num_aux (x d : n → ℝ) (i : n) :
+    HasDerivAt (fun t : ℝ => exp ((E.θ - 1) * (x i + t * d i)))
+      (exp ((E.θ - 1) * x i) * ((E.θ - 1) * d i)) 0 := by
+  sorry
+
+theorem hasDerivAt_S (x d : n → ℝ) :
+    HasDerivAt (fun t : ℝ => E.S (x + t • d))
+      (∑ i, E.b i * (exp ((E.θ - 1) * x i) * ((E.θ - 1) * d i))) 0 := by
+  sorry
+
 theorem hasDerivAt_logY (hθ : E.θ ≠ 1) (x d : n → ℝ) :
     HasDerivAt (fun t : ℝ => E.logY (x + t • d)) (∑ i, E.domar x i * d i) 0 := by
+  sorry
+
+theorem hasDerivAt_domar (x d : n → ℝ) (i : n) :
+    HasDerivAt (fun t : ℝ => E.domar (x + t • d) i)
+      ((E.θ - 1) * E.domar x i * (d i - ∑ j, E.domar x j * d j)) 0 := by
+  sorry
+
+theorem deriv_logY_line (hθ : E.θ ≠ 1) (x d : n → ℝ) :
+    deriv (fun t : ℝ => E.logY (x + t • d)) = fun t => ∑ i, E.domar (x + t • d) i * d i := by
+  sorry
+
+theorem second_order (hθ : E.θ ≠ 1) (x d : n → ℝ) :
+    deriv (deriv fun t : ℝ => E.logY (x + t • d)) 0 =
+      (E.θ - 1) * (∑ i, E.domar x i * d i ^ 2 - (∑ i, E.domar x i * d i) ^ 2) := by
   sorry
 
 theorem logY_add_sub (hθ : E.θ ≠ 1) (x d : n → ℝ) :

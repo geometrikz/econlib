@@ -90,3 +90,60 @@ closes the abstract part of I1. Still open: MWG 17.B.2 (an economy with
 continuous, strictly convex, strongly monotone preferences and Σω ≫ 0 has an
 excess demand satisfying (i)–(v)) and the economy-level corollary.
 Machine checks on the 10:55 UTC tree: 1,064 theorems, all six kernels accept.
+
+## Check-in 2 (15:55 UTC): 75 new or changed files
+
+Six isolated reviewers (J–O) got stripped statements only. Reports are in
+`Audit/independent/review-{J..O}.md`, with uncompiled sanity tests in
+`sanity-{J..O}.lean.txt`. No reviewer found a false theorem. Every finding
+below is a mismatch, a hypothesis that fails for textbook examples, or a
+missing canonical result.
+
+Mismatches (statement says something different from the textbook):
+- Macro/Climate SocialCostCarbon `scc_eq` (N1): no capital channel, so the SCC
+  is γ(1−s)Y₀·kernel, not GHKT's γY₀·kernel (30% low at s = 0.3).
+- Econometrics SVARRestrictions (M4): there is no order or rank condition
+  (n(n−1)/2 count, RWZ 2010 Thm 1), although the plan lists it.
+
+Hypotheses that exclude textbook examples (the same pattern as Σ√xᵢ):
+- Finance SequentialMarkets `IsAD`/`IsRadner` (M1): no x ≥ 0 consumption set,
+  so log or CRRA economies have no equilibrium at all (log|x| junk value). The
+  equivalence theorem is then vacuous for them. Fix: add x ≥ 0 on both sides.
+- Information MoralHazard `fullInsurance_optimal`, `implementsHigh_cost_gt`
+  (K2): φ = u⁻¹ is convex/monotone on all of ℝ, which excludes CARA and √w.
+- Matching Assortative `HasIncreasingDifferences` (J4): supermodular on ℝ²,
+  which excludes log x·log y and rpow surpluses.
+- PublicGoods `voluntary_underprovision` (L3): derivative conditions on all of
+  ℝ, which excludes log(1+G) and √G.
+- Games Repeated `IsRepeatedSPE` (K5): every σ is an SPE at δ = 1. The theorems
+  assume δ < 1, but the definition should carry it.
+
+Weaker than canonical (WEAK):
+- `median_not_defeated` (L2) counts ties for m; MWG 21.D.2 is strict vs strict.
+- `gs_blocking_lemma` (J5) drops w ∈ μ′(M′).
+- `myerson_satterthwaite` (J2) shares one support [a,b], and IC/IR/efficiency
+  are imposed off support. It is faithful only for full common support.
+- `postedPrice_optimal` (J1) assumes a threshold sign pattern instead of
+  regularity, and it covers one buyer with discrete types only.
+- GE `exists_walrasianEquilibrium_of_preferences` (L1): Cobb–Douglas is not
+  covered (strong monotonicity, as in MWG). It also has an extra ω_a ≠ 0.
+- ChamleyJudd (N2) assumes the planner's FOC. Aiyagari (N3) lacks r < 1/β−1.
+- Doeblin (N4/N5) is weaker than SLP 11.4.
+- Extremum `mle_*` and `z_estimator_asymptotic` (M2/M3) assume the key step.
+- BLP (M5) has no contraction.
+- RationalInattention `optimal_is_softmax_of_uniform` (O1) assumes uniform
+  marginals. ReferenceDependence `exists_ppe` (O2) assumes PE exists; the
+  reviewer gives a counterexample to dropping that hypothesis outright.
+- Lemons (K6) has no gains from trade, so unraveling carries no welfare loss.
+
+Coverage gaps: the intuitive criterion (Signaling), the OSDP and the
+Fudenberg–Maskin folk theorem, the informativeness principle, Green–Laffont,
+the general first-price bid, the multi-bidder Myerson auction, Blanchard–Kahn,
+Rabin–Weizsäcker, the BGS salience Allais results, and the second-order
+Baqaee–Farhi term.
+
+Checked faithful, among others: revelation principle, Groves/Clarke, Myerson
+IC iff, Gale–Shapley stability, optimality and strategyproofness, Falmagne,
+Luce, Fehr–Schmidt, Kőszegi–Rabin, Matějka–McKay generalized logit, and
+diamond_paradox (symmetric).
+Machine checks on the 15:20 UTC tree (before the owners' fixes): 1,953 theorems, axioms limited to propext/Quot.sound/Classical.choice, all six kernels accept (verify/check.sh exit 0).

@@ -40,7 +40,7 @@ theorem median_not_defeated {peak : I → ℝ} {u : I → ℝ → ℝ}
     (hsp : ∀ i, SinglePeaked (u i) (peak i)) {m : ℝ} (hm : IsWeakMedianPeak peak m) (y : ℝ) :
     2 * (univ.filter fun i => u i m < u i y).card ≤ Fintype.card I ∧
       (univ.filter fun i => u i m < u i y).card ≤
-        (univ.filter fun i => u i y ≤ u i m).card := by
+        (univ.filter fun i => u i y < u i m).card := by
   sorry
 
 theorem exists_weakMedian [Nonempty I] (peak : I → ℝ) : ∃ i₀, IsWeakMedianPeak peak (peak i₀) := by

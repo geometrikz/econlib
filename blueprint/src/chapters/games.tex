@@ -305,7 +305,9 @@ deviator's equilibrium payoff, and the zero-sum relation turns that into the sta
 \uses{def:nash}
 A strategy maps histories (lists of past profiles) to actions. From history $h$ the profile $\sigma$ generates a path
 $a^0, a^1, \dots$ and player $i$ gets $(1-\delta)\sum_t \delta^t u_i(a^t)$. $\sigma$ is subgame perfect if after every
-history no player gains by switching to any other repeated-game strategy.
+history no player gains by switching to any other repeated-game strategy. The definition requires
+$0 \le \delta < 1$: at $\delta = 1$ the normalized payoff $(1-\delta)\sum_t \delta^t u_i(a^t)$ vanishes and every profile
+would qualify.
 \end{definition}
 
 \begin{theorem}[Verification theorem]

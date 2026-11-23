@@ -107,7 +107,8 @@ theorem daMatching_menOptimal (hum : ∀ m, Function.Injective (um m))
 theorem gs_blocking_lemma (hum : ∀ m, Function.Injective (um m))
     (huw : ∀ w, Function.Injective (uw w)) (μ' : M → Option W) (hμ' : IsMatching μ')
     (hM' : ∃ m, Improves um (daMatching um uw) μ' m) :
-    ∃ m₀ w, ¬ Improves um (daMatching um uw) μ' m₀ ∧ IsBlocking um uw μ' m₀ w := by
+    ∃ m₀ w, ¬ Improves um (daMatching um uw) μ' m₀ ∧ IsBlocking um uw μ' m₀ w ∧
+      ∃ m', Improves um (daMatching um uw) μ' m' ∧ μ' m' = some w := by
   sorry
 
 theorem daMatching_strategyproof (um um' : M → W → ℝ) (uw : W → M → ℝ)

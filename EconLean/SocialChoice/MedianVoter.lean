@@ -114,37 +114,45 @@ def IsWeakMedianPeak (peak : I → ℝ) (m : ℝ) : Prop :=
 
 /-- **The median voter theorem, weak form** (MWG Prop. 21.D.1). With single-peaked
 preferences, a weak median `m` of the peaks is not defeated by any alternative: the voters who
-strictly prefer `y` to `m` are at most half of the electorate, hence no more than those who
-weakly prefer `m`. -/
+strictly prefer `y` to `m` are at most half of the electorate, and no more numerous than those
+who strictly prefer `m` to `y` (`#{y ≻ m} ≤ #{m ≻ y}`, so `m` wins or ties every pairwise
+majority vote, indifferent voters abstaining). -/
 theorem median_not_defeated {peak : I → ℝ} {u : I → ℝ → ℝ}
     (hsp : ∀ i, SinglePeaked (u i) (peak i)) {m : ℝ} (hm : IsWeakMedianPeak peak m) (y : ℝ) :
     2 * (univ.filter fun i => u i m < u i y).card ≤ Fintype.card I ∧
       (univ.filter fun i => u i m < u i y).card ≤
-        (univ.filter fun i => u i y ≤ u i m).card := by
-  classical
-  have hsplit := card_filter_add_card_filter_not (s := univ) (fun i => u i m < u i y)
-  have hcomp : (univ.filter fun i => ¬ u i m < u i y) = univ.filter fun i => u i y ≤ u i m := by
-    ext i; simp
-  rw [hcomp, card_univ] at hsplit
-  have key : 2 * (univ.filter fun i => u i m < u i y).card ≤ Fintype.card I := by
-    rcases lt_trichotomy y m with hlt | rfl | hgt
-    · -- Voters with peak `≥ m` weakly prefer `m`.
-      have hsub : (univ.filter fun i => m ≤ peak i) ⊆ univ.filter fun i => u i y ≤ u i m :=
-        fun i hi => by
-          simp only [mem_filter, mem_univ, true_and] at hi ⊢
-          exact ((hsp i).1 y m hlt hi).le
-      have := card_le_card hsub
-      have := hm.2
-      omega
-    · simp
-    · have hsub : (univ.filter fun i => peak i ≤ m) ⊆ univ.filter fun i => u i y ≤ u i m :=
-        fun i hi => by
-          simp only [mem_filter, mem_univ, true_and] at hi ⊢
-          exact ((hsp i).2 m y hi hgt).le
-      have := card_le_card hsub
-      have := hm.1
-      omega
-  exact ⟨key, by omega⟩
+        (univ.filter fun i => u i y < u i m).card := by
+  rcases lt_trichotomy y m with hlt | rfl | hgt
+  · -- Voters with peak `≥ m` strictly prefer `m`, and they are at least half.
+    have hA : (univ.filter fun i => m ≤ peak i) ⊆ univ.filter fun i => u i y < u i m :=
+      fun i hi => by
+      simp only [mem_filter, mem_univ, true_and] at hi ⊢
+      exact (hsp i).1 y m hlt hi
+    have hB : (univ.filter fun i => u i m < u i y) ⊆ univ.filter fun i => ¬ (m ≤ peak i) :=
+      fun i hi => by
+      simp only [mem_filter, mem_univ, true_and] at hi ⊢
+      exact fun h => lt_asymm hi ((hsp i).1 y m hlt h)
+    have h1 := card_le_card hA
+    have h2 := card_le_card hB
+    have h3 := card_filter_add_card_filter_not (s := univ) (fun i => m ≤ peak i)
+    have := hm.2
+    rw [card_univ] at h3
+    omega
+  · simp
+  · have hA : (univ.filter fun i => peak i ≤ m) ⊆ univ.filter fun i => u i y < u i m :=
+      fun i hi => by
+      simp only [mem_filter, mem_univ, true_and] at hi ⊢
+      exact (hsp i).2 m y hi hgt
+    have hB : (univ.filter fun i => u i m < u i y) ⊆ univ.filter fun i => ¬ (peak i ≤ m) :=
+      fun i hi => by
+      simp only [mem_filter, mem_univ, true_and] at hi ⊢
+      exact fun h => lt_asymm hi ((hsp i).2 m y h hgt)
+    have h1 := card_le_card hA
+    have h2 := card_le_card hB
+    have h3 := card_filter_add_card_filter_not (s := univ) (fun i => peak i ≤ m)
+    have := hm.1
+    rw [card_univ] at h3
+    omega
 
 /-- **A weak median peak exists** whenever there is at least one voter. -/
 theorem exists_weakMedian [Nonempty I] (peak : I → ℝ) : ∃ i₀, IsWeakMedianPeak peak (peak i₀) := by

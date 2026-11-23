@@ -7,6 +7,9 @@ public import Mathlib.Analysis.Calculus.Deriv.Add
 public import Mathlib.Analysis.Calculus.Deriv.Mul
 public import Mathlib.Analysis.Calculus.Deriv.Shift
 public import Mathlib.Algebra.Order.BigOperators.Group.Finset
+public import Mathlib.Analysis.SpecialFunctions.Log.Deriv
+public import Mathlib.Tactic.FinCases
+public import Mathlib.Data.Fin.VecNotation
 
 @[expose] public section
 
@@ -52,10 +55,39 @@ def IsVoluntaryEq (φ : I → ℝ → ℝ) (g : I → ℝ) : Prop :=
     ∀ i, ∀ t, 0 ≤ t → φ i (∑ j, g j - g i + t) - t ≤ φ i (∑ j, g j) - g i
 
 theorem voluntary_underprovision [DecidableEq I] {φ d : I → ℝ → ℝ}
-    (hd : ∀ i x, HasDerivAt (φ i) (d i x) x) (hpos : ∀ i x, 0 < d i x)
-    (hanti : ∀ i, StrictAnti (d i)) (htwo : 1 < Fintype.card I) {g : I → ℝ}
-    (heq : IsVoluntaryEq φ g) (hGpos : 0 < ∑ j, g j) {Gstar : ℝ}
+    (hd : ∀ i, ∀ x > 0, HasDerivAt (φ i) (d i x) x) (hpos : ∀ i, ∀ x > 0, 0 < d i x)
+    (hanti : ∀ i, StrictAntiOn (d i) (Ioi 0)) (htwo : 1 < Fintype.card I) {g : I → ℝ}
+    (heq : IsVoluntaryEq φ g) (hGpos : 0 < ∑ j, g j) {Gstar : ℝ} (hGstar : 0 < Gstar)
     (hsam : ∑ i, d i Gstar = 1) : ∑ j, g j < Gstar := by
   sorry
+
+example : (∀ _i : Fin 2, ∀ x > (0:ℝ), HasDerivAt (fun G => 2 * Real.log (1 + G)) (2 / (1 + x)) x) ∧
+    (∀ _i : Fin 2, ∀ x > (0:ℝ), 0 < 2 / (1 + x)) ∧
+    (∀ _i : Fin 2, StrictAntiOn (fun x : ℝ => 2 / (1 + x)) (Ioi 0)) ∧
+    IsVoluntaryEq (fun (_ : Fin 2) G => 2 * Real.log (1 + G)) ![1, 0] ∧
+    ∑ _i : Fin 2, 2 / (1 + (3:ℝ)) = 1 := by
+  refine ⟨fun _ x hx => ?_, fun _ x hx => by positivity, fun _ a ha b hb hab => ?_, ⟨?_, ?_⟩, ?_⟩
+  · have := ((hasDerivAt_id x).const_add 1).log (by simp; linarith)
+    convert this.const_mul 2 using 1
+    · rfl
+    show 2 / (1 + x) = 2 * (1 / (1 + x)); ring
+  · simp only [Set.mem_Ioi] at ha hb
+    exact div_lt_div_of_pos_left (by norm_num) (by linarith) (by linarith)
+  · intro i; fin_cases i <;> simp
+  · intro i t ht
+    have key : ∀ a b : ℝ, 0 < a → 0 < b → Real.log a - Real.log b ≤ a / b - 1 := by
+      intro a b ha hb
+      rw [← Real.log_div ha.ne' hb.ne']
+      exact Real.log_le_sub_one_of_pos (by positivity)
+    fin_cases i
+    · simp
+      have := key (1 + t) 2 (by linarith) (by norm_num)
+      norm_num at this ⊢
+      linarith
+    · simp
+      have := key (1 + (1 + t)) 2 (by linarith) (by norm_num)
+      norm_num at this ⊢
+      linarith
+  · norm_num
 
 end Econ

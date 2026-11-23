@@ -57,8 +57,8 @@ theorem frozen_daMatching_strategyproof {M W : Type*} [Fintype M] [Fintype W] [D
     ¬ Improves um (daMatching um uw) (daMatching um' uw) m :=
   daMatching_strategyproof um um' uw hum huw m hsame
 
-theorem frozen_becker_pam {n : ℕ} {f : ℝ → ℝ → ℝ} (hf : HasIncreasingDifferences f)
-    {x y : Fin n → ℝ} (hx : Monotone x) (hy : Monotone y) (σ : Equiv.Perm (Fin n)) :
+theorem frozen_becker_pam {n : ℕ} {f : ℝ → ℝ → ℝ} {x y : Fin n → ℝ}
+    (hf : HasIncreasingDifferences f (Set.range x) (Set.range y)) (hx : Monotone x) (hy : Monotone y) (σ : Equiv.Perm (Fin n)) :
     matchingSurplus f x y σ ≤ matchingSurplus f x y 1 :=
   becker_pam hf hx hy σ
 
@@ -101,11 +101,11 @@ theorem frozen_lindahl_efficient {I : Type*} [Fintype I] {φ : I → ℝ → ℝ
 
 theorem frozen_voluntary_underprovision {I : Type*} [Fintype I] [DecidableEq I]
     {φ d : I → ℝ → ℝ}
-    (hd : ∀ i x, HasDerivAt (φ i) (d i x) x) (hpos : ∀ i x, 0 < d i x)
-    (hanti : ∀ i, StrictAnti (d i)) (htwo : 1 < Fintype.card I) {g : I → ℝ}
-    (heq : IsVoluntaryEq φ g) (hGpos : 0 < ∑ j, g j) {Gstar : ℝ}
+    (hd : ∀ i, ∀ x > 0, HasDerivAt (φ i) (d i x) x) (hpos : ∀ i, ∀ x > 0, 0 < d i x)
+    (hanti : ∀ i, StrictAntiOn (d i) (Ioi 0)) (htwo : 1 < Fintype.card I) {g : I → ℝ}
+    (heq : IsVoluntaryEq φ g) (hGpos : 0 < ∑ j, g j) {Gstar : ℝ} (hGstar : 0 < Gstar)
     (hsam : ∑ i, d i Gstar = 1) : ∑ j, g j < Gstar :=
-  voluntary_underprovision hd hpos hanti htwo heq hGpos hsam
+  voluntary_underprovision hd hpos hanti htwo heq hGpos hGstar hsam
 
 theorem frozen_lerner_rule {P C : ℝ → ℝ} {q P' C' : ℝ} (hP : HasDerivAt P P' q)
     (hC : HasDerivAt C C' q) (hq : 0 < q) (hopt : IsMonopolyOptimum P C q) (hp : P q ≠ 0) :
@@ -145,7 +145,7 @@ theorem frozen_median_not_defeated {I : Type*} [Fintype I] {peak : I → ℝ} {u
     (hsp : ∀ i, SinglePeaked (u i) (peak i)) {m : ℝ} (hm : IsWeakMedianPeak peak m) (y : ℝ) :
     2 * (univ.filter fun i => u i m < u i y).card ≤ Fintype.card I ∧
       (univ.filter fun i => u i m < u i y).card ≤
-        (univ.filter fun i => u i y ≤ u i m).card :=
+        (univ.filter fun i => u i y < u i m).card :=
   median_not_defeated hsp hm y
 
 theorem frozen_nash_bargaining_theorem (f : BargSolution) (hPE : IsWeakPareto f)

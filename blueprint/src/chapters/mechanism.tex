@@ -137,17 +137,20 @@ Exchange the order of summation in $\sum_k f_k \sum_{i<k}(\theta_{i+1}-\theta_i)
 
 \begin{theorem}[Optimality of a posted price; Riley--Zeckhauser]
 \label{thm:posted-price}
-\lean{Econ.postedPrice_rent_eq, Econ.postedPrice_revenue, Econ.postedPrice_IC_IR, Econ.postedPrice_optimal, Econ.postedPrice_isOptimal}
+\lean{Econ.postedPrice_rent_eq, Econ.postedPrice_revenue, Econ.postedPrice_IC_IR, Econ.postedPrice_optimal, Econ.postedPrice_isOptimal, Econ.IsRegularDiscrete, Econ.postedPrice_isOptimal_of_regular}
 \leanok
 \uses{thm:myerson-bound}
 A posted price attains the Myerson bound with equality and is IC and IR for nondecreasing types. If the
 virtual weights are $\le 0$ below $m$ and $\ge 0$ from $m$ on, the posted price $\theta_m$ maximizes expected
-revenue among all IC and IR mechanisms with $q \in [0,1]$.
+revenue among all IC and IR mechanisms with $q \in [0,1]$. Under regularity (positive probabilities and
+nondecreasing virtual values $w_j/f_j$; Myerson 1981) this single crossing holds with $m$ the first type of
+nonnegative virtual value ($m = n$: do not sell), so some posted price is optimal.
 \end{theorem}
 \begin{proof}
 \leanok
 The posted-price rent equals the IC floor (telescoping), so the identity gives equality. For any feasible $q$,
-$\sum_j q_j w_j \le \sum_{j \ge m} w_j$ term by term.
+$\sum_j q_j w_j \le \sum_{j \ge m} w_j$ term by term. Under regularity, types below the first nonnegative virtual
+value have negative virtual weights and types above it nonnegative ones, by monotonicity.
 \end{proof}
 
 \section{Bilateral trade}
