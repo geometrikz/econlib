@@ -26,5 +26,11 @@ public import EconLean.Macro.DP.Concavity
 public import EconLean.Macro.DP.BrockMirman
 public import EconLean.Macro.DP.Examples
 public import EconLean.Audit.Statements.DP
+public import EconLean.Macro.Labor.McCall
+public import EconLean.Macro.Labor.DMP
+public import EconLean.Macro.Misallocation
+public import EconLean.Macro.Banking.DiamondDybvig
+public import EconLean.Macro.Hulten
+public import EconLean.Audit.Statements.QuickMacro
 
 @[expose] public section
