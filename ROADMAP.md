@@ -30,8 +30,8 @@ Mas-Colell, Whinston & Green (MWG) and Kreps. ✅ = done in this repo.
   and concave in p
 - ✅ WARP from utility maximization; compensated law of demand (MWG 2.F.1)
 - ○ Quasiconvexity of v; continuity of v and demand (Berge's maximum theorem)
-- ○ Shephard's lemma, Roy's identity, Slutsky equation (need derivatives;
-  envelope-theorem style arguments)
+- ✅ Shephard's lemma, Roy's identity, Slutsky equation (envelope arguments
+  via Fermat's theorem; differentiability assumed as in MWG)
 - ○ Slutsky matrix symmetric and negative semidefinite
 - ○ GARP and Afriat's theorem; integrability (recovering preferences)
 
