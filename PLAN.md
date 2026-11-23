@@ -5,9 +5,12 @@ consumer-theory stage in detail). This file is the long-range plan: scope,
 library layout, the Mathlib foundations we must build, dependency order,
 milestones, and how we check that what we prove is actually the economics.
 
+**The model-by-model list, with status and what is ready to start, is in
+[`CATALOG.md`](CATALOG.md).**
+
 Scope (revised 2026-11-23): the graduate canon (§3–4), modern and behavioral
 micro (§5), modern macro including heterogeneous agents and information
-frictions (§6), and a final phase that unifies micro and macro on shared
+frictions (§6), econometrics (§7b), and a final phase that unifies micro and macro on shared
 formal primitives (§7). The unifying layer is designed now (§7.1) so the
 whole library is built on it rather than retrofitted.
 
@@ -94,6 +97,7 @@ EconLean/
     Heterogeneous/      Bewley–Aiyagari, HANK cores, sequence space, mean-field games
     InfoFrictions/  Behavioral/  Production/  Finance/  Trade/   modern macro (§6)
   Examples/             concrete economies (Cobb–Douglas, CES, Brock–Mirman ...)
+  Econometrics/         linear models, asymptotics, identification/causal, time series, structural
   Audit/                non-vacuity witnesses, counterexamples, frozen statements
 ```
 
@@ -141,7 +145,7 @@ Modelling conventions to fix up front (decide once, record in `CONVENTIONS.md`):
 |---|---|---|---|---|
 | F1 | Correspondences: UHC/LHC, closed graph, compact-valued | Berge, Kakutani, GE, DP | M | Mathlib has nothing on hemicontinuity. |
 | F2 | Berge's maximum theorem | demand continuity, DP, GE | M | Unlocks continuity of v, x(p,w), value functions. |
-| F3 | Brouwer fixed point | GE existence, Nash | H | Check Mathlib first; else port Lyu–Li (simplex version) and extend to compact convex sets in ℝⁿ via retraction. |
+| F3 | Brouwer fixed point | GE existence, Nash | H | Not in Mathlib as of Nov 2026 (Mathlib PR #36770 in progress). EconCSLib and Lyu–Li both have it: import rather than reprove. |
 | F4 | Kakutani fixed point | Nash, GE with correspondences | M | From Brouwer by approximate selection (Cellina) or via simplicial approx. |
 | F5 | KKT conditions (inequality constraints, Slater/LICQ) | producer, GE, contracts, Ramsey taxation | M | Extends Mathlib's equality-constraint Lagrange. |
 | F6 | Envelope theorems (Milgrom–Segal general version) | Hotelling, Roy, Benveniste–Scheinkman, mechanism design | M | Current Shephard/Roy are ad hoc; generalize once. |
@@ -163,6 +167,9 @@ Modelling conventions to fix up front (decide once, record in `CONVENTIONS.md`):
 | F22 | Lyapunov convexity theorem; Aumann integral of correspondences | continuum economies, core equivalence, nonatomic games, B2 | H | Key for every continuum-of-agents result. |
 | F23 | Implicit function theorem on sequence spaces (ℓ^∞) applied to equilibrium maps | sequence-space HANK, B4 | M | Mathlib's IFT is on Banach spaces, so this is mostly application (guess). |
 | F24 | Propagation of chaos / finite-to-mean-field limits | MFG, B2 | R | Active research even on paper. |
+| F25 | Uniform law of large numbers (Glivenko–Cantelli, Jennrich) | extremum estimators, MLE, GMM | M–H | Not in Mathlib (per Coretto 2026). |
+| F26 | Functional CLT, Brownian motion asymptotics | unit roots, cointegration inference | R | |
+| F27 | Multivariate CLT, Cramér–Wold | OLS/GMM asymptotic normality, bootstrap | M | i.i.d. real CLT reported upstreamed to Mathlib (Degenne); multivariate version likely missing (guess). |
 
 ---
 
@@ -516,6 +523,29 @@ well before the rest of Phase U.
 
 ---
 
+## 7b. Econometrics
+
+Added 2026-11-23. Four blocks, detailed in CATALOG.md §C:
+- **ME1 Identification and causal inference**: OLS algebra (FWL, Gauss–Markov,
+  OVB), potential outcomes, unconfoundedness/IPW, IV and LATE, DiD and the
+  staggered-TWFE negative-weights result, RD, synthetic control, Manski
+  bounds, shift-share, causal graphs, conformal prediction. Mostly linear
+  algebra and conditional expectation, so almost all ready now.
+- **ME2 Asymptotics**: convergence toolkit, OLS consistency (SLLN is in
+  Mathlib), asymptotic normality, delta method, extremum estimators, MLE,
+  GMM, robust SEs, bootstrap. Blocked mainly on F25 (uniform LLN) and F27
+  (multivariate CLT). Reuse Coretto (2026), who formalized MLE consistency and
+  the delta method in Lean.
+- **ME3 Time series**: ARMA stationarity, VAR/SVAR identification, LP = VAR
+  equivalence, Kalman filter, Wold, cointegration. Unit-root asymptotics need
+  F26 (research-level).
+- **ME4 Structural**: discrete choice, BLP inversion, Rust/Hotz–Miller,
+  auction identification, production functions, moment inequalities.
+
+Econometrics also feeds bridge D6 (micro estimates → macro quantities).
+
+---
+
 ## 8. Adversarial checking: making sure the theorems are right
 
 Short answer to "doesn't Lean have adversarial checkers?": Lean has excellent
@@ -650,6 +680,7 @@ M1 ─► MU0 Core primitives (instances only) ───────────
 M3 + M6 ─► M10 Behavioral & modern micro (F19 F20 F21)
 M8 ─► M11 Modern macro (F22 F23) ─► M12 Phase U: bridges, assumption atlas, synthesis
 M4 + MU0 ─► MU1 Aggregation map: SMD and the restrictions that escape it (§7.2a)
+M0 ─► ME1 Causal econometrics ─► ME2 Asymptotics (F25 F27) ─► ME3 Time series, ME4 Structural
 ```
 
 | Milestone | Contents | Exit criterion | Size |
@@ -669,6 +700,8 @@ M4 + MU0 ─► MU1 Aggregation map: SMD and the restrictions that escape it (§
 | **M10** Behavioral & modern micro | §5: CPT, Kőszegi–Rabin, β–δ, ambiguity, Luce/RI, level-k/QRE/Berk–Nash, learning, networks, market design, IO | Each model stated as a `Core` instance; RI ⟺ logit and QRE existence audited | 6–9 months (guess) |
 | **M11** Modern macro | §6: heterogeneous agents, sequence space, MFG, info frictions, behavioral NK, Hulten, macro-finance, trade | Werning as-if and Hulten proved as `Core` theorems | 6–12 months (guess) |
 | **MU1** Aggregation map (B0) | SMD (Debreu 1974 form), Gorman, identical homothetic, gross substitutes, law of demand, Mitjushin–Polterovich, Hildenbrand, Grandmont; implication lattice | SMD and at least three escape theorems proved and through the two-step check | 3–6 months (guess) |
+| **ME1** Causal econometrics | CATALOG §C1, §C3 | LATE, DiD, TWFE decomposition, RD audited | 2–3 months (guess) |
+| **ME2–ME4** Asymptotics, time series, structural | CATALOG §C2, §C4, §C5 | GMM asymptotics and SVAR identification audited | 6–9 months (guess) |
 | **M12** Phase U | §7.2–7.3: bridge theorems B0–B10, open bridges stated precisely, assumption atlas, robustness classification, synthesis | Atlas generated for all macro results; known bridges proved | open-ended (research) |
 
 Realistic total for M0–M8: on the order of 1.5–2 years part time; the

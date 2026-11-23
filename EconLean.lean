@@ -13,5 +13,11 @@ public import EconLean.Foundations.Maximum
 public import EconLean.Audit.Statements.Berge
 public import EconLean.Macro.Growth.Solow
 public import EconLean.Audit.Statements.Solow
+public import EconLean.Macro.Growth.GoldenRule
+public import EconLean.Macro.Growth.TechProgress
+public import EconLean.Macro.OLG.LogHousehold
+public import EconLean.Macro.OLG.Diamond
+public import EconLean.Macro.OLG.Samuelson
+public import EconLean.Audit.Statements.GrowthOLG
 
 @[expose] public section
