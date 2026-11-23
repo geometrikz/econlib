@@ -1,0 +1,58 @@
+% Lean: EconLean/Networks/KeyPlayer.lean
+\chapter{Network Games}
+\label{chap:networks}
+
+Source: Ballester, Calv\'o-Armengol and Zenou (2006), with the global-substitutability term set to zero.
+
+\begin{definition}[Local-complementarity game, Bonacich centrality]
+\label{def:net-game}
+\lean{Econ.Networks.payoff, Econ.Networks.IsNash, Econ.Networks.leontief, Econ.Networks.bonacich, Econ.Networks.Dominant, Econ.Networks.remove, Econ.Networks.aggregate, Econ.Networks.intercentrality, Econ.Networks.dominant_pair}
+\leanok
+Player $i$ earns $\alpha x_i-x_i^2/2+\phi\sum_jg_{ij}x_ix_j$. $M=(I-\phi G)^{-1}$, Bonacich centrality $b=M\mathbf 1$.
+\texttt{Dominant}: $g_{ij}\ge0$, $\phi\ge0$ and $\phi\sum_jg_{ij}<1$ for every $i$.
+\end{definition}
+
+\begin{lemma}[Properties of $M$ under dominance]
+\label{lem:net-dominant}
+\lean{Econ.Networks.Dominant.le_of_fixed, Econ.Networks.mulVec_one_sub_apply, Econ.Networks.Dominant.isUnit, Econ.Networks.Dominant.mul_leontief, Econ.Networks.Dominant.leontief_col, Econ.Networks.Dominant.inv_nonneg, Econ.Networks.Dominant.one_le_inv_diag, Econ.Networks.Dominant.one_le_bonacich}
+\leanok
+\uses{def:net-game}
+Solutions of $x=c+\phi Gx$ with $c\ge0$ satisfy $x\ge c$. Hence $I-\phi G$ is invertible, $M\ge0$, $M_{ii}\ge1$, $b\ge1$.
+\end{lemma}
+\begin{proof}
+\leanok
+At a minimal coordinate $x_{i}<0$ we would get $x_{i}\ge\phi(\sum_jg_{ij})x_{i}>x_{i}$. So $x\ge0$ and then $x\ge c$.
+Injectivity: $(I-\phi G)v=0$ gives $v\ge0$ and $-v\ge0$. Column $k$ of $M$ solves $x=e_k+\phi Gx$.
+\end{proof}
+
+\begin{theorem}[BCZ Theorem 1]
+\label{thm:net-nash}
+\lean{Econ.Networks.payoff_update, Econ.Networks.isNash_iff, Econ.Networks.isNash_iff_eq_bonacich, Econ.Networks.nash_pos}
+\leanok
+\uses{lem:net-dominant}
+With no self-loops, best responses are $x_i=\alpha+\phi\sum_jg_{ij}x_j$, and under dominance the unique Nash
+equilibrium is $x=\alpha b$, positive when $\alpha>0$.
+\end{theorem}
+\begin{proof}
+\leanok
+Payoff after deviating to $y$ is $-(y-r_i)^2/2+r_i^2/2$ with $r_i=\alpha+\phi\sum_jg_{ij}x_j$ (the $g_{ii}$ term vanishes).
+The first-order system is $(I-\phi G)x=\alpha\mathbf 1$.
+\end{proof}
+
+\begin{theorem}[BCZ Theorem 3: key player]
+\label{thm:net-key}
+\lean{Econ.Networks.sum_ne, Econ.Networks.inv_remove, Econ.Networks.aggregate_remove, Econ.Networks.intercentrality_symm, Econ.Networks.keyPlayer, Econ.Networks.Dominant.remove, Econ.Networks.isNash_remove, Econ.Networks.leontief_pair, Econ.Networks.pair_numbers}
+\leanok
+\uses{thm:net-nash}
+Removing $i$ updates $M$ by $M^{-i}_{jk}=M_{jk}-M_{ji}M_{ik}/M_{ii}$, so aggregate centrality falls by the
+intercentrality $c_i=b_i\sum_jM_{ji}/M_{ii}$ ($=b_i^2/M_{ii}$ for symmetric $G$). The player whose removal minimizes
+equilibrium aggregate effort maximizes $c_i$ (the reduced game is again dominant, with equilibrium $\alpha b(G_{-i})$).
+Two linked players with $\phi=1/2$: $M=\begin{pmatrix}4/3&2/3\\2/3&4/3\end{pmatrix}$, $b=(2,2)$, aggregate $4$,
+$c_i=3$, aggregate $1$ after removal.
+\end{theorem}
+\begin{proof}
+\leanok
+Check $(I-\phi G)_{-i}$ times the proposed matrix entrywise: the terms with index $i$ cancel because
+$(I-\phi G)M=I$ and $j\ne i$. Sum the update over $j,k\ne i$; the $i$-th row and column terms vanish identically.
+For symmetric $G$, $M$ is symmetric.
+\end{proof}

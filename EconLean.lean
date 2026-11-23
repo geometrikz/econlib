@@ -50,6 +50,12 @@ public import EconLean.BoundedRationality.LevelK
 public import EconLean.BoundedRationality.QRE
 public import EconLean.BoundedRationality.BerkNash
 public import EconLean.Audit.Statements.BehavioralII
+public import EconLean.Behavioral.GilboaSchmeidler
+public import EconLean.Behavioral.StochasticChoice
+public import EconLean.Networks.KeyPlayer
+public import EconLean.Information.Persuasion
+public import EconLean.BoundedRationality.Existence
+public import EconLean.Audit.Statements.ModernMicro
 public import EconLean.Foundations.SupportingHyperplane
 public import EconLean.GE.Exchange
 public import EconLean.GE.SecondWelfare
@@ -100,5 +106,14 @@ public import EconLean.Macro.DP.StochasticConcavity
 public import EconLean.Macro.DP.StationaryDist
 public import EconLean.Macro.HA.StochSavings
 public import EconLean.Audit.Statements.HAStochastic
+public import EconLean.Bridges.Aggregation.Tatonnement
+public import EconLean.Games.Strategic
+public import EconLean.Games.Mixed
+public import EconLean.Games.ZeroSum
+public import EconLean.Games.Correlated
+public import EconLean.Games.Rationalizability
+public import EconLean.Games.Bayesian
+public import EconLean.Games.Extensive
+public import EconLean.Audit.Statements.Games
 
 @[expose] public section

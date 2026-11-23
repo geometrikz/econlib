@@ -1,0 +1,59 @@
+% Lean: EconLean/Information/Persuasion.lean
+\chapter{Information Design}
+\label{chap:information}
+
+Source: Kamenica and Gentzkow (2011).
+
+\begin{definition}[Signals, posteriors, splittings]
+\label{def:info-signal}
+\lean{Econ.Persuasion.beliefs, Econ.Persuasion.Signal, Econ.Persuasion.msgProb, Econ.Persuasion.post, Econ.Persuasion.signalValue, Econ.Persuasion.Splitting, Econ.Persuasion.Splitting.value, Econ.Persuasion.trivialSplitting, Econ.Persuasion.V, Econ.Persuasion.Splitting.mix}
+\leanok
+A signal is $\pi:\Omega\to\Delta(M)$; message $m$ has probability $P(m)=\sum_\omega\mu_0(\omega)\pi(m|\omega)$ and
+posterior $\mu_m(\omega)=\mu_0(\omega)\pi(m|\omega)/P(m)$ (the prior if $P(m)=0$). A splitting of $\mu_0$ is a finite
+distribution $\tau$ over beliefs $\nu_k$ with $\sum_k\tau_k\nu_k=\mu_0$. Sender values are $\sum_mP(m)\hat v(\mu_m)$ and
+$\sum_k\tau_k\hat v(\nu_k)$.
+\end{definition}
+
+\begin{theorem}[KG Proposition 1: Bayes plausibility]
+\label{thm:info-bp}
+\lean{Econ.Persuasion.msgProb_nonneg, Econ.Persuasion.sum_msgProb, Econ.Persuasion.joint_eq_zero, Econ.Persuasion.post_mem, Econ.Persuasion.signal_mean, Econ.Persuasion.Signal.toSplitting, Econ.Persuasion.Signal.value_toSplitting, Econ.Persuasion.Splitting.ν_zero, Econ.Persuasion.Splitting.toSignal, Econ.Persuasion.Splitting.joint, Econ.Persuasion.Splitting.msgProb_toSignal, Econ.Persuasion.Splitting.value_toSignal}
+\leanok
+\uses{def:info-signal}
+Posteriors of any signal average to the prior, so every signal yields a splitting with the same value; every
+splitting is induced by a signal with the same value.
+\end{theorem}
+\begin{proof}
+\leanok
+$\sum_mP(m)\mu_m(\omega)=\sum_m\mu_0(\omega)\pi(m|\omega)=\mu_0(\omega)$ (null messages have zero joint mass). Conversely
+send $k$ with probability $\tau_k\nu_k(\omega)/\mu_0(\omega)$; then $P(k)=\tau_k$ and the posterior is $\nu_k$ whenever
+$\tau_k>0$, because $\tau_k\nu_k\le\mu_0$ forces $\nu_k(\omega)=0$ where $\mu_0(\omega)=0$.
+\end{proof}
+
+\begin{theorem}[KG Corollaries 1--2: concavification]
+\label{thm:info-concav}
+\lean{Econ.Persuasion.value_le, Econ.Persuasion.bddAbove, Econ.Persuasion.value_le_V, Econ.Persuasion.le_V, Econ.Persuasion.V_le_of_concave, Econ.Persuasion.convex_beliefs, Econ.Persuasion.Splitting.value_mix, Econ.Persuasion.V_concave, Econ.Persuasion.benefits_iff}
+\leanok
+\uses{thm:info-bp}
+For $\hat v$ bounded above, $V(\mu_0)=\sup\{\sum\tau_k\hat v(\nu_k)\}$ over splittings is the concave closure of $\hat v$:
+$V\ge\hat v$, $V$ is concave, and $V\le g$ for every concave $g\ge\hat v$. The sender benefits from persuasion iff
+$V(\mu_0)>\hat v(\mu_0)$.
+\end{theorem}
+\begin{proof}
+\leanok
+Trivial splitting; Jensen for concave $g$; mixing two splittings (concatenate them with weights $a$, $b$) and taking
+suprema one at a time gives concavity. A splitting beating $\hat v(\mu_0)$ is induced by a signal.
+\end{proof}
+
+\begin{theorem}[The prosecutor]
+\label{thm:info-prosecutor}
+\lean{Econ.Persuasion.prior, Econ.Persuasion.convict, Econ.Persuasion.prior_mem, Econ.Persuasion.convict_le_one, Econ.Persuasion.concave_majorant, Econ.Persuasion.prosecutorSplitting, Econ.Persuasion.prosecutor_value, Econ.Persuasion.prosecutor_V, Econ.Persuasion.prosecutor_signal}
+\leanok
+\uses{thm:info-concav}
+With prior $P(\text{guilty})=3/10$ and conviction iff $P(\text{guilty})\ge1/2$, $\hat v(\mu_0)=0$ and $V(\mu_0)=3/5$,
+attained by the signal that says ``guilty'' always when guilty and with probability $3/7$ when innocent.
+\end{theorem}
+\begin{proof}
+\leanok
+Upper bound: $\min(1,2\mu(\text{guilty}))$ is concave and above $\hat v$, and equals $3/5$ at the prior. Lower bound:
+split into posteriors $0$ and $1/2$ with weights $2/5$, $3/5$.
+\end{proof}

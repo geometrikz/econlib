@@ -172,6 +172,28 @@ $E_F[u]$ lies between $u$ at the worst and best support points; intermediate val
 (\texttt{intermediate\_value\_uIcc}). Then $u(c) \le u(\text{mean}) \iff c \le \text{mean}$.
 \end{proof}
 
+\begin{theorem}[Risk aversion on an interval of wealth levels]
+\label{thm:risk-averse-interval}
+\lean{Econ.SimpleLottery.mean_mem, Econ.exists_certaintyEquivalent_mem, Econ.riskAverseOn_iff_certaintyEquivalent_le_mean, Econ.riskAverseOn_iff_arrowPratt_nonneg}
+\leanok
+\uses{thm:risk-averse-concave, thm:certainty-equivalent, thm:arrow-pratt}
+Let $I$ be convex. The mean of a lottery paying in $I$ lies in $I$. If $u$ is continuous on $I$, every such
+lottery has a certainty equivalent in $I$; if moreover $u$ is strictly increasing on $I$, $u$ is risk averse on
+$I$ iff all those certainty equivalents are below the mean. If $I$ is open and $u$ is twice differentiable with
+$u' > 0$ on $I$, $u$ is risk averse on $I$ iff $r_A \ge 0$ on $I$. Example: $\log$ on $(0,\infty)$ with
+$r_A(x) = 1/x$.
+\end{theorem}
+\begin{proof}
+\leanok
+Mean: \texttt{Convex.sum\_mem}. Certainty equivalent: as in Theorem~\ref{thm:certainty-equivalent}, applying the
+intermediate value theorem on $[x, y] \subseteq I$ (order-connectedness of $I$). The comparison uses
+\texttt{StrictMonoOn.le\_iff\_le} at $c$ and the mean, both in $I$. Arrow--Pratt: by
+Theorem~\ref{thm:risk-averse-concave} risk aversion is concavity on $I$; concave $\Rightarrow u'$ antitone on $I$
+(\texttt{ConcaveOn.antitoneOn\_deriv}) $\Rightarrow u'' = $ \texttt{derivWithin} $\le 0$ at interior points
+(\texttt{AntitoneOn.derivWithin\_nonpos}, \texttt{derivWithin\_of\_isOpen}); conversely
+\texttt{concaveOn\_of\_deriv2\_nonpos} with $\operatorname{interior} I = I$.
+\end{proof}
+
 \begin{theorem}[Pratt's theorem, (ii)$\iff$(iii); MWG Prop.~6.C.2]
 \label{thm:pratt}
 \lean{Econ.MoreRiskAverse, Econ.moreRiskAverse_iff}
@@ -278,5 +300,30 @@ when $a$ is below the support, so this is $\int_{-\infty}^t F \le \int_{-\infty}
 $u(x) = -(t-x)^+$ is nondecreasing and concave. For the identity, $\int_a^t \mathbf 1[x \le s]\,ds$ is
 the Lebesgue measure of $[x,t]$, i.e.\ $(t-x)^+$ (\texttt{setIntegral\_indicator},
 \texttt{Real.volume\_Icc}); sum over atoms (\texttt{intervalIntegral.integral\_finsetSum}, step
-functions are monotone hence interval integrable). The converses of MWG 6.D.2 are not formalized.
+functions are monotone hence interval integrable).
+\end{proof}
+
+\begin{theorem}[Converse: integrated-CDF condition implies SOSD; MWG Prop.~6.D.2]
+\label{thm:sosd-converse}
+\lean{Econ.SimpleLottery.expect_affine_eq, Econ.SimpleLottery.exists_hinge_rep, Econ.SimpleLottery.expect_le_of_shortfall, Econ.SimpleLottery.sosd_iff_shortfall, Econ.SimpleLottery.sosd_iff_concave, Econ.SimpleLottery.sosd_iff_integral_cdf}
+\leanok
+\uses{thm:sosd-shortfall}
+Suppose $F$ and $G$ have equal means. Then the following are equivalent: $F$ SOSD $G$;
+$E_F[(t-X)^+] \le E_G[(t-X)^+]$ for all $t$; $\int_a^t F \le \int_a^t G$ for all $t \ge a$ with $a$ below both
+supports; $E_G[u] \le E_F[u]$ for every concave $u$, monotone or not. The remaining converse
+(SOSD $\Rightarrow$ mean-preserving spread) is not formalized.
+\end{theorem}
+\begin{proof}
+\leanok
+Affine functions have equal expectations under equal means. Let $S$ be the joint support. By induction
+on $S$, adding its points from the largest to the smallest (\texttt{Finset.induction\_on\_min}), build
+$g$ with $g = u$ on $S$ and $E_G[g] \le E_F[g]$. Also keep track that $g$ is affine with slope $B$ to the
+left of $m = \min S$, with $B \le (u(m)-u(x))/(m-x)$ for every $x < m$. Base: $g(x) = u(m) +
+(u(m+1)-u(m))(x-m)$; the slope bound is concavity. Step: add a new minimum $a < m'$. Let
+$\sigma = (u(m')-u(a))/(m'-a)$ and set $g_{\text{new}} = g - (\sigma - B)(m'-x)^+$. Here
+$\sigma - B \ge 0$ by the invariant, so the inequality is kept by the shortfall hypothesis. The new $g$
+matches $u$ at $a$, and it is unchanged on $[m',\infty)$. Its new slope $\sigma$ satisfies the
+invariant by \texttt{ConcaveOn.slope\_anti\_adjacent}. Finally,
+$E_G[u] = E_G[g] \le E_F[g] = E_F[u]$. The integral form follows from
+Theorem~\ref{thm:sosd-shortfall} with $a = \min(t, \min S - 1)$.
 \end{proof}

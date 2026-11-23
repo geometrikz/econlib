@@ -25,6 +25,9 @@ module
 public import EconLean.Bridges.Aggregation.GrossSubstitutes
 public import EconLean.Bridges.Aggregation.LawOfDemand
 public import EconLean.Bridges.Aggregation.Gorman
+public import EconLean.Bridges.Aggregation.Tatonnement
+public import Mathlib.Analysis.SpecialFunctions.Trigonometric.ArctanDeriv
+public import Mathlib.Analysis.SpecialFunctions.ExpDeriv
 public import EconLean.GE.Production
 public import EconLean.GE.Examples
 
@@ -113,6 +116,118 @@ theorem zCD_warp : ExcessWARP zCD {p | PositivePrices p} := by
       nlinarith
   rw [← e2] at hgoal
   exact pos_of_mul_pos_left hgoal (by positivity)
+
+/-- **Tâtonnement, two goods.** For `zCD`, gross substitutes gives
+`p* · z(q) > 0` at every disequilibrium price, with `p* = (1, 1)`. -/
+theorem zCD_cost_pos {q : Fin 2 → ℝ} (hq : PositivePrices q) (hz : zCD q ≠ 0) :
+    0 < cost (fun _ => (1 : ℝ)) (zCD q) := by
+  have h11 : zCD (fun _ => 1) = 0 := by
+    funext i; fin_cases i <;> simp [zCD]
+  exact zCD_grossSubstitutes.cost_pos_two_goods zCD_homogeneous (fun q hq => zCD_walras q hq)
+    (fun _ => one_pos) hq h11 hz
+
+/-- Along any tâtonnement path for `zCD` that stays in positive prices for
+`t ≥ 0`, the distance to the equilibrium `(1, 1)` never increases. -/
+theorem zCD_tatonnement_antitone {p : ℝ → Fin 2 → ℝ} (hpath : IsTatonnementPath zCD p)
+    (hpos : ∀ t, 0 ≤ t → PositivePrices (p t)) :
+    AntitoneOn (fun t => priceDistSq (p t) (fun _ => (1 : ℝ))) (Set.Ici 0) :=
+  tatonnement_antitone hpath (fun t ht => zCD_walras (p t) (hpos t ht))
+    (fun t ht hz => zCD_cost_pos (hpos t ht) hz)
+
+/-! #### A nonconstant tâtonnement path
+
+The excess demand `zArc q = (π/4 − arctan(q₁/q₀)) · (−q₁, q₀)` satisfies Walras'
+law, and the path `p(t) = (cos φ(t), sin φ(t))` with `φ(t) = π/4 − (π/8) e^{−t}`
+solves `ṗ = zArc(p)`: prices rotate on the unit circle toward the equilibrium
+ray through `(1, 1)`. It witnesses that the hypotheses of `tatonnement_strictAnti`
+hold for a path that is never at equilibrium.
+
+`zArc` is **not** the excess demand of an economy (it is homogeneous of degree
+one, not zero, and not gross substitute); it only shows the abstract hypotheses
+are jointly satisfiable by a nonconstant path. -/
+
+section Arc
+
+open Real
+
+/-- The angle of the example path. -/
+noncomputable def φArc (t : ℝ) : ℝ := π / 4 - π / 8 * Real.exp (-t)
+
+/-- The example excess demand. -/
+noncomputable def zArc (q : Fin 2 → ℝ) : Fin 2 → ℝ :=
+  (π / 4 - Real.arctan (q 1 / q 0)) • ![-q 1, q 0]
+
+/-- The example path. -/
+noncomputable def pArc (t : ℝ) : Fin 2 → ℝ := ![Real.cos (φArc t), Real.sin (φArc t)]
+
+theorem φArc_bounds {t : ℝ} (ht : 0 ≤ t) : π / 8 ≤ φArc t ∧ φArc t < π / 4 := by
+  have he : Real.exp (-t) ≤ 1 := Real.exp_le_one_iff.2 (by linarith)
+  have he0 : 0 < Real.exp (-t) := Real.exp_pos _
+  constructor <;> simp only [φArc] <;> nlinarith [Real.pi_pos]
+
+theorem hasDerivAt_φArc (t : ℝ) : HasDerivAt φArc (π / 8 * Real.exp (-t)) t := by
+  have h := ((Real.hasDerivAt_exp (-t)).comp t (hasDerivAt_neg t)).const_mul (π / 8)
+  exact (h.const_sub (π / 4)).congr_deriv (by ring)
+
+theorem arctan_pArc {t : ℝ} (ht : 0 ≤ t) : Real.arctan (pArc t 1 / pArc t 0) = φArc t := by
+  obtain ⟨h1, h2⟩ := φArc_bounds ht
+  simp only [pArc, Matrix.cons_val_one, Matrix.cons_val_fin_one, Matrix.cons_val_zero]
+  rw [← Real.tan_eq_sin_div_cos, Real.arctan_tan] <;> linarith [Real.pi_pos]
+
+theorem zArc_pArc {t : ℝ} (ht : 0 ≤ t) :
+    zArc (pArc t) = (π / 8 * Real.exp (-t)) • ![-Real.sin (φArc t), Real.cos (φArc t)] := by
+  rw [zArc, arctan_pArc ht]
+  simp only [pArc, φArc, Matrix.cons_val_one, Matrix.cons_val_fin_one, Matrix.cons_val_zero]
+  congr 1; ring
+
+theorem pArc_isTatonnementPath : IsTatonnementPath zArc pArc := fun t ht => by
+  refine HasDerivAt.hasDerivWithinAt ?_
+  rw [zArc_pArc ht, hasDerivAt_pi]
+  intro i
+  fin_cases i
+  · have := (Real.hasDerivAt_cos (φArc t)).comp t (hasDerivAt_φArc t)
+    simp only [pArc, Fin.zero_eta, Fin.isValue, Matrix.cons_val_zero, Pi.smul_apply,
+      smul_eq_mul]
+    exact this.congr_deriv (by ring)
+  · have := (Real.hasDerivAt_sin (φArc t)).comp t (hasDerivAt_φArc t)
+    simp only [pArc, Fin.mk_one, Fin.isValue, Matrix.cons_val_one, Matrix.cons_val_fin_one,
+      Pi.smul_apply, smul_eq_mul]
+    exact this.congr_deriv (by ring)
+
+theorem pArc_walras (t : ℝ) (ht : 0 ≤ t) : cost (pArc t) (zArc (pArc t)) = 0 := by
+  rw [zArc_pArc ht]
+  simp only [cost, Fin.sum_univ_two, pArc, Pi.smul_apply, smul_eq_mul, Matrix.cons_val_zero,
+    Matrix.cons_val_one, Matrix.cons_val_fin_one]
+  ring
+
+theorem sin_lt_cos_φArc {t : ℝ} (ht : 0 ≤ t) : Real.sin (φArc t) < Real.cos (φArc t) := by
+  obtain ⟨h1, h2⟩ := φArc_bounds ht
+  rw [← Real.sin_pi_div_two_sub]
+  exact Real.sin_lt_sin_of_lt_of_le_pi_div_two (by linarith [Real.pi_pos])
+    (by linarith [Real.pi_pos]) (by linarith)
+
+theorem pArc_cost_pos (t : ℝ) (ht : 0 ≤ t) : 0 < cost (fun _ => (1 : ℝ)) (zArc (pArc t)) := by
+  rw [zArc_pArc ht]
+  simp only [cost, Fin.sum_univ_two, Pi.smul_apply, smul_eq_mul, Matrix.cons_val_zero,
+    Matrix.cons_val_one, Matrix.cons_val_fin_one, one_mul]
+  have := sin_lt_cos_φArc ht
+  have he := Real.exp_pos (-t)
+  nlinarith [Real.pi_pos, mul_pos (mul_pos (by positivity : (0:ℝ) < π / 8) he)
+    (sub_pos.2 this)]
+
+theorem zArc_pArc_ne (t : ℝ) (ht : 0 ≤ t) : zArc (pArc t) ≠ 0 := by
+  intro h
+  have := pArc_cost_pos t ht
+  rw [h] at this; simp [cost] at this
+
+/-- **Non-vacuity of tâtonnement stability.** The example path never reaches
+equilibrium and moves strictly closer to `(1, 1)` for all `t ≥ 0`. -/
+theorem pArc_strictAnti :
+    StrictAntiOn (fun t => priceDistSq (pArc t) (fun _ => (1 : ℝ))) (Set.Ici 0) :=
+  tatonnement_strictAnti pArc_isTatonnementPath pArc_walras
+    (fun t ht _ => pArc_cost_pos t ht) (fun t ht => zArc_pArc_ne t (le_of_lt ht))
+
+end Arc
 
 /-- **WARP ⇒ convex equilibrium set, applied**: the equilibrium prices of `zCD`
 form a convex set (they are the ray through `(1, 1)`). -/

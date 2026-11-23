@@ -14,6 +14,7 @@ public import EconLean.GE.Production
 public import EconLean.Bridges.Aggregation.GrossSubstitutes
 public import EconLean.Bridges.Aggregation.LawOfDemand
 public import EconLean.Bridges.Aggregation.Gorman
+public import EconLean.Bridges.Aggregation.Tatonnement
 
 @[expose] public section
 
@@ -106,5 +107,38 @@ theorem frozen_gorman_nonneg {α : Type*} [Fintype α] [Nontrivial α] {x : α �
   gorman_of_aggregatesThroughWealthNonneg hagg hc
 
 end Aggregation
+
+section Tatonnement
+
+theorem frozen_tatonnementPath_def {ι : Type*} [Fintype ι] (z : (ι → ℝ) → (ι → ℝ))
+    (p : ℝ → ι → ℝ) :
+    IsTatonnementPath z p ↔ ∀ t, 0 ≤ t → HasDerivWithinAt p (z (p t)) (Set.Ici 0) t := Iff.rfl
+
+theorem frozen_priceDistSq_def {ι : Type*} [Fintype ι] (p q : ι → ℝ) :
+    priceDistSq p q = ∑ i, (p i - q i) ^ 2 := rfl
+
+theorem frozen_tatonnement_antitone {ι : Type*} [Fintype ι] {z : (ι → ℝ) → (ι → ℝ)}
+    {p : ℝ → ι → ℝ} {pstar : ι → ℝ}
+    (hpath : IsTatonnementPath z p) (hW : ∀ t, 0 ≤ t → cost (p t) (z (p t)) = 0)
+    (hWA : ∀ t, 0 ≤ t → z (p t) ≠ 0 → 0 < cost pstar (z (p t))) :
+    AntitoneOn (fun t => priceDistSq (p t) pstar) (Set.Ici 0) :=
+  tatonnement_antitone hpath hW hWA
+
+theorem frozen_tatonnement_strictAnti {ι : Type*} [Fintype ι] {z : (ι → ℝ) → (ι → ℝ)}
+    {p : ℝ → ι → ℝ} {pstar : ι → ℝ}
+    (hpath : IsTatonnementPath z p) (hW : ∀ t, 0 ≤ t → cost (p t) (z (p t)) = 0)
+    (hWA : ∀ t, 0 ≤ t → z (p t) ≠ 0 → 0 < cost pstar (z (p t)))
+    (hne : ∀ t, 0 < t → z (p t) ≠ 0) :
+    StrictAntiOn (fun t => priceDistSq (p t) pstar) (Set.Ici 0) :=
+  tatonnement_strictAnti hpath hW hWA hne
+
+theorem frozen_grossSubstitutes_cost_pos_two_goods {z : (Fin 2 → ℝ) → (Fin 2 → ℝ)}
+    (hGS : GrossSubstitutes z) (hhom : HomogeneousZero z)
+    (hW : ∀ q, PositivePrices q → cost q (z q) = 0) {pstar q : Fin 2 → ℝ}
+    (hps : PositivePrices pstar) (hq : PositivePrices q) (hzs : z pstar = 0) (hzq : z q ≠ 0) :
+    0 < cost pstar (z q) :=
+  hGS.cost_pos_two_goods hhom hW hps hq hzs hzq
+
+end Tatonnement
 
 end Econ.Audit

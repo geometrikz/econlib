@@ -57,3 +57,25 @@ hard steps taken as hypotheses, and missing headline results.
   Hsieh–Klenow only in special/qualitative forms; Gul–Pesendorfer one direction.
 
 Note: these reviews ran on the tree as of 06:57 UTC.
+
+## Follow-up review, 2026-11-23 10:45 UTC (new and changed files)
+Reports: `Audit/independent/review-G.md` (fixed points, general existence),
+`review-H.md` (updated DP, Ramsey, stationary distributions, savings).
+- **Brouwer, KKM, Sperner, Kakutani: faithful.** `brouwer_fixedPoint` needs no
+  Brouwer hypothesis and covers any nonempty compact convex set in a
+  finite-dimensional real normed space. Sperner is for iterated barycentric
+  subdivisions only (documented deviation).
+- **Ramsey fixed:** `RCKModel.global_convergence` proves convergence to the
+  unique k* > 0 with β f′(k*) = 1 from every k₀ > 0 (supersedes I3).
+- **Still open, I1:** `exists_freeDisposalEquilibrium'` (GE/ExistenceGeneral)
+  removes the Brouwer hypothesis but keeps the demand selection on the closed
+  simplex, so strongly monotone, Cobb–Douglas, CES and linear economies still
+  cannot use it. MWG 17.C.1 (interior prices + boundary condition) is needed.
+- **Still open, I4:** `doeblin` unchanged.
+- **New:** `exists_stationary` (StationaryDist, StochSavings) asserts only that
+  some invariant measure exists; with f(0) = 0, the point mass at zero capital
+  is invariant, so the Brock–Mirman example satisfies it trivially. Uniqueness
+  and convergence (SLP 12.12) are missing. StochSavings caps assets at an
+  arbitrary k̄ and has no interest rate, wage or equilibrium (not yet
+  Aiyagari / LS ch. 18). `policy_of_optimal` covers date 0 only (SLP 9.5 is
+  every date). `value_concave` gives weak, not strict, concavity (SLP 9.8).

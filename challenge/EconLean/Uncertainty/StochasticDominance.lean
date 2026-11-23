@@ -60,6 +60,39 @@ theorem expect_shortfall_eq_integral_cdf (F : SimpleLottery) {a t : ℝ}
     F.expect (fun x => max (t - x) 0) = ∫ s in a..t, F.cdf s := by
   sorry
 
+theorem expect_affine_eq {F G : SimpleLottery} (hmean : F.mean = G.mean) (α β : ℝ) :
+    G.expect (fun x => α + β * x) = F.expect (fun x => α + β * x) := by
+  sorry
+
+theorem exists_hinge_rep {F G : SimpleLottery} (hmean : F.mean = G.mean)
+    (hs : ∀ t, F.expect (fun x => max (t - x) 0) ≤ G.expect (fun x => max (t - x) 0))
+    {u : ℝ → ℝ} (hu : ConcaveOn ℝ univ u) (T : Finset ℝ) :
+    ∀ m, (∀ x ∈ T, m ≤ x) → (T.Nonempty → m ∈ T) → ∃ g : ℝ → ℝ, ∃ B : ℝ,
+      (∀ x ∈ T, g x = u x) ∧ G.expect g ≤ F.expect g ∧
+      (∀ x ≤ m, g x = u m + B * (x - m)) ∧ (∀ x < m, B ≤ (u m - u x) / (m - x)) := by
+  sorry
+
+theorem expect_le_of_shortfall {F G : SimpleLottery} (hmean : F.mean = G.mean)
+    (hs : ∀ t, F.expect (fun x => max (t - x) 0) ≤ G.expect (fun x => max (t - x) 0))
+    {u : ℝ → ℝ} (hu : ConcaveOn ℝ univ u) : G.expect u ≤ F.expect u := by
+  sorry
+
+theorem sosd_iff_shortfall {F G : SimpleLottery} :
+    SOSD F G ↔ F.mean = G.mean ∧
+      ∀ t, F.expect (fun x => max (t - x) 0) ≤ G.expect (fun x => max (t - x) 0) := by
+  sorry
+
+theorem sosd_iff_concave {F G : SimpleLottery} :
+    SOSD F G ↔ F.mean = G.mean ∧
+      ∀ u : ℝ → ℝ, ConcaveOn ℝ univ u → G.expect u ≤ F.expect u := by
+  sorry
+
+theorem sosd_iff_integral_cdf {F G : SimpleLottery} :
+    SOSD F G ↔ F.mean = G.mean ∧
+      ∀ a t, (∀ x ∈ F.prob.support ∪ G.prob.support, a < x) → a ≤ t →
+        ∫ s in a..t, F.cdf s ≤ ∫ s in a..t, G.cdf s := by
+  sorry
+
 example : IsMeanPreservingSpread (twoPoint (-1) 1 (1 / 2) (by norm_num) (by norm_num)) (pure 0) ∧
     SOSD (pure 0) (twoPoint (-1) 1 (1 / 2) (by norm_num) (by norm_num)) := by
   have hmps : IsMeanPreservingSpread (twoPoint (-1) 1 (1 / 2) (by norm_num) (by norm_num))

@@ -1,4 +1,4 @@
-% Lean: EconLean/BoundedRationality/{LevelK,QRE,BerkNash}.lean
+% Lean: EconLean/BoundedRationality/{LevelK,QRE,BerkNash,Existence}.lean
 \chapter{Bounded Rationality in Games}
 \label{chap:bounded-rationality}
 
@@ -120,4 +120,36 @@ belief on $9/20$ (the KL-best fit) is Berk--Nash, although action $1$ is truly b
 Under $9/20$ the subjective payoffs are $9/20$ and $9/20-1/10$. The fit comparison reduces to
 $\log(2/5)+\log(3/5)\le\log(9/20)+\log(11/20)$, i.e. $0.24\le0.2475$ by \texttt{Real.log\_le\_log}. True payoffs are
 $1/2<3/5$.
+\end{proof}
+
+\section{Existence}
+\label{sec:br-existence}
+
+\begin{theorem}[McKelvey--Palfrey 1995, Theorem 1]
+\label{thm:br-qre-exists}
+\lean{Econ.BoundedRationality.exists_isLogitQRE, Econ.BoundedRationality.continuous_U, Econ.BoundedRationality.mixedProfiles, Econ.BoundedRationality.convex_mixedProfiles, Econ.BoundedRationality.isCompact_mixedProfiles}
+\leanok
+\uses{def:br-qre}
+Every finite game with nonempty action sets has a logit QRE at every precision $\lambda$.
+\end{theorem}
+\begin{proof}
+\leanok
+Mixed profiles form a nonempty compact convex subset of $\prod_i\mathbb{R}^{A_i}$ (closed, inside a product of
+unit cubes). The logit response map is continuous (expected payoffs are polynomials in $\sigma$) and lands in mixed
+profiles. Brouwer's theorem gives a fixed point.
+\end{proof}
+
+\begin{theorem}[Esponda--Pouzo 2016, Theorem 1, finite case]
+\label{thm:br-bn-exists}
+\lean{Econ.BoundedRationality.SubjectiveProblem.exists_isBerkNash, Econ.BoundedRationality.SubjectiveProblem.probs, Econ.BoundedRationality.SubjectiveProblem.convex_probs, Econ.BoundedRationality.SubjectiveProblem.isClosed_probs, Econ.BoundedRationality.SubjectiveProblem.isCompact_probs, Econ.BoundedRationality.SubjectiveProblem.exists_prob_supported_max, Econ.BoundedRationality.SubjectiveProblem.continuous_K, Econ.BoundedRationality.SubjectiveProblem.continuous_subjEU}
+\leanok
+\uses{def:br-bn}
+With finitely many actions and parameters (and full-support model distributions), a Berk--Nash equilibrium exists.
+\end{theorem}
+\begin{proof}
+\leanok
+On $\Delta(X)\times\Delta(\Theta)$ map $(\sigma,\mu)$ to the pairs $(\sigma',\mu')$ with $\sigma'$ supported on
+subjective best responses to $\mu$ and $\mu'$ on KL-minimizers given $\sigma$. A point mass on an argmax shows values
+are nonempty. Writing ``supported on maximizers of $f$'' as $\sigma'_x(f_{x'}-f_x)\le0$ for all $x,x'$ shows values
+are convex and the graph is closed ($K$ and subjective payoffs are continuous). Kakutani's theorem gives a fixed point.
 \end{proof}

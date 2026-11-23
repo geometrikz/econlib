@@ -14,7 +14,16 @@ SOSD `G` if every risk averter (nondecreasing concave `u`) weakly prefers
 `F`. **Prop. 6.D.2** relates this to *mean-preserving spreads*: if `G` is
 obtained from `F` by replacing each outcome `x` with a lottery of mean `x`,
 then `F` SOSD `G`; and SOSD implies the integrated-CDF condition
-`∫_{-∞}^t G ≥ ∫_{-∞}^t F` for all `t`.
+`∫_{-∞}^t G ≥ ∫_{-∞}^t F` for all `t`. Conversely, equal means plus the
+integrated-CDF condition give SOSD, and SOSD needs only concavity
+(`sosd_iff_shortfall`, `sosd_iff_concave`, `sosd_iff_integral_cdf`). The
+remaining converse, SOSD ⟹ mean-preserving spread (Rothschild–Stiglitz), is not
+formalized.
+
+**Proof of the converse.** On the finite joint support, a concave `u` agrees with
+`a + b·x − ∑ cₖ (tₖ − x)⁺` with `cₖ ≥ 0` (add one kink per support point, from
+the right to the left, `exists_hinge_rep`). Affine terms have equal expectations
+and each shortfall term is ordered by hypothesis.
 
 **Proof of 6.D.1 (⟸).** MWG integrate by parts. For finite supports we
 instead induct on the number of distinct values `u` takes on the joint
@@ -283,6 +292,132 @@ theorem expect_shortfall_eq_integral_cdf (F : SimpleLottery) {a t : ℝ}
   · intro x _
     exact Monotone.intervalIntegrable fun s s' hss' =>
       mul_le_mul_of_nonneg_left (monotone_step x hss') (F.nonneg x)
+
+/-- Affine functions have the same expectation under lotteries with equal means. -/
+theorem expect_affine_eq {F G : SimpleLottery} (hmean : F.mean = G.mean) (α β : ℝ) :
+    G.expect (fun x => α + β * x) = F.expect (fun x => α + β * x) := by
+  rw [G.expect_add (fun _ => α) (fun x => β * x), F.expect_add (fun _ => α) (fun x => β * x),
+    expect_const, expect_const]
+  have hG := G.expect_const_mul β id
+  have hF := F.expect_const_mul β id
+  simp only [id] at hG hF
+  simp only [mean] at hmean
+  rw [hG, hF, hmean]
+
+/-- **Hinge decomposition.** On a finite set `T` lying above `m ∈ T`, a concave `u`
+agrees with a function `g` that is `G ≤ F` in expectation (built from an affine function
+by subtracting nonnegative multiples of shortfalls `(t - x)⁺`), and that is affine with
+slope `B` to the left of `m`, where `B` is at most every chord slope of `u` ending at `m`. -/
+theorem exists_hinge_rep {F G : SimpleLottery} (hmean : F.mean = G.mean)
+    (hs : ∀ t, F.expect (fun x => max (t - x) 0) ≤ G.expect (fun x => max (t - x) 0))
+    {u : ℝ → ℝ} (hu : ConcaveOn ℝ univ u) (T : Finset ℝ) :
+    ∀ m, (∀ x ∈ T, m ≤ x) → (T.Nonempty → m ∈ T) → ∃ g : ℝ → ℝ, ∃ B : ℝ,
+      (∀ x ∈ T, g x = u x) ∧ G.expect g ≤ F.expect g ∧
+      (∀ x ≤ m, g x = u m + B * (x - m)) ∧ (∀ x < m, B ≤ (u m - u x) / (m - x)) := by
+  induction T using Finset.induction_on_min with
+  | empty =>
+    intro m _ _
+    refine ⟨fun x => u m + (u (m + 1) - u m) * (x - m), u (m + 1) - u m,
+      by simp, ?_, fun x _ => rfl, fun x hx => ?_⟩
+    · have h := expect_affine_eq hmean (u m - (u (m + 1) - u m) * m) (u (m + 1) - u m)
+      have e : (fun x => u m + (u (m + 1) - u m) * (x - m)) =
+          fun x => (u m - (u (m + 1) - u m) * m) + (u (m + 1) - u m) * x := by
+        funext x; ring
+      rw [e, h]
+    · have := hu.slope_anti_adjacent (mem_univ x) (mem_univ (m + 1)) hx (lt_add_one m)
+      simpa using this
+  | insert a s has ih =>
+    intro m hm hmem
+    have hma : m = a := le_antisymm (hm a (Finset.mem_insert_self a s))
+      (by
+        rcases Finset.mem_insert.1 (hmem ⟨a, mem_insert_self a s⟩) with h | h
+        · exact h.ge
+        · exact (has m h).le)
+    subst hma
+    rcases s.eq_empty_or_nonempty with hs0 | hsne
+    · subst hs0
+      obtain ⟨g, B, -, hge, hlin, hB⟩ := ih m (by simp) (by simp)
+      refine ⟨g, B, fun x hx => ?_, hge, hlin, hB⟩
+      simp only [Finset.mem_insert, Finset.notMem_empty, or_false] at hx
+      subst hx; rw [hlin x le_rfl]; ring
+    · set m' := s.min' hsne
+      have hm'mem : m' ∈ s := s.min'_mem hsne
+      have ham : m < m' := has m' hm'mem
+      obtain ⟨g, B, hgu, hge, hlin, hB⟩ :=
+        ih m' (fun x hx => s.min'_le x hx) (fun _ => hm'mem)
+      set σ := (u m' - u m) / (m' - m)
+      have hpos : 0 < m' - m := sub_pos.2 ham
+      have hσ : u m' + σ * (m - m') = u m := by
+        simp only [σ]; field_simp; ring
+      refine ⟨fun x => g x - (σ - B) * max (m' - x) 0, σ, ?_, ?_, ?_, ?_⟩
+      · intro x hx
+        rcases Finset.mem_insert.1 hx with rfl | hx
+        · simp only
+          rw [hlin x ham.le, max_eq_left hpos.le]
+          linear_combination hσ
+        · simp only
+          rw [hgu x hx, max_eq_right (by linarith [s.min'_le x hx]), mul_zero, sub_zero]
+      · have hc : 0 ≤ σ - B := sub_nonneg.2 (hB m ham)
+        rw [G.expect_sub g, F.expect_sub g, G.expect_const_mul, F.expect_const_mul]
+        nlinarith [hs m', mul_le_mul_of_nonneg_left (hs m') hc]
+      · intro x hx
+        simp only
+        rw [hlin x (hx.trans ham.le), max_eq_left (by linarith)]
+        linear_combination hσ
+      · intro x hx
+        exact hu.slope_anti_adjacent (mem_univ x) (mem_univ m') hx ham
+
+/-- **Integrated-CDF condition ⟹ concave dominance** (converse half of MWG
+Prop. 6.D.2). If `F` and `G` have the same mean and `E_F[(t - X)⁺] ≤ E_G[(t - X)⁺]` for
+every `t`, then every concave `u` (monotone or not) has `E_G[u] ≤ E_F[u]`. -/
+theorem expect_le_of_shortfall {F G : SimpleLottery} (hmean : F.mean = G.mean)
+    (hs : ∀ t, F.expect (fun x => max (t - x) 0) ≤ G.expect (fun x => max (t - x) 0))
+    {u : ℝ → ℝ} (hu : ConcaveOn ℝ univ u) : G.expect u ≤ F.expect u := by
+  set S := F.prob.support ∪ G.prob.support
+  have hS : S.Nonempty := F.support_nonempty.mono subset_union_left
+  obtain ⟨g, -, hgu, hge, -, -⟩ := exists_hinge_rep hmean hs hu S (S.min' hS)
+    (fun x hx => S.min'_le x hx) (fun _ => S.min'_mem hS)
+  rwa [G.expect_congr subset_union_right (fun x hx => (hgu x hx).symm),
+    F.expect_congr subset_union_left (fun x hx => (hgu x hx).symm)]
+
+/-- **MWG Prop. 6.D.2, shortfall form.** For equal means, `F` SOSD `G` iff
+`E_F[(t - X)⁺] ≤ E_G[(t - X)⁺]` for all `t`. -/
+theorem sosd_iff_shortfall {F G : SimpleLottery} :
+    SOSD F G ↔ F.mean = G.mean ∧
+      ∀ t, F.expect (fun x => max (t - x) 0) ≤ G.expect (fun x => max (t - x) 0) :=
+  ⟨fun h => ⟨h.1, h.shortfall_le⟩,
+    fun h => ⟨h.1, fun _ _ hu => expect_le_of_shortfall h.1 h.2 hu⟩⟩
+
+/-- **SOSD only needs concavity** (MWG remark after Def. 6.D.2): with equal means,
+`F` SOSD `G` iff every concave `u`, monotone or not, prefers `F`. -/
+theorem sosd_iff_concave {F G : SimpleLottery} :
+    SOSD F G ↔ F.mean = G.mean ∧
+      ∀ u : ℝ → ℝ, ConcaveOn ℝ univ u → G.expect u ≤ F.expect u :=
+  ⟨fun h => ⟨h.1, fun _ hu => expect_le_of_shortfall h.1 h.shortfall_le hu⟩,
+    fun h => ⟨h.1, fun u _ hu => h.2 u hu⟩⟩
+
+/-- **MWG Prop. 6.D.2, integrated-CDF form.** For equal means, `F` SOSD `G` iff
+`∫ₐᵗ F(s) ds ≤ ∫ₐᵗ G(s) ds` for all `t ≥ a`, whenever `a` lies strictly below both supports
+(the finite-support version of `∫_{-∞}^t F ≤ ∫_{-∞}^t G`). -/
+theorem sosd_iff_integral_cdf {F G : SimpleLottery} :
+    SOSD F G ↔ F.mean = G.mean ∧
+      ∀ a t, (∀ x ∈ F.prob.support ∪ G.prob.support, a < x) → a ≤ t →
+        ∫ s in a..t, F.cdf s ≤ ∫ s in a..t, G.cdf s := by
+  rw [sosd_iff_shortfall]
+  refine and_congr_right fun _ => ⟨fun h a t ha hat => ?_, fun h t => ?_⟩
+  · rw [← expect_shortfall_eq_integral_cdf F (fun x hx => ha x (mem_union_left _ hx)) hat,
+      ← expect_shortfall_eq_integral_cdf G (fun x hx => ha x (mem_union_right _ hx)) hat]
+    exact h t
+  · set S := F.prob.support ∪ G.prob.support
+    have hS : S.Nonempty := F.support_nonempty.mono subset_union_left
+    set a := min t (S.min' hS - 1)
+    have ha : ∀ x ∈ S, a < x := fun x hx =>
+      (min_le_right _ _).trans_lt (by linarith [S.min'_le x hx])
+    rw [expect_shortfall_eq_integral_cdf F (fun x hx => ha x (mem_union_left _ hx))
+        (min_le_left _ _),
+      expect_shortfall_eq_integral_cdf G (fun x hx => ha x (mem_union_right _ hx))
+        (min_le_left _ _)]
+    exact h a t ha (min_le_left _ _)
 
 /-- **Witness for mean-preserving spreads.** The fair coin flip `±1` is a
 mean-preserving spread of the sure amount `0`, so `δ₀` second-order

@@ -150,4 +150,33 @@ theorem frozen_profit_aggregate_of_supply (h : ∀ j, (supply (Ys j) p).Nonempty
     profit (aggregate Ys) p = ∑ j, profit (Ys j) p := by
   apply Econ.profit_aggregate_of_supply <;> assumption
 
+theorem frozen_SimpleLottery_sosd_iff_concave {F G : SimpleLottery} :
+    SOSD F G ↔ F.mean = G.mean ∧
+      ∀ u : ℝ → ℝ, ConcaveOn ℝ univ u → G.expect u ≤ F.expect u :=
+  Econ.SimpleLottery.sosd_iff_concave
+
+theorem frozen_SimpleLottery_sosd_iff_integral_cdf {F G : SimpleLottery} :
+    SOSD F G ↔ F.mean = G.mean ∧
+      ∀ a t, (∀ x ∈ F.prob.support ∪ G.prob.support, a < x) → a ≤ t →
+        ∫ s in a..t, F.cdf s ≤ ∫ s in a..t, G.cdf s :=
+  Econ.SimpleLottery.sosd_iff_integral_cdf
+
+theorem frozen_riskAverseOn_iff_certaintyEquivalent_le_mean {u : ℝ → ℝ} {I : Set ℝ}
+    (hI : Convex ℝ I) (hc : ContinuousOn u I) (hm : StrictMonoOn u I) :
+    RiskAverseOn u I ↔
+      ∀ F : SimpleLottery, F.SupportedIn I → ∀ c ∈ I, IsCertaintyEquivalent u F c →
+        c ≤ F.mean :=
+  Econ.riskAverseOn_iff_certaintyEquivalent_le_mean hI hc hm
+
+theorem frozen_riskAverseOn_iff_arrowPratt_nonneg {u : ℝ → ℝ} {I : Set ℝ} (hI : Convex ℝ I)
+    (ho : IsOpen I) (hu : DifferentiableOn ℝ u I) (hu' : DifferentiableOn ℝ (deriv u) I)
+    (hpos : ∀ x ∈ I, 0 < deriv u x) :
+    RiskAverseOn u I ↔ ∀ x ∈ I, 0 ≤ arrowPratt u x :=
+  Econ.riskAverseOn_iff_arrowPratt_nonneg hI ho hu hu' hpos
+
+theorem frozen_SimpleLottery_sosd_iff_shortfall {F G : SimpleLottery} :
+    SOSD F G ↔ F.mean = G.mean ∧
+      ∀ t, F.expect (fun x => max (t - x) 0) ≤ G.expect (fun x => max (t - x) 0) :=
+  Econ.SimpleLottery.sosd_iff_shortfall
+
 end Econ.Audit

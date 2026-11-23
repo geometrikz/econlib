@@ -1,0 +1,296 @@
+% Lean: EconLean/Games/{Strategic,Mixed,ZeroSum,Correlated,Rationalizability,Bayesian,Extensive}.lean
+\chapter{Game Theory}
+\label{chap:games}
+
+Source: MWG Ch.~7--9. A strategic game has players $I$, strategy sets $S_i$ and payoffs
+$u_i : \prod_j S_j \to \R$. Write $(t, s_{-i})$ for the profile $s$ with $s_i$ replaced by $t$
+(Lean: \texttt{Function.update s i t}).
+
+\section{Strategic games and dominance}
+\label{sec:strategic}
+
+\begin{definition}[Nash equilibrium, best response, dominance; MWG Defs.~8.B.1, 8.B.4, 8.D.1, 8.D.2]
+\label{def:nash}
+\lean{Econ.IsBestResponse, Econ.IsNash, Econ.IsStrictlyDominant, Econ.IsDominant, Econ.StrictlyDominated, Econ.isdStep, Econ.isd}
+\leanok
+$s$ is a Nash equilibrium if $u_i(t, s_{-i}) \le u_i(s)$ for all $i, t$. A strategy $t$ is strictly dominant
+if it beats every other strategy against every $s_{-i}$; weakly dominant if it is a best response to every
+$s_{-i}$ and beats each other strategy against some $s_{-i}$. Relative to surviving sets $R$, $t$ is strictly dominated if
+some $t' \in R_i$ does strictly better against every $s$ with $s_j \in R_j$ for all $j$. The sets
+$\mathrm{isd}_n$ are obtained from $\mathrm{isd}_0 = S$ by simultaneously deleting, for every player,
+the strategies strictly dominated relative to $\mathrm{isd}_n$.
+\end{definition}
+
+\begin{lemma}[Basic facts]
+\label{lem:nash-basic}
+\lean{Econ.isNash_iff_bestResponse, Econ.IsStrictlyDominant.isDominant, Econ.isNash_of_dominant, Econ.isd_succ_subset, Econ.isd_antitone}
+\leanok
+\uses{def:nash}
+Nash means that everybody best-responds; strictly dominant implies weakly dominant (when some opponent
+profile exists); a profile of weakly dominant strategies is Nash; the surviving sets
+shrink.
+\end{lemma}
+\begin{proof}
+\leanok
+Unfold definitions; $(s_i, s_{-i}) = s$ (\texttt{update\_eq\_self}).
+\end{proof}
+
+\begin{theorem}[Nash equilibria survive iterated strict dominance]
+\label{thm:nash-isd}
+\lean{Econ.isNash_mem_isd}
+\leanok
+\uses{def:nash}
+If $s$ is Nash then $s_i \in \mathrm{isd}_n(i)$ for all $n$ and $i$.
+\end{theorem}
+\begin{proof}
+\leanok
+Induction on $n$. If $s_i$ were dominated by $t'$ relative to $\mathrm{isd}_n$, which contains $s$ by
+induction, then $u_i(s) < u_i(t', s_{-i})$, contradicting Nash.
+\end{proof}
+
+\begin{theorem}[Dominance solvability implies Nash; MWG §8.B]
+\label{thm:isd-singleton}
+\lean{Econ.isNash_of_isd_singleton}
+\leanok
+\uses{lem:nash-basic, thm:nash-isd}
+In a game with finite strategy sets, if $\mathrm{isd}_n(i) = \{s_i\}$ for every $i$, then $s$ is a Nash
+equilibrium (and by Theorem~\ref{thm:nash-isd} the only one).
+\end{theorem}
+\begin{proof}
+\leanok
+Suppose $u_i(s) < u_i(t, s_{-i})$. Let $b$ maximize $u_i(\cdot, s_{-i})$ over the finite $S_i$; then $b \ne s_i$,
+and $n > 0$ since round $0$ keeps everything. Let $k$ be the least index with $b \notin \mathrm{isd}_{k+1}(i)$
+(\texttt{Nat.find}); then $k \le n-1$ and $b \in \mathrm{isd}_k(i)$, so $b$ is strictly dominated relative to
+$\mathrm{isd}_k$ by some $t'$. Since $s_j \in \mathrm{isd}_n(j) \subseteq \mathrm{isd}_k(j)$, dominance at $s$
+gives $u_i(b, s_{-i}) < u_i(t', s_{-i})$, contradicting the choice of $b$.
+\end{proof}
+
+\section{Mixed strategies and Nash's theorem}
+\label{sec:mixed}
+
+\begin{definition}[Mixed strategies; MWG Def.~8.D.2]
+\label{def:mixed}
+\lean{Econ.profileProb, Econ.mixedPayoff, Econ.IsMixedProfile, Econ.IsMixedNash, Econ.pureDev, Econ.pureProfile}
+\leanok
+\uses{def:lottery, def:nash}
+A mixed strategy is a lottery $\sigma_i$ on $S_i$ (Definition~\ref{def:lottery}). Players randomize
+independently: $P_\sigma(s) = \prod_j \sigma_j(s_j)$ and $U_i(\sigma) = \sum_s P_\sigma(s) u_i(s)$. $\sigma$ is a
+mixed Nash equilibrium if every $\sigma_i$ is a lottery and no lottery $\tau$ gives $i$ more than
+$U_i(\sigma)$ against $\sigma_{-i}$. $\mathrm{dev}_i(t) = U_i(\delta_t, \sigma_{-i})$.
+\end{definition}
+
+\begin{lemma}[Multilinearity]
+\label{lem:mixed-linear}
+\lean{Econ.profileProb_update, Econ.mixedPayoff_update, Econ.mixedPayoff_eq_sum_pureDev, Econ.pureDev_update, Econ.profileProb_nonneg, Econ.sum_profileProb, Econ.sum_update_degenerate, Econ.pureDev_eq_sum_update, Econ.profileProb_slice, Econ.profileProb_pureProfile, Econ.mixedPayoff_pureProfile, Econ.update_pureProfile}
+\leanok
+\uses{def:mixed}
+$U_k(\tau, \sigma_{-i}) = \sum_t \tau(t) U_k(\delta_t, \sigma_{-i})$; in particular $U_i(\sigma) = \sum_t \sigma_i(t)
+\mathrm{dev}_i(t)$. $P_\sigma$ is a probability. If $\sigma_i$ is a lottery, $\mathrm{dev}_i(t) =
+\sum_s P_\sigma(s) u_i(t, s_{-i})$. Degenerate profiles give pure payoffs.
+\end{lemma}
+\begin{proof}
+\leanok
+$P_{(\tau,\sigma_{-i})}(s) = \tau(s_i)\prod_{j\ne i}\sigma_j(s_j)$ (\texttt{Finset.mul\_prod\_erase}); swap the sums
+and use $\sum_t \tau(t)[t = s_i] = \tau(s_i)$. $\sum_s P_\sigma(s) = \prod_j \sum_t \sigma_j(t) = 1$
+(\texttt{Finset.prod\_univ\_sum}). The reindexing lemma \texttt{sum\_update\_degenerate} is the bijection
+$s \mapsto (t, s_{-i})$ between the profiles with $s_i = x$ and those with $s_i = t$
+(\texttt{Finset.sum\_nbij'}), which preserves $\prod_{j \ne i}\sigma_j(s_j)$; combined with the first identity it
+gives the formula for $\mathrm{dev}_i$.
+\end{proof}
+
+\begin{theorem}[Pure deviations suffice; indifference principle; MWG Prop.~8.D.1]
+\label{thm:indifference}
+\lean{Econ.isMixedNash_iff_pure, Econ.IsMixedNash.eq_of_pos, Econ.isMixedNash_pureProfile_iff}
+\leanok
+\uses{lem:mixed-linear}
+A mixed profile is Nash iff $\mathrm{dev}_i(t) \le U_i(\sigma)$ for all $i, t$. In a mixed equilibrium every
+$t$ with $\sigma_i(t) > 0$ has $\mathrm{dev}_i(t) = U_i(\sigma)$. Pure Nash equilibria are exactly mixed equilibria
+in degenerate lotteries.
+\end{theorem}
+\begin{proof}
+\leanok
+($\Leftarrow$) $U_i(\tau,\sigma_{-i}) = \sum_t \tau(t)\mathrm{dev}_i(t) \le U_i(\sigma)$. Indifference:
+$\sum_t \sigma_i(t)(U_i(\sigma) - \mathrm{dev}_i(t)) = 0$ with nonnegative terms
+(\texttt{Finset.sum\_eq\_zero\_iff\_of\_nonneg}).
+\end{proof}
+
+\begin{theorem}[Nash 1950; MWG Prop.~8.D.2]
+\label{thm:nash-existence}
+\lean{Econ.isCompact_lotteries, Econ.nashGain, Econ.nashMap, Econ.continuous_mixedPayoff, Econ.continuous_pureDev, Econ.continuous_nashGain, Econ.nashGain_nonneg, Econ.continuous_nashMap, Econ.nashMap_mem, Econ.exists_pos_pureDev_le, Econ.isMixedNash_of_nashMap_eq, Econ.exists_isMixedNash}
+\leanok
+\uses{thm:indifference, thm:brouwer}
+Every game with finitely many players, each with a finite nonempty strategy set, has a mixed Nash equilibrium.
+\end{theorem}
+\begin{proof}
+\leanok
+Let $g_i(t) = \max(0, \mathrm{dev}_i(t) - U_i(\sigma))$ and
+$f(\sigma)_i(t) = (\sigma_i(t) + g_i(t))/(1 + \sum_b g_i(b))$. The set $K = \prod_i \Delta(S_i)$ is nonempty,
+convex and compact (each simplex is closed and inside $[0,1]^{S_i}$), $f$ is continuous and maps $K$ into $K$,
+so Brouwer (Theorem~\ref{thm:brouwer}) gives a fixed point $\sigma$. Some $t$ with $\sigma_i(t) > 0$ has
+$\mathrm{dev}_i(t) \le U_i(\sigma)$ (otherwise $\sum_t \sigma_i(t)(\mathrm{dev}_i(t) - U_i(\sigma)) > 0$, but it equals $0$),
+so $g_i(t) = 0$ and the fixed-point equation at $t$ forces $\sum_b g_i(b) = 0$. Hence all $g_i(b) = 0$ and
+Theorem~\ref{thm:indifference} applies.
+\end{proof}
+
+\section{Zero-sum games}
+\label{sec:zerosum}
+
+\begin{definition}[Matrix games]
+\label{def:matrix-game}
+\lean{Econ.matrixPayoff, Econ.IsSaddle, Econ.IsValue}
+\leanok
+\uses{def:lottery}
+The row player gets $x^\top A y$. $(x,y)$ is a saddle point if both are lotteries and
+$x'^\top A y \le x^\top A y \le x^\top A y'$ for all lotteries $x', y'$. $v$ is a value if the row player has a
+lottery guaranteeing at least $v$ and the column player one holding the row player to at most $v$.
+\end{definition}
+
+\begin{theorem}[von Neumann's minimax theorem]
+\label{thm:minimax}
+\lean{Econ.matrixPayoff_mix_left, Econ.matrixPayoff_mix_right, Econ.continuous_matrixPayoff_left, Econ.continuous_matrixPayoff_right, Econ.exists_saddle, Econ.IsSaddle.isValue, Econ.IsValue.unique, Econ.exists_unique_value, Econ.IsSaddle.interchange}
+\leanok
+\uses{def:matrix-game, thm:nash-existence}
+Every finite matrix game with nonempty strategy sets has a saddle point and a unique value. Saddle-point
+strategies are interchangeable.
+\end{theorem}
+\begin{proof}
+\leanok
+$x^\top A y$ is bilinear, hence continuous and both convex and concave in each argument, and the simplices are
+nonempty, convex and compact; Sion's theorem (\texttt{Sion.exists\_isSaddlePointOn}) gives the saddle point.
+A saddle point's payoff is a value. If $v, w$ are values with strategies $x, y$ and $x', y'$ then
+$v \le x^\top A y' \le w$ and symmetrically. Interchange: chain the four saddle inequalities through the common
+value.
+\end{proof}
+
+\section{Correlated equilibrium and rationalizability}
+\label{sec:correlated}
+
+\begin{definition}[Correlated equilibrium; Aumann 1974]
+\label{def:correlated}
+\lean{Econ.obedienceGain, Econ.IsCorrelatedEq}
+\leanok
+\uses{def:mixed}
+A distribution $\mu$ on profiles is a correlated equilibrium if for all $i, t, t'$:
+$\sum_{s : s_i = t}\mu(s)[u_i(t', s_{-i}) - u_i(s)] \le 0$.
+\end{definition}
+
+\begin{theorem}[Nash $\Rightarrow$ correlated; existence; convexity]
+\label{thm:correlated}
+\lean{Econ.profileProb_mem, Econ.obedienceGain_profileProb, Econ.isCorrelatedEq_of_isMixedNash, Econ.exists_isCorrelatedEq, Econ.convex_correlatedEq}
+\leanok
+\uses{def:correlated, thm:nash-existence}
+The product distribution of a mixed Nash equilibrium is a correlated equilibrium; correlated equilibria exist;
+the set of correlated equilibria is convex.
+\end{theorem}
+\begin{proof}
+\leanok
+Under $P_\sigma$ the obedience gain equals $\sigma_i(t)(\mathrm{dev}_i(t') - \mathrm{dev}_i(t))$
+(\texttt{profileProb\_slice}, \texttt{sum\_update\_degenerate}); it is $0$ if $\sigma_i(t) = 0$ and $\le 0$ by
+indifference otherwise. Convexity: the gain is linear in $\mu$.
+\end{proof}
+
+\begin{definition}[Rationalizability; MWG Defs.~8.C.1--8.C.3]
+\label{def:rationalizable}
+\lean{Econ.IsBestResponseTo, Econ.IsBRSet, Econ.Rationalizable, Econ.StrictlyDominatedMixed, Econ.isdMixed}
+\leanok
+\uses{def:mixed}
+$R$ is a best-response set if each $t \in R_i$ is a best response to a profile of independent mixtures whose
+opponents' supports lie in $R_j$. A strategy is rationalizable if it lies in some best-response set.
+$\mathrm{isdMixed}_n$ is iterated deletion where the dominator may be a lottery over surviving strategies
+(MWG Def.~8.D.3).
+\end{definition}
+
+\begin{theorem}[Nash $\subseteq$ rationalizable $\subseteq$ iterated dominance; MWG Props.~8.C.1--8.C.2]
+\label{thm:rationalizable}
+\lean{Econ.isBRSet_support, Econ.rationalizable_of_isMixedNash, Econ.exists_rationalizable, Econ.mem_of_profileProb_pos, Econ.IsBRSet.subset_isd, Econ.Rationalizable.mem_isd, Econ.IsBRSet.subset_isdMixed, Econ.Rationalizable.mem_isdMixed}
+\leanok
+\uses{def:rationalizable, thm:indifference, thm:nash-existence}
+Strategies played with positive probability in a mixed Nash equilibrium are rationalizable; each player has one;
+rationalizable strategies survive every round of iterated strict dominance, with pure or with mixed
+dominators.
+\end{theorem}
+\begin{proof}
+\leanok
+The equilibrium supports form a best-response set, with $\sigma$ itself as belief (indifference). For the second
+inclusion induct on $n$: if $t \in R_i$ were dominated by $t'$ relative to $\mathrm{isd}_n \supseteq R$, every
+profile $s$ with $P_\sigma(s) > 0$ has $(t, s_{-i}) \in \mathrm{isd}_n$, so $u_i(t, s_{-i}) < u_i(t', s_{-i})$;
+averaging with \texttt{pureDev\_eq\_sum\_update} gives $\mathrm{dev}_i(t) < \mathrm{dev}_i(t')$, contradicting
+best response. With a mixed dominator $\tau$ the same averaging gives
+$\mathrm{dev}_i(t) < \sum_x \tau(x)\mathrm{dev}_i(x) \le \mathrm{dev}_i(t)$. The converse inclusion (two players,
+mixed dominance) is not formalized.
+\end{proof}
+
+\section{Bayesian games}
+\label{sec:bayesian}
+
+\begin{definition}[Bayesian game, BNE; MWG Def.~8.E.1]
+\label{def:bne}
+\lean{Econ.play, Econ.exAnte, Econ.IsBNE, Econ.interim}
+\leanok
+\uses{def:nash}
+Types $\theta \sim p$, strategies $s_i : \Theta_i \to A_i$, ex-ante payoff $\sum_\theta p(\theta) u_i(s(\theta), \theta)$.
+A BNE is a Nash equilibrium of the ex-ante game, with $p$ a probability distribution. The interim payoff of type $\theta_i$ choosing $a$ is
+$\sum_{\theta : \theta_i \text{ fixed}} p(\theta) u_i(a, s_{-i}(\theta_{-i}), \theta)$ (unnormalized).
+\end{definition}
+
+\begin{theorem}[Interim characterization and existence; MWG Prop.~8.E.1]
+\label{thm:bne}
+\lean{Econ.play_update, Econ.exAnte_update, Econ.exAnte_eq_sum_interim, Econ.isBNE_iff_interim, Econ.exists_mixed_BNE}
+\leanok
+\uses{def:bne, thm:nash-existence}
+For a probability prior $p$, $s$ is a BNE iff each type's prescribed action maximizes its interim payoff.
+Finite Bayesian games have a mixed BNE (a lottery over type-contingent plans).
+\end{theorem}
+\begin{proof}
+\leanok
+The ex-ante payoff of a plan $r$ is $\sum_{\theta_i}$ interim$(\theta_i, r(\theta_i))$ (swap sums,
+\texttt{Finset.sum\_ite\_eq}). ($\Leftarrow$) sum the interim inequalities. ($\Rightarrow$) deviate at the single
+type $\theta_i$; all other terms cancel (\texttt{Finset.add\_sum\_erase}). Existence: Theorem~\ref{thm:nash-existence}
+for the ex-ante game.
+\end{proof}
+
+\section{Extensive-form games of perfect information}
+\label{sec:extensive}
+
+\begin{definition}[Game trees, strategies, SPE; MWG Defs.~9.B.1--9.B.2]
+\label{def:game-tree}
+\lean{Econ.GameTree, Econ.GameTree.Profile, Econ.GameTree.outcome, Econ.GameTree.OnlyDeviates, Econ.GameTree.IsNashTree, Econ.GameTree.IsSPE, Econ.GameTree.NoOneShotDeviation, Econ.GameTree.IsLeafOf}
+\leanok
+A finite tree whose leaves carry payoff vectors and whose nodes are owned by a player choosing among $k+1$ moves.
+A profile picks a move at every node. $s'$ is a unilateral deviation by $i$ if it changes only $i$'s moves. An
+SPE is a Nash equilibrium of every subgame. A profile has no one-shot deviation if at every node the mover's move
+maximizes the mover's payoff given continuation play $s$.
+\end{definition}
+
+\begin{theorem}[One-shot deviation principle]
+\label{thm:one-shot}
+\lean{Econ.GameTree.onlyDeviates_refl, Econ.GameTree.NoOneShotDeviation.isNashTree, Econ.GameTree.isSPE_iff_noOneShotDeviation, Econ.GameTree.IsSPE.isNashTree}
+\leanok
+\uses{def:game-tree}
+A profile is subgame perfect iff it has no profitable one-shot deviation.
+\end{theorem}
+\begin{proof}
+\leanok
+No one-shot deviation $\Rightarrow$ Nash, by induction on the tree: for a deviation $s'$ by $i$ at a node of $j$,
+the subgame after $s'$'s move gives $u_i(s') \le u_i(s'_1, s)$ by induction; if $j = i$ the one-shot condition
+gives $\le u_i(s)$, and if $j \ne i$ the move is unchanged. Hence SPE (Nash in each subgame). Conversely the
+deviation "change the root move only" is unilateral for the mover.
+\end{proof}
+
+\begin{theorem}[Kuhn / Zermelo backward induction; MWG Prop.~9.B.1]
+\label{thm:backward-induction}
+\lean{Econ.GameTree.exists_isSPE, Econ.GameTree.outcome_mem, Econ.GameTree.zermelo, Econ.GameTree.zermelo_draw}
+\leanok
+\uses{thm:one-shot}
+Every finite game of perfect information has a pure SPE. In a two-player win/lose game one player has a strategy
+that wins against every strategy of the other. If draws (payoff $0$) are allowed, either one player can force a
+win or both can guarantee at least a draw. (Perfect information, no chance moves.)
+\end{theorem}
+\begin{proof}
+\leanok
+Induction: solve every subgame, let the mover pick the move with the highest continuation payoff
+(\texttt{Finset.exists\_max\_image}); the result has no one-shot deviation. Zermelo: in an SPE $s$ the outcome is a
+leaf, so somebody wins; if the loser could deviate to win it would gain $1 > -1$, contradicting Nash. With
+draws, split on the SPE outcome $v \in \{1, 0, -1\}$; Nash bounds every unilateral deviation's payoff by the
+deviator's equilibrium payoff, and the zero-sum relation turns that into the stated guarantees.
+\end{proof}

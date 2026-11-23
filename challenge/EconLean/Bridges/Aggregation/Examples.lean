@@ -4,6 +4,9 @@ module
 public import EconLean.Bridges.Aggregation.GrossSubstitutes
 public import EconLean.Bridges.Aggregation.LawOfDemand
 public import EconLean.Bridges.Aggregation.Gorman
+public import EconLean.Bridges.Aggregation.Tatonnement
+public import Mathlib.Analysis.SpecialFunctions.Trigonometric.ArctanDeriv
+public import Mathlib.Analysis.SpecialFunctions.ExpDeriv
 public import EconLean.GE.Production
 public import EconLean.GE.Examples
 
@@ -30,6 +33,60 @@ theorem zCD_unique {p : Fin 2 → ℝ} (hp : PositivePrices p) (hz : zCD p = 0) 
 
 theorem zCD_warp : ExcessWARP zCD {p | PositivePrices p} := by
   sorry
+
+theorem zCD_cost_pos {q : Fin 2 → ℝ} (hq : PositivePrices q) (hz : zCD q ≠ 0) :
+    0 < cost (fun _ => (1 : ℝ)) (zCD q) := by
+  sorry
+
+theorem zCD_tatonnement_antitone {p : ℝ → Fin 2 → ℝ} (hpath : IsTatonnementPath zCD p)
+    (hpos : ∀ t, 0 ≤ t → PositivePrices (p t)) :
+    AntitoneOn (fun t => priceDistSq (p t) (fun _ => (1 : ℝ))) (Set.Ici 0) := by
+  sorry
+
+section Arc
+
+open Real
+
+noncomputable def φArc (t : ℝ) : ℝ := π / 4 - π / 8 * Real.exp (-t)
+
+noncomputable def zArc (q : Fin 2 → ℝ) : Fin 2 → ℝ :=
+  (π / 4 - Real.arctan (q 1 / q 0)) • ![-q 1, q 0]
+
+noncomputable def pArc (t : ℝ) : Fin 2 → ℝ := ![Real.cos (φArc t), Real.sin (φArc t)]
+
+theorem φArc_bounds {t : ℝ} (ht : 0 ≤ t) : π / 8 ≤ φArc t ∧ φArc t < π / 4 := by
+  sorry
+
+theorem hasDerivAt_φArc (t : ℝ) : HasDerivAt φArc (π / 8 * Real.exp (-t)) t := by
+  sorry
+
+theorem arctan_pArc {t : ℝ} (ht : 0 ≤ t) : Real.arctan (pArc t 1 / pArc t 0) = φArc t := by
+  sorry
+
+theorem zArc_pArc {t : ℝ} (ht : 0 ≤ t) :
+    zArc (pArc t) = (π / 8 * Real.exp (-t)) • ![-Real.sin (φArc t), Real.cos (φArc t)] := by
+  sorry
+
+theorem pArc_isTatonnementPath : IsTatonnementPath zArc pArc := by
+  sorry
+
+theorem pArc_walras (t : ℝ) (ht : 0 ≤ t) : cost (pArc t) (zArc (pArc t)) = 0 := by
+  sorry
+
+theorem sin_lt_cos_φArc {t : ℝ} (ht : 0 ≤ t) : Real.sin (φArc t) < Real.cos (φArc t) := by
+  sorry
+
+theorem pArc_cost_pos (t : ℝ) (ht : 0 ≤ t) : 0 < cost (fun _ => (1 : ℝ)) (zArc (pArc t)) := by
+  sorry
+
+theorem zArc_pArc_ne (t : ℝ) (ht : 0 ≤ t) : zArc (pArc t) ≠ 0 := by
+  sorry
+
+theorem pArc_strictAnti :
+    StrictAntiOn (fun t => priceDistSq (pArc t) (fun _ => (1 : ℝ))) (Set.Ici 0) := by
+  sorry
+
+end Arc
 
 example : Convex ℝ {p | p ∈ {p : Fin 2 → ℝ | PositivePrices p} ∧ zCD p = 0} := by
   refine zCD_warp.convex_equilibria ?_ zCD_walras

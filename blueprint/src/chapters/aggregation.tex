@@ -237,3 +237,89 @@ $(1,0)$, half shares) whose equilibrium at $p = (1,1)$ has $y = (-2, 2)$, $x_a =
 Direct computation. For $-p$: $(p'-p)\cdot(-p' + p) = -\|p' - p\|^2 < 0$. In the production examples, profit
 $y_0 + y_1 \le 0$ on $Y$; on the budget line $y_0 + y_1 \le 1$, $u(y) \le 2(y_0 + y_1) \le 2 = u(0,1)$.
 \end{proof}
+
+\section{Tâtonnement stability}
+\label{sec:tatonnement}
+
+\begin{definition}[Tâtonnement path]
+\label{def:tatonnement}
+\lean{Econ.priceDistSq, Econ.IsTatonnementPath}
+\leanok
+A tâtonnement path for $z$ is $p : \R \to \R^\iota$ with $\dot p(t) = z(p(t))$ for all $t \ge 0$ (one-sided at $0$). $V(p) = \sum_i (p_i - p^*_i)^2$.
+\end{definition}
+
+\begin{lemma}[Lyapunov derivative; norm conservation]
+\label{lem:tatonnement_deriv}
+\lean{Econ.hasDerivWithinAt_priceDistSq, Econ.tatonnement_hasDerivWithinAt, Econ.tatonnement_deriv, Econ.tatonnement_norm_const}
+\leanok
+\uses{def:tatonnement}
+If Walras' law $p(t) \cdot z(p(t)) = 0$ holds along a tâtonnement path, then
+$\frac{d}{dt} V(p(t)) = -2\, p^* \cdot z(p(t))$ for $t \ge 0$, and $\sum_i p_i(t)^2 = \sum_i p_i(0)^2$.
+\end{lemma}
+\begin{proof}
+\leanok
+Componentwise, $\frac{d}{dt}(p_i - p^*_i)^2 = 2(p_i - p^*_i) z_i(p)$. Summing,
+$\dot V = 2\, p \cdot z(p) - 2\, p^* \cdot z(p) = -2\, p^* \cdot z(p)$ by Walras' law (one-sided derivative on
+$[0, \infty)$, a two-sided one for $t > 0$). With $p^* = 0$ the derivative is $0$; a function continuous on $[0,\infty)$
+with zero derivative inside is both non-increasing and non-decreasing there, hence constant.
+\end{proof}
+
+\begin{theorem}[Tâtonnement stability, Lyapunov step; MWG Prop.~17.H.1]
+\label{thm:tatonnement}
+\lean{Econ.tatonnement_antitone, Econ.tatonnement_strictAnti}
+\leanok
+\uses{lem:tatonnement_deriv}
+Suppose Walras' law holds along a tâtonnement path, and $p^* \cdot z(p(t)) > 0$ whenever $z(p(t)) \ne 0$. Then
+$t \mapsto \|p(t) - p^*\|^2$ is non-increasing on $[0, \infty)$, and strictly decreasing if $z(p(t)) \ne 0$ for all
+$t > 0$.
+Convergence to the equilibrium ray is not claimed.
+\end{theorem}
+\begin{proof}
+\leanok
+By Lemma~\ref{lem:tatonnement_deriv} the function is continuous on $[0,\infty)$ with derivative $-2\, p^* \cdot z(p(t))$
+for $t > 0$: zero at equilibrium points and negative elsewhere. By the mean value theorem it is antitone (strictly
+antitone) on $[0, \infty)$.
+\end{proof}
+
+\begin{theorem}[Two goods: gross substitutes gives $p^* \cdot z(q) > 0$]
+\label{thm:gs_cost_pos}
+\lean{Econ.GrossSubstitutes.cost_pos_of_ratio_lt, Econ.GrossSubstitutes.cost_pos_two_goods}
+\leanok
+\uses{lem:gs_path}
+Let $z$ be gross substitute, homogeneous of degree zero, with Walras' law on positive prices, and $p^* \gg 0$ an
+equilibrium. With two goods, $p^* \cdot z(q) > 0$ at every $q \gg 0$ with $z(q) \ne 0$.
+\end{theorem}
+\begin{proof}
+\leanok
+Let $r_i = q_i / p^*_i$. If $r_0 = r_1 = c$ then $q = c p^*$ and $z(q) = z(p^*) = 0$ by homogeneity, a contradiction.
+Otherwise say $r_k < r_j$ ($\{k, j\}$ the two goods) and let $q' = r_k p^*$, an equilibrium by homogeneity. Then
+$q' \le q$, $q'_k = q_k$, $q'_j < q_j$, so Lemma~\ref{lem:gs_path} gives $z_k(q) > 0$. Walras' law gives
+$z_j(q) = -q_k z_k(q) / q_j$, so
+$p^* \cdot z(q) = p^*_k z_k(q)\,(1 - r_k p^*_j / q_j) = p^*_k z_k(q)(1 - r_k / r_j) > 0$.
+\end{proof}
+
+\begin{theorem}[Tâtonnement example]
+\label{thm:zcd_tatonnement}
+\lean{Econ.AggregationExamples.zCD_cost_pos, Econ.AggregationExamples.zCD_tatonnement_antitone,
+  Econ.AggregationExamples.φArc, Econ.AggregationExamples.zArc, Econ.AggregationExamples.pArc,
+  Econ.AggregationExamples.φArc_bounds, Econ.AggregationExamples.hasDerivAt_φArc,
+  Econ.AggregationExamples.arctan_pArc, Econ.AggregationExamples.zArc_pArc,
+  Econ.AggregationExamples.pArc_isTatonnementPath, Econ.AggregationExamples.pArc_walras,
+  Econ.AggregationExamples.sin_lt_cos_φArc, Econ.AggregationExamples.pArc_cost_pos,
+  Econ.AggregationExamples.zArc_pArc_ne, Econ.AggregationExamples.pArc_strictAnti}
+\leanok
+\uses{thm:gs_cost_pos, thm:tatonnement, thm:zcd_example}
+(i) For $z(p) = (p_1/p_0 - 1, p_0/p_1 - 1)$, every tâtonnement path that stays in positive prices for $t \ge 0$ moves
+weakly closer to $(1,1)$. (ii) A nonconstant witness: $z(q) = (\pi/4 - \arctan(q_1/q_0))(-q_1, q_0)$ satisfies Walras'
+law, and $p(t) = (\cos\varphi(t), \sin\varphi(t))$ with $\varphi(t) = \pi/4 - (\pi/8)e^{-t}$ is a tâtonnement path that
+is never at equilibrium and moves strictly closer to $(1,1)$.
+\end{theorem}
+\begin{proof}
+\leanok
+(i) Theorem~\ref{thm:gs_cost_pos} with $p^* = (1,1)$, using the gross substitutes, homogeneity and Walras' law of
+Theorem~\ref{thm:zcd_example}, then Theorem~\ref{thm:tatonnement}. (ii) For $t \ge 0$, $\varphi(t) \in [\pi/8, \pi/4)$,
+so $\arctan(\tan\varphi) = \varphi$ and $z(p(t)) = \tfrac{\pi}{8}e^{-t}(-\sin\varphi, \cos\varphi) = \dot p(t)$ by the chain
+rule. Walras' law: $\cos\varphi(-\sin\varphi) + \sin\varphi\cos\varphi = 0$. And
+$p^* \cdot z(p(t)) = \tfrac{\pi}{8}e^{-t}(\cos\varphi - \sin\varphi) > 0$ because $\sin\varphi < \sin(\pi/2 - \varphi) =
+\cos\varphi$ for $\varphi < \pi/4$. Theorem~\ref{thm:tatonnement} applies.
+\end{proof}

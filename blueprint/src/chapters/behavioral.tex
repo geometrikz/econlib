@@ -1,4 +1,4 @@
-% Lean: EconLean/Behavioral/{PresentBias,RankDependent,ReferenceDependence,Temptation,Logit,RationalInattention,Ambiguity}.lean
+% Lean: EconLean/Behavioral/{PresentBias,RankDependent,ReferenceDependence,Temptation,Logit,RationalInattention,Ambiguity,GilboaSchmeidler,StochasticChoice}.lean
 \chapter{Behavioral Decision Theory}
 \label{chap:behavioral}
 
@@ -309,4 +309,119 @@ $V(\alpha f+(1-\alpha)c)=\alpha V(f)+(1-\alpha)c$ for constants $c$, $\alpha\ge0
 \begin{proof}
 \leanok
 Each $E_\pi$ is linear; a minimum of linear functions is concave and commutes with adding constants.
+\end{proof}
+
+\begin{definition}[Maxmin functional and prior set]
+\label{def:beh-maxmin-functional}
+\lean{Econ.Ambiguity.IsMaxminFunctional, Econ.Ambiguity.priorSet, Econ.Ambiguity.priors, Econ.Ambiguity.IsMaxminFunctional.map_zero, Econ.Ambiguity.IsMaxminFunctional.map_const, Econ.Ambiguity.IsMaxminFunctional.smul, Econ.Ambiguity.IsMaxminFunctional.add_neg_le}
+\leanok
+A functional $I$ on utility acts $f:S\to\mathbb{R}$ is a maxmin functional if it is monotone, $I(f+c)=I(f)+c$,
+$I(tf)=tI(f)$ for $t>0$, and $I(f)+I(g)\le I(f+g)$. Its prior set is
+$C_I=\{p\in\Delta(S): E_pg\ge I(g)\text{ for all }g\}$.
+\end{definition}
+
+\begin{lemma}[Supporting expectation]
+\label{lem:beh-gs-support}
+\lean{Econ.Ambiguity.IsMaxminFunctional.exists_support}
+\leanok
+\uses{def:beh-maxmin-functional}
+For a maxmin functional $I$ and any act $f_0$ there is $p\in C_I$ with $E_pf_0=I(f_0)$.
+\end{lemma}
+\begin{proof}
+\leanok
+$N(g)=-I(-g)$ is sublinear. On the line through $f_0\ne0$ the functional $tf_0\mapsto tI(f_0)$ lies below $N$:
+for $t>0$ because $I(f_0)+I(-f_0)\le I(0)=0$, for $t<0$ with equality. Hahn--Banach extends it to a linear $L\le N$,
+i.e.\ $L\ge I$. Then $p_s=L(e_s)\ge I(e_s)\ge I(0)=0$ and $L(1)=1$ from $I(\pm1)=\pm1$. For $f_0=0$ use any such $p$
+from the line through the constant $1$.
+\end{proof}
+
+\begin{theorem}[Gilboa--Schmeidler Lemma 3.5: functional form]
+\label{thm:beh-gs-functional}
+\lean{Econ.Ambiguity.maxmin_of_isMaxminFunctional, Econ.Ambiguity.isMaxminFunctional_of_isLeast, Econ.Ambiguity.eu_add_smul, Econ.Ambiguity.continuous_eu, Econ.Ambiguity.convex_priors, Econ.Ambiguity.isClosed_priors, Econ.Ambiguity.eu_const_add, Econ.Ambiguity.eu_smul', Econ.Ambiguity.eu_add', Econ.Ambiguity.eu_mono', Econ.Ambiguity.isMaxminFunctional_meu}
+\leanok
+\uses{lem:beh-gs-support}
+$I$ is a maxmin functional iff $I(f)=\min_{p\in C}E_pf$ for a set of priors $C$ at which the minimum is attained;
+$C_I$ is then nonempty, closed and convex.
+\end{theorem}
+\begin{proof}
+\leanok
+Lemma~\ref{lem:beh-gs-support} gives attainment; $C_I$ is an intersection of closed half-spaces with the simplex.
+Conversely each property passes from the linear $E_p$ to the minimum, using the minimizer at the relevant act.
+\end{proof}
+
+\begin{definition}[Gilboa--Schmeidler axioms]
+\label{def:beh-gs-axioms}
+\lean{Econ.Ambiguity.GSAxioms, Econ.Ambiguity.constAct, Econ.Ambiguity.mixAct, Econ.Ambiguity.StrictPref, Econ.Ambiguity.mixAct_const}
+\leanok
+On utility acts: weak order; C-independence ($f\succsim g$ iff $\alpha f+(1-\alpha)c\succsim\alpha g+(1-\alpha)c$ for
+constants $c$, $\alpha\in(0,1)$); Archimedean; monotonicity; uncertainty aversion ($f\sim g$ implies
+$\alpha f+(1-\alpha)g\succsim f$); nondegeneracy normalized as $c_1\succ c_0$.
+\end{definition}
+
+\begin{theorem}[Gilboa--Schmeidler 1989, Theorem 1]
+\label{thm:beh-gs-main}
+\lean{Econ.Ambiguity.gilboa_schmeidler, Econ.Ambiguity.gilboa_schmeidler_unique, Econ.Ambiguity.eq_priorSet, Econ.Ambiguity.gsAxioms_of_isMaxminFunctional, Econ.Ambiguity.gsAxioms_ellsberg, Econ.Ambiguity.GSAxioms.refl, Econ.Ambiguity.GSAxioms.nonempty, Econ.Ambiguity.GSAxioms.const_le_iff, Econ.Ambiguity.GSAxioms.strict_of_not, Econ.Ambiguity.GSAxioms.exists_ce, Econ.Ambiguity.GSAxioms.ce, Econ.Ambiguity.GSAxioms.ce_spec, Econ.Ambiguity.GSAxioms.ce_eq, Econ.Ambiguity.GSAxioms.rep, Econ.Ambiguity.GSAxioms.ce_const, Econ.Ambiguity.GSAxioms.ce_mix_const, Econ.Ambiguity.GSAxioms.ce_smul_lt_one, Econ.Ambiguity.GSAxioms.ce_pos_hom, Econ.Ambiguity.GSAxioms.ce_const_add, Econ.Ambiguity.GSAxioms.isMaxminFunctional_ce}
+\leanok
+\uses{def:beh-gs-axioms, thm:beh-gs-functional}
+A preference satisfies the axioms iff it is represented by maxmin expected utility over a nonempty closed convex
+set of priors, and that set is unique (necessity holds for any maxmin functional). Acts are utility acts with
+values in all of $\mathbb{R}^S$. Maxmin EU over the two Ellsberg priors satisfies the axioms.
+\end{theorem}
+\begin{proof}
+\leanok
+Constants are ranked by value (C-independence moves any strict pair to $(0,\delta)$, then to $(0,1)$). The Archimedean
+axiom gives a certainty equivalent $I(f)$: the supremum of constants below $f$ is indifferent to $f$. C-independence
+with the constant $0$ gives homogeneity on $(0,1)$, hence for all $t>0$; with $\alpha=1/2$ it gives constant
+additivity. Uncertainty aversion on $f-I(f)\sim g-I(g)$ gives superadditivity. Apply
+Theorem~\ref{thm:beh-gs-functional}. Uniqueness: two representations have the same certainty equivalents, and a closed convex set representing $I$ is
+$C_I$, since a prior outside it is strictly separated from it by some act $g$, giving $E_pg<\min_CE_qg=I(g)$. For necessity, the Archimedean step uses concavity
+($\alpha$ near $1$) and the 1-Lipschitz bound $I(h+\beta(f-h))\le I(h)+\beta\sum_s|f_s-h_s|$ ($\beta$ near $0$).
+\end{proof}
+
+\section{Stochastic choice}
+\label{sec:beh-stochastic-choice}
+
+\begin{definition}[Choice rule, Luce rule]
+\label{def:beh-luce}
+\lean{Econ.StochasticChoice.IsChoiceRule, Econ.StochasticChoice.luce, Econ.StochasticChoice.probSet, Econ.StochasticChoice.ChoiceAxiom}
+\leanok
+A stochastic choice rule assigns each nonempty menu $A$ a probability on $A$. The Luce rule with positive weights
+is $P(a,A)=w_a/\sum_{b\in A}w_b$. The choice axiom: $P(a,A)=P(B,A)P(a,B)$ for $a\in B\subseteq A$.
+\end{definition}
+
+\begin{theorem}[Luce 1959]
+\label{thm:beh-luce}
+\lean{Econ.StochasticChoice.luce_isChoiceRule, Econ.StochasticChoice.luce_iia, Econ.StochasticChoice.luce_choiceAxiom, Econ.StochasticChoice.eq_luce_of_choiceAxiom, Econ.StochasticChoice.softmax_eq_luce}
+\leanok
+\uses{def:beh-luce}
+Luce rules are choice rules satisfying IIA and the choice axiom. Conversely a choice rule with full support on every
+menu that satisfies the choice axiom is the Luce rule with $w_a=P(a,X)$. Logit is Luce with $w=e^{v/\lambda}$.
+\end{theorem}
+\begin{proof}
+\leanok
+Direct computation. For the converse apply the axiom with $B=A\subseteq X$: $P(a,X)=P(A,X)P(a,A)$ and
+$P(A,X)=\sum_{b\in A}w_b$.
+\end{proof}
+
+\begin{definition}[Random utility]
+\label{def:beh-rum}
+\lean{Econ.StochasticChoice.Ranking, Econ.StochasticChoice.IsTop, Econ.StochasticChoice.IsRUM, Econ.StochasticChoice.rumP, Econ.StochasticChoice.bm, Econ.StochasticChoice.isRUM_pointMass}
+\leanok
+A RUM is a probability $\mu$ on strict rankings; $P(a,A)$ is the probability that $a$ is best in $A$.
+The Block--Marschak polynomial is $\mathrm{BM}(a,A)=\sum_{B\supseteq A}(-1)^{|B\setminus A|}P(a,B)$.
+\end{definition}
+
+\begin{theorem}[Random utility: regularity and Block--Marschak]
+\label{thm:beh-bm}
+\lean{Econ.StochasticChoice.sum_isTop, Econ.StochasticChoice.rumP_isChoiceRule, Econ.StochasticChoice.rumP_regularity, Econ.StochasticChoice.isTop_union, Econ.StochasticChoice.bm_rank_term, Econ.StochasticChoice.bm_rumP, Econ.StochasticChoice.bm_rumP_nonneg}
+\leanok
+\uses{def:beh-rum}
+A RUM is a choice rule satisfying regularity, and $\mathrm{BM}(a,A)$ equals the probability that $a$ is best in $A$
+and everything outside $A$ is ranked above $a$; in particular $\mathrm{BM}\ge0$ (Block--Marschak 1960).
+\end{theorem}
+\begin{proof}
+\leanok
+Fix a ranking. For $B=A\cup C$ with $C\subseteq X\setminus A$, $a$ is best in $B$ iff it is best in $A$ and $C$
+avoids the alternatives outside $A$ ranked above $a$. So the alternating sum runs over subsets of
+$D=\{c\notin A: a\text{ above }c\}$ and equals $[D=\emptyset]$. Average over rankings.
 \end{proof}

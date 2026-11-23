@@ -17,9 +17,16 @@ sure amount `E_F[x]` to `F` itself: `E_F[u] ≤ u(E_F[x])`.
 The "⟸" directions are Jensen's inequality (`ConcaveOn.le_map_sum` in
 Mathlib); the "⟹" directions test the definition on two-point lotteries.
 The Arrow–Pratt clause (i) of Pratt's theorem is in `Pratt.lean`.
+
+**Domains.** The certainty-equivalent and Arrow–Pratt characterizations come in two
+forms: on all of `ℝ` (`riskAverse_iff_…`), and on a convex (for Arrow–Pratt: open convex)
+set of wealth levels `I` (`riskAverseOn_iff_…`), which covers `log`, `√` and CRRA
+utilities on `(0, ∞)`. Pratt's theorem (comparing two utilities) is stated on `ℝ` only;
+its interval version is not formalized.
 -/
 module
 
+public import Mathlib.Analysis.SpecialFunctions.Log.Deriv
 public import EconLean.Uncertainty.MoneyLottery
 public import Mathlib.Analysis.Convex.Jensen
 public import Mathlib.Analysis.Convex.Deriv
@@ -179,6 +186,75 @@ theorem riskAverse_iff_arrowPratt_nonneg {u : ℝ → ℝ} (hu : Differentiable 
     exact (antitoneOn_univ.1 hanti).deriv_nonpos
   · intro h
     exact concaveOn_univ_of_deriv2_nonpos hu hu' fun x => by simpa using h x
+
+/-- The mean of a lottery paying in a convex set lies in that set. -/
+theorem SimpleLottery.mean_mem {F : SimpleLottery} {I : Set ℝ} (hI : Convex ℝ I)
+    (hF : F.SupportedIn I) : F.mean ∈ I := by
+  have h := hI.sum_mem (t := F.prob.support) (w := F.prob) (z := id) (fun x _ => F.nonneg x)
+    F.sum_prob (fun x hx => hF hx)
+  simpa [mean, expect_eq_sum, smul_eq_mul] using h
+
+/-- A continuous `u` on a convex `I` gives every lottery paying in `I` a certainty
+equivalent in `I`. -/
+theorem exists_certaintyEquivalent_mem {u : ℝ → ℝ} {I : Set ℝ} (hI : Convex ℝ I)
+    (hu : ContinuousOn u I) {F : SimpleLottery} (hF : F.SupportedIn I) :
+    ∃ c ∈ I, IsCertaintyEquivalent u F c := by
+  obtain ⟨x, hx, y, hy, hxe, hye⟩ := F.exists_min_max_expect u
+  have hsub : uIcc x y ⊆ I := hI.ordConnected.uIcc_subset (hF hx) (hF hy)
+  obtain ⟨c, hc, hce⟩ := intermediate_value_uIcc (hu.mono hsub) (Set.Icc_subset_uIcc ⟨hxe, hye⟩)
+  exact ⟨c, hsub hc, hce⟩
+
+/-- **MWG Prop. 6.C.1 (i) ⟺ (iii) on an interval.** For `u` continuous and strictly
+increasing on a convex set `I` of wealth levels (e.g. `(0, ∞)` for `log` or `√`): `u` is
+risk averse on `I` iff every lottery paying in `I` has its certainty equivalents in `I`
+below its mean. -/
+theorem riskAverseOn_iff_certaintyEquivalent_le_mean {u : ℝ → ℝ} {I : Set ℝ}
+    (hI : Convex ℝ I) (hc : ContinuousOn u I) (hm : StrictMonoOn u I) :
+    RiskAverseOn u I ↔
+      ∀ F : SimpleLottery, F.SupportedIn I → ∀ c ∈ I, IsCertaintyEquivalent u F c → c ≤ F.mean := by
+  constructor
+  · intro h F hF c hcI hce
+    exact (hm.le_iff_le hcI (F.mean_mem hI hF)).1 (hce ▸ h F hF)
+  · intro h F hF
+    obtain ⟨c, hcI, hce⟩ := exists_certaintyEquivalent_mem hI hc hF
+    rw [← hce]
+    exact hm.monotoneOn hcI (F.mean_mem hI hF) (h F hF c hcI hce)
+
+/-- **Risk aversion ⟺ nonnegative Arrow–Pratt coefficient, on an open interval** (MWG
+§6.C). For `u` twice differentiable with `u' > 0` on an open convex `I` (such as
+`(0, ∞)`, which covers `log`, `√` and CRRA utilities). -/
+theorem riskAverseOn_iff_arrowPratt_nonneg {u : ℝ → ℝ} {I : Set ℝ} (hI : Convex ℝ I)
+    (ho : IsOpen I) (hu : DifferentiableOn ℝ u I) (hu' : DifferentiableOn ℝ (deriv u) I)
+    (hpos : ∀ x ∈ I, 0 < deriv u x) :
+    RiskAverseOn u I ↔ ∀ x ∈ I, 0 ≤ arrowPratt u x := by
+  rw [riskAverseOn_iff_concaveOn hI]
+  have key : ∀ x ∈ I, 0 ≤ arrowPratt u x ↔ deriv (deriv u) x ≤ 0 := fun x hx => by
+    rw [arrowPratt, le_div_iff₀ (hpos x hx), zero_mul, neg_nonneg]
+  constructor
+  · intro hc x hx
+    rw [key x hx]
+    have hanti : AntitoneOn (deriv u) I :=
+      hc.antitoneOn_deriv fun y hy => hu.differentiableAt (ho.mem_nhds hy)
+    rw [← derivWithin_of_isOpen ho hx]
+    exact hanti.derivWithin_nonpos
+  · intro h
+    refine concaveOn_of_deriv2_nonpos hI hu.continuousOn (by rwa [ho.interior_eq])
+      (by rwa [ho.interior_eq]) fun x hx => ?_
+    rw [ho.interior_eq] at hx
+    simpa using (key x hx).1 (h x hx)
+
+/-- **Witness: log utility** is risk averse on `(0, ∞)`, with `r_A(x) = 1/x`. -/
+example : (∀ x, 0 < x → arrowPratt Real.log x = 1 / x) ∧ RiskAverseOn Real.log (Ioi 0) := by
+  have hd : deriv Real.log = fun x => x⁻¹ := Real.deriv_log'
+  have hAP : ∀ x, 0 < x → arrowPratt Real.log x = 1 / x := by
+    intro x hx
+    rw [arrowPratt, hd, deriv_inv]
+    field_simp
+  refine ⟨hAP, (riskAverseOn_iff_arrowPratt_nonneg (convex_Ioi 0) isOpen_Ioi
+    (Real.differentiableOn_log.mono fun x hx => ne_of_gt hx) ?_ ?_).2 fun x hx => ?_⟩
+  · rw [hd]; exact differentiableOn_inv.mono fun x hx => ne_of_gt hx
+  · intro x hx; rw [hd]; exact inv_pos.2 hx
+  · rw [hAP x hx]; exact (one_div_pos.2 hx).le
 
 /-- **Non-vacuity: CARA utility.** `u(x) = -e^{-a x}` with `a > 0` has
 constant absolute risk aversion `r_A ≡ a`, and is risk averse. -/
