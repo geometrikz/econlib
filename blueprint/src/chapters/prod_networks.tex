@@ -1,0 +1,98 @@
+% Lean: EconLean/Macro/ProductionNetworks.lean, EconLean/Macro/BaqaeeFarhi.lean
+\chapter{Production Networks}
+\label{chap:prod_networks}
+
+Sources: Hulten (1978); Acemoglu, Carvalho, Ozdaglar and Tahbaz-Salehi (2012); Carvalho--Tahbaz-Salehi (2019);
+Baqaee--Farhi (2019).
+
+\section{Cobb--Douglas networks}
+
+\begin{definition}[Network economy]
+\label{def:pn_network}
+\lean{Econ.ProdNetworks.Network, Econ.ProdNetworks.Network.α, Econ.ProdNetworks.Network.k, Econ.ProdNetworks.Network.IsPriceSystem, Econ.ProdNetworks.Network.L, Econ.ProdNetworks.Network.domar, Econ.ProdNetworks.Network.logGDP, Econ.ProdNetworks.Network.IsSales}
+\leanok
+The input shares $\Omega \ge 0$ have row sums $<1$, and the household shares satisfy $\beta \ge 0$, $\sum\beta = 1$.
+Log prices solve $\pi = -\log z + k + \Omega\pi$. Domar weights are $\lambda = \beta'(I-\Omega)^{-1}$. Log GDP
+is $\sum\beta_i\log\beta_i - \beta'\pi$. Sales satisfy $S_i = \beta_i + \sum_j\Omega_{ji}S_j$.
+\end{definition}
+
+\begin{lemma}[Leontief inverse and prices]
+\label{lem:pn_prices}
+\lean{Econ.ProdNetworks.Network.eq_zero_of_fixed, Econ.ProdNetworks.Network.isUnit_det, Econ.ProdNetworks.Network.isPriceSystem_iff, Econ.ProdNetworks.Network.existsUnique_price}
+\leanok
+\uses{def:pn_network}
+$I - \Omega$ is invertible, and equilibrium prices exist and are unique.
+\end{lemma}
+\begin{proof}
+\leanok
+If $\delta = \Omega\delta$, take $i$ maximizing $|\delta_i|$. Then $|\delta_i| \le (\sum_j\Omega_{ij})|\delta_i|$ with
+row sum $<1$, so $\delta = 0$. Hence $\det(I-\Omega) \ne 0$, and $\pi = L(-\log z + k)$.
+\end{proof}
+
+\begin{theorem}[Hulten's theorem]
+\label{thm:pn_hulten}
+\lean{Econ.ProdNetworks.Network.hulten}
+\leanok
+\uses{lem:pn_prices}
+$\log Y(z') - \log Y(z) = \sum_i\lambda_i(\log z'_i - \log z_i)$.
+\end{theorem}
+\begin{proof}
+\leanok
+$\pi' - \pi = -L(\log z' - \log z)$, and $\beta'L = \lambda'$.
+\end{proof}
+
+\begin{theorem}[Domar weights are sales shares]
+\label{thm:pn_sales}
+\lean{Econ.ProdNetworks.Network.isSales_iff, Econ.ProdNetworks.Network.isSales_domar, Econ.ProdNetworks.Network.nonneg_of_isSales, Econ.ProdNetworks.Network.domar_nonneg, Econ.ProdNetworks.Network.sum_domar_mul_α, Econ.ProdNetworks.Network.one_le_sum_domar}
+\leanok
+\uses{lem:pn_prices}
+Market clearing $S'(I-\Omega) = \beta'$ has the unique solution $S = \lambda$. We have $\lambda \ge 0$,
+$\sum_i\lambda_i\alpha_i = 1$ and $\sum_i\lambda_i \ge 1$.
+\end{theorem}
+\begin{proof}
+\leanok
+Invert $I-\Omega$. For nonnegativity, let $w = \min(S,0)$. Then $w \ge \Omega'w$, and summing gives
+$\sum_jw_j\alpha_j \ge 0$ with each term $\le 0$, so $w = 0$. Summing the clearing identity gives
+$\sum\lambda\alpha = \sum\beta = 1$, and $\alpha \le 1$.
+\end{proof}
+
+\begin{theorem}[Aggregate volatility]
+\label{thm:pn_volatility}
+\lean{Econ.ProdNetworks.Network.aggVar, Econ.ProdNetworks.Network.aggVar_ge, Econ.ProdNetworks.Network.aggVar_ge_div, Econ.ProdNetworks.symmetric, Econ.ProdNetworks.aggVar_symmetric, Econ.ProdNetworks.star, Econ.ProdNetworks.star_domar, Econ.ProdNetworks.star_aggVar_ge}
+\leanok
+\uses{thm:pn_hulten, thm:pn_sales}
+With i.i.d.\ shocks of variance $\sigma^2$, volatility is $\sigma^2\sum\lambda_i^2$. It is at least
+$\sigma^2\lambda_i^2$ and at least $\sigma^2/n$, with equality in the symmetric economy without intermediates. In
+a star with $m \ge 1$ spokes and hub share $a \in (0,1)$, the hub's weight is $(1+am)/(m+1)$, so volatility is at
+least $\sigma^2a^2/4$ for every $m$.
+\end{theorem}
+\begin{proof}
+\leanok
+Use Cauchy--Schwarz $(\sum\lambda)^2 \le n\sum\lambda^2$ and $\sum\lambda \ge 1$. In the examples, check that the
+candidate vector satisfies market clearing and apply uniqueness. Finally, $m/(m+1) \ge 1/2$.
+\end{proof}
+
+\section{Beyond Hulten: CES}
+
+\begin{definition}[One-layer CES economy]
+\label{def:bf_economy}
+\lean{Econ.BaqaeeFarhi.Economy, Econ.BaqaeeFarhi.Economy.S, Econ.BaqaeeFarhi.Economy.S_pos, Econ.BaqaeeFarhi.Economy.logY, Econ.BaqaeeFarhi.Economy.domar, Econ.BaqaeeFarhi.Economy.domar_pos, Econ.BaqaeeFarhi.Economy.sum_domar}
+\leanok
+$\log Y(x) = (\theta-1)^{-1}\log\sum_ib_ie^{(\theta-1)x_i}$ and $\lambda_i(x) = b_ie^{(\theta-1)x_i}/\sum_jb_je^{(\theta-1)x_j}$.
+\end{definition}
+
+\begin{theorem}[Baqaee--Farhi]
+\label{thm:bf}
+\lean{Econ.BaqaeeFarhi.Economy.hasDerivAt_logY, Econ.BaqaeeFarhi.Economy.logY_add_sub, Econ.BaqaeeFarhi.Economy.jensen, Econ.BaqaeeFarhi.Economy.complements_le_hulten, Econ.BaqaeeFarhi.Economy.substitutes_ge_hulten, Econ.BaqaeeFarhi.Economy.complements_asymmetry}
+\leanok
+\uses{def:bf_economy}
+Hulten holds to first order: $\frac{d}{dt}\log Y(x+td)|_0 = \sum\lambda_id_i$. Exactly,
+$\log Y(x+d) - \log Y(x) = (\theta-1)^{-1}\log\sum\lambda_ie^{(\theta-1)d_i}$. If $\theta<1$ this is at most
+$\sum\lambda_id_i$, and if $\theta>1$ at least. With complements, $\log Y(x+se_i) + \log Y(x-se_i) \le 2\log Y(x)$.
+\end{theorem}
+\begin{proof}
+\leanok
+Differentiate with the chain rule. For the exact change, factor $S(x+d)/S(x) = \sum\lambda_ie^{(\theta-1)d_i}$.
+Jensen's inequality for $\exp$ gives $\log\sum\lambda_ie^{u_i} \ge \sum\lambda_iu_i$; dividing by $\theta-1$ fixes the
+direction. Add the bounds for $\pm s$.
+\end{proof}

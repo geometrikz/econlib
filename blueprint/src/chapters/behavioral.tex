@@ -624,3 +624,87 @@ consumer's welfare falls below her reservation utility.
 $\int_0^t(D-c)\,dc=tD-t^2/2$, so profit is the concave quadratic $\Pi(p^*)-(p-p^*)^2/2$ on the interior region.
 The believed surplus $tD-t^2/2$ increases in $t\le D$.
 \end{proof}
+
+
+\section{Belief distortions}
+
+\begin{definition}[Mean squared error of a Gaussian estimate]
+\label{def:beh-oc-mse}
+\lean{Econ.Overconfidence.mse, Econ.Overconfidence.weight}
+\leanok
+With prior precision $\tau_0$ and signal precision $\tau_s$, the estimate $ws+(1-w)\mu$ has
+$\mathrm{mse}(w)=(1-w)^2/\tau_0+w^2/\tau_s$; a signal believed to have precision $\tau$ gets weight $\tau/(\tau_0+\tau)$.
+\end{definition}
+
+\begin{theorem}[Overconfidence as overprecision]
+\label{thm:beh-oc}
+\uses{def:beh-oc-mse}
+\lean{Econ.Overconfidence.mse_sub_mse_bayes, Econ.Overconfidence.mse_bayes, Econ.Overconfidence.mse_bayes_lt, Econ.Overconfidence.weight_overconfident_gt, Econ.Overconfidence.mse_overconfident_gt, Econ.Overconfidence.overprecision}
+\leanok
+$\mathrm{mse}(w)-\mathrm{mse}(w^*)=(w-w^*)^2(\tau_0+\tau_s)/(\tau_0\tau_s)$, so the Bayesian weight $w^*$ is the unique
+minimizer, with $\mathrm{mse}(w^*)=1/(\tau_0+\tau_s)$. An agent who believes the precision is $k\tau_s$, $k>1$, puts more
+weight on the signal, has strictly larger error, and its perceived variance $1/(\tau_0+k\tau_s)$ strictly understates
+that error.
+\end{theorem}
+\begin{proof}
+\leanok
+Field algebra; the perceived variance is below $1/(\tau_0+\tau_s)=\mathrm{mse}(w^*)$.
+\end{proof}
+
+\begin{theorem}[Brunnermeier--Parker: optimal expectations are biased]
+\label{thm:beh-bp}
+\lean{Econ.MotivatedBeliefs.rational_not_optimal, Econ.MotivatedBeliefs.exists_better_belief, Econ.MotivatedBeliefs.W, Econ.MotivatedBeliefs.example_optimal, Econ.MotivatedBeliefs.example_optimism}
+\leanok
+If realized utility $R$ is maximized at the true probability $q\in(0,1)$ and anticipatory utility $A$ has $A'(q)\ne0$,
+then $q$ does not maximize $A+R$ on $[0,1]$. With $A(p)=p$ and $R(p)=-(p-q)^2$ the optimal belief is $q+1/2>q$.
+\end{theorem}
+\begin{proof}
+\leanok
+An interior maximum of $R$ has $R'(q)=0$; an interior maximum of $A+R$ would need $A'(q)+R'(q)=0$.
+\end{proof}
+
+\section{Bracketing and mental accounting}
+
+\begin{theorem}[Tversky--Kahneman: narrow bracketing yields dominated choices]
+\label{thm:beh-bracket}
+\lean{Econ.Bracketing.eu, Econ.Bracketing.dominated, Econ.Bracketing.ChoosesA, Econ.Bracketing.ChoosesD, Econ.Bracketing.vS, Econ.Bracketing.vS_strictMono, Econ.Bracketing.vS_of_nonneg, Econ.Bracketing.vS_of_nonpos, Econ.Bracketing.vS_concaveOn, Econ.Bracketing.vS_convexOn, Econ.Bracketing.vS_lossAverse, Econ.Bracketing.narrow_choices_exist}
+\leanok
+$B\oplus C$ (250 or $-750$) state-wise dominates $A\oplus D$ (240 or $-760$), so every strictly increasing
+expected utility prefers it. Yet some strictly increasing, loss-averse value function with $v(0)=0$, concave on gains
+and convex on losses, chooses $A$ and $D$ decision by decision.
+\end{theorem}
+\begin{proof}
+\leanok
+Monotonicity; the witness is $v(x)=\max(\min(x,270+x/10),-630+x/10)$.
+\end{proof}
+
+\begin{theorem}[Thaler: hedonic editing]
+\label{thm:beh-mental}
+\lean{Econ.Bracketing.segregate_gains, Econ.Bracketing.integrate_losses, Econ.Bracketing.integrate_mixed}
+\leanok
+Let $v(0)=0$. If $v$ is concave on gains, $v(x+y)\le v(x)+v(y)$ for $x,y\ge0$ (segregate gains). If $v$ is convex on
+losses, $v(-x)+v(-y)\le v(-(x+y))$ (integrate losses). If $v$ is concave on gains and $v(-y)\le-v(y)$, then
+$v(x)+v(-y)\le v(x-y)$ for $0\le y\le x$ (cancel small losses against larger gains).
+\end{theorem}
+\begin{proof}
+\leanok
+Concavity between $0$ and $x+y$ gives $\frac{x}{x+y}v(x+y)\le v(x)$; losses follow by reflection, and the mixed case
+from subadditivity at $(x-y,y)$.
+\end{proof}
+
+\section{Inequity aversion in markets}
+
+\begin{theorem}[Fehr--Schmidt: competition overwhelms fairness]
+\label{thm:beh-fs-market}
+\uses{thm:beh-fs-ultimatum}
+\lean{Econ.MarketInequity.payoffs, Econ.MarketInequity.deviation, Econ.MarketInequity.fs3, Econ.MarketInequity.loser_utility, Econ.MarketInequity.deviation_utility, Econ.MarketInequity.continuous_deviation_utility, Econ.MarketInequity.win_utility_gt, Econ.MarketInequity.loser_outbids, Econ.MarketInequity.competitive_offer, Econ.MarketInequity.competitive_no_outbid}
+\leanok
+With two proposers, one responder and Fehr--Schmidt preferences ($\alpha\ge0$, $0\le\beta<1$), if an offer
+$s\in[0,1)$ is accepted the losing proposer strictly gains by outbidding with some $s'\in(s,1]$. Hence the only offer
+immune to such deviations is $s=1$, and at $s=1$ outbidding strictly hurts. Acceptance of the highest offer is assumed.
+\end{theorem}
+\begin{proof}
+\leanok
+The loser gets $-\alpha/2$. Winning at $s'=s$ gives strictly more (two cases, $s\ge1/2$ and $s<1/2$, using
+$\beta<1$), and the winning utility is continuous in $s'$.
+\end{proof}

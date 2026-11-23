@@ -1,0 +1,40 @@
+% Lean: EconLean/Macro/Climate/SocialCostCarbon.lean
+\chapter{The Social Cost of Carbon}
+\label{chap:climate}
+
+Sources: Nordhaus (DICE); Golosov, Hassler, Krusell and Tsyvinski (2014). Log utility, constant saving rate $s$,
+damages $e^{-\gamma S}$ and exogenous damage-free output $\tilde Y$.
+
+\begin{definition}[Carbon cycle and welfare]
+\label{def:scc_model}
+\lean{Econ.Climate.Params, Econ.Climate.Params.remain, Econ.Climate.Params.outputAfter, Econ.Climate.Params.welfareChange, Econ.Climate.Params.kernel, Econ.Climate.Params.scc}
+\leanok
+A unit emitted at date 0 leaves $r_j = \phi_L + (1-\phi_L)\phi_0(1-\phi)^j$ in the atmosphere after $j$ periods. The
+welfare change from $e$ extra units is $\Delta W(e) = \sum_j\beta^j(\log C_j(e) - \log C_j(0))$. The SCC is
+$-C_0\,\Delta W'(0)$.
+\end{definition}
+
+\begin{theorem}[GHKT formula]
+\label{thm:scc}
+\lean{Econ.Climate.Params.summable_kernel, Econ.Climate.Params.tsum_kernel, Econ.Climate.Params.welfareChange_eq, Econ.Climate.Params.hasDerivAt_welfareChange, Econ.Climate.Params.scc_eq}
+\leanok
+\uses{def:scc_model}
+$\sum_j\beta^jr_j = \phi_L/(1-\beta) + (1-\phi_L)\phi_0/(1-\beta(1-\phi))$, $\Delta W(e) = -\gamma e\sum_j\beta^jr_j$, and
+$\mathrm{SCC} = \gamma C_0\sum_j\beta^jr_j$.
+\end{theorem}
+\begin{proof}
+\leanok
+Each log difference equals $-\gamma r_je$ because $\tilde Y$ and $s$ cancel. Sum the two geometric series.
+\end{proof}
+
+\begin{theorem}[Discounting]
+\label{thm:scc_discount}
+\lean{Econ.Climate.Params.kernel_pos_of, Econ.Climate.Params.kernel_mono, Econ.Climate.Params.kernel_unbounded}
+\leanok
+\uses{thm:scc}
+The kernel is increasing in $\beta$. If $\phi_L > 0$ it is positive and unbounded as $\beta \to 1$.
+\end{theorem}
+\begin{proof}
+\leanok
+Both denominators fall as $\beta$ rises. Taking $\beta = 1-\varepsilon$ gives a kernel of at least $\phi_L/\varepsilon$.
+\end{proof}

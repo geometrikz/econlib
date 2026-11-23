@@ -1,0 +1,319 @@
+% Lean: EconLean/Econometrics/GaussMarkov.lean, Causal/GoodmanBacon.lean,
+%       Asymptotics/{Extremum,GMMAsymptotics}.lean, TimeSeries/SVARRestrictions.lean,
+%       Structural/BLP.lean
+\chapter{Econometrics: efficiency, staggered DiD, extremum estimators, SVAR restrictions and demand inversion}
+\label{chap:econometrics3}
+
+This chapter continues Chapters~\ref{chap:econometrics} and~\ref{chap:econometrics2}: the Gauss--Markov theorem, the
+Goodman-Bacon decomposition of two-way fixed effects, consistency and asymptotic normality of extremum estimators
+(MLE, linear GMM), long-run and sign restrictions in structural VARs, and the inversion of logit and BLP demand.
+
+\section{The Gauss--Markov theorem}
+\label{sec:gauss-markov}
+
+Sources: Hayashi (2000) Prop.~1.1 and~1.3; Greene (2012) Thm~4.2. The model is $y = X\beta + \varepsilon$ with a fixed
+design $X\in\R^{n\times k}$ and random errors with $E[\varepsilon] = 0$, $E[\varepsilon\varepsilon^\top] = \sigma^2 I$.
+
+\begin{definition}[Covariance and second-moment matrices]
+\label{def:cov}
+\lean{Econ.OLS.cov, Econ.OLS.secondMoments}
+\leanok
+$\mathrm{Cov}(v)_{ab} = E[(v_a - Ev_a)(v_b - Ev_b)]$ and $M(\varepsilon)_{ij} = E[\varepsilon_i\varepsilon_j]$.
+\end{definition}
+
+\begin{lemma}[Moments of linear transformations]
+\label{lem:linear-moments}
+\lean{Econ.OLS.integral_mulVec, Econ.OLS.integral_mulVec_mul_mulVec, Econ.OLS.integral_linear, Econ.OLS.ols_eq_mulVec}
+\leanok
+\uses{def:cov, def:ols}
+$E[C\varepsilon] = C\,E[\varepsilon]$, $E[(C\varepsilon)_a(D\varepsilon)_b] = (CM(\varepsilon)D^\top)_{ab}$, so
+$E[C(X\beta+\varepsilon)] = CX\beta$ when $E\varepsilon = 0$; and $\hat\beta_{OLS} = (X^\top X)^{-1}X^\top y$.
+\end{lemma}
+\begin{proof}
+\leanok
+Linearity of the integral entry by entry (finite sums of integrable functions); the last identity is
+$\mathrm{mulVec}$ associativity.
+\end{proof}
+
+\begin{theorem}[Linear unbiasedness and its covariance]
+\label{thm:linear-unbiased}
+\lean{Econ.OLS.unbiased_iff, Econ.OLS.cov_linear, Econ.OLS.cov_ols}
+\leanok
+\uses{lem:linear-moments}
+A linear estimator $Cy$ is unbiased for every $\beta$ iff $CX = I$. Always $\mathrm{Cov}(Cy) = CM(\varepsilon)C^\top$, and
+for OLS under homoskedasticity $\mathrm{Cov}(\hat\beta_{OLS}) = \sigma^2(X^\top X)^{-1}$.
+\end{theorem}
+\begin{proof}
+\leanok
+By Lemma~\ref{lem:linear-moments}, $E[Cy] = CX\beta$; this equals $\beta$ for all $\beta$ iff $CX = I$ (test on basis
+vectors). In any case $Cy - E[Cy] = C\varepsilon$, whose covariance is $CM(\varepsilon)C^\top$. For OLS,
+$C_0 = (X^\top X)^{-1}X^\top$ has $C_0X = I$ and $C_0C_0^\top = (X^\top X)^{-1}$.
+\end{proof}
+
+\begin{theorem}[Gauss--Markov]
+\label{thm:gauss-markov}
+\lean{Econ.OLS.gauss_markov, Econ.OLS.gaussMarkov_witness}
+\leanok
+\uses{thm:linear-unbiased}
+If $E\varepsilon = 0$, $E[\varepsilon\varepsilon^\top] = \sigma^2 I$, $X^\top X$ is invertible and $CX = I$, then
+$\mathrm{Cov}(Cy) - \mathrm{Cov}(\hat\beta_{OLS})$ is positive semidefinite: OLS is BLUE. The hypotheses are satisfied by
+a fair $\pm1$ coin.
+\end{theorem}
+\begin{proof}
+\leanok
+Let $D = C - C_0$. Then $DX = 0$, so $DC_0^\top = DX(X^\top X)^{-1} = 0$ and
+$CC^\top = C_0C_0^\top + DD^\top$. Hence the difference is $\sigma^2DD^\top$. Finally $\sigma^2\ge 0$: it is a
+diagonal entry $E[\varepsilon_i^2]$ of the second-moment matrix (when $n$ is empty, $D = 0$). The witness computes
+$E\varepsilon = 0$ and $E\varepsilon^2 = 1$ under the uniform measure on $\{\text{true},\text{false}\}$.
+\end{proof}
+
+\section{The Goodman-Bacon decomposition}
+\label{sec:goodman-bacon}
+
+Source: Goodman-Bacon (2021), Theorem~1. Balanced panel of groups $g$ and periods $t$ with equal cell weights, as in
+Section~\ref{sec:twfe}.
+
+\begin{definition}[Pair statistics]
+\label{def:bacon}
+\lean{Econ.Causal.TWFE.dm, Econ.Causal.TWFE.pairNum, Econ.Causal.TWFE.pairVar, Econ.Causal.TWFE.pairCoef, Econ.Causal.TWFE.baconWeight}
+\leanok
+\uses{def:twfe-weights}
+$\dot x_{gt} = x_{gt} - \bar x_g$ (time-demeaned). For a pair $(g,h)$: numerator
+$N_{gh} = \sum_t(\dot D_{gt}-\dot D_{ht})(\dot Y_{gt}-\dot Y_{ht})$, variance
+$V_{gh} = \sum_t(\dot D_{gt}-\dot D_{ht})^2$, pair coefficient $\hat\beta_{gh} = N_{gh}/V_{gh}$ and weight
+$s_{gh} = V_{gh}/\sum_{g',h'}V_{g'h'}$.
+\end{definition}
+
+\begin{lemma}[Algebra of the pair statistics]
+\label{lem:bacon-aux}
+\lean{Econ.Causal.TWFE.isTWFE_coef, Econ.Causal.TWFE.eps_eq_dm, Econ.Causal.TWFE.sum_centered_mul_eq_pairs, Econ.Causal.TWFE.pairNum_self, Econ.Causal.TWFE.pairVar_nonneg, Econ.Causal.TWFE.pairNum_eq_zero_of_pairVar, Econ.Causal.TWFE.baconWeight_nonneg, Econ.Causal.TWFE.sum_baconWeight, Econ.Causal.TWFE.sum_eps_mul_eq_pairs}
+\leanok
+\uses{def:bacon, thm:twfe}
+The TWFE coefficient is $\hat\beta = \sum\epsilon_{gt}Y_{gt}/\sum\epsilon_{gt}D_{gt}$ with $\epsilon$ the
+double-demeaned treatment; $\epsilon_{gt} = \dot D_{gt} - \frac1{|G|}\sum_h\dot D_{ht}$;
+$\sum_g(a_g - \bar a)b_g = \frac{1}{2|G|}\sum_{g,h}(a_g-a_h)(b_g-b_h)$; hence
+$\sum_{g,t}\epsilon_{gt}Y_{gt} = \frac{1}{2|G|}\sum_{g,h}N_{gh}$. Also $N_{gh}(D,D) = V_{gh}\ge 0$, $V_{gh} = 0$ forces
+$N_{gh} = 0$, and the weights are nonnegative and sum to one.
+\end{lemma}
+\begin{proof}
+\leanok
+The first identity is Theorem~\ref{thm:twfe}. The others are finite-sum algebra: expand the centred product and use
+$\sum_t\dot Y_{gt} = 0$; the zero-variance case follows since all differences $\dot D_{gt}-\dot D_{ht}$ vanish.
+\end{proof}
+
+\begin{theorem}[Goodman-Bacon decomposition]
+\label{thm:goodman-bacon}
+\lean{Econ.Causal.TWFE.goodman_bacon, Econ.Causal.TWFE.pairCoef_eq_twfe, Econ.Causal.TWFE.pairCoef_indicator, Econ.Causal.TWFE.pairCoef_split, Econ.Causal.TWFE.Example.bacon_witness}
+\leanok
+\uses{lem:bacon-aux}
+If $(a,l,\hat\beta)$ is a TWFE fit and $\sum\epsilon_{gt}D_{gt}\ne 0$, then $\hat\beta = \sum_{g,h}s_{gh}\hat\beta_{gh}$, a
+weighted average with nonnegative weights. Each $\hat\beta_{gh}$ is the TWFE coefficient of the two-group panel
+$(g,h)$. If $D_{gt}-D_{ht} = \mathbf 1[t\in P]$ (staggered adoption: $P$ is the window when only one group is treated),
+$\hat\beta_{gh}$ is the $2\times2$ DiD: mean gap $Y_g - Y_h$ over $P$ minus mean gap over the other periods. If the
+other periods split into a pre-window $A$ and a post-window $B$, $\hat\beta_{gh} = s(\bar\Delta_P - \bar\Delta_A) +
+(1-s)(\bar\Delta_P - \bar\Delta_B)$ with $s = |A|/(|A|+|B|)$: the comparison with the not-yet-treated group and the
+``forbidden'' comparison with the already-treated group. In the
+three-period example of Proposition~\ref{prop:twfe-negative} the decomposition evaluates to $-1/2$.
+\end{theorem}
+\begin{proof}
+\leanok
+By Lemma~\ref{lem:bacon-aux}, numerator and denominator of $\hat\beta$ are $\frac1{2|G|}\sum N_{gh}(D,Y)$ and
+$\frac1{2|G|}\sum V_{gh}$. Pairs with $V_{gh}=0$ contribute $0$ to both; for the others
+$N_{gh} = V_{gh}\hat\beta_{gh}$, so $\hat\beta = \sum V_{gh}\hat\beta_{gh}/\sum V_{g'h'}$. The two-group statement is
+the same identity with $|G| = 2$ (both ordered pairs carry the same term). For the indicator case,
+$\dot D_g - \dot D_h = \mathbf 1_P - |P|/T$, so $V = |P||P^c|/T$ and $N = \frac{|P^c|}{T}\sum_P\Delta Y -
+\frac{|P|}{T}\sum_{P^c}\Delta Y$. The split follows by writing the mean over $P^c = A\sqcup B$ as the
+$|A|$-, $|B|$-weighted average of the two window means.
+\end{proof}
+
+\section{Extremum estimators}
+\label{sec:extremum}
+
+Sources: Newey and McFadden (1994) Thm~2.1, Lemma~2.2, Thm~2.5 and~3.1; Hayashi (2000) ch.~7; van der Vaart (1998)
+\S5.2--5.3. Following Coretto (2026), the uniform law of large numbers, the multivariate CLT and the mean-value
+expansion of the first-order condition are hypotheses; uniform convergence in probability uses the outer measure of
+$\{\exists\theta,\ \delta\le|\hat Q_n(\theta)-Q_0(\theta)|\}$.
+
+\begin{theorem}[Consistency of extremum estimators]
+\label{thm:extremum-consistent}
+\lean{Econ.Asymptotics.extremum_consistent}
+\leanok
+Let $\Theta$ be a compact metric space, $Q_0$ continuous and uniquely maximised at $\theta_0$, $\hat\theta_n$ a
+maximiser of $\hat Q_n$ up to an error $r_n\to_p 0$, and $\sup_\theta|\hat Q_n - Q_0|\to_p 0$. Then
+$\hat\theta_n\to_p\theta_0$.
+\end{theorem}
+\begin{proof}
+\leanok
+Fix $\varepsilon>0$; $K = \{\theta : d(\theta,\theta_0)\ge\varepsilon\}$ is compact. If it is empty there is nothing to
+prove. Otherwise $Q_0$ attains its maximum on $K$ at some $\theta_1\ne\theta_0$; let
+$\eta = Q_0(\theta_0) - Q_0(\theta_1)>0$. If $d(\hat\theta_n,\theta_0)\ge\varepsilon$, $|r_n|<\eta/3$ and
+$|\hat Q_n - Q_0|<\eta/3$ everywhere, then
+$Q_0(\hat\theta_n) > \hat Q_n(\hat\theta_n) - \eta/3 \ge \hat Q_n(\theta_0) - r_n - \eta/3 > Q_0(\theta_0) - \eta$,
+contradicting $Q_0(\hat\theta_n)\le Q_0(\theta_1)$. So the event is contained in the union of two events whose
+probabilities tend to zero.
+\end{proof}
+
+\begin{theorem}[Information inequality and MLE consistency]
+\label{thm:mle-consistent}
+\lean{Econ.Asymptotics.klDiv_pos_of_identified, Econ.Asymptotics.mle_unique_max, Econ.Asymptotics.mle_consistent}
+\leanok
+\uses{thm:extremum-consistent}
+If $\theta\mapsto P_\theta$ is injective (identification), $\mathrm{KL}(P_{\theta_0}\|P_\theta)>0$ for
+$\theta\ne\theta_0$. Hence if $Q_0(\theta_0) - Q_0(\theta) = \mathrm{KL}(P_{\theta_0}\|P_\theta)<\infty$ (the expected
+log-likelihood), $Q_0$ is uniquely maximised at $\theta_0$, and the MLE is consistent under the hypotheses of
+Theorem~\ref{thm:extremum-consistent}.
+\end{theorem}
+\begin{proof}
+\leanok
+For finite measures $\mathrm{KL}(\mu\|\nu)=0$ iff $\mu=\nu$ (Mathlib). Positivity and finiteness give a positive real
+gap; then apply Theorem~\ref{thm:extremum-consistent}.
+\end{proof}
+
+\begin{lemma}[Convergence tools]
+\label{lem:conv-tools}
+\lean{Econ.Asymptotics.tendstoInMeasure_comp_continuousAt, Econ.Asymptotics.tendstoInMeasure_prodMk, Econ.Asymptotics.tendstoInMeasure_sub_of_eq_near, Econ.Asymptotics.tendstoInMeasure_sub_of_eq_near_off, Econ.Asymptotics.tendstoInDistribution_mulVec, Econ.Asymptotics.exists_ball_isUnit_det, Econ.Asymptotics.continuousAt_inv_of, Econ.Asymptotics.measurable_inv_of}
+\leanok
+(i) Continuous mapping at a point: $X_n\to_p c$ and $q$ continuous at $c$ give $q(X_n)\to_p q(c)$. (ii) Joint
+convergence of pairs to constants. (iii) If $B_n\to_p b$ and $Y_n = X_n$ whenever $d(B_n,b)<\delta$, then
+$Y_n - X_n\to_p 0$; the same holds off exceptional events $E_n$ with $P(E_n)\to0$. (iv) Slutsky for matrices: $V_n\to_d L$ and $A_n\to_p A$ give $A_nV_n\to_d AL$. (v) Invertible
+matrices form an open set, inversion is continuous there and measurable everywhere.
+\end{lemma}
+\begin{proof}
+\leanok
+(i)--(iii): the bad events are contained in events of the hypotheses (by the $\varepsilon$--$\delta$ definition of
+continuity, the max-distance on products, and contraposition). (iv) is Mathlib's Slutsky theorem applied to the
+continuous map $(v,A)\mapsto Av$. (v): $\det$ is continuous; $A^{-1} = \det(A)^{-1}\operatorname{adj}A$.
+\end{proof}
+
+\begin{theorem}[Asymptotic normality of Z-estimators (MLE)]
+\label{thm:z-estimator}
+\lean{Econ.Asymptotics.z_estimator_asymptotic, Econ.Asymptotics.z_estimator_gaussian}
+\leanok
+\uses{lem:conv-tools}
+If $S_n + H_n(\hat\theta_n - \theta_0) = 0$ with probability tending to one (mean-value form of the first-order
+condition, which holds when $\hat\theta_n$ is interior; $S_n$ the sample score at $\theta_0$), $\sqrt n S_n\to_d L$ and $H_n\to_p H_0$ invertible, then $\sqrt n(\hat\theta_n-\theta_0)\to_d -H_0^{-1}L$,
+which is Gaussian if $L$ is. For the MLE, $L\sim N(0,I)$ and $H_0 = -I$, giving $N(0,I^{-1})$.
+\end{theorem}
+\begin{proof}
+\leanok
+$A_n = -H_n^{-1}\to_p -H_0^{-1}$ by Lemma~\ref{lem:conv-tools}(i,v), so $A_n\sqrt nS_n\to_d -H_0^{-1}L$ by (iv). Near
+$H_0$ and where the expansion holds, $H_n$ is invertible and $\sqrt n(\hat\theta_n-\theta_0) = A_n\sqrt nS_n$, so the two sequences agree with
+probability tending to one (iii), and Mathlib's lemma on $Y_n - X_n\to_p 0$ transfers the limit. A linear image of a
+Gaussian measure is Gaussian.
+\end{proof}
+
+\begin{theorem}[Linear GMM: consistency and asymptotic normality]
+\label{thm:gmm-asymptotic}
+\lean{Econ.Asymptotics.gram, Econ.Asymptotics.cross, Econ.Asymptotics.continuous_gram, Econ.Asymptotics.continuous_cross, Econ.Asymptotics.gmmA, Econ.Asymptotics.estimator_eq_gmmA, Econ.Asymptotics.estimator_sub, Econ.Asymptotics.continuousAt_gmmA, Econ.Asymptotics.measurable_gmmA, Econ.Asymptotics.exists_ball_rank, Econ.Asymptotics.gmm_consistent, Econ.Asymptotics.gmm_asymptotic_normal, Econ.Asymptotics.gmm_limit_gaussian, Econ.Asymptotics.avar_eq_sandwich}
+\leanok
+\uses{lem:conv-tools, def:gmm, thm:gmm-efficient}
+With $\hat s_n = \hat S_n\theta_0 + \hat g_n$, $\hat S_n\to_p G$, $\hat W_n\to_p W$ and $G^\top WG$ invertible:
+if $\hat g_n\to_p 0$ then $\hat\theta_n\to_p\theta_0$ (Hayashi Prop.~3.1); if $\sqrt n\hat g_n\to_d L$ then
+$\sqrt n(\hat\theta_n-\theta_0)\to_d AL$ with $A = (G^\top WG)^{-1}G^\top W$ (Hayashi Prop.~3.3), Gaussian if $L$ is, and
+$ASA^\top$ is the sandwich $\mathrm{Avar}(W)$ of Theorem~\ref{thm:gmm-efficient}.
+\end{theorem}
+\begin{proof}
+\leanok
+$\hat\theta = A(\hat S,\hat W)\hat s$ and, on the rank condition, $A(\hat S,\hat W)\hat S = I$, so
+$\hat\theta - \theta_0 = A(\hat S,\hat W)\hat g$. The map $A$ is continuous at $(G,W)$ (inversion is continuous at an
+invertible matrix) and measurable. Consistency: $\theta_0 + A(\hat S,\hat W)\hat g\to_p\theta_0$ by continuous mapping,
+and the estimator equals it on a neighbourhood of $(G,W)$. Asymptotic normality: Slutsky for matrices plus agreement
+with probability tending to one, as in Theorem~\ref{thm:z-estimator}. The sandwich identity is transpose algebra.
+\end{proof}
+
+\section{Long-run and sign restrictions in structural VARs}
+\label{sec:svar-restrictions}
+
+Sources: Blanchard and Quah (1989); Uhlig (2005); Rubio-Ramírez, Waggoner and Zha (2010); Kilian and Lütkepohl (2017)
+\S10.1 and ch.~13. As in Section~\ref{sec:svar}, the data reveal only $\Sigma_u = BB^\top$.
+
+\begin{definition}[Long-run multiplier and restriction]
+\label{def:long-run}
+\lean{Econ.TimeSeries.SVAR.longRunMultiplier, Econ.TimeSeries.SVAR.IsLongRunRecursive}
+\leanok
+\uses{def:recursive}
+$\Psi = (I - A_1 - \dots - A_p)^{-1}$; the long-run response to $\varepsilon$ is $\Psi B$. The Blanchard--Quah
+restriction: $\Psi B$ is lower triangular with a positive diagonal.
+\end{definition}
+
+\begin{theorem}[Blanchard--Quah identification]
+\label{thm:blanchard-quah}
+\lean{Econ.TimeSeries.SVAR.posDef_congr, Econ.TimeSeries.SVAR.longRun_unique, Econ.TimeSeries.SVAR.longRun_existsUnique, Econ.TimeSeries.SVAR.blanchardQuah}
+\leanok
+\uses{def:long-run, thm:svar}
+If $\Sigma_u$ is positive definite and $\Psi$ invertible (in a VAR(p): $I - \sum A_i$ invertible), exactly one $B$ has
+$BB^\top = \Sigma_u$ and satisfies the long-run restriction: $B = \Psi^{-1}C$ with $C$ the Cholesky factor of
+$\Psi\Sigma_u\Psi^\top$.
+\end{theorem}
+\begin{proof}
+\leanok
+$\Psi\Sigma_u\Psi^\top$ is positive definite. If $BB^\top = \Sigma_u$ then $(\Psi B)(\Psi B)^\top = \Psi\Sigma_u\Psi^\top$,
+so by uniqueness of the recursive factor (Theorem~\ref{thm:svar}) $\Psi B = C$ and $B = \Psi^{-1}C$. Conversely
+$B = \Psi^{-1}C$ satisfies the restriction and
+$BB^\top = \Psi^{-1}\Psi\Sigma_u\Psi^\top\Psi^{-\top} = \Sigma_u$.
+\end{proof}
+
+\begin{theorem}[Sign restrictions set-identify]
+\label{thm:sign-restrictions}
+\lean{Econ.TimeSeries.SVAR.obsEquiv_iff_orthogonal, Econ.TimeSeries.SVAR.SignOK, Econ.TimeSeries.SVAR.identifiedSet, Econ.TimeSeries.SVAR.identifiedSet_eq, Econ.TimeSeries.SVAR.sign_restrictions_set_identify}
+\leanok
+\uses{thm:svar}
+For an invertible $B_0$, $BB^\top = B_0B_0^\top$ iff $B = B_0Q$ with $QQ^\top = I$. So the identified set under sign
+restrictions $s\cdot B_{ij}\ge 0$ is the set of rotations $B_0Q$ satisfying them. With $\Sigma_u = I$ and the
+restriction that shock 1 raises both variables on impact, both $I$ and the $45^\circ$ rotation are in the identified
+set: sign restrictions do not point-identify.
+\end{theorem}
+\begin{proof}
+\leanok
+Given $BB^\top = B_0B_0^\top$, let $Q = B_0^{-1}B$; then $QQ^\top = B_0^{-1}B_0B_0^\top B_0^{-\top} = I$. The converse is
+Theorem~\ref{thm:svar}'s observational equivalence. The example checks
+$\begin{psmallmatrix}c&-c\\c&c\end{psmallmatrix}$ with $c = \sqrt2/2$ entry by entry ($2c^2 = 1$).
+\end{proof}
+
+\section{Inverting logit and BLP demand}
+\label{sec:blp}
+
+Sources: Berry (1994); Berry, Levinsohn and Pakes (1995); Berry, Gandhi and Haile (2013). Products $j\in J$ and an
+outside good with utility normalised to zero; type-I extreme value taste shocks.
+
+\begin{definition}[Logit and mixed-logit shares]
+\label{def:logit-shares}
+\lean{Econ.Structural.BLP.share, Econ.Structural.BLP.outsideShare, Econ.Structural.BLP.mixedShare}
+\leanok
+$\sigma_j(\delta) = e^{\delta_j}/(1+\sum_ke^{\delta_k})$, $\sigma_0(\delta) = 1/(1+\sum_ke^{\delta_k})$, and with
+consumer types $i$ of weight $w_i$ and taste shifts $\mu_{ij}$:
+$\sigma^{mix}_j(\delta) = \sum_iw_i\sigma_j(\delta+\mu_i)$.
+\end{definition}
+
+\begin{theorem}[Berry's logit inversion]
+\label{thm:berry}
+\lean{Econ.Structural.BLP.denom_pos, Econ.Structural.BLP.share_pos, Econ.Structural.BLP.outsideShare_pos, Econ.Structural.BLP.sum_share_add_outside, Econ.Structural.BLP.berry_inversion, Econ.Structural.BLP.share_surjective, Econ.Structural.BLP.share_injective}
+\leanok
+\uses{def:logit-shares}
+Shares are positive and sum (with the outside good) to one; $\delta_j = \log\sigma_j(\delta) - \log\sigma_0(\delta)$;
+and every $s$ with $s_j>0$, $\sum s_j<1$ is attained at $\delta_j = \log s_j - \log(1-\sum s)$. So the logit share map
+is a bijection onto the interior of the simplex.
+\end{theorem}
+\begin{proof}
+\leanok
+$\log(e^{\delta_j}/D) - \log(1/D) = \delta_j$. For surjectivity, $e^{\delta_j} = s_j/s_0$ and
+$1+\sum_ke^{\delta_k} = 1/s_0$. Injectivity: equal shares give equal outside shares and hence equal $\delta$.
+\end{proof}
+
+\begin{theorem}[Invertibility of BLP demand]
+\label{thm:blp-injective}
+\lean{Econ.Structural.BLP.share_set_lt, Econ.Structural.BLP.exists_set_share_lt, Econ.Structural.BLP.mixedShare_injective, Econ.Structural.BLP.mixedShare_unit, Econ.Structural.BLP.mixed_witness}
+\leanok
+\uses{thm:berry}
+For finitely many consumer types with positive weights and any taste shifts, $\delta\mapsto\sigma^{mix}(\delta)$ is
+injective. The plain logit is the one-type case; a two-type example with opposite tastes is covered.
+\end{theorem}
+\begin{proof}
+\leanok
+Key inequality (connected substitutes): with $a_j>0$, $d_j\le M$, $M>0$, and $d_j = M$ on a nonempty $K$,
+$\frac{\sum_Ka}{1+\sum a} < \frac{\sum_Ke^{d}a}{1+\sum e^{d}a}$, because $\sum_Ke^da = e^M\sum_Ka$ and
+$1+\sum e^da < e^M(1+\sum a)$. If $\delta\ne\delta'$, say $\max_j(\delta_j-\delta'_j) = M>0$ (else swap), let $K$ be
+the argmax set. For each type $i$ apply the inequality with $a_j = e^{\delta'_j+\mu_{ij}}$ and
+$d = \delta-\delta'$: the share of $K$ is strictly larger under $\delta$. Summing with positive weights,
+$\sum_K\sigma^{mix}(\delta)>\sum_K\sigma^{mix}(\delta')$, so the share vectors differ.
+\end{proof}

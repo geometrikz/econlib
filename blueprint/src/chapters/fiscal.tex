@@ -1,0 +1,41 @@
+% Lean: EconLean/Macro/Fiscal/ChamleyJudd.lean
+\chapter{Optimal Capital Taxation}
+\label{chap:fiscal}
+
+Sources: Chamley (1986); Judd (1985); Straub--Werning (2020); Ljungqvist--Sargent ch.~16.
+
+\begin{definition}[Ramsey first-order conditions]
+\label{def:cj_foc}
+\lean{Econ.ChamleyJudd.IsRamseyFOC}
+\leanok
+$uc_t = \beta\,uc_{t+1}(1 + (1-\tau_{t+1})r_{t+1})$ (household Euler) and $Wc_t = \beta\,Wc_{t+1}(1+r_{t+1})$
+(planner's capital first-order condition on the pseudo-utility).
+\end{definition}
+
+\begin{theorem}[Chamley--Judd]
+\label{thm:cj}
+\lean{Econ.ChamleyJudd.chamley_judd}
+\leanok
+\uses{def:cj_foc}
+If $uc, Wc, r, \tau$ converge with $uc^*, Wc^* > 0$ and $r^* \ne 0$, then $\tau^* = 0$.
+\end{theorem}
+\begin{proof}
+\leanok
+Pass to the limit in both equations: $\beta(1+(1-\tau^*)r^*) = 1 = \beta(1+r^*)$, so $\beta\tau^*r^* = 0$.
+\end{proof}
+
+\begin{theorem}[Straub--Werning caveat]
+\label{thm:sw}
+\lean{Econ.ChamleyJudd.ratio_unbounded, Econ.ChamleyJudd.wedge_unbounded}
+\leanok
+\uses{def:cj_foc}
+If $\underline\tau \le \tau_t \le 1$ with $\underline\tau>0$ and $r_t \ge \underline r > 0$, then $uc_t/Wc_t$ is
+unbounded, so the convergence hypothesis of Theorem~\ref{thm:cj} fails. A constant tax $\tau>0$ is an implicit tax
+$((1+r)/(1+(1-\tau)r))^T$ on date-$T$ consumption, which is unbounded.
+\end{theorem}
+\begin{proof}
+\leanok
+Dividing the two conditions, the ratio grows each period by $(1+r_{t+1})/(1+(1-\tau_{t+1})r_{t+1})$, which is at least
+$q = (1+\underline r)/(1+(1-\underline\tau)\underline r) > 1$. Hence the ratio is at least $q^t$ times its initial
+value.
+\end{proof}

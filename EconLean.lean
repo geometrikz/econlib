@@ -116,6 +116,12 @@ public import EconLean.Econometrics.Asymptotics.DeltaMethod
 public import EconLean.Econometrics.Asymptotics.OLSConsistency
 public import EconLean.Econometrics.TimeSeries.VAR
 public import EconLean.Econometrics.TimeSeries.SVAR
+public import EconLean.Econometrics.GaussMarkov
+public import EconLean.Econometrics.Causal.GoodmanBacon
+public import EconLean.Econometrics.Asymptotics.Extremum
+public import EconLean.Econometrics.Asymptotics.GMMAsymptotics
+public import EconLean.Econometrics.TimeSeries.SVARRestrictions
+public import EconLean.Econometrics.Structural.BLP
 public import EconLean.Macro.Growth.RamseyGlobal
 public import EconLean.Macro.DP.StochasticPlan
 public import EconLean.Macro.DP.InvariantMeasure
@@ -154,5 +160,21 @@ public import EconLean.Finance.SequentialMarkets
 public import EconLean.Finance.LucasTree
 public import EconLean.Macro.NK.ThreeEquation
 public import EconLean.Audit.Statements.MacroBatch5
+public import EconLean.Macro.NK.Shocks
+public import EconLean.Macro.NK.BlanchardKahn
+public import EconLean.Macro.ProductionNetworks
+public import EconLean.Macro.BaqaeeFarhi
+public import EconLean.Macro.Fiscal.ChamleyJudd
+public import EconLean.Macro.NK.StickyInformation
+public import EconLean.Macro.Climate.SocialCostCarbon
+public import EconLean.Audit.Statements.MacroBatch6
+public import EconLean.Behavioral.BeliefRule
+public import EconLean.Behavioral.CognitiveDiscounting
+public import EconLean.Behavioral.DiagnosticExpectations
+public import EconLean.Behavioral.Overconfidence
+public import EconLean.Behavioral.MotivatedBeliefs
+public import EconLean.Behavioral.NarrowBracketing
+public import EconLean.Behavioral.MarketInequity
+public import EconLean.Audit.Statements.BehavioralV
 
 @[expose] public section

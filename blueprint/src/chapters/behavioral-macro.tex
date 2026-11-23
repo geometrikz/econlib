@@ -1,0 +1,110 @@
+\chapter{Behavioral Macroeconomics}
+\label{chap:behavioral-macro}
+
+Belief rules shared by the behavioral macro models: a linear rule $(m,\theta)$ maps today's and yesterday's rational
+forecasts $e,e'$ to $me+\theta(e-e')$. Rational expectations is $(1,0)$, cognitive discounting is $(m,0)$ and
+diagnostic expectations is $(1,\theta)$.
+
+\section{Belief rules}
+
+\begin{definition}[Linear belief rules]
+\label{def:bm-belief-rule}
+\lean{Econ.BeliefRule.Linear, Econ.BeliefRule.Linear.forecast, Econ.BeliefRule.Linear.rational, Econ.BeliefRule.Linear.cognitive, Econ.BeliefRule.Linear.diagnostic}
+\leanok
+$\hat E[y]=m\,e+\theta(e-e')$.
+\end{definition}
+
+\begin{lemma}[Rational expectations as a limit]
+\label{lem:bm-belief-rule}
+\uses{def:bm-belief-rule}
+\lean{Econ.BeliefRule.Linear.forecast_rational, Econ.BeliefRule.Linear.forecast_cognitive, Econ.BeliefRule.Linear.forecast_diagnostic, Econ.BeliefRule.Linear.cognitive_one, Econ.BeliefRule.Linear.diagnostic_zero, Econ.BeliefRule.Linear.forecast_eq_iff, Econ.BeliefRule.Linear.continuous_forecast}
+\leanok
+Both behavioral families pass through the rational rule, which is the only rule forecasting $e$ for all inputs,
+and forecasts are continuous in $(m,\theta)$.
+\end{lemma}
+\begin{proof}
+\leanok
+Evaluate at $(e,e')=(1,1)$ and $(1,0)$.
+\end{proof}
+
+\section{Cognitive discounting in the New Keynesian model}
+
+\begin{definition}[Behavioral NK model]
+\label{def:bm-cnk}
+\uses{def:bm-belief-rule}
+\lean{Econ.CognitiveNK.Model, Econ.CognitiveNK.Model.IsEquilibrium, Econ.CognitiveNK.Model.Determinate, Econ.CognitiveNK.Model.forward, Econ.CognitiveNK.Model.index, Econ.CognitiveNK.Model.toRational}
+\leanok
+$x_t=Mx_{t+1}-(i_t-\pi_{t+1})/\sigma$, $\pi_t=\beta M^f\pi_{t+1}+\kappa x_t$, $i_t=\phi_\pi\pi_t+\phi_x x_t$, with
+$0<M,M^f\le1$. Determinacy means the only bounded equilibrium is zero.
+\end{definition}
+
+\begin{theorem}[Gabaix: determinacy with cognitive discounting]
+\label{thm:bm-cnk-det}
+\uses{def:bm-cnk}
+\lean{Econ.CognitiveNK.Model.forward_det, Econ.CognitiveNK.Model.forward_trace, Econ.CognitiveNK.Model.isEquilibrium_iff, Econ.CognitiveNK.Model.determinate_iff_forward, Econ.CognitiveNK.Model.determinate_iff, Econ.CognitiveNK.Model.peg_determinate_iff, Econ.CognitiveNK.Model.peg_indeterminate_rational, Econ.CognitiveNK.Model.isEquilibrium_rational, Econ.CognitiveNK.Model.determinate_iff_rational, Econ.CognitiveNK.Model.determinate_robust}
+\leanok
+The model is determinate iff $\kappa(\phi_\pi-1)+(1-\beta M^f)\phi_x+\sigma(1-M)(1-\beta M^f)>0$. A peg is determinate
+iff $\kappa<\sigma(1-M)(1-\beta M^f)$, never under rational expectations. At $M=M^f=1$ the model and its determinacy
+condition are those of the rational NK model, and the rational Taylor condition implies determinacy for all
+$M,M^f\in(0,1]$.
+\end{theorem}
+\begin{proof}
+\leanok
+Equilibria are orbits of the forward matrix, with $\det=(\sigma+\phi_x+\kappa\phi_\pi)/(\sigma M\beta M^f)>1$ and
+$1+\det-\mathrm{tr}=\text{index}/(\sigma M\beta M^f)$; apply the two-dimensional determinacy criterion of the NK chapter.
+\end{proof}
+
+\begin{theorem}[Forward guidance: puzzle and resolution]
+\label{thm:bm-fg}
+\uses{def:bm-cnk}
+\lean{Econ.CognitiveNK.Model.IsISPath, Econ.CognitiveNK.Model.cut, Econ.CognitiveNK.Model.fg_response, Econ.CognitiveNK.Model.fg_path_exists, Econ.CognitiveNK.Model.fg_vanishes, Econ.CognitiveNK.Model.fg_puzzle_rational, Econ.CognitiveNK.Model.fg_eventually_below_half}
+\leanok
+In partial equilibrium (the IS block with an exogenous real-rate path and output back at steady state after the cut), a unit real-rate cut at date $T$ followed by a return to steady state raises output today by $M^T/\sigma$.
+For $M<1$ this vanishes as $T\to\infty$; at $M=1$ it is $1/\sigma$ at every horizon, so undiminished forward guidance
+is knife-edge.
+\end{theorem}
+\begin{proof}
+\leanok
+Backward induction from $T$: $x_{T-k}=M^k/\sigma$.
+\end{proof}
+
+\section{Diagnostic expectations}
+
+\begin{definition}[Forecasts in an AR(1) window]
+\label{def:bm-de}
+\uses{def:bm-belief-rule}
+\lean{Econ.Diagnostic.Var, Econ.Diagnostic.cov, Econ.Diagnostic.xm2, Econ.Diagnostic.xm1, Econ.Diagnostic.x0, Econ.Diagnostic.x1, Econ.Diagnostic.εt, Econ.Diagnostic.fcT, Econ.Diagnostic.fcT1, Econ.Diagnostic.FE, Econ.Diagnostic.FR, Econ.Diagnostic.cgCoeff}
+\leanok
+Variables are coefficient vectors on the uncorrelated $(x_{t-2},\varepsilon_{t-1},\varepsilon_t,\varepsilon_{t+1})$;
+forecasts of $x_{t+1}$ apply a linear belief rule to the rational forecasts; the CG coefficient is
+$\mathrm{Cov}(FE,FR)/\mathrm{Var}(FR)$.
+\end{definition}
+
+\begin{theorem}[Over- and underreaction in survey forecasts]
+\label{thm:bm-cg}
+\uses{def:bm-de}
+\lean{Econ.Diagnostic.FE_eq, Econ.Diagnostic.FR_eq, Econ.Diagnostic.cov_FE_FR, Econ.Diagnostic.cov_FR_FR, Econ.Diagnostic.cov_FE_FR_rational, Econ.Diagnostic.cov_FE_FR_diagnostic, Econ.Diagnostic.cov_FE_FR_cognitive, Econ.Diagnostic.cgCoeff_neg_iff, Econ.Diagnostic.cgCoeff_cognitive_pos, Econ.Diagnostic.fcT_eq, Econ.Diagnostic.fcT_diagnostic, Econ.Diagnostic.fe_orthogonal_iff}
+\leanok
+$\mathrm{Cov}(FE,FR)=s^2\rho^2[(1-m-\theta)(m+\theta)-\theta(1-m)\rho^2]$. Diagnostic expectations give
+$-\theta(1+\theta)\rho^2s^2$, a negative CG coefficient iff $\theta>0$ (overreaction); cognitive discounting gives
+$(1-m)m\rho^2s^2>0$ under horizon-independent shrinkage (underreaction); rational expectations give $0$. Forecast errors are uncorrelated with date-$t$
+information iff the rule is rational.
+\end{theorem}
+\begin{proof}
+\leanok
+$FE=((1-m)\rho^3,(1-m)\rho^2,(1-m-\theta)\rho,1)$ and $FR=(0,-\theta\rho^2,(m+\theta)\rho,0)$.
+\end{proof}
+
+\begin{theorem}[Bordalo--Gennaioli--Shleifer: overreaction and reversal in prices]
+\label{thm:bm-bgs-price}
+\uses{def:bm-de}
+\lean{Econ.Diagnostic.forecastIRF, Econ.Diagnostic.priceIRF, Econ.Diagnostic.hasSum_priceIRF, Econ.Diagnostic.priceIRF_eq, Econ.Diagnostic.price_overreaction, Econ.Diagnostic.price_reversal, Econ.Diagnostic.price_change_lt}
+\leanok
+With $|\delta\rho|<1$, the diagnostic price of a claim to $(x_{t+k})_{k\ge1}$ responds to a unit shock by $(1+\theta)c$
+on impact and by $\rho^kc$ afterwards, $c=\delta\rho/(1-\delta\rho)$: overreaction followed by reversal, so the price
+change after good news is predictably below its rational counterpart.
+\end{theorem}
+\begin{proof}
+\leanok
+Geometric series; the diagnostic term only loads on news, which is present on impact only.
+\end{proof}

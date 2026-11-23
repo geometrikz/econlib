@@ -336,7 +336,7 @@ design. New foundation items, added to PLAN.md §2: **F25** uniform LLN
 | ID | Model / result | Key theorems | Source | Deps | Diff | MS | Status |
 |---|---|---|---|---|---|---|---|
 | C1.1 | OLS as projection | normal equations, idempotent projections, FWL | Hayashi 1; Davidson–MacKinnon | Mathlib linear algebra | E | ME1 | ✅ |
-| C1.2 | Gauss–Markov | BLUE | Hayashi 1.3 | Mathlib | E–M | ME1 | 🟢 |
+| C1.2 | Gauss–Markov | BLUE | Hayashi 1.3 | Mathlib | E–M | ME1 | ✅ (fixed design) |
 | C1.3 | Omitted-variable bias | OVB formula | Angrist–Pischke 3 | C1.1 | E | ME1 | ✅ |
 | C1.4 | Normal linear model | exact t/F distributions | Hayashi 1.4 | Mathlib Gaussian; χ²/t gap (guess) | M | ME1 | 🟡 |
 | C1.5 | GLS / Aitken | GLS is BLUE | Aitken 1935 | C1.2 | E–M | ME1 | 🟢 |
@@ -348,9 +348,9 @@ design. New foundation items, added to PLAN.md §2: **F25** uniform LLN
 | C2.2 | OLS consistency | under SLLN, full-rank moments | Hayashi 2 | Mathlib SLLN | E–M | ME2 | ✅ (i.i.d.) |
 | C2.3 | OLS asymptotic normality | √n (β̂ − β) ⇒ N(0, V) | Hayashi 2 | F27 | M | ME2 | 🟡 |
 | C2.4 | Delta method | scalar and vector | van der Vaart 3 | C2.1 (reuse Coretto) | M | ME2 | 🟢 (scalar done; vector open) |
-| C2.5 | Extremum estimators | consistency (identification + ULLN) | Newey–McFadden 1994 | F25 | M | ME2 | 🟡 |
-| C2.6 | MLE | information equality, Cramér–Rao, asymptotic efficiency | Lehmann–Casella; Newey–McFadden | C2.5 | M–H | ME2 | 🟡 |
-| C2.7 | GMM | consistency, asymptotic normality, efficient weight, J-test | Hansen 1982 (Nobel 2013) | C2.5, F27 | M–H | ME2 | 🟡 (identification, estimator, efficient weight done; asymptotics and J-test open) |
+| C2.5 | Extremum estimators | consistency (identification + ULLN) | Newey–McFadden 1994 | F25 | M | ME2 | 🟢 (consistency and Z-estimator normality done with ULLN/CLT as hypotheses; ULLN itself F25) |
+| C2.6 | MLE | information equality, Cramér–Rao, asymptotic efficiency | Lehmann–Casella; Newey–McFadden | C2.5 | M–H | ME2 | 🟡 (KL identification and consistency done given the KL gap; information equality, Cramér–Rao open) |
+| C2.7 | GMM | consistency, asymptotic normality, efficient weight, J-test | Hansen 1982 (Nobel 2013) | C2.5, F27 | M–H | ME2 | 🟢 (linear GMM consistency and asymptotic normality done, CLT as hypothesis; J-test, two-step, nonlinear open) |
 | C2.8 | Robust SEs | HC and Newey–West PSD | White 1980; Newey–West 1987 | Mathlib | E–M | ME2 | 🟢 |
 | C2.9 | Bootstrap | consistency for the mean | Efron 1979; Bickel–Freedman 1981 | F27 | H | ME2 | 🟡 |
 | C2.10 | Weak instruments | Staiger–Stock asymptotics | Staiger–Stock 1997 | F27 | H | ME2 | 🟡 |
@@ -364,7 +364,7 @@ design. New foundation items, added to PLAN.md §2: **F25** uniform LLN
 | C3.4 | LATE | Wald = complier ATE under monotonicity | Imbens–Angrist 1994 (Nobel 2021) | Mathlib | E–M | ME1 | ✅ |
 | C3.5 | MTE | LATE/ATE/ATT as MTE weighted averages | Heckman–Vytlacil 2005 | C3.4 | M | ME1 | 🟢 |
 | C3.6 | DiD (2×2) | parallel trends ⇒ ATT | Card–Krueger 1994 (Nobel 2021) | Mathlib | E | ME1 | ✅ |
-| C3.7 | TWFE with staggered timing | decomposition; negative weights | Goodman-Bacon 2021; de Chaisemartin–D'Haultfœuille 2020 | C1.1 | M | ME1 | 🟡 (dCDH done; Goodman-Bacon open) |
+| C3.7 | TWFE with staggered timing | decomposition; negative weights | Goodman-Bacon 2021; de Chaisemartin–D'Haultfœuille 2020 | C1.1 | M | ME1 | ✅ (dCDH; Goodman-Bacon over unit pairs, timing-group weights open) |
 | C3.8 | Heterogeneity-robust DiD | Callaway–Sant'Anna / Sun–Abraham identification | Callaway–Sant'Anna 2021; Sun–Abraham 2021 | C3.6 | M | ME1 | 🟢 |
 | C3.9 | Regression discontinuity | continuity ⇒ identification (sharp, fuzzy) | Hahn–Todd–van der Klaauw 2001 | Mathlib limits | M | ME1 | ✅ |
 | C3.10 | Synthetic control | bias bound under factor model | Abadie–Diamond–Hainmueller 2010 | Mathlib | M–H | ME1 | 🟢 (noiseless exactness done; bias bound open) |
@@ -380,7 +380,7 @@ design. New foundation items, added to PLAN.md §2: **F25** uniform LLN
 |---|---|---|---|---|---|---|---|
 | C4.1 | ARMA | stationarity ⟺ roots outside unit circle; MA(∞) | Hamilton 3; Brockwell–Davis | Mathlib polynomials | M | ME3 | 🟢 |
 | C4.2 | VAR | companion-form stability; impulse responses | Sims 1980 (Nobel 2011) | B1.9 | M | ME3 | 🟢 (stability, MA(∞), IRFs done for bounded shocks; companion form open) |
-| C4.3 | SVAR identification | recursive, long-run, sign restrictions | Blanchard–Quah 1989; Uhlig 2005 | C4.2 | M | ME3 | 🟢 (recursive done; long-run and sign restrictions open) |
+| C4.3 | SVAR identification | recursive, long-run, sign restrictions | Blanchard–Quah 1989; Uhlig 2005 | C4.2 | M | ME3 | ✅ (recursive, Blanchard–Quah, impact sign restrictions; horizon-K signs and RWZ rank condition open) |
 | C4.4 | LP = VAR | equivalence of population IRFs | Plagborg-Møller–Wolf 2021 | C4.2 | M | ME3 | 🟢 |
 | C4.5 | Kalman filter | optimal linear filter | Kalman 1960 | Mathlib Gaussian | M | ME3 | 🟢 |
 | C4.6 | Wold decomposition | every covariance-stationary process | Wold 1938 | Hilbert spaces in Mathlib | H | ME3 | 🟢 |
@@ -393,7 +393,7 @@ design. New foundation items, added to PLAN.md §2: **F25** uniform LLN
 | ID | Model / result | Key theorems | Source | Deps | Diff | MS | Status |
 |---|---|---|---|---|---|---|---|
 | C5.1 | Discrete choice | logit from Gumbel; IIA; nested logit from GEV | McFadden 1974, 1978 (Nobel 2000) | A4.12 | E–M | ME4 | 🟢 |
-| C5.2 | BLP | share inversion contraction | Berry 1994; BLP 1995 | Mathlib contraction | M | ME4 | 🟢 |
+| C5.2 | BLP | share inversion contraction | Berry 1994; BLP 1995 | Mathlib contraction | M | ME4 | 🟢 (logit bijection and mixed-logit injectivity done; mixed-logit existence and contraction open) |
 | C5.3 | Dynamic discrete choice | Rust NFXP contraction; Hotz–Miller CCP inversion | Rust 1987; Hotz–Miller 1993 | B1.1 | M | ME4 | 🟢 |
 | C5.4 | Auctions | nonparametric identification of values from bids | Guerre–Perrigne–Vuong 2000 | A10.7 | M | ME4 | 🟢 |
 | C5.5 | Production functions | proxy-variable identification | Olley–Pakes 1996; Ackerberg–Caves–Frazer 2015 | Mathlib | M | ME4 | 🟢 |

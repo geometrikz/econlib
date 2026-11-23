@@ -1,0 +1,114 @@
+% Lean: EconLean/Macro/NK/Shocks.lean, EconLean/Macro/NK/BlanchardKahn.lean, EconLean/Macro/NK/StickyInformation.lean
+\chapter{Monetary Policy: Shocks, Determinacy and Sticky Information}
+\label{chap:nk_policy}
+
+Sources: Gal\'i, \emph{Monetary Policy, Inflation, and the Business Cycle}, ch.~4--5; Clarida--Gal\'i--Gertler
+(1999); Blanchard--Gal\'i (2007); Blanchard--Kahn (1980); Mankiw--Reis (2002). All shocks are perfect-foresight
+paths. The model $(\sigma,\kappa,\beta,\phi_\pi,\phi_x)$ of Chapter~\ref{chap:nk} has $\sigma,\kappa>0$ and
+$0<\beta<1$.
+
+\section{Divine coincidence}
+
+\begin{definition}[Equilibrium with shocks]
+\label{def:nk_shock_eq}
+\lean{Econ.NK.Model.IsShockEquilibrium, Econ.NK.Model.FollowsRule}
+\leanok
+Given natural-rate and cost-push paths $r^n, u$, the paths $(x,\pi,i)$ satisfy
+$x_t = x_{t+1} - (i_t - \pi_{t+1} - r^n_t)/\sigma$ and $\pi_t = \beta\pi_{t+1} + \kappa x_t + u_t$. The rule is
+$i_t = r^n_t + \phi_\pi\pi_t + \phi_x x_t$.
+\end{definition}
+
+\begin{theorem}[Divine coincidence]
+\label{thm:nk_divine}
+\lean{Econ.NK.Model.zero_isShockEquilibrium, Econ.NK.Model.isEquilibrium_of_shock, Econ.NK.Model.divine_coincidence}
+\leanok
+\uses{def:nk_shock_eq}
+With $u = 0$, the rule supports $\pi = x = 0$. If $\kappa(\phi_\pi - 1) + (1-\beta)\phi_x > 0$, every bounded
+equilibrium under the rule has $\pi = x = 0$.
+\end{theorem}
+\begin{proof}
+\leanok
+Substituting the rule, $i_t - r^n_t = \phi_\pi\pi_t + \phi_x x_t$, so $(x,\pi)$ solves the shock-free system with
+the Taylor rule of Chapter~\ref{chap:nk}. Its only bounded solution is zero by the Taylor principle.
+\end{proof}
+
+\begin{theorem}[Cost-push shocks rule out the first best]
+\label{thm:nk_costpush}
+\lean{Econ.NK.Model.no_firstBest_of_costPush}
+\leanok
+\uses{def:nk_shock_eq}
+If $u_t \ne 0$, no equilibrium (under any policy) has $\pi = x = 0$ at all dates.
+\end{theorem}
+\begin{proof}
+\leanok
+The Phillips curve at date $t$ would read $0 = u_t$.
+\end{proof}
+
+\begin{theorem}[Optimal discretion]
+\label{thm:nk_discretion}
+\lean{Econ.NK.discretion_static, Econ.NK.discretion_unique}
+\leanok
+Minimizing $\pi^2 + \lambda x^2$ subject to $\pi = \kappa x + v$ has the unique solution
+$x^* = -\kappa v/(\lambda+\kappa^2)$, with $\pi^* = \lambda v/(\lambda+\kappa^2)$ and $x^* = -(\kappa/\lambda)\pi^*$.
+With $u_t = \rho^tu_0$ and $|\rho| \le 1$, the unique bounded path satisfying the Phillips curve and the targeting
+rule is $\pi_t = \lambda u_t/D$, $x_t = -\kappa u_t/D$, where $D = \kappa^2 + \lambda(1-\beta\rho)$.
+\end{theorem}
+\begin{proof}
+\leanok
+The loss equals $(\lambda+\kappa^2)(x - x^*)^2$ plus a constant. For the dynamic part, substitute the targeting
+rule into the Phillips curve: $\pi_t = a\pi_{t+1} + b\rho^t$ with $a = \beta\lambda/(\lambda+\kappa^2) < 1$. The
+gap $e_t = \pi_t - \lambda\rho^tu_0/D$ satisfies $e_t = ae_{t+1}$, so $e_0 = a^te_t$. Since $e$ is bounded and
+$a^t \to 0$, $e = 0$.
+\end{proof}
+
+\section{Blanchard--Kahn in $n$ dimensions}
+
+\begin{definition}[Determinacy]
+\label{def:bkn}
+\lean{Econ.NK.IsOrbitN, Econ.NK.BoundedN, Econ.NK.DeterminateN, Econ.NK.cplx, Econ.NK.IsEigenvalue}
+\leanok
+For $M \in \mathbb{R}^{n\times n}$, $M$ is determinate if every bounded orbit $z_{t+1} = Mz_t$ is zero. A complex
+eigenvalue of $M$ is $\mu$ with $Mv = \mu v$ for some nonzero $v \in \mathbb{C}^n$.
+\end{definition}
+
+\begin{theorem}[Blanchard--Kahn]
+\label{thm:bkn}
+\lean{Econ.NK.cplx_mulVec, Econ.NK.not_determinate_of_eigenvalue, Econ.NK.isUnit_cplx, Econ.NK.norm_lt_of_mem_spectrum, Econ.NK.determinateN_iff}
+\leanok
+\uses{def:bkn}
+With no predetermined variables, $M$ is determinate iff every eigenvalue satisfies $|\mu| > 1$.
+\end{theorem}
+\begin{proof}
+\leanok
+If $|\mu| \le 1$ with eigenvector $v$, then the real or the imaginary part of $\mu^tv$ is a nonzero bounded
+real orbit. Conversely, with all $|\mu| > 1$, $M$ is invertible and every spectral value of $N = M^{-1}$ has
+norm $< 1$. By Gelfand's formula $\|N^t\|^{1/t} \to \rho(N) < 1$, so $\|N^t\| \le c\,r^t$ for some $r<1$. Then
+$z_0 = N^tz_t$, and $|z_0| \le c\,r^tB \to 0$.
+\end{proof}
+
+\section{Sticky information}
+
+\begin{definition}[News-shock equilibrium]
+\label{def:sticky}
+\lean{Econ.StickyInfo.share, Econ.StickyInfo.IsEquilibrium, Econ.StickyInfo.output}
+\leanok
+With updating probability $\lambda$, the share of firms informed of date-0 news by $t$ is
+$\Lambda_t = 1-(1-\lambda)^{t+1}$. The price level solves
+$p_t = \Lambda_t((1-\alpha)p_t + \alpha m_t) + (1-\Lambda_t)m^0_t$, and output is $y_t = m_t - p_t$.
+\end{definition}
+
+\begin{theorem}[Mankiw--Reis]
+\label{thm:sticky}
+\lean{Econ.StickyInfo.one_sub_share, Econ.StickyInfo.share_mem, Econ.StickyInfo.den_ge, Econ.StickyInfo.existsUnique_equilibrium, Econ.StickyInfo.output_eq, Econ.StickyInfo.output_zero_of_expected, Econ.StickyInfo.surprise_recession, Econ.StickyInfo.announced_disinflation_cost, Econ.StickyInfo.recovery}
+\leanok
+\uses{def:sticky}
+The equilibrium is unique with $y_t = (1-\Lambda_t)(m_t - m^0_t)/(1-\Lambda_t(1-\alpha))$. Unchanged date-$t$ demand
+gives $y_t = 0$. A surprise cut ($m_t < m^0_t$, $\lambda<1$) gives $y_t < 0$. If the change starts at $T$ and
+$|m - m^0| \le D$, then $|y_t| \le (1-\lambda)^{T+1}D/\alpha$. After a permanent shift, $|y_t|$ falls every period.
+\end{theorem}
+\begin{proof}
+\leanok
+The equation is linear in $p_t$ with coefficient $1-\Lambda_t(1-\alpha) \ge \alpha > 0$; solve it. For the bound use
+$(1-\lambda)^{t+1} \le (1-\lambda)^{T+1}$ when $t \ge T$, together with the denominator bound. For recovery,
+$u \mapsto u/(\alpha + (1-\alpha)u)$ is increasing and $u_t = (1-\lambda)^{t+1}$ falls.
+\end{proof}
