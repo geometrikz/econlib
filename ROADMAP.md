@@ -20,13 +20,20 @@ Mas-Colell, Whinston & Green (MWG) and Kreps. ✅ = done in this repo.
   counterexample; nice exercise in cardinality arguments)
 
 ## Stage 3: Consumer choice (MWG ch. 2–3)
-- ○ Budget sets, Walrasian demand correspondence
-- ○ Existence of demand: continuous utility on compact budget set (extreme
-  value theorem, which Mathlib has: `IsCompact.exists_isMaxOn`)
-- ○ Walras' law under local nonsatiation; homogeneity of degree zero
-- ○ Indirect utility, expenditure function, Hicksian demand; duality identities
-- ○ Revealed preference for demand: WARP / SARP / GARP, Afriat's theorem
-- ○ Slutsky equation (needs differentiability; Mathlib calculus is adequate)
+- ✅ Budget sets: homogeneity, convexity, closedness, compactness for p ≫ 0
+- ✅ Walrasian demand: homogeneity of degree zero, convexity under convex prefs
+- ✅ Existence of demand (continuous utility, extreme value theorem)
+- ✅ Local nonsatiation, strong monotonicity ⇒ LNS, Walras' law
+- ✅ Indirect utility, expenditure function, Hicksian demand (with existence)
+- ✅ Duality: UMP ⇔ EMP, e(p, v(p,w)) = w, v(p, e(p,ū)) = ū, no excess utility
+- ✅ v homogeneous of degree 0 and nondecreasing in w; e homogeneous of degree 1
+  and concave in p
+- ✅ WARP from utility maximization; compensated law of demand (MWG 2.F.1)
+- ○ Quasiconvexity of v; continuity of v and demand (Berge's maximum theorem)
+- ○ Shephard's lemma, Roy's identity, Slutsky equation (need derivatives;
+  envelope-theorem style arguments)
+- ○ Slutsky matrix symmetric and negative semidefinite
+- ○ GARP and Afriat's theorem; integrability (recovering preferences)
 
 ## Stage 4: Choice under uncertainty (MWG ch. 6)
 - ○ Lotteries as probability measures (Mathlib `PMF` for the finite case)

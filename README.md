@@ -7,6 +7,11 @@ Mathlib. Every file is heavily commented for readers who know the economics
 - `EconLean/Preferences/Basic.lean`: rational preferences, ≻ and ∼, MWG 1.B.1
 - `EconLean/Preferences/Utility.lean`: utility representations, ordinal
   invariance, existence on finite sets
+- `EconLean/Consumer/Budget.lean`: prices, cost, budget sets (convex, compact)
+- `EconLean/Consumer/Demand.lean`: Walrasian demand, Walras' law, existence
+- `EconLean/Consumer/Duality.lean`: indirect utility, expenditure, Hicksian
+  demand, UMP/EMP duality
+- `EconLean/Consumer/RevealedPreference.lean`: WARP, compensated law of demand
 - `ROADMAP.md`: what comes next, and related projects
 
 ## Build
