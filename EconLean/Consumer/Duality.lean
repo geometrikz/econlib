@@ -236,4 +236,66 @@ theorem expenditure_concave {p q : ι → ℝ} {ū a b : ℝ} (ha : 0 ≤ a) (hb
   have h2 := hxq.2 xm hxm.1
   nlinarith [mul_le_mul_of_nonneg_left h1 ha, mul_le_mul_of_nonneg_left h2 hb]
 
+/-! ### Guarding against junk values (review finding)
+
+`indirectUtility` and `expenditure` are `sSup`/`sInf`, which return the junk
+value `0` when the optimum does not exist. These lemmas say the junk case
+never arises under the standard hypotheses: the value is attained, so it is a
+genuine maximum (resp. minimum). -/
+
+/-- Under continuity, `p ≫ 0` and `w ≥ 0`, `v(p, w)` is the **greatest**
+attainable utility, not a junk value. -/
+theorem isGreatest_indirectUtility (hu : Continuous u) {p : ι → ℝ} (hp : ∀ i, 0 < p i)
+    {w : ℝ} (hw : 0 ≤ w) :
+    IsGreatest (u '' budgetSet p w) (indirectUtility u p w) := by
+  obtain ⟨x, hx⟩ := demand_nonempty hu hp hw
+  rw [indirectUtility_eq hx]
+  refine ⟨mem_image_of_mem u hx.1, ?_⟩
+  rintro _ ⟨y, hy, rfl⟩
+  exact hx.2 y hy
+
+/-- If utility `ū` is reachable, `e(p, ū)` is the **least** cost of reaching
+it, not a junk value. -/
+theorem isLeast_expenditure (hu : Continuous u) {p : ι → ℝ} (hp : ∀ i, 0 < p i)
+    {ū : ℝ} {x₀ : ι → ℝ} (hx₀ : x₀ ∈ upperSet u ū) :
+    IsLeast (cost p '' upperSet u ū) (expenditure u p ū) := by
+  obtain ⟨x, hx⟩ := hicksian_nonempty hu hp hx₀
+  rw [expenditure_eq hx]
+  refine ⟨mem_image_of_mem _ hx.1, ?_⟩
+  rintro _ ⟨y, hy, rfl⟩
+  exact hx.2 y hy
+
+/-! ### Sharper monotonicity of `v` (MWG Prop. 3.D.3(ii)–(iii)) -/
+
+/-- **`v` is strictly increasing in wealth** under local nonsatiation.
+Extra wealth `w' > w` leaves the old optimum `x` with money to spare, so
+local nonsatiation finds a strictly better affordable bundle. -/
+theorem indirectUtility_strictMono (hu : Continuous u) (hlns : LocallyNonsatiated (prefOf u))
+    {p : ι → ℝ} (hp : ∀ i, 0 < p i) {w w' : ℝ} (hw : 0 ≤ w) (hww' : w < w') :
+    indirectUtility u p w < indirectUtility u p w' := by
+  obtain ⟨x, hx⟩ := demand_nonempty hu hp hw
+  obtain ⟨x', hx'⟩ := demand_nonempty hu hp (hw.trans hww'.le)
+  rw [indirectUtility_eq hx, indirectUtility_eq hx']
+  obtain ⟨z, hzB, hzx⟩ := exists_better_affordable hlns hx.1.1 (lt_of_le_of_lt hx.1.2 hww')
+  have hlt : u x < u z := ((represents_prefOf u).P_iff z x).1 hzx
+  exact hlt.trans_le (hx'.2 z hzB)
+
+/-- Raising prices shrinks the budget set: if `p ≤ p'` then `B(p', w) ⊆ B(p, w)`. -/
+theorem budgetSet_anti {p p' : ι → ℝ} (hpp' : p ≤ p') (w : ℝ) :
+    budgetSet p' w ⊆ budgetSet p w := by
+  intro x hx
+  refine ⟨hx.1, le_trans ?_ hx.2⟩
+  exact Finset.sum_le_sum fun i _ => mul_le_mul_of_nonneg_right (hpp' i) (hx.1 i)
+
+/-- **`v` is nonincreasing in prices**: if `p ≤ p'` (with `p ≫ 0`), then
+`v(p', w) ≤ v(p, w)`. -/
+theorem indirectUtility_antitone_price (hu : Continuous u) {p p' : ι → ℝ}
+    (hp : ∀ i, 0 < p i) (hpp' : p ≤ p') {w : ℝ} (hw : 0 ≤ w) :
+    indirectUtility u p' w ≤ indirectUtility u p w := by
+  have hp' : ∀ i, 0 < p' i := fun i => (hp i).trans_le (hpp' i)
+  obtain ⟨x, hx⟩ := demand_nonempty hu hp hw
+  obtain ⟨x', hx'⟩ := demand_nonempty hu hp' hw
+  rw [indirectUtility_eq hx, indirectUtility_eq hx']
+  exact hx.2 x' (budgetSet_anti hpp' w hx'.1)
+
 end Econ

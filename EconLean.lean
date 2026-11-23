@@ -56,6 +56,8 @@ public import EconLean.GE.SecondWelfare
 public import EconLean.GE.Existence
 public import EconLean.GE.Examples
 public import EconLean.Audit.Statements.GE
+public import EconLean.Audit.ConsumerFindings
+public import EconLean.Audit.IndependentFindings
 public import EconLean.GE.Production
 public import EconLean.Bridges.Aggregation.GrossSubstitutes
 public import EconLean.Bridges.Aggregation.LawOfDemand

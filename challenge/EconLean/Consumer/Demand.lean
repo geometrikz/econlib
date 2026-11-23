@@ -46,7 +46,7 @@ theorem demand_nonempty {u : (ι → ℝ) → ℝ} (hu : Continuous u) {p : ι �
   sorry
 
 def ConvexPref (R : (ι → ℝ) → (ι → ℝ) → Prop) : Prop :=
-  ∀ x, Convex ℝ {y | R y x}
+  ∀ x, 0 ≤ x → Convex ℝ {y | 0 ≤ y ∧ R y x}
 
 theorem convex_demand (hR : Rational R) (hconv : ConvexPref R) (p : ι → ℝ) (w : ℝ) :
     Convex ℝ (demand R p w) := by

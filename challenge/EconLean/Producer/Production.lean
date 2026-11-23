@@ -40,13 +40,7 @@ theorem constantReturns_iff (Y : Set (ι → ℝ)) :
   sorry
 
 theorem Additive.nsmul_mem {Y : Set (ι → ℝ)} (hA : Additive Y) {y : ι → ℝ} (hy : y ∈ Y) :
-    ∀ n : ℕ, ((n + 1 : ℕ) : ℝ) • y ∈ Y
-  | 0 => by simpa using hy
-  | n + 1 => by
-    have h := hA _ (hA.nsmul_mem hy n) y hy
-    convert h using 1
-    push_cast
-    rw [add_smul, one_smul] := by
+    ∀ n : ℕ, ((n + 1 : ℕ) : ℝ) • y ∈ Y := by
   sorry
 
 theorem Additive.constantReturns_and_convex {Y : Set (ι → ℝ)} (hA : Additive Y)

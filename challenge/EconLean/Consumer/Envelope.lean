@@ -81,4 +81,16 @@ theorem slutsky {X : (ι → ℝ) × ℝ → (ι → ℝ)} {H : (ι → ℝ) →
     ∀ δ, H' δ = X' (δ, 0) + cost δ (H p) • X' (0, 1) := by
   sorry
 
+theorem slutsky_demand (hu : Continuous u) {p : ι → ℝ} (hp : ∀ i, 0 < p i) {ū : ℝ}
+    (h0 : u 0 ≤ ū)
+    {X : (ι → ℝ) × ℝ → (ι → ℝ)} {H : (ι → ℝ) → (ι → ℝ)}
+    (hXdem : ∀ q w, (∀ i, 0 < q i) → 0 ≤ w → demand (prefOf u) q w = {X (q, w)})
+    (hHdem : ∀ q, (∀ i, 0 < q i) → hicksian u q ū = {H q})
+    {X' : ((ι → ℝ) × ℝ) →L[ℝ] (ι → ℝ)} {H' : (ι → ℝ) →L[ℝ] (ι → ℝ)}
+    {E' : (ι → ℝ) →L[ℝ] ℝ}
+    (hX : HasFDerivAt X X' (p, expenditure u p ū)) (hH : HasFDerivAt H H' p)
+    (hE : HasFDerivAt (fun q => expenditure u q ū) E' p) :
+    ∀ δ, H' δ = X' (δ, 0) + cost δ (H p) • X' (0, 1) := by
+  sorry
+
 end Econ

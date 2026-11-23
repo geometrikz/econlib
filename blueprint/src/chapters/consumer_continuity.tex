@@ -137,7 +137,8 @@ Corollary~\ref{cor:continuous_argmax_singleton}.
 \label{def:strictlyQuasiconcave}
 \lean{Econ.StrictlyQuasiconcave}
 \leanok
-$u$ is \emph{strictly quasiconcave} if for all $x \neq y$ and $t \in (0, 1)$,
+$u$ is \emph{strictly quasiconcave} (on the consumption set) if for all
+$x, y \in \R^\iota_+$ with $x \neq y$ and all $t \in (0, 1)$,
 $\min(u(x), u(y)) < u(t x + (1-t) y)$.
 \end{definition}
 

@@ -49,24 +49,18 @@ for convex upper contour sets on all of ℝ², and the midpoint of (2, −10) an
 (−10, 2) is (−4, −4), which is worse than (2, 0). So `convex_demand` covers
 fewer preferences than MWG Prop. 3.D.2(iii). Suggested fix: quantify over
 bundles `x ≥ 0` and intersect the contour set with the orthant. -/
-example : ¬ ConvexPref (prefOf (fun x : Fin 2 → ℝ => max (x 0) 0 + max (x 1) 0)) := by
-  intro h
-  have hc := h ![2, 0]
-  have hy : (![2, -10] : Fin 2 → ℝ) ∈
-      {y | prefOf (fun x : Fin 2 → ℝ => max (x 0) 0 + max (x 1) 0) y ![2, 0]} := by
-    simp [prefOf]
-  have hz : (![-10, 2] : Fin 2 → ℝ) ∈
-      {y | prefOf (fun x : Fin 2 → ℝ => max (x 0) 0 + max (x 1) 0) y ![2, 0]} := by
-    simp [prefOf]
-  have hm := hc hy hz (by norm_num : (0 : ℝ) ≤ 1/2) (by norm_num : (0 : ℝ) ≤ 1/2) (by norm_num)
-  simp [prefOf] at hm
-  norm_num at hm
+-- RESOLVED (2026-11-23): `ConvexPref` now matches MWG Def. 3.B.4 (contour sets
+-- intersected with the orthant, for `x ≥ 0`), so this counterexample no longer applies.
 
 /-! ### F4. `slutsky` holds for functions unrelated to any consumer.
 With X = H = E = 0 every hypothesis holds and the conclusion is 0 = 0. The
 lemma is the chain-rule step of MWG Prop. 3.G.3; the economics (h = x(p, e(p,ū))
 and Shephard's lemma) enters only as hypotheses, and nothing ties X, H, E to
-`demand`, `hicksian`, `expenditure`. -/
+`demand`, `hicksian`, `expenditure`.
+RESOLVED (2026-11-23): `slutsky_demand` (Consumer/Envelope.lean) ties X, H, E to the
+actual demand, Hicksian demand and expenditure of `u`, and proves the duality
+identity and Shephard's lemma instead of assuming them. `slutsky` is kept as
+the abstract chain-rule step, so this example still compiles. -/
 example : ∀ δ : Fin 2 → ℝ,
     (0 : (Fin 2 → ℝ) →L[ℝ] (Fin 2 → ℝ)) δ =
       (0 : ((Fin 2 → ℝ) × ℝ) →L[ℝ] (Fin 2 → ℝ)) (δ, 0) +
@@ -119,15 +113,21 @@ numbers, so u is flat on the negative orthant and fails the Lean definition.
 So `demand_subsingleton` and `exists_continuous_demand_function` do not apply
 to it. Suggested fix: require `0 ≤ x → 0 ≤ y →`, or use Mathlib's
 `StrictQuasiconcaveOn ℝ (Set.Ici 0) u`. -/
-example : ¬ StrictlyQuasiconcave (fun x : Fin 2 → ℝ => ∑ i, Real.sqrt (x i)) := by
+-- RESOLVED (2026-11-23): `StrictlyQuasiconcave` now quantifies over `0 ≤ x`, `0 ≤ y`
+-- only, so Σ √xᵢ is covered and the counterexample above no longer applies.
+
+/-! ### F8. Cobb–Douglas is not strictly quasiconcave on the closed orthant.
+(Re-review after the F3/F7 fixes, 2026-11-23.) `StrictlyQuasiconcave` now
+matches MWG on ℝⁿ₊, but `√(x₀ x₁)` is 0 along both axes, so it fails there and
+`exists_continuous_demand_function` does not cover the canonical consumer.
+MWG has the same gap and handles it by noting Cobb–Douglas demand is interior.
+OPEN: a version assuming strict quasiconcavity on `{x ≥ 0 | u x > u 0}` (or on
+the interior, plus interior demand for `w > 0`). -/
+example : ¬ StrictlyQuasiconcave
+    (fun x : Fin 2 → ℝ => Real.sqrt (max (x 0) 0 * max (x 1) 0)) := by
   intro h
-  have hne : (fun _ : Fin 2 => (-1 : ℝ)) ≠ fun _ => -2 := by
-    intro e; have := congrFun e 0; norm_num at this
-  have := h (fun _ => -1) (fun _ => -2) hne (1 / 2) (by norm_num) (by norm_num)
-  simp only [Pi.add_apply, Pi.smul_apply, smul_eq_mul] at this
-  have h1 : Real.sqrt (-1 : ℝ) = 0 := Real.sqrt_eq_zero'.2 (by norm_num)
-  have h2 : Real.sqrt (-2 : ℝ) = 0 := Real.sqrt_eq_zero'.2 (by norm_num)
-  simp [h1, h2] at this
-  norm_num at this
+  have := h ![1, 0] ![2, 0] (by intro i; fin_cases i <;> simp) (by intro i; fin_cases i <;> simp)
+    (by intro e; have := congrFun e 0; simp at this) (1/2) (by norm_num) (by norm_num)
+  simp at this
 
 end

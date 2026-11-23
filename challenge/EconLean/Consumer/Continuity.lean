@@ -69,7 +69,7 @@ theorem continuous_demand_function (hu : Continuous u) {x : PriceWealth ι → (
   sorry
 
 def StrictlyQuasiconcave (u : (ι → ℝ) → ℝ) : Prop :=
-  ∀ x y : ι → ℝ, x ≠ y → ∀ t : ℝ, 0 < t → t < 1 →
+  ∀ x y : ι → ℝ, 0 ≤ x → 0 ≤ y → x ≠ y → ∀ t : ℝ, 0 < t → t < 1 →
     min (u x) (u y) < u (t • x + (1 - t) • y)
 
 theorem demand_subsingleton (hsq : StrictlyQuasiconcave u) (p : ι → ℝ) (w : ℝ) :

@@ -169,10 +169,11 @@ theorem continuous_demand_function (hu : Continuous u) {x : PriceWealth ι → (
 
 /-! ### Uniqueness from strict quasiconcavity (MWG Prop. 3.D.2(iii)) -/
 
-/-- `u` is *strictly quasiconcave* on bundles: any strict mix of two distinct
-bundles is strictly better than the worse of the two. -/
+/-- `u` is *strictly quasiconcave* on the consumption set `ℝ^ι₊`: any strict
+mix of two distinct nonnegative bundles is strictly better than the worse of
+the two. (Only the orthant matters, matching MWG's consumption set.) -/
 def StrictlyQuasiconcave (u : (ι → ℝ) → ℝ) : Prop :=
-  ∀ x y : ι → ℝ, x ≠ y → ∀ t : ℝ, 0 < t → t < 1 →
+  ∀ x y : ι → ℝ, 0 ≤ x → 0 ≤ y → x ≠ y → ∀ t : ℝ, 0 < t → t < 1 →
     min (u x) (u y) < u (t • x + (1 - t) • y)
 
 /-- With strictly quasiconcave utility, demand has at most one element: two
@@ -186,7 +187,7 @@ theorem demand_subsingleton (hsq : StrictlyQuasiconcave u) (p : ι → ℝ) (w :
   have hmid : (1 / 2 : ℝ) • x + (1 - 1 / 2 : ℝ) • y ∈ budgetSet p w :=
     convex_budgetSet p w hx.1 hy.1 (by norm_num) (by norm_num) (by norm_num)
   -- ... strictly better than the worse of `x, y` ...
-  have hlt := hsq x y hne (1 / 2) (by norm_num) (by norm_num)
+  have hlt := hsq x y hx.1.1 hy.1.1 hne (1 / 2) (by norm_num) (by norm_num)
   -- ... but no better than either, since both are optimal.
   have h1 : u ((1 / 2 : ℝ) • x + (1 - 1 / 2 : ℝ) • y) ≤ u x := hx.2 _ hmid
   have h2 : u ((1 / 2 : ℝ) • x + (1 - 1 / 2 : ℝ) • y) ≤ u y := hy.2 _ hmid

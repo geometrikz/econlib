@@ -88,11 +88,12 @@ theorem continuousPref_lin : ∀ a, ContinuousPref (linEconomy.pref a) :=
   fun _ => continuousPref_prefOf continuous_uLin
 
 theorem convexPref_lin : ∀ a, ConvexPref (linEconomy.pref a) := by
-  intro a x y₁ h₁ y₂ h₂ s t hs ht hst
+  intro a x _ y₁ h₁ y₂ h₂ s t hs ht hst
+  refine ⟨add_nonneg (smul_nonneg hs h₁.1) (smul_nonneg ht h₂.1), ?_⟩
   -- `u` is linear, so `u(s y₁ + t y₂) = s u(y₁) + t u(y₂) ≥ (s + t) u(x)`.
   show uLin x ≤ uLin (s • y₁ + t • y₂)
-  have h₁' : uLin x ≤ uLin y₁ := h₁
-  have h₂' : uLin x ≤ uLin y₂ := h₂
+  have h₁' : uLin x ≤ uLin y₁ := h₁.2
+  have h₂' : uLin x ≤ uLin y₂ := h₂.2
   have : uLin (s • y₁ + t • y₂) = s * uLin y₁ + t * uLin y₂ := by
     simp only [uLin, Pi.add_apply, Pi.smul_apply, smul_eq_mul]; ring
   rw [this]

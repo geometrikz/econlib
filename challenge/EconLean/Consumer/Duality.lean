@@ -89,4 +89,28 @@ theorem expenditure_concave {p q : ι → ℝ} {ū a b : ℝ} (ha : 0 ≤ a) (hb
     a * expenditure u p ū + b * expenditure u q ū ≤ expenditure u (a • p + b • q) ū := by
   sorry
 
+theorem isGreatest_indirectUtility (hu : Continuous u) {p : ι → ℝ} (hp : ∀ i, 0 < p i)
+    {w : ℝ} (hw : 0 ≤ w) :
+    IsGreatest (u '' budgetSet p w) (indirectUtility u p w) := by
+  sorry
+
+theorem isLeast_expenditure (hu : Continuous u) {p : ι → ℝ} (hp : ∀ i, 0 < p i)
+    {ū : ℝ} {x₀ : ι → ℝ} (hx₀ : x₀ ∈ upperSet u ū) :
+    IsLeast (cost p '' upperSet u ū) (expenditure u p ū) := by
+  sorry
+
+theorem indirectUtility_strictMono (hu : Continuous u) (hlns : LocallyNonsatiated (prefOf u))
+    {p : ι → ℝ} (hp : ∀ i, 0 < p i) {w w' : ℝ} (hw : 0 ≤ w) (hww' : w < w') :
+    indirectUtility u p w < indirectUtility u p w' := by
+  sorry
+
+theorem budgetSet_anti {p p' : ι → ℝ} (hpp' : p ≤ p') (w : ℝ) :
+    budgetSet p' w ⊆ budgetSet p w := by
+  sorry
+
+theorem indirectUtility_antitone_price (hu : Continuous u) {p p' : ι → ℝ}
+    (hp : ∀ i, 0 < p i) (hpp' : p ≤ p') {w : ℝ} (hw : 0 ≤ w) :
+    indirectUtility u p' w ≤ indirectUtility u p w := by
+  sorry
+
 end Econ

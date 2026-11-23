@@ -72,9 +72,11 @@ theorem convex_strictUpper [Fintype ι] {R : (ι → ℝ) → (ι → ℝ) → P
   -- Compare `y₁` and `y₂`; the mix is at least as good as the worse one,
   -- which is strictly better than `x`.
   rcases hR.complete y₁ y₂ with h12 | h21
-  · have hmix : R (s • y₁ + t • y₂) y₂ := hconv y₂ h12 (hR.refl y₂) hs ht hst
+  · have hmix : R (s • y₁ + t • y₂) y₂ :=
+      (hconv y₂ h₂.1 ⟨h₁.1, h12⟩ ⟨h₂.1, hR.refl y₂⟩ hs ht hst).2
     exact P_of_R_of_P (R := R) (fun h h' => hR.trans h h') hmix h₂.2
-  · have hmix : R (s • y₁ + t • y₂) y₁ := hconv y₁ (hR.refl y₁) h21 hs ht hst
+  · have hmix : R (s • y₁ + t • y₂) y₁ :=
+      (hconv y₁ h₁.1 ⟨h₁.1, hR.refl y₁⟩ ⟨h₂.1, h21⟩ hs ht hst).2
     exact P_of_R_of_P (R := R) (fun h h' => hR.trans h h') hmix h₁.2
 
 /-- Under local nonsatiation, every `x ≥ 0` is a limit of strictly better

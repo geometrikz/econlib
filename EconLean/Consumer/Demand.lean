@@ -128,9 +128,12 @@ theorem demand_nonempty {u : (ι → ℝ) → ℝ} (hu : Continuous u) {p : ι �
 
 /-! ### 5. Convexity of demand (MWG Prop. 3.D.2(iii)) -/
 
-/-- `R` is *convex*: upper contour sets `{y | y ≿ x}` are convex. -/
+/-- `R` is *convex* (MWG Def. 3.B.4): for every bundle `x` in the consumption
+set `ℝ^ι₊`, the upper contour set `{y ∈ ℝ^ι₊ | y ≿ x}` is convex. Both the
+quantifier and the set are restricted to the nonnegative orthant, as in MWG:
+what `R` does on bundles with negative coordinates is irrelevant. -/
 def ConvexPref (R : (ι → ℝ) → (ι → ℝ) → Prop) : Prop :=
-  ∀ x, Convex ℝ {y | R y x}
+  ∀ x, 0 ≤ x → Convex ℝ {y | 0 ≤ y ∧ R y x}
 
 /-- Convex preferences (and rationality) give a convex demand set. -/
 theorem convex_demand (hR : Rational R) (hconv : ConvexPref R) (p : ι → ℝ) (w : ℝ) :
@@ -141,7 +144,7 @@ theorem convex_demand (hR : Rational R) (hconv : ConvexPref R) (p : ι → ℝ) 
   -- ... and at least as good as `x`, since both `x, y ≿ x`. Then use
   -- transitivity: `a x + b y ≿ x ≿ z`.
   have hmix : R (a • x + b • y) x :=
-    hconv x (hR.refl x) (hy.2 x hx.1) ha hb hab
+    (hconv x hx.1.1 ⟨hx.1.1, hR.refl x⟩ ⟨hy.1.1, hy.2 x hx.1⟩ ha hb hab).2
   exact hR.trans hmix (hx.2 z hz)
 
 end Econ

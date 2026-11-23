@@ -253,8 +253,11 @@ $u$ attains its maximum on $\B(p, w)$ at some $x \in \B(p, w)$, which lies in $x
 \label{def:convexPref}
 \lean{Econ.ConvexPref}
 \leanok
-A preference relation $R$ on $\R^\iota$ is \emph{convex} if every upper contour set
-$\{y \in \R^\iota \mid y \pref x\}$ is convex.
+A preference relation $R$ on $\R^\iota$ is \emph{convex} if for every $x \in \R^\iota_+$
+the upper contour set within the consumption set, $\{y \in \R^\iota_+ \mid y \pref x\}$,
+is convex. As in MWG Def.~3.B.4, both $x$ and the contour set are restricted to the
+nonnegative orthant, so the behaviour of $R$ on bundles with negative coordinates is
+irrelevant.
 \end{definition}
 
 \begin{proposition}[Convexity of demand; MWG Prop.~3.D.2(iii)]
@@ -267,7 +270,7 @@ If $R$ is rational and convex, then $x(p, w)$ is a convex set.
 \begin{proof}
 \uses{thm:convex_budgetSet, thm:refl}
 \leanok
-Let $x, y \in x(p, w)$ and $a, b \ge 0$ with $a + b = 1$. Since $\B(p, w)$ is convex
+Let $x, y \in x(p, w)$; both are nonnegative since they lie in $\B(p, w)$ and $a, b \ge 0$ with $a + b = 1$. Since $\B(p, w)$ is convex
 (Proposition~\ref{thm:convex_budgetSet}), $ax + by \in \B(p, w)$. Both $x \pref x$
 (Proposition~\ref{thm:refl}) and $y \pref x$ (since $x \in \B(p, w)$ and $y \in x(p, w)$),
 so convexity of $\{z \mid z \pref x\}$ gives $ax + by \pref x$. For any $z \in \B(p, w)$,
@@ -470,6 +473,59 @@ $q \cdot x_q \le q \cdot x_m$; multiplying by $a, b \ge 0$ and adding yields
 $a e(p, \ubar) + b e(q, \ubar) \le (ap + bq) \cdot x_m = e(ap + bq, \ubar)$.
 \end{proof}
 
+\begin{proposition}[$v$ and $e$ are attained, not junk values]
+\label{thm:value_attained}
+\lean{Econ.isGreatest_indirectUtility, Econ.isLeast_expenditure}
+\leanok
+\uses{def:duality_objs}
+Let $u$ be continuous and $p \gg 0$.
+\begin{enumerate}
+  \item If $w \ge 0$, then $v(p, w)$ is the greatest element of $u(\B(p, w))$.
+  \item If some $x_0 \ge 0$ has $u(x_0) \ge \ubar$, then $e(p, \ubar)$ is the least
+        element of $\{p \cdot x \mid x \ge 0,\ u(x) \ge \ubar\}$.
+\end{enumerate}
+So under these hypotheses the $\sup$/$\inf$ defining $v$ and $e$ are attained and
+never take the junk value $0$ that Lean assigns to $\sup \emptyset$ and $\inf \emptyset$.
+\end{proposition}
+\begin{proof}
+\uses{thm:demand_nonempty, thm:hicksian_nonempty, lem:value_eq}
+\leanok
+Pick an optimizer (Theorems~\ref{thm:demand_nonempty} and~\ref{thm:hicksian_nonempty});
+by Lemma~\ref{lem:value_eq} the value equals the objective there, which bounds every other
+attainable value.
+\end{proof}
+
+\begin{proposition}[Strict monotonicity of $v$ in wealth; MWG Prop.~3.D.3(ii)]
+\label{thm:indirectUtility_strictMono}
+\lean{Econ.indirectUtility_strictMono}
+\leanok
+\uses{def:duality_objs, def:lns}
+If $u$ is continuous and locally nonsatiated, $p \gg 0$ and $0 \le w < w'$, then
+$v(p, w) < v(p, w')$.
+\end{proposition}
+\begin{proof}
+\uses{thm:demand_nonempty, lem:exists_better_affordable, lem:value_eq}
+\leanok
+Let $x \in x(p, w)$ and $x' \in x(p, w')$. Since $p \cdot x \le w < w'$,
+Lemma~\ref{lem:exists_better_affordable} gives $z \in \B(p, w')$ with $u(z) > u(x)$.
+Hence $v(p, w) = u(x) < u(z) \le u(x') = v(p, w')$.
+\end{proof}
+
+\begin{proposition}[$v$ is nonincreasing in prices; MWG Prop.~3.D.3(iii)]
+\label{thm:indirectUtility_antitone_price}
+\lean{Econ.budgetSet_anti, Econ.indirectUtility_antitone_price}
+\leanok
+\uses{def:duality_objs}
+If $p \le p'$, then $\B(p', w) \subseteq \B(p, w)$. Consequently, if $u$ is continuous,
+$p \gg 0$, $p \le p'$ and $w \ge 0$, then $v(p', w) \le v(p, w)$.
+\end{proposition}
+\begin{proof}
+\uses{thm:demand_nonempty, lem:value_eq}
+\leanok
+For $x \ge 0$, $p \cdot x \le p' \cdot x$, which gives the inclusion. Let $x \in x(p, w)$ and
+$x' \in x(p', w)$; then $x' \in \B(p, w)$, so $v(p', w) = u(x') \le u(x) = v(p, w)$.
+\end{proof}
+
 
 \section{Revealed Preference: WARP and the Compensated Law of Demand}
 \label{sec:revealed}
@@ -654,6 +710,31 @@ Differentiating $q \mapsto X(q, E(q))$ at $p$ by the chain rule gives
 $H'(\delta) = X'(\delta, E'(\delta)) = X'(\delta, \delta \cdot H(p))$.
 Decomposing $(\delta, \delta \cdot H(p)) = (\delta, 0) + (\delta \cdot H(p))\,(0, 1)$
 and applying linearity of $X'$ yields the result.
+\end{proof}
+
+\begin{theorem}[Slutsky equation for the actual consumer; MWG Prop.~3.G.3]
+\label{thm:slutsky_demand}
+\lean{Econ.slutsky_demand}
+\leanok
+\uses{thm:slutsky, def:duality_objs}
+Let $u$ be continuous, $p \gg 0$ and $\ubar \ge u(0)$. Suppose Walrasian demand is
+single-valued, $x(\pref_u; q, w) = \{X(q, w)\}$ for all $q \gg 0$, $w \ge 0$, and Hicksian
+demand is single-valued, $h(q, \ubar) = \{H(q)\}$ for all $q \gg 0$. If $X$ is differentiable
+at $(p, e(p, \ubar))$ and $H$ and $e(\cdot, \ubar)$ are differentiable at $p$, then for every
+direction $\delta$,
+\[
+  H'(\delta) = X'(\delta, 0) + (\delta \cdot H(p))\, X'(0, 1).
+\]
+Here the duality identity and Shephard's lemma are proved, not assumed.
+\end{theorem}
+\begin{proof}
+\uses{thm:shephard, thm:hicksian_subset_demand, lem:value_eq, lem:envelope_helpers}
+\leanok
+For $q \gg 0$ (which holds near $p$), $H(q) \in h(q, \ubar)$, so by
+Theorem~\ref{thm:hicksian_subset_demand} and Lemma~\ref{lem:value_eq}, $H(q)$ is demanded at
+wealth $q \cdot H(q) = e(q, \ubar) \ge 0$; single-valuedness gives $H(q) = X(q, e(q, \ubar))$.
+Shephard's lemma (Theorem~\ref{thm:shephard}) gives $E'(\delta) = \delta \cdot H(p)$.
+Theorem~\ref{thm:slutsky} now applies.
 \end{proof}
 
 \input{chapters/consumer_continuity}

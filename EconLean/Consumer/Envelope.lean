@@ -216,4 +216,40 @@ theorem slutsky {X : (ι → ℝ) × ℝ → (ι → ℝ)} {H : (ι → ℝ) →
     ext <;> simp
   rw [hsplit, map_add, map_smul]
 
+/-- **Slutsky equation for the actual consumer** (MWG Prop. 3.G.3).
+
+Unlike `slutsky`, nothing economic is assumed here: `X` and `H` are pinned
+down as *the* Walrasian and Hicksian demand functions of the utility `u`
+(single-valued for `q ≫ 0`), and the expenditure function is the real
+`expenditure u · ū`. The duality identity `h(q, ū) = x(q, e(q, ū))` is
+*derived* (from `hicksian_subset_demand` and `expenditure_eq`) and Shephard's
+lemma is *derived* (from `shephard`). The only remaining assumptions are
+differentiability, which MWG also assumes.
+
+In coordinates: `∂hᵢ/∂pⱼ = ∂xᵢ/∂pⱼ + hⱼ · ∂xᵢ/∂w`, with `h = H p`. -/
+theorem slutsky_demand (hu : Continuous u) {p : ι → ℝ} (hp : ∀ i, 0 < p i) {ū : ℝ}
+    (h0 : u 0 ≤ ū)
+    {X : (ι → ℝ) × ℝ → (ι → ℝ)} {H : (ι → ℝ) → (ι → ℝ)}
+    (hXdem : ∀ q w, (∀ i, 0 < q i) → 0 ≤ w → demand (prefOf u) q w = {X (q, w)})
+    (hHdem : ∀ q, (∀ i, 0 < q i) → hicksian u q ū = {H q})
+    {X' : ((ι → ℝ) × ℝ) →L[ℝ] (ι → ℝ)} {H' : (ι → ℝ) →L[ℝ] (ι → ℝ)}
+    {E' : (ι → ℝ) →L[ℝ] ℝ}
+    (hX : HasFDerivAt X X' (p, expenditure u p ū)) (hH : HasFDerivAt H H' p)
+    (hE : HasFDerivAt (fun q => expenditure u q ū) E' p) :
+    ∀ δ, H' δ = X' (δ, 0) + cost δ (H p) • X' (0, 1) := by
+  have hmem : ∀ q, (∀ i, 0 < q i) → H q ∈ hicksian u q ū := fun q hq =>
+    (hHdem q hq).symm ▸ Set.mem_singleton (H q)
+  refine slutsky (E := fun q => expenditure u q ū) ?_ hX hH hE
+    (shephard hp (hmem p hp) hE)
+  -- Duality: near `p`, the Hicksian bundle is the Walrasian demand at
+  -- wealth `e(q, ū)`.
+  filter_upwards [eventually_pos hp] with q hq
+  have hh := hmem q hq
+  have hd := hicksian_subset_demand hu hq h0 hh
+  rw [← expenditure_eq hh] at hd
+  have hw : 0 ≤ expenditure u q ū :=
+    (expenditure_eq hh).symm ▸ cost_nonneg (fun i => (hq i).le) hh.1.1
+  rw [hXdem q _ hq hw] at hd
+  exact hd
+
 end Econ

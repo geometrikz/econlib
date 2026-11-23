@@ -55,19 +55,11 @@ theorem vmap_apply (σ : Equiv.Perm (Fin (r + 1))) (u : Fin (r + 1) → ℝ) :
   sorry
 
 private theorem sum_range_ite_sub (f : ℕ → ℝ) (j : ℕ) :
-    ∀ n, ∑ k ∈ range n, (if j ≤ k then f k - f (k + 1) else 0) = if j ≤ n then f j - f n else 0
-  | 0 => by
-    by_cases h : j ≤ 0
-    · obtain rfl : j = 0 := by
+    ∀ n, ∑ k ∈ range n, (if j ≤ k then f k - f (k + 1) else 0) = if j ≤ n then f j - f n else 0 := by
   sorry
 
 private theorem sum_range_mul_sub (f : ℕ → ℝ) :
-    ∀ n, ∑ k ∈ range n, ((k : ℝ) + 1) * (f k - f (k + 1)) = ∑ k ∈ range n, f k - n * f n
-  | 0 => by simp
-  | n + 1 => by
-    rw [Finset.sum_range_succ, Finset.sum_range_succ, sum_range_mul_sub f n]
-    push_cast
-    ring := by
+    ∀ n, ∑ k ∈ range n, ((k : ℝ) + 1) * (f k - f (k + 1)) = ∑ k ∈ range n, f k - n * f n := by
   sorry
 
 theorem sorted_last (σ : Equiv.Perm (Fin (r + 1))) (x : Fin (r + 1) → ℝ) :
@@ -137,28 +129,14 @@ noncomputable def verts : ℕ → (Fin (r + 1) → ℝ) → Fin (r + 1) → Fin 
   | 0, _ => fun k ↦ Pi.single k 1
   | n + 1, x => fun k ↦ vmap (Tuple.sortDesc x) (verts n (coord (Tuple.sortDesc x) x) k)
 
-theorem coords_mem : ∀ n {x : Fin (r + 1) → ℝ}, x ∈ simplex r → coords n x ∈ simplex r
-  | 0, _, hx => hx
-  | n + 1, x, hx => coords_mem n (coord_mem hx (Tuple.antitone_sortDesc x)) := by
+theorem coords_mem : ∀ n {x : Fin (r + 1) → ℝ}, x ∈ simplex r → coords n x ∈ simplex r := by
   sorry
 
-theorem verts_mem : ∀ n {x : Fin (r + 1) → ℝ}, x ∈ simplex r → ∀ k, verts n x k ∈ simplex r
-  | 0, _, _, k => single_mem_simplex k
-  | n + 1, x, hx, k => vmap_mem _ (verts_mem n (coord_mem hx (Tuple.antitone_sortDesc x)) k) := by
+theorem verts_mem : ∀ n {x : Fin (r + 1) → ℝ}, x ∈ simplex r → ∀ k, verts n x k ∈ simplex r := by
   sorry
 
 theorem sum_coords_smul_verts : ∀ n {x : Fin (r + 1) → ℝ}, x ∈ simplex r →
-    ∑ k, coords n x k • verts n x k = x
-  | 0, x, _ => by
-    ext i
-    simp [coords, verts, Finset.sum_apply, Pi.single_apply]
-  | n + 1, x, hx => by
-    simp only [coords, verts]
-    rw [show ∀ (c : Fin (r + 1) → ℝ) (v : Fin (r + 1) → Fin (r + 1) → ℝ),
-        ∑ k, c k • vmap (Tuple.sortDesc x) (v k) = vmap (Tuple.sortDesc x) (∑ k, c k • v k) by
-          intro c v
-          simp [map_sum, map_smul],
-      sum_coords_smul_verts n (coord_mem hx (Tuple.antitone_sortDesc x)), vmap_coord] := by
+    ∑ k, coords n x k • verts n x k = x := by
   sorry
 
 private theorem eq_zero_of_sum_smul {ι : Type*} [Fintype ι] {c : ι → ℝ} {w : ι → Fin (r + 1) → ℝ}
@@ -188,20 +166,7 @@ theorem continuous_coord (σ : Equiv.Perm (Fin (r + 1))) :
 variable [TopologicalSpace E] [IsTopologicalAddGroup E] [ContinuousSMul ℝ E]
 
 theorem continuousOn_interp : ∀ (n : ℕ) (g : (Fin (r + 1) → ℝ) → E),
-    ContinuousOn (interp n g) (simplex r)
-  | 0, g => by
-    have : interp 0 g = fun x ↦ ∑ k, x k • g (Pi.single k 1) := by
-      funext x
-      simp [interp, coords, verts]
-    rw [this]
-    exact (continuous_finsetSum _ fun k _ ↦ (continuous_apply k).smul continuous_const).continuousOn
-  | n + 1, g => by
-    rw [← iUnion_piece]
-    refine LocallyFinite.continuousOn_iUnion (locallyFinite_of_finite _) isClosed_piece
-      fun σ ↦ ?_
-    exact ((continuousOn_interp n (g ∘ vmap σ)).comp (s := piece σ)
-      (continuous_coord σ).continuousOn fun _ hx ↦ coord_mem (mem_piece.1 hx).1
-        (mem_piece.1 hx).2).congr fun _ hx ↦ interp_succ n g (mem_piece.1 hx).1 (mem_piece.1 hx).2 := by
+    ContinuousOn (interp n g) (simplex r) := by
   sorry
 
 def l1 (v : Fin (r + 1) → ℝ) : ℝ := ∑ i, |v i|
@@ -217,10 +182,7 @@ theorem l1_vmap_le (σ : Equiv.Perm (Fin (r + 1))) {d : Fin (r + 1) → ℝ} (hd
   sorry
 
 theorem l1_verts_sub_le : ∀ n {x : Fin (r + 1) → ℝ}, x ∈ simplex r → ∀ k,
-    l1 (verts n x k - x) ≤ 2 * ((r : ℝ) / (r + 1)) ^ n
-  | 0, x, hx, k => by
-    simp only [verts, pow_zero, mul_one]
-    calc l1 (Pi.single k 1 - x) ≤ l1 (Pi.single k 1) + l1 x := by
+    l1 (verts n x k - x) ≤ 2 * ((r : ℝ) / (r + 1)) ^ n := by
   sorry
 
 theorem dist_verts_le (n : ℕ) {x : Fin (r + 1) → ℝ} (hx : x ∈ simplex r) (k : Fin (r + 1)) :
