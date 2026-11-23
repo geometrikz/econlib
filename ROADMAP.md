@@ -29,7 +29,9 @@ Mas-Colell, Whinston & Green (MWG) and Kreps. ✅ = done in this repo.
 - ✅ v homogeneous of degree 0 and nondecreasing in w; e homogeneous of degree 1
   and concave in p
 - ✅ WARP from utility maximization; compensated law of demand (MWG 2.F.1)
-- ○ Quasiconvexity of v; continuity of v and demand (Berge's maximum theorem)
+- ✅ Continuity of v, UHC of demand, continuous demand under strict
+  quasiconcavity (Berge's maximum theorem; budget correspondence continuous)
+- ○ Quasiconvexity of v
 - ✅ Shephard's lemma, Roy's identity, Slutsky equation (envelope arguments
   via Fermat's theorem; differentiability assumed as in MWG)
 - ○ Slutsky matrix symmetric and negative semidefinite

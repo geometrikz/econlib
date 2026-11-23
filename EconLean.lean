@@ -7,6 +7,7 @@ public import EconLean.Consumer.Demand
 public import EconLean.Consumer.Duality
 public import EconLean.Consumer.RevealedPreference
 public import EconLean.Consumer.Envelope
+public import EconLean.Consumer.Continuity
 public import EconLean.Foundations.Correspondence
 public import EconLean.Foundations.Maximum
 public import EconLean.Audit.Statements.Berge
