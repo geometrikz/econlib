@@ -1,0 +1,272 @@
+% Lean: EconLean/Partial/{Externalities,PublicGoods,Oligopoly,Monopoly,Salop,DiamondParadox}.lean
+\chapter{Partial equilibrium, market failure and industrial organization}
+\label{chap:partial}
+
+Sources: MWG Ch.~10--12; Tirole, \emph{The Theory of Industrial Organization}; Salop (1979); Diamond (1971).
+
+\section{Competitive partial equilibrium and externalities}
+
+\begin{definition}[Partial equilibrium]
+\label{def:partial-eq}
+\lean{Econ.IsPartialEq}
+\leanok
+Quasilinear consumers with benefits $\phi_i$ and price-taking firms with costs $c_j$. A competitive equilibrium
+at price $p$ is an allocation in which each consumer maximizes $\phi_i(x_i) - p x_i$, each firm maximizes
+$p q_j - c_j(q_j)$, and the market clears.
+\end{definition}
+
+\begin{theorem}[First welfare theorem, partial equilibrium; MWG Prop.~10.D.1]
+\label{thm:competitive-surplus}
+\lean{Econ.competitive_maximizes_surplus}
+\leanok
+\uses{def:partial-eq}
+A competitive equilibrium allocation maximizes Marshallian aggregate surplus $\sum_i \phi_i(x_i) - \sum_j c_j(q_j)$
+among all feasible allocations.
+\end{theorem}
+\begin{proof}
+\leanok
+Sum the individual optimality inequalities at price $p$; the payments cancel by market clearing.
+\end{proof}
+
+\begin{definition}[Externality, Pareto efficiency with transfers]
+\label{def:coase}
+\lean{Econ.IsParetoExt}
+\leanok
+Agent~1 chooses $h \in H$, worth $\phi_1(h)$ to her and $\phi_2(h)$ to agent~2; money transfers $T$ are unrestricted.
+$(h, T)$ is Pareto efficient if $h \in H$ and no feasible $(h', T')$ Pareto dominates it.
+\end{definition}
+
+\begin{theorem}[Coase theorem; MWG §11.B]
+\label{thm:coase}
+\lean{Econ.coase_pareto_iff, Econ.coase_theorem}
+\leanok
+\uses{def:coase}
+$(h,T)$ is Pareto efficient iff $h \in H$ maximizes $\phi_1 + \phi_2$. Whatever the initial assignment of rights
+$h_0 \in H$, an efficient outcome that is individually rational relative to $h_0$ exists, and every efficient
+outcome has the same, surplus-maximizing activity level; only the transfer can depend on the rights. (Bargaining
+itself is not modelled.)
+\end{theorem}
+\begin{proof}
+\leanok
+With quasilinear utility, utility can be moved one-for-one by $T$, so the Pareto frontier is the line
+$u_1 + u_2 = \max(\phi_1 + \phi_2)$. Take $h^*$ maximizing joint surplus and split the gain over $h_0$.
+\end{proof}
+
+\begin{theorem}[Pigouvian tax; MWG §11.B]
+\label{thm:pigou}
+\lean{Econ.pigou_tax}
+\leanok
+\uses{def:coase}
+If $\phi_1$ is concave and $h^*$ maximizes $\phi_1 + \phi_2$ with $\phi_1'(h^*) = -\phi_2'(h^*)$, a per-unit tax
+$t = -\phi_2'(h^*)$ makes $h^*$ privately optimal for agent~1.
+\end{theorem}
+\begin{proof}
+\leanok
+$\phi_1(h) - t h$ is concave with derivative zero at $h^*$; a concave function lies below its tangent.
+\end{proof}
+
+\section{Public goods}
+
+\begin{definition}[Efficient public-good level]
+\label{def:public-good}
+\lean{Econ.publicSurplus, Econ.IsEfficientLevel}
+\leanok
+Consumers have quasilinear utility $\phi_i(G) + m_i$; producing $G \ge 0$ costs $C(G)$. $G^*$ is efficient if it
+maximizes $\sum_i \phi_i(G) - C(G)$ over $G \ge 0$.
+\end{definition}
+
+\begin{lemma}[Tangent bounds]
+\label{lem:tangent}
+\lean{Econ.concaveOn_le_tangent, Econ.convexOn_tangent_le}
+\leanok
+A differentiable concave (convex) function lies below (above) its tangent lines.
+\end{lemma}
+\begin{proof}
+\leanok
+Standard slope comparison.
+\end{proof}
+
+\begin{theorem}[Samuelson condition; MWG (11.C.1)]
+\label{thm:samuelson}
+\lean{Econ.samuelson_condition, Econ.samuelson_sufficient}
+\leanok
+\uses{def:public-good, lem:tangent}
+At an interior efficient level $\sum_i \phi_i'(G^*) = C'(G^*)$. With concave $\phi_i$ and convex $C$ the condition
+is also sufficient.
+\end{theorem}
+\begin{proof}
+\leanok
+Fermat's theorem for the interior maximum; sufficiency from the tangent bounds.
+\end{proof}
+
+\begin{theorem}[Lindahl equilibria are efficient; MWG §11.D]
+\label{thm:lindahl}
+\lean{Econ.IsLindahlEq, Econ.lindahl_efficient}
+\leanok
+\uses{def:public-good}
+With linear cost $cG$, personalized prices $p_i$ with $\sum_i p_i = c$ at which every consumer demands the same
+level $G$ make $G$ efficient.
+\end{theorem}
+\begin{proof}
+\leanok
+Sum the consumers' optimality inequalities $\phi_i(G) - p_i G \ge \phi_i(G') - p_i G'$.
+\end{proof}
+
+\begin{theorem}[Private provision is too low; MWG Prop.~11.C.1]
+\label{thm:voluntary}
+\lean{Econ.IsVoluntaryEq, Econ.voluntary_underprovision}
+\leanok
+\uses{def:public-good}
+With at least two consumers, strictly decreasing positive marginal benefits and unit cost, the level provided by
+voluntary contributions in a Nash equilibrium is strictly below the efficient level.
+\end{theorem}
+\begin{proof}
+\leanok
+A contributor equates her own marginal benefit to $1$; the efficient level equates the sum of marginal benefits
+to $1$, and the sum exceeds each term.
+\end{proof}
+
+\section{Oligopoly}
+
+\begin{theorem}[Bertrand paradox; MWG Prop.~12.C.1]
+\label{thm:bertrand}
+\lean{Econ.bertrandShare, Econ.bertrandProfit, Econ.bertrandProfit_update, Econ.bertrand_exists_pos, Econ.bertrand_isNash_iff}
+\leanok
+Two firms with marginal cost $c$, continuous, nonincreasing, nonnegative demand with $x(c) > 0$ (so linear demand
+with a choke price above $c$ is covered); the lowest price takes the market and ties split it. The unique pure Nash
+equilibrium is $p_1 = p_2 = c$.
+\end{theorem}
+\begin{proof}
+\leanok
+Facing a rival above cost, a firm earns a positive profit by pricing just above $c$ (continuity, $x(c) > 0$). So
+nobody prices below cost while selling, and if some price exceeded $c$ both firms would price equally above $c$ with
+positive profit; undercutting slightly then nearly doubles profit (continuity at the common price).
+\end{proof}
+
+\begin{theorem}[Cournot equilibrium and its competitive limit; MWG §12.C]
+\label{thm:cournot}
+\lean{Econ.cournotProfit, Econ.IsCournotEq, Econ.cournot_sum_update, Econ.cournotQ, Econ.cournot_isEq_iff, Econ.cournot_price, Econ.cournot_price_gt, Econ.cournot_price_tendsto}
+\leanok
+Linear inverse demand $a - bQ$, $n$ firms with cost $c < a$: the unique Cournot equilibrium is symmetric with
+$q_i = (a-c)/((n+1)b)$; the price $(a + nc)/(n+1)$ exceeds $c$ and converges to $c$ as $n \to \infty$.
+\end{theorem}
+\begin{proof}
+\leanok
+Best responses are $q_i = \max(0, (a - c - b Q_{-i})/(2b))$; summing the first-order conditions pins down $Q$ and
+then each $q_i$.
+\end{proof}
+
+\begin{theorem}[Stackelberg leadership]
+\label{thm:stackelberg}
+\lean{Econ.stackelbergBR, Econ.stackelbergBR_optimal, Econ.stackelbergLeader, Econ.stackelberg_leader_optimal}
+\leanok
+With linear demand the follower's best response is $(a - c - bq_1)/(2b)$; the leader's optimal output is
+$(a-c)/(2b)$ and it earns $(a-c)^2/(8b)$, more than its Cournot profit.
+\end{theorem}
+\begin{proof}
+\leanok
+Substitute the best response and complete the square.
+\end{proof}
+
+\section{Monopoly}
+
+\begin{definition}[Monopoly optimum]
+\label{def:monopoly}
+\lean{Econ.monopolyProfit, Econ.IsMonopolyOptimum}
+\leanok
+$q \ge 0$ maximizes $P(q) q - C(q)$ over $q \ge 0$.
+\end{definition}
+
+\begin{theorem}[Marginal revenue equals marginal cost; Lerner rule; MWG §12.B]
+\label{thm:monopoly-foc}
+\lean{Econ.monopoly_foc, Econ.lerner_rule, Econ.monopoly_price_gt_mc}
+\leanok
+\uses{def:monopoly}
+At an interior optimum $P(q) + P'(q) q = C'(q)$, so $(p - C')/p = 1/\varepsilon$ with
+$\varepsilon = -p/(P'(q) q)$, and $p > C'$ when $P' < 0$.
+\end{theorem}
+\begin{proof}
+\leanok
+An interior maximum is a local maximum: Fermat's theorem for the profit function.
+\end{proof}
+
+\begin{theorem}[Monopoly underprovision; MWG Prop.~12.B.1]
+\label{thm:monopoly-under}
+\lean{Econ.monopoly_output_lt}
+\leanok
+With strictly decreasing inverse demand and nondecreasing marginal cost, an output where price exceeds marginal
+cost is below the competitive output, where they are equal.
+\end{theorem}
+\begin{proof}
+\leanok
+If $q^o \le q^m$ then $P(q^o) \ge P(q^m) > MC(q^m) \ge MC(q^o) = P(q^o)$.
+\end{proof}
+
+\begin{corollary}[Underprovision at the monopoly optimum]
+\label{cor:monopoly-under}
+\lean{Econ.monopoly_optimum_lt_competitive}
+\leanok
+\uses{thm:monopoly-foc, thm:monopoly-under}
+An interior monopoly optimum lies strictly below the competitive output.
+\end{corollary}
+\begin{proof}
+\leanok
+Combine $p > C'$ at the optimum with the previous theorem.
+\end{proof}
+
+\begin{theorem}[Linear monopoly and deadweight loss]
+\label{thm:linear-monopoly}
+\lean{Econ.linearSurplus, Econ.linearSurplus_eq, Econ.linear_monopoly}
+\leanok
+\uses{def:monopoly}
+With $P(q) = a - bq$ and constant marginal cost $c < a$: monopoly output $(a-c)/(2b)$, price $(a+c)/2$ and
+deadweight loss $\int_{q^m}^{q^o}(P - c) = (a-c)^2/(8b)$.
+\end{theorem}
+\begin{proof}
+\leanok
+Complete the square in the profit; compute the surplus integral.
+\end{proof}
+
+\begin{theorem}[Third-degree price discrimination]
+\label{thm:discrimination}
+\lean{Econ.discrimination_price_le, Econ.discrimProfit, Econ.third_degree_discrimination}
+\leanok
+\uses{thm:monopoly-foc}
+A monopolist maximizing total profit over two separated markets with common marginal cost $c \ge 0$, at an interior
+optimum with elasticities above one, sets $p_k(1 - 1/\varepsilon_k) = c$ in each market, so the market with the lower
+elasticity pays the higher price.
+\end{theorem}
+\begin{proof}
+\leanok
+Fixing the other market, each quantity is a monopoly optimum, so marginal revenue $p_k + P_k' q_k = p_k(1 - 1/\varepsilon_k)$
+equals $c$. Then $p = c\,\varepsilon/(\varepsilon - 1)$ is decreasing in $\varepsilon > 1$.
+\end{proof}
+
+\section{Spatial competition and search}
+
+\begin{theorem}[Salop circle: equilibrium, free entry, excess entry]
+\label{thm:salop}
+\lean{Econ.salopLocalDemand, Econ.salop_equilibrium, Econ.salop_free_entry, Econ.salopTransportCost, Econ.salopTransportCost_eq, Econ.salop_social_optimum, Econ.salop_excess_entry}
+\leanok
+$n$ equally spaced firms on a unit circle, transport cost $t$, marginal cost $c$. If the neighbours charge
+$c + t/n$, no deviation beats $c + t/n$, which earns $t/n^2$. Free entry with fixed cost $F$ gives
+$n^e = \sqrt{t/F}$ (the unique positive zero-profit number), while entry plus transport cost $nF + t/(4n)$ is minimized at $n^\circ = \sqrt{t/F}/2$:
+there is twice the efficient number of firms.
+\end{theorem}
+\begin{proof}
+\leanok
+For prices at or above cost, profit is $(q-c)(1/n + (c + t/n - q)/t) = t/n^2 - (q - c - t/n)^2/t$; below cost it is
+negative. For the entry problem, $mF + t/(4m) - \sqrt{tF} = F(2m - \sqrt{t/F})^2/(4m) \ge 0$.
+\end{proof}
+
+\begin{theorem}[Diamond paradox]
+\label{thm:diamond-paradox}
+\lean{Econ.searchProfit, Econ.IsSearchEq, Econ.diamond_paradox}
+\leanok
+Identical firms with cost $c$, consumers with unit demand and value $u > c$ who see one price free and pay $s > 0$
+for each further price. All firms charging $p$ is an equilibrium iff $p = u$, the monopoly price, however small $s$.
+\end{theorem}
+\begin{proof}
+\leanok
+Below $u$ a firm can raise its price to $\min(u, p + s)$ without losing anyone; above $u$ nobody buys.
+\end{proof}

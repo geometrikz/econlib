@@ -1,0 +1,49 @@
+% Lean: EconLean/SocialChoice/{May,MedianVoter}.lean
+\chapter{Social choice}
+\label{chap:socialchoice}
+
+Sources: MWG Ch.~21; May (1952); Black (1948).
+
+\begin{definition}[Two-alternative social decision rules]
+\label{def:may}
+\lean{Econ.IsVoteProfile, Econ.majorityRule, Econ.IsAnonymous, Econ.IsNeutral, Econ.IsPositivelyResponsive}
+\leanok
+A profile gives each voter $\alpha_i \in \{1, 0, -1\}$; a rule $F$ returns $1$, $0$ or $-1$. Majority rule is
+$F(\alpha) = \operatorname{sign}\sum_i \alpha_i$. Anonymity, neutrality ($F(-\alpha) = -F(\alpha)$) and positive
+responsiveness are as in MWG §21.B.
+\end{definition}
+
+\begin{theorem}[May's theorem; MWG Prop.~21.B.1]
+\label{thm:may}
+\lean{Econ.IsVoteProfile.neg, Econ.sum_eq_card_sub_card, Econ.IsAnonymous.eq_of_card, Econ.may_theorem}
+\leanok
+\uses{def:may}
+A rule is anonymous, neutral and positively responsive iff it is majority rule.
+\end{theorem}
+\begin{proof}
+\leanok
+Anonymity makes $F$ depend only on the numbers of $1$s and $-1$s. Neutrality forces $F = 0$ on ties; positive
+responsiveness, moving voters one at a time from a tie, forces $F = \pm 1$ according to the majority.
+\end{proof}
+
+\begin{definition}[Single-peaked preferences, median]
+\label{def:single-peaked}
+\lean{Econ.SinglePeaked, Econ.IsMedianPeak}
+\leanok
+Utilities on $\mathbb{R}$ strictly increase up to a peak and strictly decrease after it. $m$ is a median peak if
+more than half of the peaks are $\le m$ and more than half are $\ge m$.
+\end{definition}
+
+\begin{theorem}[Median voter theorem; Black 1948; MWG Prop.~21.D.1]
+\label{thm:median-voter}
+\lean{Econ.median_condorcet, Econ.exists_median, Econ.IsWeakMedianPeak, Econ.median_not_defeated, Econ.exists_weakMedian}
+\leanok
+\uses{def:single-peaked}
+For any number of voters, a weak median peak (at least half of the peaks on each side) exists and is not defeated
+by any alternative: at most half of the voters strictly prefer the alternative. A strict median (more than half on
+each side, which exists for an odd number of voters) beats every other alternative by a strict majority.
+\end{theorem}
+\begin{proof}
+\leanok
+Against $y > m$, every voter with peak $\le m$ strictly prefers $m$; symmetrically for $y < m$.
+\end{proof}

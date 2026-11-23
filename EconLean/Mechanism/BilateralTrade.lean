@@ -20,8 +20,8 @@ trading buyer pays exactly `c` more than a non-trading buyer; given `v`, a tradi
 receives exactly `v` more than a non-trading seller. Budget balance then forces two distinct
 thresholds to coincide.
 
-(The Bayesian Myerson–Satterthwaite theorem, with interim IC and interim IR under continuous
-type distributions, is not formalized here.)
+(The Bayesian Myerson–Satterthwaite theorem, with interim IC and interim IR under atomless
+type distributions, is in `Mechanism/MyersonSatterthwaite.lean`.)
 -/
 module
 

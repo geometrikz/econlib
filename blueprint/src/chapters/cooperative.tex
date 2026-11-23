@@ -1,0 +1,166 @@
+% Lean: EconLean/Bargaining/Nash.lean, EconLean/Cooperative/{Shapley,Core}.lean
+\chapter{Bargaining and cooperative games}
+\label{chap:cooperative}
+
+Sources: Nash (1950); MWG §22.E and §18.AA; Shapley (1953); Bondareva (1963); Shapley (1967);
+Osborne--Rubinstein, \emph{A Course in Game Theory}, Ch.~13--14.
+
+\section{Nash bargaining}
+
+\begin{definition}[Bargaining problem, Nash solution]
+\label{def:bargaining}
+\lean{Econ.BargProblem, Econ.nashProduct, Econ.IsNashSolution, Econ.affMap, Econ.continuous_affMap, Econ.convex_image_affMap, Econ.BargProblem.affine, Econ.BargProblem.IsSymmetric, Econ.BargSolution}
+\leanok
+A compact convex $S \subseteq \mathbb{R}^2$ with disagreement point $d \in S$ and some $s \in S$ with $s > d$. The
+Nash solution maximizes $(s_1 - d_1)(s_2 - d_2)$ over $s \in S$, $s \ge d$.
+\end{definition}
+
+\begin{definition}[Nash's axioms]
+\label{def:nash-axioms}
+\lean{Econ.IsWeakPareto, Econ.IsSymmetricSol, Econ.IsAffineInvariant, Econ.IsIIA}
+\leanok
+\uses{def:bargaining}
+Weak Pareto efficiency, symmetry, invariance to positive affine transformations of utilities, independence of
+irrelevant alternatives.
+\end{definition}
+
+\begin{lemma}[Existence and uniqueness of the Nash solution]
+\label{lem:nash-solution}
+\lean{Econ.exists_nashSolution, Econ.IsNashSolution.nashProduct_pos, Econ.nashSolution_unique, Econ.nashSol, Econ.nashSol_spec}
+\leanok
+\uses{def:bargaining}
+The Nash product attains its maximum on the compact individually rational part of $S$, strictly above $d$, and the
+maximizer is unique.
+\end{lemma}
+\begin{proof}
+\leanok
+Weierstrass. For uniqueness, if $a = n - d$ and $b = m - d$ both maximize with value $p > 0$, the midpoint is
+feasible with product $(a_1+b_1)(a_2+b_2)/4 \le p$, which forces $a_1 b_2 = a_2 b_1$ and then $a = b$.
+\end{proof}
+
+\begin{lemma}[Tangent line at the normalized solution]
+\label{lem:sum-le-two}
+\lean{Econ.sum_le_two_of_max}
+\leanok
+If $d = 0$ and $s_1 s_2$ is maximized over the individually rational part of a convex $S$ at $(1,1)$, then
+$s_1 + s_2 \le 2$ on $S$.
+\end{lemma}
+\begin{proof}
+\leanok
+Otherwise a small step from $(1,1)$ toward such $s$ raises the product above $1$.
+\end{proof}
+
+\begin{theorem}[Nash's bargaining theorem]
+\label{thm:nash-bargaining}
+\lean{Econ.nash_bargaining_theorem, Econ.eq_nashSol_of_axioms, Econ.nashSol_axioms}
+\leanok
+\uses{def:nash-axioms, lem:nash-solution, lem:sum-le-two}
+A solution satisfies the four axioms iff it is the Nash solution.
+\end{theorem}
+\begin{proof}
+\leanok
+Normalize affinely so that $d = 0$ and the Nash solution is $(1,1)$. By the lemma, $S$ lies in the symmetric set
+$T = \{s_1 + s_2 \le 2, s \ge -M\}$, where symmetry and Pareto give $f(T) = (1,1)$; IIA gives $f(S) = (1,1)$; undo
+the normalization. Conversely the Nash product scales by $a_1 a_2 > 0$ under affine maps and is symmetric, and its
+maximizer over a larger set, if feasible in a smaller one, maximizes there.
+\end{proof}
+
+\section{The Shapley value}
+
+\begin{definition}[TU game, marginal contributions, Shapley value]
+\label{def:shapley}
+\lean{Econ.TUGame, Econ.PlayerOrder, Econ.predSet, Econ.marginalContribution, Econ.shapley}
+\leanok
+A TU game assigns a worth $v(S)$ to every coalition. The Shapley value of $i$ is the average over all arrival
+orders of $v(P_i \cup \{i\}) - v(P_i)$, where $P_i$ are the players who arrive before $i$.
+\end{definition}
+
+\begin{definition}[Shapley's axioms]
+\label{def:shapley-axioms}
+\lean{Econ.IsSymmetricPair, Econ.IsNullPlayer, Econ.IsShapleyAxioms}
+\leanok
+\uses{def:shapley}
+Efficiency $\sum_i \varphi_i(v) = v(N) - v(\varnothing)$, symmetry, null player, additivity.
+\end{definition}
+
+\begin{theorem}[The Shapley value satisfies the axioms]
+\label{thm:shapley-axioms}
+\lean{Econ.sum_marginal, Econ.shapley_efficient, Econ.map_swap_of_iff, Econ.IsSymmetricPair.map_swap, Econ.shapley_symmetric, Econ.shapley_null, Econ.shapley_add, Econ.shapley_axioms}
+\leanok
+\uses{def:shapley-axioms}
+\end{theorem}
+\begin{proof}
+\leanok
+Along each order the marginal contributions telescope to $v(N) - v(\varnothing)$. Composing orders with the swap of
+two symmetric players maps the marginal contributions of one to the other. Null players contribute nothing, and the
+value is linear in $v$.
+\end{proof}
+
+\begin{lemma}[Unanimity decomposition]
+\label{lem:unanimity}
+\lean{Econ.unanimity, Econ.dividend, Econ.sum_alternating, Econ.game_eq_sum_unanimity}
+\leanok
+\uses{def:shapley}
+Every game is $v = \sum_T c_T u_T$ with $u_T(S) = [T \subseteq S]$ and Harsanyi dividends
+$c_T = \sum_{R \subseteq T} (-1)^{|T| - |R|} v(R)$.
+\end{lemma}
+\begin{proof}
+\leanok
+Möbius inversion on the subset lattice: $\sum_{R \subseteq T \subseteq S} (-1)^{|T| - |R|} = [R = S]$.
+\end{proof}
+
+\begin{theorem}[Shapley 1953: uniqueness]
+\label{thm:shapley-unique}
+\lean{Econ.IsShapleyAxioms.map_zero, Econ.IsShapleyAxioms.map_sum, Econ.IsShapleyAxioms.apply_unanimity, Econ.IsShapleyAxioms.unique, Econ.eq_shapley_of_axioms}
+\leanok
+\uses{thm:shapley-axioms, lem:unanimity}
+The Shapley value is the only value satisfying the four axioms.
+\end{theorem}
+\begin{proof}
+\leanok
+On $c\,u_T$, players outside $T$ are null and those in $T$ symmetric, so efficiency gives each member $c/|T|$.
+Additivity extends this to every game through the unanimity decomposition.
+\end{proof}
+
+\section{The core}
+
+\begin{definition}[Core, balanced families, balanced games]
+\label{def:core}
+\lean{Econ.IsInCore, Econ.IsBalancedFamily, Econ.IsBalanced}
+\leanok
+\uses{def:shapley}
+$x$ is in the core if $\sum_i x_i = v(N)$ and $\sum_{i \in S} x_i \ge v(S)$ for all $S$. Weights $\lambda_S \ge 0$
+are balanced if $\sum_{S \ni i} \lambda_S = 1$ for each $i$; $v$ is balanced if $\sum_S \lambda_S v(S) \le v(N)$
+for every balanced family.
+\end{definition}
+
+\begin{lemma}[Auxiliary identities]
+\label{lem:core-aux}
+\lean{Econ.sum_weight_mul_sum, Econ.singletonWeights, Econ.sum_singletonWeights_mem, Econ.sum_singletonWeights_mul, Econ.singletonWeights_nonneg, Econ.matrixPayoff_degenerate_left, Econ.matrixPayoff_degenerate_right}
+\leanok
+\uses{def:core}
+$\sum_S \lambda_S \sum_{i \in S} x_i = \sum_i x_i \sum_{S \ni i} \lambda_S$; weights on singletons; matrix
+payoffs against pure strategies.
+\end{lemma}
+\begin{proof}
+\leanok
+Exchange the order of summation.
+\end{proof}
+
+\begin{theorem}[Bondareva--Shapley]
+\label{thm:bondareva-shapley}
+\lean{Econ.isBalanced_of_mem_core, Econ.exists_mem_core_of_pos, Econ.bondareva_shapley}
+\leanok
+\uses{def:core, lem:core-aux}
+The core is nonempty iff the game is balanced.
+\end{theorem}
+\begin{proof}
+\leanok
+($\Rightarrow$) $\sum_S \lambda_S v(S) \le \sum_S \lambda_S x(S) = \sum_i x_i = v(N)$.
+($\Leftarrow$) Adding $K|S|$ shifts the core and preserves balancedness, so assume $v(\{i\}) > 0$, hence $v(N) > 0$.
+In the zero-sum game where the maximizer picks a coalition $S$ and the minimizer a player $i$, with payoff
+$v(S)/v(N) - [i \in S]$, let $(\mu, y)$ be a saddle point (minimax theorem). If the value were positive, then
+$c_i = \sum_{S \ni i} \mu_S < c = \sum_S \mu_S v(S)/v(N)$ for all $i$, and $\lambda = \mu/c$ plus weights
+$1 - c_i/c$ on singletons is balanced with $\sum \lambda_S v(S) > v(N)$. So the value is $\le 0$, and
+$x = v(N)\,y$ is in the core.
+\end{proof}

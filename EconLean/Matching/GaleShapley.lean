@@ -22,7 +22,8 @@ sets `R m` of women who have rejected `m`:
 * `OptInv` (no man is ever rejected by a stably achievable partner) is also preserved, giving
   men-optimality.
 
-Strategy-proofness for the proposing side (Dubins–Freedman; Roth 1982) is not formalized.
+Strategy-proofness for the proposing side (Dubins–Freedman; Roth 1982) is in
+`Matching/StrategyProof.lean`.
 -/
 module
 

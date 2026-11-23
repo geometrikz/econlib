@@ -176,3 +176,76 @@ to exactly $c$; symmetrically at buyer report $v$ the seller's receipt differenc
 budget balance links $t_B(x,y) = t_S(x,y) = t_S(x,w) = t_B(x,w) = t_B(z,w) = t_S(z,w)$, and then
 $y = t_B(z,y) - t_B(x,y) = t_S(z,y) - t_S(z,w) = z$, a contradiction.
 \end{proof}
+
+\section{Myerson--Satterthwaite}
+
+\begin{definition}[Bayesian bilateral trade]
+\label{def:ms}
+\lean{Econ.TradeMechanism.QB, Econ.TradeMechanism.PB, Econ.TradeMechanism.QS, Econ.TradeMechanism.RS, Econ.TradeMechanism.IsBIC, Econ.TradeMechanism.IsInterimIR, Econ.TradeMechanism.IsExAnteBudgetBalanced}
+\leanok
+Buyer value $v \sim \mu_B$, seller cost $c \sim \mu_S$, independent, atomless, supported in $[a,b]$; both type
+spaces are all of $[a,b]$. Interim trade probabilities and transfers average over the other side's type; efficiency,
+BIC and interim IR at every type in $[a,b]$; ex ante budget balance $E[R_S] \le E[P_B]$. With full support this is
+MWG's setting; without it, constraints also bind at types that never occur.
+\end{definition}
+
+\begin{lemma}[Payments of efficient IC mechanisms]
+\label{lem:ms-vcg}
+\lean{Econ.norm_le_of_mem_Icc, Econ.integrable_ite_one, Econ.integrable_ite_self, Econ.vcg_isICMech, Econ.payment_eq_vcg}
+\leanok
+\uses{def:ms}
+An IC mechanism with the VCG allocation pays the VCG payment minus the information rent of the worst type.
+\end{lemma}
+\begin{proof}
+\leanok
+Myerson's lemma: interim payments are pinned down by the allocation up to a constant.
+\end{proof}
+
+\begin{theorem}[Myerson--Satterthwaite; MWG Prop.~23.E.1]
+\label{thm:ms}
+\lean{Econ.myerson_satterthwaite, Econ.TradeMechanism.isExAnteBudgetBalanced_of_expost, Econ.myerson_satterthwaite_expost, Econ.uniform_satisfies_hypotheses}
+\leanok
+\uses{lem:ms-vcg}
+If $E[(v - c)^+] > 0$, no mechanism is ex post efficient, BIC, interim IR and ex ante budget balanced. The
+hypotheses hold for uniform $[0,1]$ types (expected gain $1/6$).
+\end{theorem}
+\begin{proof}
+\leanok
+By the lemma and IR, an efficient IC IR mechanism collects at most the VCG buyer payments and pays at least the
+VCG seller receipts; VCG runs an expected deficit of exactly $E[(v-c)^+] > 0$ (Krishna, Ch.~5).
+\end{proof}
+
+\section{The first-price auction}
+
+\begin{definition}[Symmetric IPV first-price auction]
+\label{def:fpa}
+\lean{Econ.rivalsLaw, Econ.fpBid, Econ.fpWinProb, Econ.fpPayoff}
+\leanok
+$m \ge 1$ rivals with independent uniform $[0,1]$ values, each bidding $\beta(x) = m x/(m+1)$. A bid $b$ wins if it
+beats every rival bid; payoff $(v - b)\,P(\text{win})$.
+\end{definition}
+
+\begin{lemma}[Winning probability]
+\label{lem:fpa-win}
+\lean{Econ.volume_Iio_inter_Icc, Econ.firstPrice_winProb}
+\leanok
+\uses{def:fpa}
+$P(\text{win} \mid b) = \max(0, \min((m+1)b/m, 1))^m$, computed from the product measure.
+\end{lemma}
+\begin{proof}
+\leanok
+The event is a box; the product measure of a box is the product of Lebesgue measures of intervals.
+\end{proof}
+
+\begin{theorem}[Symmetric equilibrium and revenue; Krishna §2.3]
+\label{thm:fpa}
+\lean{Econ.pow_tangent_le, Econ.firstPrice_equilibrium, Econ.firstPrice_revenue}
+\leanok
+\uses{lem:fpa-win}
+Bidding $\beta(v)$ is a best response for every $v \in [0,1]$, and expected revenue is $(n-1)/(n+1)$ with $n = m+1$.
+\end{theorem}
+\begin{proof}
+\leanok
+With $z = \min(1, (m+1)b/m)$, the payoff is at most $v^{m+1}/(m+1)$ by the tangent-line inequality
+$v^{m+1} \ge z^{m+1} + (m+1) z^m (v - z)$. Revenue: $(m+1)\int_0^1 \tfrac{m}{m+1} v^{m+1}\,dv = m/(m+2)$.
+\end{proof}

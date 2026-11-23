@@ -52,3 +52,58 @@ At termination proposals are one-to-one (a woman with two proposers would reject
 assignment then $w \in R_m$, so she holds (and is matched to) a man she prefers to $m$: no blocking pair. If
 $\nu(m) = w'$ in a stable $\nu$ then $w' \notin R_m$ by (ii), so $m$'s final proposal is at least as good as $w'$.
 \end{proof}
+
+\section{Strategy-proofness of deferred acceptance}
+
+\begin{definition}[The DA mechanism]
+\label{def:da-mech}
+\lean{Econ.daIter, Econ.NoRejection, Econ.daRounds, Econ.daFinal, Econ.daMatching, Econ.Improves}
+\leanok
+\uses{def:da}
+Iterate the deferred acceptance round $|M||W| + 1$ times; the resulting matching is the DA matching for the
+reported preferences.
+\end{definition}
+
+\begin{lemma}[DA trace]
+\label{lem:da-trace}
+\lean{Econ.daStep_eq_self, Econ.daIter_mono, Econ.daIter_inv, Econ.daIter_optInv, Econ.daIter_add_of_noRejection, Econ.exists_noRejection, Econ.daFinal_noRejection, Econ.daIter_subset_daFinal, Econ.daIter_daRounds, Econ.proposal_stay, Econ.rejected_of_mem_daIter, Econ.exists_proposer_ge, Econ.daMatching_isStable, Econ.daMatching_menOptimal}
+\leanok
+\uses{def:da-mech, lem:da}
+Rejection sets grow, the invariants hold along the trace, a state without rejections is reached within
+$|M||W| + 1$ rounds, and the DA matching is stable and men-optimal.
+\end{lemma}
+\begin{proof}
+\leanok
+As for Gale--Shapley, along an explicit sequence of states.
+\end{proof}
+
+\begin{theorem}[Blocking lemma (Gale--Sotomayor 1985) and strategy-proofness (Dubins--Freedman; Roth 1982)]
+\label{thm:da-strategyproof}
+\lean{Econ.gs_blocking_lemma, Econ.daMatching_strategyproof}
+\leanok
+\uses{lem:da-trace}
+If some men strictly prefer a matching $\mu'$ to the DA matching $\mu$, some pair $(m_0, w)$ blocks $\mu'$ with $m_0$
+not strictly preferring $\mu'$. Hence no man can get a strictly better partner by misreporting.
+\end{theorem}
+\begin{proof}
+\leanok
+Among the women matched under $\mu'$ to men who improve, take the one whose final proposal arrives latest; her
+last rejected suitor blocks $\mu'$. A profitable misreport by $m$ would give a matching that $m$ strictly prefers
+and that is stable for the reported profile, contradicting the lemma applied to the true profile.
+\end{proof}
+
+\section{Assortative matching}
+
+\begin{theorem}[Becker 1973]
+\label{thm:becker}
+\lean{Econ.HasIncreasingDifferences, Econ.matchingSurplus, Econ.movedSet, Econ.becker_pam}
+\leanok
+With sorted types on both sides and a surplus with increasing differences, positive assortative matching maximizes
+total surplus over all one-to-one matchings.
+\end{theorem}
+\begin{proof}
+\leanok
+Let $c$ be the highest man not matched assortatively and $j$ the man matched to woman $c$; swapping the partners of
+$j$ and $c$ weakly raises surplus by increasing differences and fixes one more man. Induct on the number of moved
+men.
+\end{proof}
