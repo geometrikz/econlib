@@ -222,6 +222,11 @@ public import EconLean.Macro.Information.MorrisShin
 public import EconLean.Macro.Labor.BurdettMortensen
 public import EconLean.Macro.Credit.ExternalFinancePremium
 public import EconLean.Audit.Statements.MacroBatch9
+public import EconLean.Macro.Growth.AghionHowitt
+public import EconLean.Macro.Growth.DirectedTechChange
+public import EconLean.Macro.Trade.EatonKortum
+public import EconLean.Macro.Trade.Melitz
+public import EconLean.Audit.Statements.MacroBatch10
 public import EconLean.Behavioral.BeliefRule
 public import EconLean.Behavioral.CognitiveDiscounting
 public import EconLean.Behavioral.DiagnosticExpectations
@@ -241,5 +246,20 @@ public import EconLean.Behavioral.MultiplierPreferences
 public import EconLean.BoundedRationality.NoRegret
 public import EconLean.BoundedRationality.ESS
 public import EconLean.Audit.Statements.BehavioralVII
+public import EconLean.BoundedRationality.RegretMatching
+public import EconLean.BoundedRationality.SelfConfirming
+public import EconLean.BoundedRationality.Replicator
+public import EconLean.Audit.Statements.BehavioralVIII
+public import EconLean.BoundedRationality.ConditionalRegret
+public import EconLean.BoundedRationality.Cursed
+public import EconLean.BoundedRationality.Analogy
+public import EconLean.Audit.Statements.BehavioralIX
+public import EconLean.BoundedRationality.FictitiousPlay
+public import EconLean.BoundedRationality.StochasticStability
+public import EconLean.Audit.Statements.BehavioralX
+public import EconLean.BoundedRationality.KMRChain
+public import EconLean.BoundedRationality.BayesianLearning
+public import EconLean.Behavioral.VariationalPreferences
+public import EconLean.Audit.Statements.BehavioralXI
 
 @[expose] public section

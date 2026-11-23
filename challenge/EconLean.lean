@@ -193,6 +193,10 @@ public import EconLean.Macro.Information.LucasIslands
 public import EconLean.Macro.Information.MorrisShin
 public import EconLean.Macro.Labor.BurdettMortensen
 public import EconLean.Macro.Credit.ExternalFinancePremium
+public import EconLean.Macro.Growth.AghionHowitt
+public import EconLean.Macro.Growth.DirectedTechChange
+public import EconLean.Macro.Trade.EatonKortum
+public import EconLean.Macro.Trade.Melitz
 public import EconLean.Behavioral.BeliefRule
 public import EconLean.Behavioral.CognitiveDiscounting
 public import EconLean.Behavioral.DiagnosticExpectations
@@ -209,5 +213,16 @@ public import EconLean.Behavioral.LimitedAttention
 public import EconLean.Behavioral.MultiplierPreferences
 public import EconLean.BoundedRationality.NoRegret
 public import EconLean.BoundedRationality.ESS
+public import EconLean.BoundedRationality.RegretMatching
+public import EconLean.BoundedRationality.SelfConfirming
+public import EconLean.BoundedRationality.Replicator
+public import EconLean.BoundedRationality.ConditionalRegret
+public import EconLean.BoundedRationality.Cursed
+public import EconLean.BoundedRationality.Analogy
+public import EconLean.BoundedRationality.FictitiousPlay
+public import EconLean.BoundedRationality.StochasticStability
+public import EconLean.BoundedRationality.KMRChain
+public import EconLean.BoundedRationality.BayesianLearning
+public import EconLean.Behavioral.VariationalPreferences
 
 @[expose] public section

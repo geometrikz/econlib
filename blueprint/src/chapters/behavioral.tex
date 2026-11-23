@@ -825,3 +825,220 @@ The payoff advantage against the post-entry population is $(1-\varepsilon)(E(x,x
 which is affine in $\varepsilon$. In Hawk--Dove every mutant ties against $V/C$ and
 $E(x,y)-E(y,y)=\tfrac{C}{2}(q-V/C)^2>0$.
 \end{proof}
+
+\begin{theorem}[Hart--Mas-Colell: regret matching]
+\label{thm:beh-regret-matching}
+\lean{Econ.RegretMatching.potential, Econ.RegretMatching.potential_nonneg, Econ.RegretMatching.potential_add_le, Econ.RegretMatching.potential_le, Econ.RegretMatching.regret_le, Econ.RegretMatching.rm, Econ.RegretMatching.rm_mem, Econ.RegretMatching.rm_orth, Econ.RegretMatching.regrets, Econ.RegretMatching.play, Econ.RegretMatching.avgDist, Econ.RegretMatching.play_isMixedProfile, Econ.RegretMatching.avgDist_mem, Econ.RegretMatching.cceGain_profileProb, Econ.RegretMatching.regrets_succ, Econ.RegretMatching.regrets_eq, Econ.RegretMatching.abs_mixedPayoff_le, Econ.RegretMatching.cceGain_avgDist_le, Econ.RegretMatching.eventually_isCCE, Econ.RegretMatching.isCCE_of_tendsto}
+\leanok
+\uses{thm:beh-noregret}
+(Blackwell's potential bound.) If $R_{t+1}=R_t+r_t$ with $R_0=0$, $|r_t(a)|\le M$ and $\sum_aR_t(a)^+r_t(a)\le0$, then
+$\sum_a(R_T(a)^+)^2\le T|A|M^2$, so $R_T(a)\le M\sqrt{|A|T}$. Regret matching (play each action with probability
+proportional to its positive regret) makes every increment orthogonal to the positive regrets. If every player of a
+finite game with $|u|\le B$ uses regret matching on expected payoffs, then every coarse-correlated gain of the time
+average of the played product distributions is at most $2B\sqrt{|S_i|}/\sqrt T$. So for every $\varepsilon>0$ the
+average play is eventually an $\varepsilon$-coarse correlated equilibrium, and every limit point is a coarse
+correlated equilibrium. (This is unconditional regret matching, which gives coarse correlated equilibrium; the
+conditional procedure and the almost-sure statement for realized play are not formalized.)
+\end{theorem}
+\begin{proof}
+\leanok
+Componentwise $((x+r)^+)^2\le(x^++r)^2$, which gives the one-step bound; induct. Cumulative regret equals $T$ times the
+coarse gain of the average play because the gain is linear in the distribution, and for a product distribution it is
+the payoff of the pure deviation minus the mixed payoff.
+\end{proof}
+
+\begin{theorem}[Fudenberg--Levine: self-confirming equilibrium]
+\label{thm:beh-sce}
+\lean{Econ.SelfConfirming.belPayoff, Econ.SelfConfirming.IsNash, Econ.SelfConfirming.Confirmed, Econ.SelfConfirming.IsSCE, Econ.SelfConfirming.belPayoff_degenerate, Econ.SelfConfirming.isSCE_of_isNash, Econ.SelfConfirming.isNash_of_isSCE, Econ.SelfConfirming.matchPayoff, Econ.SelfConfirming.blindFeedback, Econ.SelfConfirming.miss, Econ.SelfConfirming.sce_not_nash, Econ.SelfConfirming.riskyPayoff, Econ.SelfConfirming.riskyFeedback, Econ.SelfConfirming.safeL, Econ.SelfConfirming.ownPayoff_observed, Econ.SelfConfirming.sce_not_nash_ownPayoff}
+\leanok
+A pure profile $s^*$ is a (unitary) self-confirming equilibrium under feedback functions $y_i$ if each player has a
+belief over profiles to which $s^*_i$ is a best reply, and every profile in its support produces the observation
+$y_i(s^*)$ when combined with $s^*_i$ (the normal-form, conjectural-equilibrium version). Every pure Nash equilibrium
+is self-confirming; with perfect feedback (given the own action, the observation identifies the profile) every
+self-confirming equilibrium is Nash. The inclusion is strict, even when each player observes its own payoff: a player
+who always takes a safe action can keep a wrong pessimistic belief about the risky one.
+\end{theorem}
+\begin{proof}
+\leanok
+Take the correct belief. Under perfect feedback every profile in the support agrees with $s^*$ off $i$, so beliefs are
+correct about everything payoff-relevant. The example is checked by computation.
+\end{proof}
+
+\begin{theorem}[Taylor--Jonker, Hofbauer--Schuster--Sigmund: replicator dynamics]
+\label{thm:beh-replicator}
+\lean{Econ.ESS.fit, Econ.ESS.E_eq_sum_fit, Econ.ESS.fit_eq_of_interior_nash, Econ.ESS.interior_ess_superior, Econ.ESS.IsReplicatorPath, Econ.ESS.isReplicatorPath_const, Econ.ESS.hasDerivAt_lyapunov, Econ.ESS.lyapunov_nonneg, Econ.ESS.lyapunov_eq_zero_iff, Econ.ESS.lyapunov_strictAnti, Econ.ESS.lyapunov_antitone, Econ.ESS.ent, Econ.ESS.ent_nonneg, Econ.ESS.neg_mul_log_le_kl, Econ.ESS.le_coord, Econ.ESS.tendsto_ess}
+\leanok
+\uses{thm:beh-ess, thm:beh-gibbs}
+At an interior symmetric Nash equilibrium all pure strategies are equally fit, so an interior ESS $x^*$ satisfies
+$E(y,y)<E(x^*,y)$ for all $y\ne x^*$. Along any interior solution of $\dot x_i=x_i((Ax)_i-x^\top Ax)$,
+$\frac{d}{dt}\mathrm{KL}(x^*\Vert x)=-(E(x^*,x)-E(x,x))$. Hence, for an interior ESS, $\mathrm{KL}(x^*\Vert x(t))$
+is nonnegative, zero only at $x^*$, nonincreasing along every interior solution, and strictly decreasing along
+every interior solution that never sits at $x^*$. Every interior solution converges to $x^*$.
+\end{theorem}
+\begin{proof}
+\leanok
+Equal fitness follows from the Nash inequalities and full support. Then the first ESS condition holds with equality,
+so the second gives superiority. Differentiate $-\sum_ix_i^*\log x_i(t)$ and use $\sum_ix^*_i=1$. For convergence,
+a bound on $\mathrm{KL}(x^*\Vert y)$ gives $y_k\ge e^{-(V_0+H(x^*))/x^*_k}$, so the trajectory stays in a compact set.
+If $\mathrm{KL}$ decreased to $L>0$, the decrease rate $E(x^*,x)-E(x,x)$ would be bounded below by some $\delta>0$ on
+the compact set where $\mathrm{KL}\ge L$, a contradiction; so $\mathrm{KL}\to0$, and on the compact set away from $x^*$
+it is bounded below.
+\end{proof}
+
+\begin{theorem}[Foster--Vohra, Hart--Mas-Colell: conditional regret matching]
+\label{thm:beh-conditional-regret}
+\lean{Econ.RegretMatching.rate, Econ.RegretMatching.rate_pos, Econ.RegretMatching.rowSum_le_rate, Econ.RegretMatching.condMatrix, Econ.RegretMatching.condMatrix_isStochastic, Econ.RegretMatching.crm, Econ.RegretMatching.crm_isInvariant, Econ.RegretMatching.crm_mem, Econ.RegretMatching.crm_balance, Econ.RegretMatching.crm_orth, Econ.RegretMatching.condRegrets, Econ.RegretMatching.condPlay, Econ.RegretMatching.condAvg, Econ.RegretMatching.condPlay_isMixedProfile, Econ.RegretMatching.condAvg_mem, Econ.RegretMatching.obedienceGain_add, Econ.RegretMatching.condRegrets_eq, Econ.RegretMatching.obedienceGain_condAvg_le, Econ.RegretMatching.eventually_isCE, Econ.RegretMatching.isCorrelatedEq_of_tendsto}
+\leanok
+\uses{thm:beh-regret-matching}
+Let each player play a stationary distribution $q$ of the Markov matrix that moves from $j$ to $k$ with probability
+proportional to the positive cumulative conditional regret $D(j,k)^+$. Then $\sum_jq_jD(j,k)^+=q_k\sum_lD(k,l)^+$, so
+the conditional regret increments are orthogonal to the positive regrets. If every player of a finite game with
+$|u|\le B$ does this on expected payoffs, every obedience gain of the time-averaged product distribution is at most
+$2B|S_i|/\sqrt T$; the average play is eventually an $\varepsilon$-correlated equilibrium, and every limit point is a
+correlated equilibrium. (The almost-sure statement for realized play is not formalized.)
+\end{theorem}
+\begin{proof}
+\leanok
+Balance is stationarity written out. Apply Blackwell's bound on the index set $S_i\times S_i$. For a product
+distribution the obedience gain of $j\to k$ is $q_j$ times the payoff difference, and it is linear in the distribution.
+\end{proof}
+
+\begin{theorem}[Eyster--Rabin: cursed equilibrium]
+\label{thm:beh-cursed}
+\lean{Econ.Cursed.marg, Econ.Cursed.condPayoff, Econ.Cursed.cursedPayoff, Econ.Cursed.cursedInterim, Econ.Cursed.IsCursedEq, Econ.Cursed.cursedInterim_eq, Econ.Cursed.isCursedEq_iff_isBNE, Econ.Cursed.isCursedEq_zero_iff, Econ.Cursed.exists_mixed_cursed, Econ.Cursed.lemonsPrior, Econ.Cursed.lemonsPayoff, Econ.Cursed.offerPlay, Econ.Cursed.lemonsPrior_mem, Econ.Cursed.lemons_buyer_offer, Econ.Cursed.lemons_buyer_none, Econ.Cursed.lemons_cursed_iff, Econ.Cursed.lemons_not_bne}
+\leanok
+A $\chi$-cursed type evaluates others' (correctly predicted) actions with weight $\chi$ on payoffs averaged over the
+others' types given its own. A pure strategy profile is a $\chi$-cursed equilibrium iff it is a Bayesian Nash
+equilibrium of the game with payoffs $(1-\chi)u_i+\chi E[u_i\mid\theta_i]$; $0$-cursed equilibrium is Bayesian Nash
+equilibrium. In a lemons market where only lemons are sold at price $6$, offering is a $\chi$-cursed equilibrium iff
+$\chi\ge1/2$, but not a Bayesian Nash equilibrium.
+\end{theorem}
+\begin{proof}
+\leanok
+The cursed interim payoff is linear in the payoff function, and the averaged term only depends on the own type.
+The example is computed: offering earns $(2\chi-1)\cdot3/2$.
+\end{proof}
+
+\begin{theorem}[Jehiel, Jehiel--Koessler: analogy-based expectation equilibrium]
+\label{thm:beh-abee}
+\lean{Econ.Cursed.IsAnalogyPartition, Econ.Cursed.classProb, Econ.Cursed.classPayoff, Econ.Cursed.analogyInterim, Econ.Cursed.IsABEE, Econ.Cursed.analogyInterim_eq, Econ.Cursed.isABEE_iff_isBNE, Econ.Cursed.interim_congr, Econ.Cursed.isABEE_id_iff, Econ.Cursed.isABEE_own_iff, Econ.Cursed.lemons_abee}
+\leanok
+\uses{thm:beh-cursed}
+If a player's analogy classes fix its own type, an analogy-based expectation equilibrium is a Bayesian Nash
+equilibrium of the game whose payoffs are averaged within analogy classes. The finest partition gives Bayesian Nash
+equilibrium, the private-information partition (classes are own types) gives fully cursed equilibrium, and the lemons outcome is an ABEE that is
+not Bayesian Nash.
+\end{theorem}
+\begin{proof}
+\leanok
+Exchange the order of summation over the true profile and the profile drawn from its class; the weight
+$p(\theta)p(\theta')/p(\text{class})$ is symmetric within a class.
+\end{proof}
+
+\begin{theorem}[Brown, Robinson, Fudenberg--Levine: fictitious play]
+\label{thm:beh-fictitious}
+\lean{Econ.FictitiousPlay.freq, Econ.FictitiousPlay.IsFP, Econ.FictitiousPlay.freq_nonneg, Econ.FictitiousPlay.sum_freq, Econ.FictitiousPlay.freq_isMixedProfile, Econ.FictitiousPlay.freq_le, Econ.FictitiousPlay.freq_eq_zero_of_worse_at_limit, Econ.FictitiousPlay.isMixedNash_of_tendsto, Econ.FictitiousPlay.freq_const, Econ.FictitiousPlay.isFP_const, Econ.FictitiousPlay.tendsto_freq_const}
+\leanok
+Along a fictitious-play path (from date $1$ on, each player best responds to the empirical frequencies of the others'
+past play), if the empirical frequencies converge, the limit is a mixed Nash equilibrium. Always playing a pure Nash
+equilibrium is a fictitious-play path. (Convergence itself, as in Robinson's theorem for zero-sum games, is not
+formalized.)
+\end{theorem}
+\begin{proof}
+\leanok
+If $b$ does strictly worse than $t$ against the limit, by continuity it does so against the frequencies from some
+date $T_0$ on, so it is never played after $T_0$ and its frequency is at most $T_0/T\to0$. Hence the limit puts weight
+only on best replies.
+\end{proof}
+
+\begin{theorem}[Kandori--Mailath--Rob, Young: stochastic stability]
+\label{thm:beh-kmr}
+\lean{Econ.StochasticStability.Coord, Econ.StochasticStability.Coord.payA, Econ.StochasticStability.Coord.payB, Econ.StochasticStability.Coord.pstar, Econ.StochasticStability.Coord.den_pos, Econ.StochasticStability.Coord.pstar_pos, Econ.StochasticStability.Coord.pstar_lt_one, Econ.StochasticStability.Coord.bestA_iff, Econ.StochasticStability.Coord.bestB_iff, Econ.StochasticStability.Coord.RiskDominant, Econ.StochasticStability.Coord.riskDominant_iff, Econ.StochasticStability.Coord.resistB, Econ.StochasticStability.Coord.resistA, Econ.StochasticStability.Coord.resistB_spec, Econ.StochasticStability.Coord.resistA_spec, Econ.StochasticStability.Coord.resistB_lt_resistA, Econ.StochasticStability.stationaryA, Econ.StochasticStability.stationaryA_balance, Econ.StochasticStability.tendsto_stationaryA, Econ.StochasticStability.riskDominant_selected_twoState, Econ.StochasticStability.tendsto_weightA_of_bounds, Econ.StochasticStability.riskDominant_selected_of_bounds, Econ.StochasticStability.stagHunt, Econ.StochasticStability.stagHunt_riskDominant, Econ.StochasticStability.stagHunt_pstar, Econ.StochasticStability.stagHunt_selected}
+\leanok
+In a symmetric $2\times2$ coordination game, $A$ is a best reply iff at least a share $p^*$ plays $A$, and $A$ is risk
+dominant iff $p^*<1/2$. Leaving the $B$ convention takes $\lceil Np^*\rceil$ mutations and leaving the $A$ convention
+$\lceil N(1-p^*)\rceil$ (payoffs against the whole population, including oneself); under risk dominance the $A$
+basin is strictly harder to leave for large $N$. In the two-state reduction, if leaving a convention has probability
+between constant multiples of $\varepsilon^{r}$, $r$ the required number of mutations, the stationary weight of the
+$A$ convention tends to $1$ as $\varepsilon\to0$: the risk-dominant convention is selected (even when it is not payoff
+dominant, as in the stag hunt). The full one-revision chain is treated in Theorem~\ref{thm:beh-kmr-chain}.
+\end{theorem}
+\begin{proof}
+\leanok
+Linear algebra for the threshold; ceilings separate once $N(1-2p^*)>1$; and the weight on $B$ is
+$p_{AB}/(p_{AB}+p_{BA})\le (C/c)\,\varepsilon^{r_A-r_B}\to0$.
+\end{proof}
+
+\begin{lemma}[Birth--death chains]
+\label{lem:beh-birth-death}
+\lean{Econ.StochasticStability.BirthDeath.stay, Econ.StochasticStability.BirthDeath.P, Econ.StochasticStability.BirthDeath.IsStationaryDist, Econ.StochasticStability.BirthDeath.w, Econ.StochasticStability.BirthDeath.pi, Econ.StochasticStability.BirthDeath.sum_P, Econ.StochasticStability.BirthDeath.P_nonneg, Econ.StochasticStability.BirthDeath.sum_mul_P, Econ.StochasticStability.BirthDeath.w_succ_mul, Econ.StochasticStability.BirthDeath.w_pos, Econ.StochasticStability.BirthDeath.w_nonneg, Econ.StochasticStability.BirthDeath.sum_w_pos, Econ.StochasticStability.BirthDeath.pi_detailedBalance, Econ.StochasticStability.BirthDeath.pi_isStationaryDist, Econ.StochasticStability.BirthDeath.flux_balance, Econ.StochasticStability.BirthDeath.eq_pi, Econ.StochasticStability.BirthDeath.w_eq_prod, Econ.StochasticStability.BirthDeath.w_eq_mul_prod}
+\leanok
+A birth--death chain on $\{0,\dots,N\}$ with up-rates $u_z$ and positive down-rates $d_z$ has the stationary
+distribution $\pi_z\propto\prod_{k<z}u_k/d_{k+1}$, which satisfies detailed balance, and it is the only one.
+\end{lemma}
+\begin{proof}
+\leanok
+Detailed balance $\pi_z u_z=\pi_{z+1}d_{z+1}$ gives stationarity. Conversely, the balance equations at
+$0,1,\dots$ give, by induction, that the flow across each cut balances, $\mu_{z+1}d_{z+1}=\mu_z u_z$, so
+$\mu_z=\mu_0 w_z$, and normalization fixes $\mu_0$.
+\end{proof}
+
+\begin{theorem}[Kandori--Mailath--Rob: the full one-revision chain]
+\label{thm:beh-kmr-chain}
+\lean{Econ.StochasticStability.Coord.rA, Econ.StochasticStability.Coord.kup, Econ.StochasticStability.Coord.kdown, Econ.StochasticStability.Coord.pstar_le_iff, Econ.StochasticStability.Coord.rA_eq, Econ.StochasticStability.Coord.kup_pos, Econ.StochasticStability.Coord.kdown_pos, Econ.StochasticStability.Coord.kmr_P_nonneg, Econ.StochasticStability.Coord.kmr_isStationaryDist, Econ.StochasticStability.Coord.expo, Econ.StochasticStability.Coord.one_sub_rA_le, Econ.StochasticStability.Coord.kdown_le, Econ.StochasticStability.Coord.prod_zpow_eq, Econ.StochasticStability.Coord.one_le_sum_expo, Econ.StochasticStability.Coord.w_le, Econ.StochasticStability.Coord.pi_N_ge, Econ.StochasticStability.Coord.kmr_selects_riskDominant, Econ.StochasticStability.Coord.kmr_tendsto_zero, Econ.StochasticStability.stagHunt_kmr}
+\leanok
+\uses{thm:beh-kmr, lem:beh-birth-death}
+Each period one of $N$ players, drawn uniformly, revises: with probability $1-\varepsilon$ it best responds to the
+current population (ties to $A$), otherwise it picks $A$ or $B$ with equal chances. If $A$ is risk dominant, then for
+every large enough $N$ the stationary distribution (which exists and is unique for $0<\varepsilon\le1$) puts
+probability tending to $1$ on the all-$A$ state as $\varepsilon\to0$, and probability tending to $0$ on every other
+state. Payoffs are against the population including the reviser. This is the one-revision chain of
+Binmore--Samuelson--Vaughan and Sandholm; KMR's simultaneous-revision chain is not formalized.
+\end{theorem}
+\begin{proof}
+\leanok
+By the birth--death formula, $\pi_z/\pi_N=\prod_{z\le k<N}d_{k+1}/u_k$. With $m=\lceil Np^*\rceil$, each factor is at
+most $2N\varepsilon^{e_k}$, where $e_k=1$ for $k\ge m$, $e_k=-1$ for $k+1<m$ and $e_{m-1}=0$. If $2m<N$ (true for
+large $N$ when $p^*<1/2$), $\sum_{z\le k<N}e_k\ge1$, so $\pi_z\le(2N)^N\varepsilon\,\pi_N$ and
+$\pi_N\ge1/(1+N(2N)^N\varepsilon)\to1$.
+\end{proof}
+
+\section{Bayesian learning}
+
+\begin{theorem}[Wald, Doob, Kalai--Lehrer: consistency and weak merging, finite hypotheses]
+\label{thm:beh-bayes-consistency}
+\lean{Econ.BayesianLearning.lik, Econ.BayesianLearning.posterior, Econ.BayesianLearning.predictive, Econ.BayesianLearning.llr, Econ.BayesianLearning.lik_pos, Econ.BayesianLearning.lik_div, Econ.BayesianLearning.tendsto_exp_of_avg, Econ.BayesianLearning.tendsto_posterior_of_llr, Econ.BayesianLearning.IsIID, Econ.BayesianLearning.ae_tendsto_llr, Econ.BayesianLearning.kl_pos, Econ.BayesianLearning.posterior_consistent, Econ.BayesianLearning.predictive_merges, Econ.BayesianLearning.pmfMeasure, Econ.BayesianLearning.pmfMeasure_singleton, Econ.BayesianLearning.isProbabilityMeasure_pmfMeasure, Econ.BayesianLearning.isIID_coord, Econ.BayesianLearning.coord_posterior_consistent}
+\leanok
+A Bayesian with a positive prior over finitely many identified hypotheses, each an i.i.d.\ law with full support on
+a finite set, observes i.i.d.\ data from the true hypothesis $\theta^*$. Almost surely, the posterior probability of
+$\theta^*$ tends to $1$ and the one-step-ahead forecast converges to the true distribution (weak merging). The canonical product space
+gives an instance. The general Blackwell--Dubins theorem (absolute continuity, merging over the whole future) is not
+formalized; unlike it, the result here uses identification.
+\end{theorem}
+\begin{proof}
+\leanok
+Posterior odds of $\theta$ against $\theta^*$ are $\frac{p_0(\theta)}{p_0(\theta^*)}\exp\sum_{k<n}\log\frac{q_\theta(x_k)}{q_{\theta^*}(x_k)}$.
+By the strong law of large numbers, the average log-likelihood ratio tends almost surely to
+$-\mathrm{KL}(q_{\theta^*}\,\|\,q_\theta)<0$ (Gibbs' inequality and identification), so the odds vanish
+geometrically.
+\end{proof}
+
+\section{Variational preferences}
+
+\begin{theorem}[Maccheroni--Marinacci--Rustichini: variational representation]
+\label{thm:beh-variational}
+\lean{Econ.Variational.IsVariationalFunctional, Econ.Variational.dot, Econ.Variational.InDom, Econ.Variational.cost, Econ.Variational.lipschitz, Econ.Variational.linear_eq_sum, Econ.Variational.exists_supergradient, Econ.Variational.le_cost, Econ.Variational.le_dot_add_cost, Econ.Variational.exists_eq_dot_add_cost, Econ.Variational.cost_nonneg, Econ.Variational.exists_cost_eq_zero, Econ.Variational.isProb_of_inDom, Econ.Variational.cost_convex_combo, Econ.Variational.convex_inDom, Econ.Variational.cost_convex, Econ.Variational.isVariationalFunctional_expected, Econ.Variational.cost_expected_self, Econ.Variational.expected_inDom_iff}
+\leanok
+Let $S$ be finite and $I:\mathbb R^S\to\mathbb R$ monotone, constant additive, normalized and concave. Then
+$I(f)=\min_{p\in\Delta(S)}\big(\langle p,f\rangle+c(p)\big)$ with $c(p)=\sup_g\,(I(g)-\langle p,g\rangle)$, the minimum
+being attained where $c$ is finite; $c$ is finite only on probabilities, its domain is convex and $c$ is convex there,
+$c\ge0$ and $c(p)=0$ for some $p$. Expected utility is an instance, with $c(q)=0$ at its prior and $c=+\infty$
+elsewhere. Utility is unbounded ($I$ is defined on all of $\mathbb R^S$). The derivation of $I$ from the preference axioms is not formalized.
+\end{theorem}
+\begin{proof}
+\leanok
+$I$ is $1$-Lipschitz in the sup norm, so its strict hypograph is open and convex. Separating it from
+$(f,I(f))$ (geometric Hahn--Banach) gives a supergradient $p$: $I(g)\le I(f)+\langle p,g-f\rangle$. Monotonicity
+makes $p\ge0$ and constant additivity makes $\sum p=1$. Then $c(p)=I(f)-\langle p,f\rangle$, while
+$c(p')\ge I(f)-\langle p',f\rangle$ for every $p'$ by definition.
+\end{proof}

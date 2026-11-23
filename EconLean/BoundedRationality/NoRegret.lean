@@ -21,7 +21,7 @@ of `T ≥ 1` pure profiles and `emp h` its empirical distribution.
   empirical distribution is an `ε`-correlated equilibrium
   (`isCorrelatedEq_emp_iff`). (This is the pairwise condition, not swap
   regret `Σ_t max_{t'}`, which can be up to `|S i|` times larger.) This is the reduction behind Hart–Mas-Colell's
-  theorem: regret matching makes internal regrets vanish, hence the
+  theorem: conditional regret matching makes internal regrets vanish (almost surely), hence the
   empirical distributions converge to the set of correlated equilibria.
 * `isCorrelatedEq_of_limit`: if the maximal internal regret along a sequence
   of histories tends to `0` and the empirical distributions converge, the

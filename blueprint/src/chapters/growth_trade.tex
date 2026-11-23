@@ -1,0 +1,98 @@
+% Lean: EconLean/Macro/Growth/{AghionHowitt,DirectedTechChange}.lean,
+%       EconLean/Macro/Trade/{EatonKortum,Melitz}.lean
+\chapter{Innovation-Driven Growth and Modern Trade}
+\label{chap:growth_trade}
+
+Sources: Aghion--Howitt (1992, 2009); Acemoglu (2002, 2009); Eaton--Kortum (2002); Costinot--Rodr\'iguez-Clare (2014);
+Melitz (2003); Melitz--Redding (2014).
+
+\section{Creative destruction}
+
+\begin{definition}[Aghion--Howitt economy]
+\label{def:aghion_howitt}
+\lean{Econ.AghionHowitt.Params, Econ.AghionHowitt.Params.IsArbitrage, Econ.AghionHowitt.Params.nStar, Econ.AghionHowitt.Params.growth, Econ.AghionHowitt.Params.IsEquilibrium}
+\leanok
+Labor $L$ splits into research $n$ and manufacturing $L-n$; innovations arrive at rate $\lambda n$ with step $\gamma>1$; profit per unit
+of the wage is $\theta(L-n)$. Research arbitrage: $r+\lambda n=\lambda\gamma\theta(L-n)$. An equilibrium has $0\le n\le L$,
+$\lambda\gamma\theta(L-n)\le r+\lambda n$, with equality if $n>0$. Growth is $g=\lambda n\log\gamma$.
+\end{definition}
+
+\begin{theorem}[Schumpeterian growth]
+\label{thm:aghion_howitt}
+\lean{Econ.AghionHowitt.Params.den_pos, Econ.AghionHowitt.Params.isArbitrage_iff, Econ.AghionHowitt.Params.existsUnique_arbitrage, Econ.AghionHowitt.Params.nStar_mem, Econ.AghionHowitt.Params.nStar_lt_L, Econ.AghionHowitt.Params.nStar_nonpos_iff, Econ.AghionHowitt.Params.isEquilibrium_iff, Econ.AghionHowitt.Params.existsUnique_equilibrium, Econ.AghionHowitt.Params.no_research, Econ.AghionHowitt.Params.interior, Econ.AghionHowitt.Params.growth_pos, Econ.AghionHowitt.Params.nStar_strictMono_L, Econ.AghionHowitt.Params.nStar_strictAnti_r, Econ.AghionHowitt.Params.nStar_strictMono_γ}
+\leanok
+\uses{def:aghion_howitt}
+The unique equilibrium is $n=\max(0,n^*)$ with $n^*=(\lambda\gamma\theta L-r)/(\lambda(1+\gamma\theta))<L$; research is positive iff
+$\lambda\gamma\theta L>r$, and then growth is positive. $n^*$ rises strictly with $L$ (scale effect) and $\gamma$ and falls with $r$.
+\end{theorem}
+\begin{proof}
+\leanok
+The arbitrage equation is linear in $n$. Complementary slackness selects $n^*$ when it is positive and $0$ otherwise.
+Comparative statics compare the explicit formula.
+\end{proof}
+
+\section{Directed technical change}
+
+\begin{definition}[Free entry into directed research]
+\label{def:directed_tech}
+\lean{Econ.DirectedTech.relProfit, Econ.DirectedTech.IsFreeEntry, Econ.DirectedTech.relWage, Econ.DirectedTech.nStar}
+\leanok
+With derived elasticity $\sigma>0$, relative supply $x=H/L$ and technology $N=N_H/N_L$, relative profitability is
+$N^{-1/\sigma}x^{(\sigma-1)/\sigma}$; free entry requires $\eta N^{-1/\sigma}x^{(\sigma-1)/\sigma}=1$. Relative wages are
+$N^{(\sigma-1)/\sigma}x^{-1/\sigma}$.
+\end{definition}
+
+\begin{theorem}[Weak and strong equilibrium bias]
+\label{thm:directed_tech}
+\lean{Econ.DirectedTech.nStar_pos, Econ.DirectedTech.isFreeEntry_iff, Econ.DirectedTech.relWage_eq, Econ.DirectedTech.bias_eq, Econ.DirectedTech.weak_bias, Econ.DirectedTech.strong_bias_iff}
+\leanok
+\uses{def:directed_tech}
+$N^*=\eta^\sigma x^{\sigma-1}$ and $w_H/w_L=\eta^{\sigma-1}x^{\sigma-2}$. The relative productivity term $N^{*(\sigma-1)/\sigma}$ is
+increasing in $x$ (strictly if $\sigma\ne1$), and the relative wage is strictly increasing in $x$ iff $\sigma>2$.
+\end{theorem}
+\begin{proof}
+\leanok
+Solve the free-entry condition by raising to the power $\sigma$; substitute and collect exponents. Monotonicity follows from
+monotonicity of $x\mapsto x^a$ for $a>0$; for $\sigma\le2$ compare $x=1$ and $x=2$.
+\end{proof}
+
+\section{Eaton--Kortum}
+
+\begin{theorem}[Gravity shares and the price index]
+\label{thm:eaton_kortum}
+\lean{Econ.EatonKortum.survival_min, Econ.EatonKortum.trade_share, Econ.EatonKortum.trade_shares_sum, Econ.EatonKortum.price_moment, Econ.EatonKortum.frechet_to_exp, Econ.EatonKortum.priceIndex, Econ.EatonKortum.gammaConst, Econ.EatonKortum.gammaConst_pos, Econ.EatonKortum.priceIndex_eq, Econ.EatonKortum.real_wage_aux, Econ.EatonKortum.real_wage}
+\leanok
+With Fr\'echet productivities, $U_i=p_i^\theta$ is exponential with rate $\Phi_i=T_i(c_id_i)^{-\theta}$. Source $i$ is cheapest with
+probability $\Phi_i/\Phi$. For $\sigma<1+\theta$, $E p^{1-\sigma}=\Gamma(1+\frac{1-\sigma}\theta)\Phi^{(\sigma-1)/\theta}$, so
+$P=\gamma\Phi^{-1/\theta}$, and the real wage is $w_n/P_n=\gamma^{-1}(T_n/\pi_{nn})^{1/\theta}$.
+\end{theorem}
+\begin{proof}
+\leanok
+The integrand is $\Phi_ie^{-\Phi u}$, which integrates to $\Phi_i/\Phi$. The moment is the Gamma integral
+$\int_0^\infty u^{a-1}e^{-\Phi u}du=\Phi^{-a}\Gamma(a)$. For the real wage, $\Phi_n=\Phi_{nn}/\pi_{nn}=T_nw_n^{-\theta}/\pi_{nn}$.
+\end{proof}
+
+\section{Melitz}
+
+\begin{definition}[Melitz economy with Pareto productivity]
+\label{def:melitz}
+\lean{Econ.Melitz.Params, Econ.Melitz.Params.pdf, Econ.Melitz.Params.J, Econ.Melitz.Params.Λ, Econ.Melitz.Params.surv}
+\leanok
+Productivity is Pareto$(k,\varphi_{\min})$ with $k>\sigma-1$, $\sigma>1$. $J(\varphi)=\int_\varphi^\infty((x/\varphi)^{\sigma-1}-1)dG(x)$,
+and the export cutoff is $\Lambda\varphi^*$ with $\Lambda=\tau(f_x/f)^{1/(\sigma-1)}$.
+\end{definition}
+
+\begin{theorem}[Selection and reallocation]
+\label{thm:melitz}
+\lean{Econ.Melitz.Params.k_pos, Econ.Melitz.Params.selection_iff, Econ.Melitz.Params.J_eq, Econ.Melitz.Params.surv_eq_integral, Econ.Melitz.Params.exporter_share, Econ.Melitz.Params.trade_raises_cutoff}
+\leanok
+\uses{def:melitz}
+Exporting is selective ($\Lambda>1$) iff $\tau^{\sigma-1}f_x>f$. For $\varphi\ge\varphi_{\min}$,
+$J(\varphi)=\frac{\sigma-1}{k-\sigma+1}(\varphi_{\min}/\varphi)^k$, and the exporter share is $\Lambda^{-k}$. Opening to trade
+strictly raises the survival cutoff.
+\end{theorem}
+\begin{proof}
+\leanok
+Split the integrand into two power functions and use $\int_\varphi^\infty x^a\,dx=-\varphi^{a+1}/(a+1)$ for $a<-1$.
+Free entry gives $fC\varphi_a^{-k}=\delta f_e=C\varphi_s^{-k}(f+nf_x\Lambda^{-k})$, so $\varphi_s^{-k}<\varphi_a^{-k}$.
+\end{proof}
