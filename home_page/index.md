@@ -12,5 +12,4 @@ follow the Lean proof step by step.
 * [Blueprint (web)]({{ site.baseurl }}/blueprint/)
 * [Blueprint (PDF)]({{ site.baseurl }}/blueprint.pdf)
 * [Dependency graph]({{ site.baseurl }}/blueprint/dep_graph_document.html)
-* [Lean API documentation]({{ site.baseurl }}/docs/)
 * [Source on GitHub](https://github.com/geometrikz/econlib)

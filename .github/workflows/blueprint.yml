@@ -12,9 +12,11 @@ on:
       - main
   workflow_dispatch:
 
+# Do not cancel a running deploy: pushes are frequent and the first run (Mathlib
+# API docs) is long. GitHub keeps the running job plus only the newest queued one.
 concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
-  cancel-in-progress: true
+  cancel-in-progress: false
 
 permissions:
   contents: read
@@ -56,3 +58,7 @@ jobs:
         with:
           blueprint: true
           homepage: home_page
+          # API docs are off: doc-gen failed on `srcUri.github` for every
+          # dependency (run 45128674576). Blueprint "Lean" links go to
+          # home_page/docs/find/, which redirects to GitHub code search.
+          api-docs: "false"

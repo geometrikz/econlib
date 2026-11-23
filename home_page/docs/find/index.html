@@ -1,0 +1,24 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Find Lean declaration</title>
+<script>
+// Blueprint "Lean" links point to <site>/docs/find/#doc/<Name>. Until API docs
+// are built, send the reader to the declaration in the source via GitHub code search.
+(function () {
+  var h = decodeURIComponent(location.hash || "");
+  var name = h.replace(/^#doc\//, "").replace(/^#/, "");
+  var short = name.split(".").pop();
+  var q = name ? 'repo:geometrikz/econlib path:EconLean /(theorem|lemma|def|abbrev|structure|class|instance)\\s+(\\S*\\.)?' +
+    short.replace(/[.*+?^${}()|[\]\\]/g, "\\$&") + '\\b/' : "repo:geometrikz/econlib";
+  location.replace("https://github.com/search?type=code&q=" + encodeURIComponent(q));
+})();
+</script>
+</head>
+<body>
+<p>Redirecting to the Lean source on GitHub&hellip; If nothing happens, open
+<a href="https://github.com/geometrikz/econlib/tree/main/EconLean">the EconLean source</a>.</p>
+</body>
+</html>
