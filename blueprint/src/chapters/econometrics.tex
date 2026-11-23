@@ -1,0 +1,598 @@
+% Lean: EconLean/Econometrics/OLS.lean, EconLean/Econometrics/Causal/*.lean
+\chapter{Econometrics: least squares and causal identification}
+\label{chap:econometrics}
+
+This chapter covers finite-sample least-squares algebra and population-level identification results in
+causal inference. Nothing here is asymptotic: every result says that an estimand built from the observed
+distribution equals a causal parameter under stated assumptions.
+
+\section{Ordinary least squares}
+\label{sec:ols}
+
+Sources: Hayashi, \emph{Econometrics} (2000), ch.~1; Davidson--MacKinnon (2004) \S2.3--2.4;
+Angrist--Pischke (2009) \S3.2.2. Observations are indexed by a finite set $N$, regressors by a finite set
+$K$; $X \in \R^{N \times K}$, $y \in \R^N$.
+
+\begin{definition}[Least squares, normal equations, OLS formula]
+\label{def:ols}
+\lean{Econ.OLS.ssr, Econ.OLS.IsLeastSquares, Econ.OLS.NormalEquations, Econ.OLS.ols}
+\leanok
+$\mathrm{SSR}(b) = (y - Xb)^\top (y - Xb)$. $b$ is a \emph{least-squares estimate} if it minimises
+$\mathrm{SSR}$; it satisfies the \emph{normal equations} if $X^\top (y - Xb) = 0$. The OLS formula is
+$\hat b = (X^\top X)^{-1} X^\top y$; Lean's inverse of a singular matrix is $0$, so every result about
+$\hat b$ assumes $X^\top X$ invertible.
+\end{definition}
+
+\begin{lemma}[Expansion of the sum of squares]
+\label{lem:ssr-eq}
+\lean{Econ.OLS.ssr_eq, Econ.OLS.dotProduct_self_nonneg'}
+\leanok
+\uses{def:ols}
+With $r = y - Xb$ and $d = b - b'$: $\mathrm{SSR}(b') = \mathrm{SSR}(b) + 2 (X^\top r)\cdot d + (Xd)\cdot(Xd)$,
+and $v \cdot v \ge 0$ for every real vector $v$.
+\end{lemma}
+\begin{proof}
+\leanok
+$r \cdot Xd = (X^\top r)\cdot d$ (\texttt{dotProduct\_mulVec}, \texttt{mulVec\_transpose}); write
+$y - Xb' = r + Xd$ and expand the dot product bilinearly. Nonnegativity: $v\cdot v = \sum_i v_i^2$.
+\end{proof}
+
+\begin{lemma}[A quadratic that is never negative]
+\label{lem:quadratic-nonneg}
+\lean{Econ.OLS.eq_zero_of_forall_quadratic_nonneg}
+\leanok
+If $s \ge 0$ and $-2tq + t^2 s \ge 0$ for all real $t$, then $q = 0$.
+\end{lemma}
+\begin{proof}
+\leanok
+Take $t = q/(s+1)$. The expression equals $-q^2(s+2)/(s+1)^2 \ge 0$, so $q^2(s+2) \le 0$, hence $q^2 = 0$.
+\end{proof}
+
+\begin{theorem}[Least squares $\iff$ normal equations]
+\label{thm:ls-iff-normal}
+\lean{Econ.OLS.isLeastSquares_iff_normalEquations}
+\leanok
+\uses{def:ols}
+For any $X$ (no rank condition), $b$ minimises $\mathrm{SSR}$ if and only if $X^\top(y - Xb) = 0$.
+\end{theorem}
+\begin{proof}
+\leanok
+\uses{lem:ssr-eq, lem:quadratic-nonneg}
+($\Rightarrow$) Let $g = X^\top(y - Xb)$ and compare $b$ with $b' = b + tg$. Lemma~\ref{lem:ssr-eq} gives
+$0 \le -2t(g\cdot g) + t^2 (Xg)\cdot(Xg)$ for all $t$, so $g \cdot g = 0$ by
+Lemma~\ref{lem:quadratic-nonneg}, hence $g = 0$ (\texttt{dotProduct\_self\_eq\_zero}).
+($\Leftarrow$) In Lemma~\ref{lem:ssr-eq} the cross term vanishes and the last term is nonnegative.
+\end{proof}
+
+\begin{theorem}[Full column rank]
+\label{thm:gram-rank}
+\lean{Econ.OLS.isUnit_det_gram_iff}
+\leanok
+$X^\top X$ is invertible if and only if $v \mapsto Xv$ is injective.
+\end{theorem}
+\begin{proof}
+\leanok
+Invertibility of a square matrix is injectivity of $v \mapsto (X^\top X) v$
+(\texttt{mulVec\_injective\_iff\_isUnit}). If $Xv = Xw$ then $X^\top X v = X^\top X w$. Conversely, if
+$X^\top X(v - w) = 0$ then $(X(v-w))\cdot(X(v-w)) = (v-w)\cdot X^\top X (v-w) = 0$, so $X(v-w) = 0$,
+and injectivity of $X$ gives $v = w$.
+\end{proof}
+
+\begin{theorem}[OLS formula]
+\label{thm:ols}
+\lean{Econ.OLS.isLeastSquares_iff_eq_ols, Econ.OLS.normalEquations_ols, Econ.OLS.eq_ols_of_normalEquations, Econ.OLS.gram_inv_mul_self}
+\leanok
+\uses{def:ols}
+If $X^\top X$ is invertible, $b$ is a least-squares estimate if and only if $b = (X^\top X)^{-1}X^\top y$.
+\end{theorem}
+\begin{proof}
+\leanok
+\uses{thm:ls-iff-normal}
+By Theorem~\ref{thm:ls-iff-normal} it suffices to treat the normal equations.
+$X^\top(y - X\hat b) = X^\top y - (X^\top X)(X^\top X)^{-1} X^\top y = 0$. Conversely
+$X^\top y = X^\top X b$ gives $b = (X^\top X)^{-1} X^\top X b = (X^\top X)^{-1}X^\top y$.
+\end{proof}
+
+\begin{definition}[Projection and annihilator]
+\label{def:hat}
+\lean{Econ.OLS.hat, Econ.OLS.annihilator}
+\leanok
+$P = X (X^\top X)^{-1} X^\top$ and $M = I - P$.
+\end{definition}
+
+\begin{proposition}[Properties of $P$ and $M$]
+\label{prop:projection}
+\lean{Econ.OLS.hat_mul_self, Econ.OLS.hat_idempotent, Econ.OLS.hat_transpose, Econ.OLS.annihilator_mul_self, Econ.OLS.annihilator_idempotent, Econ.OLS.annihilator_transpose, Econ.OLS.fitted_eq_hat, Econ.OLS.residual_eq_annihilator, Econ.OLS.annihilator_mulVec_of_orthogonal}
+\leanok
+\uses{def:hat, def:ols}
+If $X^\top X$ is invertible: $PX = X$, $P^2 = P$, $MX = 0$, $M^2 = M$. Always: $P^\top = P$, $M^\top = M$,
+$X\hat b = Py$, $y - X\hat b = My$, and $Mr = r$ whenever $X^\top r = 0$.
+\end{proposition}
+\begin{proof}
+\leanok
+$PX = X(X^\top X)^{-1}(X^\top X) = X$. $P^2 = X[(X^\top X)^{-1}(X^\top X)](X^\top X)^{-1}X^\top = P$.
+Symmetry: $(A^{-1})^\top = (A^\top)^{-1}$ (\texttt{transpose\_nonsing\_inv}) and $X^\top X$ is symmetric.
+$MX = X - PX = 0$; $M^2 = I - 2P + P^2 = M$. The fitted-value identities are associativity of matrix
+products. If $X^\top r = 0$ then $Pr = X(X^\top X)^{-1}(X^\top r) = 0$.
+\end{proof}
+
+\begin{theorem}[Frisch--Waugh--Lovell]
+\label{thm:fwl}
+\lean{Econ.OLS.fwl, Econ.OLS.normalEquations_fromCols_iff}
+\leanok
+\uses{def:ols, def:hat}
+Let $b = (b_1, b_2)$ be a least-squares estimate in the regression of $y$ on $[X_1\ X_2]$ and let $X_1^\top X_1$
+be invertible, with annihilator $M_1$. Then $b_2$ is a least-squares estimate in the regression of $M_1 y$ on
+$M_1 X_2$, and the two regressions have the same residuals. (Davidson--MacKinnon Thm 2.1; stronger than the
+textbook statement in that $b$ need only be \emph{a} minimiser and only $X_1$ needs full rank.)
+\end{theorem}
+\begin{proof}
+\leanok
+\uses{thm:ls-iff-normal, prop:projection}
+By Theorem~\ref{thm:ls-iff-normal}, and splitting $[X_1\ X_2]^\top$ into its two row blocks, the residual
+$r = y - X_1 b_1 - X_2 b_2$ satisfies $X_1^\top r = 0$ and $X_2^\top r = 0$. Then
+$M_1 y - M_1 X_2 b_2 = M_1(X_1 b_1 + r) = 0 + M_1 r = r$ (Proposition~\ref{prop:projection}), which is the
+residual claim. For the normal equations of the short regression,
+$(M_1X_2)^\top r = X_2^\top M_1 r = X_2^\top r = 0$.
+\end{proof}
+
+\begin{corollary}[FWL formula]
+\label{cor:fwl-formula}
+\lean{Econ.OLS.ols_inr_eq, Econ.OLS.isUnit_det_gram_annihilator_mul, Econ.OLS.isUnit_det_gram_left}
+\leanok
+\uses{thm:fwl, thm:ols}
+If $[X_1\ X_2]^\top[X_1\ X_2]$ is invertible, then $X_1$ and $M_1 X_2$ have full column rank and the
+OLS coefficients on $X_2$ equal $\big((M_1X_2)^\top M_1X_2\big)^{-1}(M_1X_2)^\top M_1 y$.
+\end{corollary}
+\begin{proof}
+\leanok
+\uses{thm:gram-rank}
+Rank of $X_1$: if $X_1v = X_1w$ then $[X_1\ X_2](v,0) = [X_1\ X_2](w,0)$, so $v = w$. Rank of $M_1X_2$: by Theorem~\ref{thm:gram-rank} it is enough that $M_1 X_2 u = 0 \Rightarrow u = 0$. If $M_1X_2u = 0$ then
+$X_2 u = P_1 X_2 u = X_1 c$ with $c = (X_1^\top X_1)^{-1}X_1^\top X_2 u$, so $[X_1\ X_2](-c, u) = 0$
+(\texttt{fromCols\_mulVec\_sumElim}) and injectivity of $[X_1\ X_2]$ gives $u = 0$. Then apply
+Theorem~\ref{thm:fwl} to $\hat b$ and Theorem~\ref{thm:ols} to both regressions.
+\end{proof}
+
+\begin{theorem}[Omitted-variable bias, algebraic form]
+\label{thm:ovb}
+\lean{Econ.OLS.ols_omitted}
+\leanok
+\uses{def:ols}
+If $y = X_1\beta_1 + X_2\beta_2 + \varepsilon$ and $X_1^\top X_1$ is invertible, the OLS coefficient from
+regressing $y$ on $X_1$ alone is $\beta_1 + (X_1^\top X_1)^{-1}X_1^\top X_2\,\beta_2 + (X_1^\top X_1)^{-1}X_1^\top\varepsilon$.
+This is the in-sample identity; Angrist--Pischke state its population analogue.
+\end{theorem}
+\begin{proof}
+\leanok
+Distribute $(X_1^\top X_1)^{-1}X_1^\top$ over the three terms and use $(X_1^\top X_1)^{-1}X_1^\top X_1 = I$.
+\end{proof}
+
+\begin{theorem}[Unbiasedness of OLS, fixed design]
+\label{thm:ols-unbiased}
+\lean{Econ.OLS.integral_ols, Econ.OLS.ols_linear_model}
+\leanok
+\uses{def:ols}
+Let $X$ be fixed with $X^\top X$ invertible, $y = X\beta + \varepsilon$ with each $\varepsilon_i$ integrable and
+$E[\varepsilon_i] = 0$. Then $E[\hat b_j] = \beta_j$ for every $j$. (Hayashi Prop.~1.1(a) conditions on $X$;
+with $X$ fixed this is the same statement.)
+\end{theorem}
+\begin{proof}
+\leanok
+First $\hat b = \beta + (X^\top X)^{-1}X^\top\varepsilon$ (as in Theorem~\ref{thm:ovb}). Coordinate $j$ is
+$\beta_j + \sum_i A_{ji}\varepsilon_i$; integrate term by term (\texttt{integral\_add},
+\texttt{integral\_finsetSum}, \texttt{integral\_const\_mul}) and use $E[\varepsilon_i] = 0$.
+\end{proof}
+
+\section{Potential outcomes and randomized experiments}
+\label{sec:potential-outcomes}
+
+Sources: Rubin (1974); Imbens--Rubin (2015) ch.~1--2 and \S6; Angrist--Pischke \S2.1--2.2.
+$(\Omega, \mu)$ is a probability space; binary variables are Boolean-valued.
+
+\begin{definition}[Indicator and conditional mean on an event]
+\label{def:condmean}
+\lean{Econ.Causal.ind, Econ.Causal.condMean}
+\leanok
+$\mathbf 1\{b\} \in \{0,1\}$ for a Boolean $b$. For an event $s$,
+$E[Y \mid s] = P(s)^{-1}\int_s Y\,d\mu$; it is meaningful only when $P(s) > 0$ (otherwise Lean returns $0$).
+\end{definition}
+
+\begin{lemma}[Calculus of conditional means]
+\label{lem:condmean-calculus}
+\lean{Econ.Causal.ind_true, Econ.Causal.ind_false, Econ.Causal.measurable_ind, Econ.Causal.condMean_mul_measureReal, Econ.Causal.condMean_add, Econ.Causal.condMean_sub, Econ.Causal.condMean_congr, Econ.Causal.condMean_const, Econ.Causal.condMean_ind, Econ.Causal.integral_ind, Econ.Causal.integrable_ind}
+\leanok
+\uses{def:condmean}
+$E[\cdot \mid s]$ is additive on integrable variables, depends only on values on $s$, equals $c$ on a constant
+when $P(s)>0$, and $E[Y\mid s]P(s) = \int_s Y$ when $P(s) > 0$; $E[\mathbf 1\{D\}] = P(D)$ and
+$E[\mathbf 1\{D\}\mid s] = P(s \cap \{D\})/P(s)$.
+\end{lemma}
+\begin{proof}
+\leanok
+Linearity of the set integral (\texttt{integral\_add}, \texttt{integral\_sub}), \texttt{setIntegral\_congr\_fun},
+\texttt{setIntegral\_const}; the indicator is $\mathbf 1_{\{D\}}$ and \texttt{integral\_indicator} turns its
+integral into a measure.
+\end{proof}
+
+\begin{theorem}[Independence removes conditioning]
+\label{thm:indep-condmean}
+\lean{Econ.Causal.condMean_eq_integral_of_indepFun, Econ.Causal.setIntegral_eq_of_indepFun}
+\leanok
+\uses{def:condmean}
+If $F$ is independent of a binary $Z$ and $P(Z = b) > 0$, then $E[F \mid Z = b] = E[F]$.
+\end{theorem}
+\begin{proof}
+\leanok
+$\int_{\{Z=b\}} F = E[\varphi(Z) F]$ with $\varphi = \mathbf 1\{\cdot = b\}$. $F$ and $\varphi(Z)$ are independent
+(\texttt{IndepFun.comp}), so $E[\varphi(Z)F] = E[\varphi(Z)]E[F] = P(Z=b)E[F]$
+(\texttt{IndepFun.integral\_fun\_mul\_eq\_mul\_integral}). Divide by $P(Z = b)$.
+\end{proof}
+
+\begin{definition}[Potential outcomes]
+\label{def:potential-outcomes}
+\lean{Econ.Causal.observed, Econ.Causal.treated, Econ.Causal.untreated, Econ.Causal.ate, Econ.Causal.att, Econ.Causal.diffInMeans, Econ.Causal.measurableSet_treated, Econ.Causal.measurableSet_untreated}
+\leanok
+\uses{def:condmean}
+Observed outcome $Y = Y_1$ if $D$ and $Y_0$ otherwise (SUTVA). $\mathrm{ATE} = E[Y_1 - Y_0]$,
+$\mathrm{ATT} = E[Y_1 - Y_0 \mid D = 1]$, and the difference in means is $E[Y\mid D=1] - E[Y \mid D = 0]$.
+\end{definition}
+
+\begin{theorem}[Selection-bias decomposition]
+\label{thm:selection-bias}
+\lean{Econ.Causal.diffInMeans_eq_att_add_selectionBias, Econ.Causal.condMean_observed_treated, Econ.Causal.condMean_observed_untreated}
+\leanok
+\uses{def:potential-outcomes}
+For integrable $Y_0, Y_1$: $E[Y\mid D=1] - E[Y\mid D=0] = \mathrm{ATT} + (E[Y_0\mid D=1] - E[Y_0\mid D=0])$
+(Angrist--Pischke eq.~2.2.1).
+\end{theorem}
+\begin{proof}
+\leanok
+\uses{lem:condmean-calculus}
+On $\{D = 1\}$, $Y = Y_1$; on $\{D = 0\}$, $Y = Y_0$ (\texttt{condMean\_congr}). Then
+$E[Y_1 \mid D=1] = E[Y_1 - Y_0 \mid D = 1] + E[Y_0 \mid D = 1]$ by \texttt{condMean\_sub}; rearrange.
+\end{proof}
+
+\begin{theorem}[Randomization identifies the ATE]
+\label{thm:randomization}
+\lean{Econ.Causal.diffInMeans_eq_ate, Econ.Causal.att_eq_ate, Econ.Causal.condMean_of_randomized}
+\leanok
+\uses{def:potential-outcomes}
+If $D$ is independent of $(Y_0, Y_1)$, $Y_0, Y_1$ are integrable and $0 < P(D=1) < 1$, the difference in means
+equals the ATE; and if $P(D=1)>0$ the ATT equals the ATE (Imbens--Rubin \S6).
+\end{theorem}
+\begin{proof}
+\leanok
+\uses{thm:indep-condmean, thm:selection-bias}
+Reduce to $E[Y_1 \mid D = 1] - E[Y_0 \mid D = 0]$ as in Theorem~\ref{thm:selection-bias}. Each of $Y_1$, $Y_0$,
+$Y_1 - Y_0$ is a measurable function of $(Y_0, Y_1)$, hence independent of $D$; apply
+Theorem~\ref{thm:indep-condmean}, and $E[Y_1] - E[Y_0] = E[Y_1 - Y_0]$.
+\end{proof}
+
+\section{Selection on observables}
+\label{sec:unconfoundedness}
+
+Sources: Rosenbaum--Rubin (1983); Imbens (2004) \S2; Imbens--Rubin ch.~12. Covariates $X$ take finitely many
+values. We assume conditional \emph{mean} independence, which is implied by Rosenbaum--Rubin's conditional
+independence (weaker hypothesis, stronger theorem).
+
+\begin{definition}[Strata, cells, propensity, overlap, unconfoundedness]
+\label{def:unconfoundedness}
+\lean{Econ.Causal.stratum, Econ.Causal.cell, Econ.Causal.armProb, Econ.Causal.propensity, Econ.Causal.Overlap, Econ.Causal.MeanUnconfounded, Econ.Causal.measurableSet_stratum, Econ.Causal.measurableSet_cell}
+\leanok
+\uses{def:potential-outcomes}
+Stratum $\{X = x\}$, cell $\{X = x, D = b\}$, $P(D = b\mid X = x)$ with propensity $e(x) = P(D=1\mid X=x)$.
+\emph{Overlap}: every cell of a non-null stratum has positive probability. \emph{Mean unconfoundedness}:
+$E[Y_d \mid X=x, D=b] = E[Y_d \mid X = x]$ for $d \in\{0,1\}$ on every cell of positive probability.
+\end{definition}
+
+\begin{lemma}[Total expectation over strata]
+\label{lem:total-expectation}
+\lean{Econ.Causal.integral_eq_sum_stratum, Econ.Causal.setIntegral_eq_mul_condMean, Econ.Causal.setIntegral_eq_zero_of_measureReal_eq_zero, Econ.Causal.condMean_observed_cell, Econ.Causal.MeanUnconfounded.arm}
+\leanok
+\uses{def:unconfoundedness}
+$E[Y] = \sum_x \int_{\{X=x\}} Y$ and $\int_s Y = P(s)\,E[Y\mid s]$ (also when $P(s) = 0$).
+\end{lemma}
+\begin{proof}
+\leanok
+$Y = \sum_x \mathbf 1_{\{X = x\}} Y$ pointwise (\texttt{Finset.sum\_eq\_single}); integrate termwise. A null set has
+zero restricted measure.
+\end{proof}
+
+\begin{theorem}[Adjustment formula]
+\label{thm:adjustment}
+\lean{Econ.Causal.integral_potential_eq_adjustment, Econ.Causal.ate_eq_adjustment}
+\leanok
+\uses{def:unconfoundedness}
+Under mean unconfoundedness and overlap, $E[Y_b] = \sum_x P(X=x)\,E[Y \mid X=x, D=b]$, hence
+$\mathrm{ATE} = \sum_x P(X=x)\big(E[Y\mid X=x,D=1] - E[Y\mid X=x,D=0]\big)$ (Imbens 2004 \S2).
+\end{theorem}
+\begin{proof}
+\leanok
+\uses{lem:total-expectation}
+By Lemma~\ref{lem:total-expectation}, $E[Y_b] = \sum_x P(X=x)E[Y_b\mid X=x]$. In a null stratum both summands are
+$0$. Otherwise overlap makes the cell $(x,b)$ non-null, so unconfoundedness gives
+$E[Y_b \mid X=x] = E[Y_b\mid X=x, D=b] = E[Y\mid X=x,D=b]$. Subtract the two arms.
+\end{proof}
+
+\begin{theorem}[Inverse probability weighting]
+\label{thm:ipw}
+\lean{Econ.Causal.ipw, Econ.Causal.ate_eq_ipw}
+\leanok
+\uses{def:unconfoundedness}
+Under mean unconfoundedness and overlap,
+$E\big[\mathbf 1\{D = b\}\,Y / P(D = b\mid X)\big] = E[Y_b]$; hence
+$\mathrm{ATE} = E[DY/e(X)] - E[(1-D)Y/(1-e(X))]$.
+\end{theorem}
+\begin{proof}
+\leanok
+\uses{lem:total-expectation}
+The integrand equals $\sum_x \mathbf 1_{\text{cell}(x,b)}\,Y_b / P(D=b\mid X=x)$. Integrate termwise:
+summand $x$ is $P(\text{cell})E[Y_b\mid\text{cell}]/P(D=b\mid X=x)$. If the stratum is null so is the cell, and
+both sides vanish. Otherwise the cell is non-null (overlap), unconfoundedness replaces $E[Y_b\mid\text{cell}]$ by
+$E[Y_b\mid X=x]$, and $P(\text{cell})/P(D=b\mid X=x) = P(X=x)$. Sum and use
+Lemma~\ref{lem:total-expectation}.
+\end{proof}
+
+\section{Instrumental variables: the LATE theorem}
+\label{sec:late}
+
+Sources: Imbens--Angrist (1994) Thm~1; Angrist--Imbens--Rubin (1996); Angrist--Pischke Thm~4.4.1.
+
+\begin{definition}[Binary-instrument model]
+\label{def:iv-model}
+\lean{Econ.Causal.IVModel, Econ.Causal.IVModel.D, Econ.Causal.IVModel.Y, Econ.Causal.IVModel.zEq, Econ.Causal.IVModel.compliers, Econ.Causal.IVModel.Measurable', Econ.Causal.IVModel.Independent, Econ.Causal.IVModel.Monotone, Econ.Causal.IVModel.firstStage, Econ.Causal.IVModel.reducedForm, Econ.Causal.IVModel.wald, Econ.Causal.IVModel.late}
+\leanok
+\uses{def:condmean}
+Instrument $Z$, potential treatments $D_0, D_1$, potential outcomes $Y_0, Y_1$; observed $D = D_Z$, $Y = Y_D$
+(exclusion is built in). Independence: $(Y_0,Y_1,D_0,D_1) \perp Z$. Monotonicity: $D_0 \le D_1$ a.s.
+Compliers: $D_1 = 1, D_0 = 0$. Wald $=$ reduced form / first stage; $\mathrm{LATE} = E[Y_1 - Y_0\mid\text{complier}]$.
+\end{definition}
+
+\begin{lemma}[Conditioning on the instrument]
+\label{lem:iv-condition}
+\lean{Econ.Causal.IVModel.yAt, Econ.Causal.IVModel.yAtFn, Econ.Causal.IVModel.measurable_yAtFn, Econ.Causal.IVModel.integrable_yAt, Econ.Causal.IVModel.condMean_Y_zEq, Econ.Causal.IVModel.condMean_D_zEq, Econ.Causal.IVModel.yAt_sub_ae, Econ.Causal.IVModel.ind_sub_ae, Econ.Causal.IVModel.measurableSet_compliers}
+\leanok
+\uses{def:iv-model}
+$E[Y \mid Z = b] = E[Y_{D_b}]$ and $E[D\mid Z=b] = E[\mathbf 1\{D_b\}]$. Under monotonicity, a.s.
+$Y_{D_1} - Y_{D_0} = (Y_1 - Y_0)\mathbf 1\{\text{complier}\}$ and $\mathbf 1\{D_1\} - \mathbf 1\{D_0\} = \mathbf 1\{\text{complier}\}$.
+\end{lemma}
+\begin{proof}
+\leanok
+\uses{thm:indep-condmean}
+On $\{Z = b\}$, $Y = Y_{D_b}$; $Y_{D_b}$ is a measurable function of $(Y_0,Y_1,D_0,D_1)$, so
+Theorem~\ref{thm:indep-condmean} applies. The a.s.\ identities: check the four cases of $(D_1, D_0)$; the defier case is
+excluded by monotonicity.
+\end{proof}
+
+\begin{theorem}[LATE theorem]
+\label{thm:late}
+\lean{Econ.Causal.IVModel.firstStage_eq, Econ.Causal.IVModel.reducedForm_eq, Econ.Causal.IVModel.wald_eq_late}
+\leanok
+\uses{def:iv-model}
+Under independence, monotonicity, integrable $Y_0, Y_1$, $0 < P(Z=1) < 1$ and a nonzero first stage: the first
+stage equals $P(\text{complier})$, the reduced form equals $\int_{\text{compliers}}(Y_1 - Y_0)$, and the Wald ratio
+equals the LATE.
+\end{theorem}
+\begin{proof}
+\leanok
+\uses{lem:iv-condition}
+By Lemma~\ref{lem:iv-condition} the first stage is $E[\mathbf 1\{D_1\} - \mathbf 1\{D_0\}] = P(\text{complier})$ and the
+reduced form is $E[Y_{D_1} - Y_{D_0}] = \int_{\text{compliers}}(Y_1 - Y_0)$. Divide.
+\end{proof}
+
+\section{Difference-in-differences}
+\label{sec:did}
+
+Sources: Card--Krueger (1994); Angrist--Pischke \S5.2; Roth, Sant'Anna, Bilinski and Poe (2023) \S2.
+
+\begin{definition}[$2\times 2$ DiD]
+\label{def:did}
+\lean{Econ.Causal.DiD2x2, Econ.Causal.DiD2x2.Ypre, Econ.Causal.DiD2x2.Ypost, Econ.Causal.DiD2x2.did, Econ.Causal.DiD2x2.attPost, Econ.Causal.DiD2x2.trend, Econ.Causal.DiD2x2.ParallelTrends, Econ.Causal.DiD2x2.NoAnticipation, Econ.Causal.DiD2x2.Integrable'}
+\leanok
+\uses{def:potential-outcomes}
+Group $G$, potential outcomes $Y_{0,\mathrm{pre}}, Y_{1,\mathrm{pre}}, Y_{0,\mathrm{post}}, Y_{1,\mathrm{post}}$; observed outcomes
+switch on $G$. Parallel trends: $E[Y_{0,\mathrm{post}} - Y_{0,\mathrm{pre}}\mid G]$ is equal across groups. No
+anticipation (in mean): $E[Y_{1,\mathrm{pre}}\mid G = 1] = E[Y_{0,\mathrm{pre}}\mid G=1]$; Roth et al.\ assume it unit by unit.
+\end{definition}
+
+\begin{theorem}[DiD identifies the ATT]
+\label{thm:did}
+\lean{Econ.Causal.DiD2x2.did_eq, Econ.Causal.DiD2x2.did_eq_att}
+\leanok
+\uses{def:did}
+For integrable potential outcomes, $\mathrm{DiD} = \mathrm{ATT} + (\text{trend gap}) - (\text{anticipation})$; under parallel
+trends and no anticipation, $\mathrm{DiD} = \mathrm{ATT}$. No group positivity is assumed (on a null group both sides
+are Lean's junk $0$).
+\end{theorem}
+\begin{proof}
+\leanok
+\uses{thm:selection-bias, lem:condmean-calculus}
+Replace observed outcomes by potential ones on each group (\texttt{condMean\_observed\_treated/untreated}), split
+differences with \texttt{condMean\_sub}, and collect terms with \texttt{ring}.
+\end{proof}
+
+\section{Two-way fixed effects with staggered treatment}
+\label{sec:twfe}
+
+Source: de Chaisemartin and D'Haultf\oe uille (2020) Thm~1. Finite groups $G$ and periods $T$, population cell
+means with equal weights (balanced panel, equal cell sizes).
+
+\begin{definition}[TWFE regression]
+\label{def:twfe}
+\lean{Econ.Causal.TWFE.resid, Econ.Causal.TWFE.ssr, Econ.Causal.TWFE.IsTWFE, Econ.Causal.TWFE.NormalEq}
+\leanok
+$(a, l, b)$ minimises $\sum_{g,t}(Y_{gt} - a_g - l_t - bD_{gt})^2$; $b$ is the TWFE coefficient. The normal
+equations: residuals sum to zero in every group and every period and are orthogonal to $D$.
+\end{definition}
+
+\begin{lemma}[First-order conditions]
+\label{lem:twfe-foc}
+\lean{Econ.Causal.TWFE.sum_mul_eq_zero_of_forall, Econ.Causal.TWFE.sum_resid_mul_eq_zero, Econ.Causal.TWFE.isTWFE_iff_normalEq}
+\leanok
+\uses{def:twfe}
+$(a,l,b)$ minimises the sum of squares iff the normal equations hold; then residuals are orthogonal to every
+$A_g + L_t + BD_{gt}$.
+\end{lemma}
+\begin{proof}
+\leanok
+\uses{lem:quadratic-nonneg}
+($\Rightarrow$) Perturb $a_{g_0}$, $l_{t_0}$ or $b$ by $c$: the sum of squares becomes
+$\sum r^2 - 2c\sum rv + c^2\sum v^2$ with $v$ the indicator of $g_0$, of $t_0$, or $D$; minimality and
+Lemma~\ref{lem:quadratic-nonneg} give $\sum rv = 0$. Orthogonality: split the sum, factor row and column sums.
+($\Leftarrow$) The sum of squares at $(a',l',b')$ is $\sum r^2 + 2\sum r\delta + \sum\delta^2$ with
+$\delta = (a-a')_g + (l-l')_t + (b-b')D$, and $\sum r\delta = 0$.
+\end{proof}
+
+\begin{definition}[Double-demeaned treatment and weights]
+\label{def:twfe-weights}
+\lean{Econ.Causal.TWFE.rowMean, Econ.Causal.TWFE.colMean, Econ.Causal.TWFE.grandMean, Econ.Causal.TWFE.eps, Econ.Causal.TWFE.weight}
+\leanok
+$\varepsilon_{gt} = D_{gt} - \bar D_{g\cdot} - \bar D_{\cdot t} + \bar D$, and $w_{gt} = \varepsilon_{gt}D_{gt}/\sum\varepsilon D$.
+\end{definition}
+
+\begin{lemma}[Properties of $\varepsilon$ and the weights]
+\label{lem:eps}
+\lean{Econ.Causal.TWFE.sum_eps_row, Econ.Causal.TWFE.sum_eps_col, Econ.Causal.TWFE.sum_eps_mul_additive, Econ.Causal.TWFE.sum_eps_mul_D, Econ.Causal.TWFE.sum_weight, Econ.Causal.TWFE.weight_eq_zero_of_untreated}
+\leanok
+\uses{def:twfe-weights}
+$\varepsilon$ has zero row and column sums, so it is orthogonal to every $A_g + L_t$; $\sum\varepsilon D = \sum\varepsilon^2$;
+the weights sum to one when $\sum\varepsilon D \neq 0$ and vanish on untreated cells.
+\end{lemma}
+\begin{proof}
+\leanok
+Row and column sums: expand the means and simplify (\texttt{field\_simp}). $D = \varepsilon + (\bar D_{g\cdot}) +
+(\bar D_{\cdot t} - \bar D)$, and the last two terms are additive.
+\end{proof}
+
+\begin{theorem}[TWFE as a weighted sum of effects]
+\label{thm:twfe}
+\lean{Econ.Causal.TWFE.twfe_eq_weighted_sum}
+\leanok
+\uses{def:twfe, def:twfe-weights}
+If $Y_{gt} = \alpha_g + \lambda_t + D_{gt}\tau_{gt}$ (parallel trends) and $\sum\varepsilon D \ne 0$, every TWFE coefficient
+satisfies $b = \sum_{g,t} w_{gt}\tau_{gt}$.
+\end{theorem}
+\begin{proof}
+\leanok
+\uses{lem:twfe-foc, lem:eps}
+By Lemma~\ref{lem:twfe-foc} the residual $r$ satisfies the normal equations, and $\varepsilon$ is a combination of row
+effects, column effects and $D$, so $\sum\varepsilon r = 0$. Then $\sum\varepsilon Y = \sum\varepsilon(a+l) + b\sum\varepsilon D
++ \sum\varepsilon r = b\sum\varepsilon D$. Also $\sum\varepsilon Y = \sum\varepsilon(\alpha+\lambda) + \sum\varepsilon D\tau =
+\sum\varepsilon D\tau$ (Lemma~\ref{lem:eps}). Divide by $\sum\varepsilon D$.
+\end{proof}
+
+\begin{proposition}[Sign reversal with staggered adoption]
+\label{prop:twfe-negative}
+\lean{Econ.Causal.TWFE.Example.D, Econ.Causal.TWFE.Example.τ, Econ.Causal.TWFE.Example.Y, Econ.Causal.TWFE.Example.eps_values, Econ.Causal.TWFE.Example.den, Econ.Causal.TWFE.Example.weight_negative, Econ.Causal.TWFE.Example.effects_pos, Econ.Causal.TWFE.Example.isTWFE_example, Econ.Causal.TWFE.Example.twfe_negative}
+\leanok
+\uses{thm:twfe}
+Two groups, three periods, early group treated in periods 1--2 with effects $1, 4$, late group treated in period 2
+with effect $1$. Every effect is positive, a least-squares fit exists, and every TWFE coefficient equals $-1/2$:
+the early group's last cell has weight $-1/2$.
+\end{proposition}
+\begin{proof}
+\leanok
+Compute $\varepsilon = (1/3, -1/6, 1/6)$ on the treated cells and $\sum\varepsilon D = 1/3$; exhibit $(a, l, b) =
+((2, 1/2), (-5/4, -1/2, 7/4), -1/2)$ satisfying the normal equations; apply Theorem~\ref{thm:twfe}:
+$b = 1\cdot 1 - \tfrac12\cdot 4 + \tfrac12\cdot 1 = -\tfrac12$.
+\end{proof}
+
+\section{Regression discontinuity}
+\label{sec:rd}
+
+Sources: Hahn--Todd--van der Klaauw (2001); Imbens--Lemieux (2008). The primitives are conditional-mean functions of the
+running variable.
+
+\begin{definition}[Sharp RD]
+\label{def:sharp-rd}
+\lean{Econ.Causal.RD.sharpMean}
+\leanok
+$m(x) = m_1(x)$ for $x \ge c$ and $m_0(x)$ for $x < c$.
+\end{definition}
+
+\begin{theorem}[Sharp RD identification]
+\label{thm:sharp-rd}
+\lean{Econ.Causal.RD.tendsto_sharpMean_right, Econ.Causal.RD.tendsto_sharpMean_left, Econ.Causal.RD.sharp_rd, Econ.Causal.RD.sharp_rd_identified, Econ.Causal.RD.sharp_rd_not_identified_without_continuity}
+\leanok
+\uses{def:sharp-rd}
+If $m_0, m_1$ are continuous at $c$, then $m(x)\to m_1(c)$ as $x\downarrow c$ and $m(x)\to m_0(c)$ as $x\uparrow c$.
+Two such structures with the same $m$ have the same $m_1(c) - m_0(c)$. Without continuity identification fails: a jump of $m_0$ at the cutoff mimics a treatment effect.
+\end{theorem}
+\begin{proof}
+\leanok
+On $[c,\infty)$, $m = m_1$, so the right limit is that of $m_1$ (\texttt{tendsto\_congr'}); likewise on the left.
+Identification: limits along the non-trivial filters $\mathcal N_{\ge}(c)$, $\mathcal N_{<}(c)$ are unique
+(\texttt{tendsto\_nhds\_unique}). Counterexample: $(m_0,m_1) = (0, 1)$, effect $1$, and $(\mathbf 1\{x\ge 0\}, 1)$, effect $0$, give the same $m$; only the second $m_0$ jumps.
+\end{proof}
+
+\begin{definition}[Fuzzy RD]
+\label{def:fuzzy-rd}
+\lean{Econ.Causal.RD.FuzzyRD, Econ.Causal.RD.FuzzyRD.meanD, Econ.Causal.RD.FuzzyRD.meanY, Econ.Causal.RD.FuzzyRD.IsProb, Econ.Causal.RD.FuzzyRD.Continuous'}
+\leanok
+Shares $\pi_a, \pi_n, \pi_c$ of always-takers, never-takers and compliers and their mean outcomes as functions of $x$;
+$E[D\mid x] = \pi_a + \mathbf 1\{x\ge c\}\pi_c$ and $E[Y\mid x]$ is the corresponding mixture.
+\end{definition}
+
+\begin{theorem}[Fuzzy RD identification]
+\label{thm:fuzzy-rd}
+\lean{Econ.Causal.RD.FuzzyRD.tendsto_meanD_right, Econ.Causal.RD.FuzzyRD.tendsto_meanD_left, Econ.Causal.RD.FuzzyRD.tendsto_meanY_right, Econ.Causal.RD.FuzzyRD.tendsto_meanY_left, Econ.Causal.RD.FuzzyRD.fuzzy_rd, Econ.Causal.RD.FuzzyRD.fuzzy_rd_ratio, Econ.Causal.RD.FuzzyRD.example₁, Econ.Causal.RD.FuzzyRD.example₁_witness}
+\leanok
+\uses{def:fuzzy-rd}
+If all shares and type means are continuous at $c$ and $\pi_c(c) > 0$, the one-sided limits exist, the jump in
+$E[D\mid x]$ is $\pi_c(c)$, and the ratio of jumps equals the compliers' effect $y_{1c}(c) - y_{0c}(c)$
+(HTvdK Thm~3). A witness with probability shares has outcome jump $3/2$ and Wald ratio $3$.
+\end{theorem}
+\begin{proof}
+\leanok
+Each side agrees eventually with a continuous function, as in Theorem~\ref{thm:sharp-rd}. The jumps are
+$\pi_c(c)$ and $\pi_c(c)(y_{1c}(c) - y_{0c}(c))$; divide. Any other limits coincide by uniqueness.
+\end{proof}
+
+\section{Partial identification}
+\label{sec:manski}
+
+Sources: Manski (1989, 1990).
+
+\begin{definition}[Manski bounds]
+\label{def:manski}
+\lean{Econ.Causal.manskiLower, Econ.Causal.manskiUpper, Econ.Causal.treated_compl, Econ.Causal.integral_split}
+\leanok
+\uses{def:potential-outcomes}
+$L = \int_{\{D=1\}}Y_1 + \mathrm{lo}\cdot P(D=0)$ and $U = \int_{\{D=1\}}Y_1 + \mathrm{hi}\cdot P(D=0)$.
+\end{definition}
+
+\begin{theorem}[Worst-case bounds and sharpness]
+\label{thm:manski}
+\lean{Econ.Causal.manski_bounds, Econ.Causal.manski_sharp, Econ.Causal.manski_ate_bounds}
+\leanok
+\uses{def:manski}
+If $\mathrm{lo}\le Y_1\le\mathrm{hi}$ then $L \le E[Y_1]\le U$. Every $v\in[L,U]$ is $E[Y_1']$ for some measurable,
+integrable $Y_1'\in[\mathrm{lo},\mathrm{hi}]$ equal to $Y_1$ on $\{D=1\}$. For the ATE the analogous interval has width
+$\mathrm{hi}-\mathrm{lo}$.
+\end{theorem}
+\begin{proof}
+\leanok
+Split $E[Y_1] = \int_{\{D=1\}}Y_1 + \int_{\{D=0\}}Y_1$ and bound the second term by \texttt{setIntegral\_mono\_on}.
+Sharpness: if $P(D=0) > 0$ set $Y_1' = k = (v - \int_{\{D=1\}}Y_1)/P(D=0)\in[\mathrm{lo},\mathrm{hi}]$ off the treated;
+if $P(D=0) = 0$ the interval is a point and $k = \mathrm{lo}$ works. ATE: combine with the mirror bounds for $E[Y_0]$;
+the width is $(\mathrm{hi} - \mathrm{lo})(P(D=1) + P(D=0))$.
+\end{proof}
+
+\section{Non-vacuity witnesses}
+\label{sec:causal-witnesses}
+
+\begin{proposition}[The hypotheses are satisfiable]
+\label{prop:causal-witnesses}
+\lean{Econ.Causal.Witness.μ, Econ.Causal.Witness.M, Econ.Causal.Witness.measurable, Econ.Causal.Witness.independent, Econ.Causal.Witness.monotone, Econ.Causal.Witness.zEq_real, Econ.Causal.Witness.compliers_eq, Econ.Causal.Witness.compliers_real, Econ.Causal.Witness.late_witness, Econ.Causal.Witness.randomized_witness, Econ.Causal.Witness.Xc, Econ.Causal.Witness.Dc, Econ.Causal.Witness.Y₀c, Econ.Causal.Witness.Y₁c, Econ.Causal.Witness.point_real, Econ.Causal.Witness.stratum_real, Econ.Causal.Witness.cell_pos, Econ.Causal.Witness.condMean_cov, Econ.Causal.Witness.unconfounded_witness, Econ.Causal.Witness.S, Econ.Causal.Witness.did_witness}
+\leanok
+\uses{thm:late, thm:randomization, thm:adjustment, thm:did}
+On $\Omega = \{0,1\}\times\{0,1,2\}$ with the uniform product measure: an IV model with a third each of compliers,
+always-takers and never-takers, satisfying all LATE hypotheses with $\mathrm{LATE} = \mathrm{Wald} = 2$; a randomized
+experiment; a confounded design (propensity $1/3$ vs $2/3$) satisfying unconfoundedness and overlap; and a DiD population
+with a level gap where DiD $= \mathrm{ATT} = 2$ but the naive post comparison is $3$.
+\end{proposition}
+\begin{proof}
+\leanok
+Independence of the coordinates of a product measure is \texttt{indepFun\_prod}; probabilities of rectangles follow from
+\texttt{Measure.prod\_prod} and \texttt{uniformOn\_univ}. Conditional means of functions of the first coordinate on its
+level sets are constants (\texttt{condMean\_congr}, \texttt{condMean\_const}).
+\end{proof}

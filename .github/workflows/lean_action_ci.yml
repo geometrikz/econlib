@@ -11,3 +11,26 @@ jobs:
     steps:
       - uses: actions/checkout@v4
       - uses: leanprover/lean-action@v1
+
+  verify:
+    # Machine half of the verification protocol: kernel replay by every bundled
+    # checker, axiom audit, and Comparator against the reviewed statements.
+    # See verify/README.md.
+    needs: build
+    runs-on: ubuntu-latest
+    timeout-minutes: 120
+    steps:
+      - uses: actions/checkout@v4
+      - name: Install elan and bubblewrap
+        run: |
+          curl -sSfL https://raw.githubusercontent.com/leanprover/elan/master/elan-init.sh | sh -s -- -y --default-toolchain none
+          echo "$HOME/.elan/bin" >> "$GITHUB_PATH"
+          sudo apt-get update && sudo apt-get install -y bubblewrap
+          # Ubuntu 24.04 runners block unprivileged user namespaces, which bwrap needs.
+          sudo sysctl -w kernel.apparmor_restrict_unprivileged_userns=0 || true
+      - name: Fetch Mathlib cache and build
+        run: |
+          lake exe cache get
+          lake build
+      - name: Verify (drift check, axiom audit, Comparator with 6 kernels)
+        run: verify/check.sh

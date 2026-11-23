@@ -9,3 +9,4 @@ blueprint/src/*.pdf
 blueprint/lean_decls
 home_page/_site/
 __pycache__/
+challenge/.lake/

@@ -335,9 +335,9 @@ design. New foundation items, added to PLAN.md §2: **F25** uniform LLN
 ### C1. Linear models and finite-sample theory
 | ID | Model / result | Key theorems | Source | Deps | Diff | MS | Status |
 |---|---|---|---|---|---|---|---|
-| C1.1 | OLS as projection | normal equations, idempotent projections, FWL | Hayashi 1; Davidson–MacKinnon | Mathlib linear algebra | E | ME1 | 🟢 |
+| C1.1 | OLS as projection | normal equations, idempotent projections, FWL | Hayashi 1; Davidson–MacKinnon | Mathlib linear algebra | E | ME1 | ✅ |
 | C1.2 | Gauss–Markov | BLUE | Hayashi 1.3 | Mathlib | E–M | ME1 | 🟢 |
-| C1.3 | Omitted-variable bias | OVB formula | Angrist–Pischke 3 | C1.1 | E | ME1 | 🟢 |
+| C1.3 | Omitted-variable bias | OVB formula | Angrist–Pischke 3 | C1.1 | E | ME1 | ✅ |
 | C1.4 | Normal linear model | exact t/F distributions | Hayashi 1.4 | Mathlib Gaussian; χ²/t gap (guess) | M | ME1 | 🟡 |
 | C1.5 | GLS / Aitken | GLS is BLUE | Aitken 1935 | C1.2 | E–M | ME1 | 🟢 |
 
@@ -358,17 +358,17 @@ design. New foundation items, added to PLAN.md §2: **F25** uniform LLN
 ### C3. Identification and causal inference
 | ID | Model / result | Key theorems | Source | Deps | Diff | MS | Status |
 |---|---|---|---|---|---|---|---|
-| C3.1 | Potential outcomes | randomization identifies ATE; SUTVA | Rubin 1974; Imbens–Rubin 2015 | Mathlib expectation | E | ME1 | 🟢 |
-| C3.2 | Selection on observables | unconfoundedness + overlap ⇒ ATE; IPW identity | Rosenbaum–Rubin 1983 | Mathlib cond. expectation | E–M | ME1 | 🟢 |
+| C3.1 | Potential outcomes | randomization identifies ATE; SUTVA | Rubin 1974; Imbens–Rubin 2015 | Mathlib expectation | E | ME1 | ✅ |
+| C3.2 | Selection on observables | unconfoundedness + overlap ⇒ ATE; IPW identity | Rosenbaum–Rubin 1983 | Mathlib cond. expectation | E–M | ME1 | ✅ |
 | C3.3 | Linear IV | rank condition identification; 2SLS = IV | Wright 1928; Hayashi 3 | C1.1 | E | ME1 | 🟢 |
-| C3.4 | LATE | Wald = complier ATE under monotonicity | Imbens–Angrist 1994 (Nobel 2021) | Mathlib | E–M | ME1 | 🟢 |
+| C3.4 | LATE | Wald = complier ATE under monotonicity | Imbens–Angrist 1994 (Nobel 2021) | Mathlib | E–M | ME1 | ✅ |
 | C3.5 | MTE | LATE/ATE/ATT as MTE weighted averages | Heckman–Vytlacil 2005 | C3.4 | M | ME1 | 🟢 |
-| C3.6 | DiD (2×2) | parallel trends ⇒ ATT | Card–Krueger 1994 (Nobel 2021) | Mathlib | E | ME1 | 🟢 |
-| C3.7 | TWFE with staggered timing | decomposition; negative weights | Goodman-Bacon 2021; de Chaisemartin–D'Haultfœuille 2020 | C1.1 | M | ME1 | 🟢 |
+| C3.6 | DiD (2×2) | parallel trends ⇒ ATT | Card–Krueger 1994 (Nobel 2021) | Mathlib | E | ME1 | ✅ |
+| C3.7 | TWFE with staggered timing | decomposition; negative weights | Goodman-Bacon 2021; de Chaisemartin–D'Haultfœuille 2020 | C1.1 | M | ME1 | 🟡 (dCDH done; Goodman-Bacon open) |
 | C3.8 | Heterogeneity-robust DiD | Callaway–Sant'Anna / Sun–Abraham identification | Callaway–Sant'Anna 2021; Sun–Abraham 2021 | C3.6 | M | ME1 | 🟢 |
-| C3.9 | Regression discontinuity | continuity ⇒ identification (sharp, fuzzy) | Hahn–Todd–van der Klaauw 2001 | Mathlib limits | M | ME1 | 🟢 |
+| C3.9 | Regression discontinuity | continuity ⇒ identification (sharp, fuzzy) | Hahn–Todd–van der Klaauw 2001 | Mathlib limits | M | ME1 | ✅ |
 | C3.10 | Synthetic control | bias bound under factor model | Abadie–Diamond–Hainmueller 2010 | Mathlib | M–H | ME1 | 🟢 |
-| C3.11 | Partial identification | Manski worst-case bounds; sharpness | Manski 1990 | Mathlib | E | ME1 | 🟢 |
+| C3.11 | Partial identification | Manski worst-case bounds; sharpness | Manski 1990 | Mathlib | E | ME1 | ✅ |
 | C3.12 | Shift-share IV | identification from shocks | Borusyak–Hull–Jaravel 2022; Goldsmith-Pinkham et al. 2020 | C3.3 | M | ME1 | 🟢 |
 | C3.13 | Causal graphs | backdoor criterion; do-calculus soundness | Pearl 1995, 2009 | Mathlib (finite) | M–H | ME1 | 🟢 |
 | C3.14 | Double/debiased ML | Neyman orthogonality ⇒ √n inference | Chernozhukov et al. 2018 | C2.1 | M | ME2 | 🟢 (algebraic part) |

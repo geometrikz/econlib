@@ -52,6 +52,8 @@ public import EconLean.Bridges.Aggregation.GrossSubstitutes
 public import EconLean.Bridges.Aggregation.LawOfDemand
 public import EconLean.Bridges.Aggregation.Gorman
 public import EconLean.Bridges.Aggregation.Examples
+public import EconLean.Foundations.FixedPoint
+public import EconLean.GE.ExistenceGeneral
 
 public import EconLean.Producer.Production
 public import EconLean.Producer.Cost
@@ -66,5 +68,15 @@ public import EconLean.Macro.Growth.AK
 public import EconLean.Macro.Growth.Lucas
 public import EconLean.Macro.Growth.Romer
 public import EconLean.Finance.AssetPricing
+public import EconLean.Econometrics.OLS
+public import EconLean.Econometrics.Causal.Basic
+public import EconLean.Econometrics.Causal.PotentialOutcomes
+public import EconLean.Econometrics.Causal.Unconfoundedness
+public import EconLean.Econometrics.Causal.LATE
+public import EconLean.Econometrics.Causal.DiD
+public import EconLean.Econometrics.Causal.TWFE
+public import EconLean.Econometrics.Causal.RD
+public import EconLean.Econometrics.Causal.Bounds
+public import EconLean.Econometrics.Causal.Witnesses
 
 @[expose] public section

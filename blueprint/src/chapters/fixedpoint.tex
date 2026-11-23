@@ -1,0 +1,75 @@
+% Lean: EconLean/Foundations/FixedPoint.lean (vendored proofs in Foundations/FixedPoint/),
+%       EconLean/GE/ExistenceGeneral.lean
+\chapter{Fixed-Point Theorems and General Existence}
+\label{chap:fixedpoint}
+
+The proofs of Brouwer's and Kakutani's theorems are vendored from \texttt{vltanh/lean4-fixed-point} (The-Anh Vu-Le,
+Apache 2.0), which proves them through Sperner's lemma and the Knaster--Kuratowski--Mazurkiewicz (KKM) lemma. This
+chapter records the economics-facing statements and the step that makes equilibrium existence unconditional.
+
+\begin{theorem}[Brouwer's fixed-point theorem]
+\label{thm:brouwer}
+\lean{Econ.brouwer_fixedPoint, Econ.brouwer_fixedPoint_continuousMap}
+\leanok
+Let $s$ be a nonempty compact convex subset of a finite-dimensional real normed space and $f$ continuous on $s$ with
+$f(s) \subseteq s$. Then $f(x) = x$ for some $x \in s$.
+\end{theorem}
+\begin{proof}
+\leanok
+This is \texttt{Brouwer.KKM.exists\_fixedPoint} (vendored). Its proof: (1) Sperner's lemma gives, in each barycentric
+subdivision of the standard simplex $\Delta$, a fully labelled cell; (2) the KKM lemma follows by compactness, as the
+cells shrink; (3) applying KKM to $F_i = \{x \in \Delta : f(x)_i \le x_i\}$ gives a point with $f(x)_i \le x_i$ for all
+$i$, and both sum to $1$, so $f(x) = x$; (4) a compact convex set $s$ lies in a simplex, and composing $f$ with the
+nearest-point retraction onto $s$ and barycentric coordinates transfers the fixed point to $s$; (5) a
+finite-dimensional normed space is linearly homeomorphic to a Euclidean space.
+\end{proof}
+
+\begin{theorem}[Kakutani's fixed-point theorem]
+\label{thm:kakutani}
+\lean{Econ.kakutani_fixedPoint}
+\leanok
+\uses{thm:brouwer}
+Let $s$ be a nonempty compact convex subset of a finite-dimensional real normed space and $\varphi$ assign to each
+$x \in s$ a nonempty convex $\varphi(x) \subseteq s$, with closed graph $\{(x, y) : x \in s,\ y \in \varphi(x)\}$. Then
+$x \in \varphi(x)$ for some $x \in s$.
+\end{theorem}
+\begin{proof}
+\leanok
+This is \texttt{Kakutani.exists\_fixedPoint} (vendored), Kakutani's 1941 proof. On the standard simplex: pick
+$y_v \in \varphi(v)$ for each $v$; the map that is linear on each cell of the $n$-th barycentric subdivision with value
+$y_v$ at each vertex $v$ is continuous, so Brouwer gives a fixed point $x_n = \sum_i \lambda_{ni}\, y(x_{ni})$, where
+the $x_{ni}$ are the vertices of its cell, within $2(r/(r+1))^n$ of $x_n$. Along a subsequence $x_n \to x_0$,
+$\lambda_n \to \lambda_0$ and $y(x_{ni}) \to y_{0i}$; the closed graph gives $y_{0i} \in \varphi(x_0)$, and convexity
+gives $x_0 = \sum_i \lambda_{0i} y_{0i} \in \varphi(x_0)$. For general $s$: $s$ lies in a simplex $K$; apply the simplex
+case to $x \mapsto \varphi(\pi(x))$ on $K$, with $\pi$ the nearest-point retraction onto $s$; the fixed point lies in
+$s$, where $\pi$ is the identity. A linear isomorphism with Euclidean space handles normed spaces.
+\end{proof}
+
+\begin{lemma}[The price simplex is a Brouwer domain]
+\label{lem:priceSimplex_brouwer}
+\lean{Econ.convex_priceSimplex, Econ.isCompact_priceSimplex, Econ.priceSimplex_nonempty, Econ.brouwerSimplex}
+\leanok
+\uses{def:priceSimplex, thm:brouwer}
+$\Delta$ is convex, compact, and nonempty when there is at least one good; hence Brouwer's theorem holds on $\Delta$.
+\end{lemma}
+\begin{proof}
+\leanok
+Convexity: nonnegativity and $\sum_i p_i = 1$ are preserved by convex combinations. Compactness: $\Delta$ is the
+intersection of the closed sets $\{p \ge 0\}$ and $\{\sum_i p_i = 1\}$ and lies in the compact cube $[0,1]^\iota$
+(Lemma: coordinates are at most $1$). Nonemptiness: uniform prices $p_i = 1/|\iota|$. Then apply
+Theorem~\ref{thm:brouwer} in $\R^\iota$.
+\end{proof}
+
+\begin{theorem}[Unconditional existence]
+\label{thm:existence_unconditional}
+\lean{Econ.gale_nikaido_debreu', Econ.ExchangeEconomy.exists_freeDisposalEquilibrium'}
+\leanok
+\uses{lem:priceSimplex_brouwer, thm:gnd, thm:ge_existence}
+For any nonempty finite set of goods, the Gale--Nikaido--Debreu lemma and the existence of a free-disposal equilibrium
+(Theorems~\ref{thm:gnd}, \ref{thm:ge_existence}) hold without the Brouwer hypothesis. Demand must still be defined and
+continuous on all of $\Delta$, so strongly monotone economies (MWG Prop.~17.C.1) are not yet covered.
+\end{theorem}
+\begin{proof}
+\leanok
+Supply Lemma~\ref{lem:priceSimplex_brouwer} as the Brouwer hypothesis of the conditional theorems.
+\end{proof}

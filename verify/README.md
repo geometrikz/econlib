@@ -23,13 +23,20 @@ steps, in order. Nothing counts as done until both pass.
    `challenge/` (the frozen, reviewed statements, as a separate Lake project with the same module names) and `comparator.json`.
    Any diff fails: a statement cannot change, and a theorem cannot be added,
    without the reviewed challenge changing in the same commit.
-2. **`lake check --paranoid`** exports the library and replays it through Lean's
-   kernel and every independent checker bundled with Lean (`leanchecker-paranoid`,
-   `lean4lean`, `nanoda`, `con-leche`, `con-ron`). Fails on `sorry` or on any
-   axiom beyond `propext`, `Quot.sound`, `Classical.choice`.
+2. **`lake check`** exports the whole library and replays it through Lean's
+   kernel. Fails on `sorry` or on any axiom beyond `propext`, `Quot.sound`,
+   `Classical.choice`. About 9 minutes on 4 cores.
 3. **`lake comparator --paranoid`** (Lean's built-in successor of the FRO's
    Comparator) proves each theorem in `comparator.json` has exactly the
-   statement in `challenge/`, with permitted axioms only.
+   statement in `challenge/`, with permitted axioms only, and has the proofs
+   checked by Lean's kernel plus every independent checker bundled with Lean:
+   `leanchecker-paranoid`, `lean4lean`, `nanoda` (Rust), `con-leche`, `con-ron`.
+   This covers the theorems and everything they depend on (~36k declarations,
+   about 4 minutes).
+
+`PARANOID=1 verify/check.sh` also runs the independent checkers in step 2,
+over all ~340k declarations including Mathlib: ~35 minutes, and nanoda needs
+more than 16 GB of RAM there, so CI does not run it.
 
 Both lake commands sandbox the build with `bubblewrap`; install it
 (`apt install bubblewrap`). On Ubuntu 24.04 you may also need
