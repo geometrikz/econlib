@@ -11,5 +11,7 @@ public import EconLean.Consumer.Continuity
 public import EconLean.Foundations.Correspondence
 public import EconLean.Foundations.Maximum
 public import EconLean.Audit.Statements.Berge
+public import EconLean.Macro.Growth.Solow
+public import EconLean.Audit.Statements.Solow
 
 @[expose] public section
