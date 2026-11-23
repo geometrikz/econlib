@@ -252,3 +252,54 @@ Bidding $\beta(v)$ is a best response for every $v \in [0,1]$, and expected reve
 With $z = \min(1, (m+1)b/m)$, the payoff is at most $v^{m+1}/(m+1)$ by the tangent-line inequality
 $v^{m+1} \ge z^{m+1} + (m+1) z^m (v - z)$. Revenue: $(m+1)\int_0^1 \tfrac{m}{m+1} v^{m+1}\,dv = m/(m+2)$.
 \end{proof}
+
+\section{The second-price auction}
+\label{sec:spa}
+
+\begin{theorem}[Vickrey 1961]
+\label{thm:spa}
+\lean{Econ.spaWins, Econ.erase_nonempty, Econ.highestOther, Econ.spaPayoff, Econ.highestOther_update, Econ.le_highestOther, Econ.highestOther_le_of_wins, Econ.le_highestOther_of_not_wins, Econ.wins_of_lt, Econ.not_wins_of_lt, Econ.spa_truthful_le, Econ.spa_truthful_dominant, Econ.spa_truthful_nash, Econ.spa_efficient, Econ.spa_exists_winner}
+\leanok
+\uses{def:nash}
+With at least two bidders, the highest bid winning (ties to the lowest index) and the winner paying the highest
+competing bid, bidding one's value is weakly dominant: never worse and strictly better against some bids. So
+truthful bidding is a Nash equilibrium, and it allocates to a highest-value bidder.
+\end{theorem}
+\begin{proof}
+\leanok
+The price does not depend on one's own bid. Truthful bidding wins exactly when the price is below the value (up to
+ties), so it collects every nonnegative surplus and avoids every negative one. Others bidding halfway between a
+misreport and the value make the misreport strictly worse.
+\end{proof}
+
+\section{Nash implementation}
+\label{sec:maskin}
+
+\begin{definition}[Nash implementation, monotonicity, no veto power]
+\label{def:nash-impl}
+\lean{Econ.IsNashAt, Econ.NashImplements, Econ.IsMaskinMonotone, Econ.HasNoVetoPower}
+\leanok
+A mechanism $g$ Nash implements $F$ if in every state the Nash equilibrium outcomes are exactly $F(\theta)$. $F$ is
+Maskin monotonic if $x \in F(\theta)$ and no agent's lower contour set at $x$ shrinks from $\theta$ to $\theta'$
+imply $x \in F(\theta')$. It has no veto power if an outcome ranked first by all agents but at most one is chosen.
+\end{definition}
+
+\begin{theorem}[Maskin's theorem; MWG Props.~23.C.2--23.C.3]
+\label{thm:maskin}
+\lean{Econ.maskinMonotone_of_nashImplements, Econ.MaskinMsg, Econ.MaskinRule2, Econ.integerWinner, Econ.maskinOutcome, Econ.exists_ne_ne, Econ.maskinRule2_unique, Econ.not_rule1_of_rule2, Econ.maskinOutcome_rule1, Econ.maskinOutcome_rule2, Econ.maskinOutcome_rule2_le, Econ.maskin_integer_deviation, Econ.maskin_sufficiency, Econ.weakPareto, Econ.weakPareto_isMaskinMonotone, Econ.weakPareto_hasNoVetoPower, Econ.weakPareto_nashImplements}
+\leanok
+\uses{def:nash-impl}
+A Nash implementable correspondence is Maskin monotonic. Conversely, with at least three agents, a monotonic
+correspondence with no veto power is Nash implemented by the canonical mechanism. For example, the weak Pareto
+correspondence is Nash implementable.
+\end{theorem}
+\begin{proof}
+\leanok
+Necessity: an equilibrium at $\theta$ supporting $x$ stays an equilibrium at $\theta'$ because every outcome a
+deviator can reach lies in her lower contour set. Sufficiency: messages are (state, outcome, integer). Unanimity
+on $(\theta, x, k)$ with $x \in F(\theta)$ yields $x$. A single deviator $j$ gets her announced outcome only if it
+is in her lower contour set at $x$ in the announced state. Otherwise the highest integer wins. With three agents
+the deviator and consensus are unique. Truth-telling supports every $x \in F(\theta)$. At a unanimous equilibrium,
+deviations reach exactly the lower contour set, so monotonicity applies. In any other equilibrium all agents but
+at most one can trigger the integer game and get any outcome, so no veto power applies.
+\end{proof}

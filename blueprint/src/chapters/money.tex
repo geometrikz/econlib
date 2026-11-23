@@ -1,0 +1,121 @@
+% Lean: EconLean/Macro/MoneySearch/{KiyotakiWright,LagosWright}.lean,
+%       EconLean/Macro/Credit/{KiyotakiMoore,CostlyStateVerification}.lean
+\chapter{Money and Credit Frictions}
+\label{chap:money}
+
+Sources: Kiyotaki--Wright (1993); Lagos--Wright (2005); Nosal--Rocheteau,
+\emph{Money, Payments, and Liquidity}; Kiyotaki--Moore (1997); Townsend (1979);
+Gale--Hellwig (1985); Bernanke--Gertler--Gilchrist (1999).
+
+\section{Fiat money in a search economy}
+
+\begin{definition}[Kiyotaki--Wright economy]
+\label{def:kw}
+\lean{Econ.KiyotakiWright.Params, Econ.KiyotakiWright.Params.IsValue, Econ.KiyotakiWright.Params.IsEq, Econ.KiyotakiWright.Params.IsMixedEq, Econ.KiyotakiWright.Params.rbar}
+\leanok
+A fraction $M\in(0,1)$ of agents hold a unit of money; agents meet at rate $\alpha>0$ and like a partner's good with
+probability $x\in(0,1]$; $0<c<u$, discount rate $r>0$. With acceptance probability $\Pi$, the values satisfy
+$rV_0 = \alpha(1-M)x^2(u-c) + \alpha M x\Pi(V_1-V_0-c)$ and $rV_1 = \alpha(1-M)x\Pi(u+V_0-V_1)$.
+A pure equilibrium is $\Pi\in\{0,1\}$ that is a best response ($V_1-V_0\ge c$ iff accepting); a mixed equilibrium
+has $\Pi\in(0,1)$ and $V_1-V_0=c$. Let $\bar r = \alpha x(1-M)(1-x)(u-c)/c$.
+\end{definition}
+
+\begin{theorem}[Existence of monetary equilibria]
+\label{thm:kw}
+\lean{Econ.KiyotakiWright.Params.delta_eq, Econ.KiyotakiWright.Params.nonmonetary, Econ.KiyotakiWright.Params.isValue_one_exists, Econ.KiyotakiWright.Params.monetary_iff, Econ.KiyotakiWright.Params.no_money_with_double_coincidence, Econ.KiyotakiWright.Params.mixed_iff, Econ.KiyotakiWright.Params.monetary_iff_rbar, Econ.KiyotakiWright.Params.rbar_pos}
+\leanok
+\uses{def:kw}
+$\Pi=0$ is always an equilibrium. $\Pi=1$ is an equilibrium iff $rc \le \alpha x(1-M)(1-x)(u-c)$, i.e.\ $r\le\bar r$,
+and $\bar r>0$ when $x<1$. With $x=1$ there is no monetary equilibrium. A mixed equilibrium exists iff the inequality
+is strict, with $\Pi = x + rc/(\alpha(1-M)x(u-c))$.
+\end{theorem}
+\begin{proof}
+\leanok
+Subtracting the Bellman equations at $\Pi=1$ gives $(r+\alpha x)(V_1-V_0) = \alpha x[(1-M)(u-x(u-c))+Mc]$, and
+$V_1-V_0\ge c$ rearranges to the stated inequality. At $\Pi=0$, $V_1=0\le V_0+c$. In a mixed equilibrium,
+substituting $V_1-V_0=c$ gives $rc = \alpha(1-M)x(u-c)(\Pi-x)$, and $\Pi<1$ is the strict inequality; conversely
+this $\Pi$ with $V_0 = \alpha(1-M)x^2(u-c)/r$, $V_1 = V_0+c$ solves the system.
+\end{proof}
+
+\section{Lagos--Wright and the Friedman rule}
+
+\begin{definition}[Lagos--Wright buyer problem]
+\label{def:lw}
+\lean{Econ.LagosWright.Env, Econ.LagosWright.Env.buyerObj, Econ.LagosWright.Env.IsOptimal}
+\leanok
+With matching probability $\sigma\in(0,1]$, buyer take-it-or-leave-it offers and linear cost, a buyer choosing real
+balances $z>0$ at nominal interest rate $i$ solves $\max_z\,-iz+\sigma(u(z)-z)$, where $u'$ is strictly decreasing
+on $(0,\infty)$ and $u'(q^*)=1$.
+\end{definition}
+
+\begin{theorem}[Lagos--Wright equilibrium and the Friedman rule]
+\label{thm:lw}
+\lean{Econ.LagosWright.Env.hasDerivAt_obj, Econ.LagosWright.Env.isOptimal_iff, Econ.LagosWright.Env.exists_optimal, Econ.LagosWright.Env.lt_star, Econ.LagosWright.Env.eq_star_iff, Econ.LagosWright.Env.antitone_in_i, Econ.LagosWright.Env.surplus_lt, Econ.LagosWright.Env.friedman_rule}
+\leanok
+\uses{def:lw}
+$q>0$ is optimal iff $\sigma(u'(q)-1)=i$; an optimum exists whenever $0\le i<\sigma(u'(a)-1)$ for some $a>0$. For
+$i>0$, $q<q^*$, and $q=q^*$ iff $i=0$; $q$ is strictly decreasing in $i$. DM surplus $\sigma(u(q)-q)$ is strictly
+lower for every $i>0$ than at $i=0$, where $q=q^*$: the Friedman rule is optimal.
+\end{theorem}
+\begin{proof}
+\leanok
+The objective is differentiable with derivative $-i+\sigma(u'(z)-1)$, which is strictly decreasing, so the
+first-order condition is necessary (interior local maximum) and sufficient (mean value theorem on each side).
+Existence follows from Darboux's theorem for $u'$ on $[a,q^*]$. The comparative statics follow from strict
+monotonicity of $u'$, and $u(q)-q$ is strictly increasing on $(0,q^*]$ by the mean value theorem.
+\end{proof}
+
+\section{Collateral constraints and amplification}
+
+\begin{definition}[Static Kiyotaki--Moore economy]
+\label{def:km}
+\lean{Econ.KiyotakiMoore.Params, Econ.KiyotakiMoore.Params.IsEq, Econ.KiyotakiMoore.Params.kEq}
+\leanok
+Constrained entrepreneurs with inherited land $\bar K>0$ and debt $B$ buy land $k=n/d$ with net worth
+$n=(a+q)\bar K - B$; the land price is $q=q_0+\varphi k$ with $\varphi\ge0$ and $\varphi\bar K<d$.
+\end{definition}
+
+\begin{theorem}[Amplification]
+\label{thm:km}
+\lean{Econ.KiyotakiMoore.Params.den_pos, Econ.KiyotakiMoore.Params.kEq_spec, Econ.KiyotakiMoore.Params.k_eq, Econ.KiyotakiMoore.Params.kEq_nonneg_iff, Econ.KiyotakiMoore.Params.existsUnique_eq, Econ.KiyotakiMoore.Params.response, Econ.KiyotakiMoore.Params.amplification}
+\leanok
+\uses{def:km}
+The equilibrium is unique, $k=(a\bar K+q_0\bar K-B)/(d-\varphi\bar K)$, and $k\ge0$ iff $(a+q_0)\bar K\ge B$. A
+productivity change moves holdings by $\bar K\Delta a/(d-\varphi\bar K)$, which for $\varphi>0$ and $\Delta a>0$
+strictly exceeds the fixed-price response $\bar K\Delta a/d$.
+\end{theorem}
+\begin{proof}
+\leanok
+Substituting the price into the borrowing constraint gives the linear equation $k(d-\varphi\bar K) = a\bar K+q_0\bar
+K-B$. The comparison is $1/(d-\varphi\bar K)>1/d$.
+\end{proof}
+
+\section{Costly state verification}
+
+\begin{definition}[Contracts and standard debt]
+\label{def:csv}
+\lean{Econ.CSV.Contract, Econ.CSV.LL, Econ.CSV.IsIC, Econ.CSV.debt, Econ.CSV.expRepay, Econ.CSV.expVerif, Econ.CSV.entPayoff, Econ.CSV.LenderPC}
+\leanok
+A contract on a finite state set $S$ is a verification set $V$ and repayment $R$, with limited liability
+$R(\omega)\le\omega$ and incentive compatibility: no state $\omega$ prefers to announce an unverified state $\omega'$
+with $R(\omega')\le\omega$. Standard debt with face value $D$ verifies $\{\omega<D\}$ and repays $\min(\omega,D)$.
+The lender's participation constraint is $E[R]-\kappa P(V)\ge I$.
+\end{definition}
+
+\begin{theorem}[Optimality of standard debt]
+\label{thm:csv}
+\lean{Econ.CSV.debt_isIC, Econ.CSV.debt_dominates, Econ.CSV.expVerif_le, Econ.CSV.debt_dominates_expected, Econ.CSV.debt_optimal, Econ.CSV.debt_optimal_pc}
+\leanok
+\uses{def:csv}
+Standard debt is IC with limited liability. For every IC, limited-liability contract there is a debt contract with
+the same expected repayment and weakly lower expected verification cost; so if the contract satisfies the lender's
+participation constraint, the debt contract does too and gives the entrepreneur the same expected payoff.
+\end{theorem}
+\begin{proof}
+\leanok
+IC forces all unverified states to repay the same amount $D_0$, and no state below $D_0$ can be unverified. Hence
+debt with face $D_0$ verifies a subset of $V$ and repays at least $R$ pointwise (if every state is verified, take
+$D_0=\max S$). Expected debt repayment is continuous and increasing in $D$ and is at most $E[R]$ at
+$D=\min_S R$, so by the intermediate value theorem some $D\le D_0$ matches $E[R]$ exactly, and its verification
+set is still inside $V$.
+\end{proof}

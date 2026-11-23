@@ -1,0 +1,110 @@
+% Lean: EconLean/Macro/Information/{LucasIslands,MorrisShin}.lean,
+%       EconLean/Macro/Labor/BurdettMortensen.lean, EconLean/Macro/Credit/ExternalFinancePremium.lean
+\chapter{Information Frictions, Wage Posting and the Financial Accelerator}
+\label{chap:info_macro}
+
+Sources: Lucas (1972, 1973); Romer, \emph{Advanced Macroeconomics}; Morris--Shin (2002); Burdett--Mortensen (1998);
+Manning, \emph{Monopsony in Motion}; Bernanke--Gertler--Gilchrist (1999).
+
+\section{The Lucas islands model}
+
+\begin{definition}[Islands economy]
+\label{def:lucas_islands}
+\lean{Econ.LucasIslands.Params, Econ.LucasIslands.Params.mse, Econ.LucasIslands.Params.theta, Econ.LucasIslands.Params.supply, Econ.LucasIslands.Params.IsEqPrice}
+\leanok
+An island sees $p_z = p+z$ with $\operatorname{Var} p = V_p>0$, $\operatorname{Var} z = V_z>0$ independent. A linear estimate
+$\hat z = \theta(p_z-\bar p)$ has error $\theta^2V_p+(1-\theta)^2V_z$; let $\theta^*=V_z/(V_p+V_z)$. Island supply is
+$b\theta^*(p_z-\bar p)$, and an equilibrium price equates aggregate supply $b\theta^*(p-\bar p)$ with demand $m-p$.
+\end{definition}
+
+\begin{theorem}[Signal extraction and the Lucas supply curve]
+\label{thm:lucas_islands}
+\lean{Econ.LucasIslands.Params.mse_sub, Econ.LucasIslands.Params.mse_theta_lt, Econ.LucasIslands.Params.theta_mem, Econ.LucasIslands.Params.aggregate_supply, Econ.LucasIslands.Params.one_add_pos, Econ.LucasIslands.Params.isEqPrice_iff, Econ.LucasIslands.Params.output_eq, Econ.LucasIslands.Params.rational_expectations, Econ.LucasIslands.Params.output_zero_iff, Econ.LucasIslands.Params.slope_anti}
+\leanok
+\uses{def:lucas_islands}
+$\theta^*\in(0,1)$ uniquely minimizes the error. Aggregate output is $b\theta^*(p-\bar p)$; in equilibrium
+$p=\bar p+(m-\bar p)/(1+b\theta^*)$ and $y=\frac{b\theta^*}{1+b\theta^*}(m-\bar p)$. Expected prices equal $\bar p$ iff $\bar p=Em$,
+and then output is zero iff $m=Em$: only money surprises are real. The slope $b\theta^*$ falls as $V_p$ rises.
+\end{theorem}
+\begin{proof}
+\leanok
+$\mathrm{mse}(\theta)-\mathrm{mse}(\theta^*)=(V_p+V_z)(\theta-\theta^*)^2$. Averaging supply uses $\sum w_i=1$ and $\sum w_iz_i=0$.
+The equilibrium conditions are linear in $p$; averaging them gives $Ep-\bar p=(Em-\bar p)/(1+b\theta^*)$.
+\end{proof}
+
+\section{The social value of public information}
+
+\begin{definition}[Beauty contest]
+\label{def:morris_shin}
+\lean{Econ.MorrisShin.IsEqWeight, Econ.MorrisShin.kappa, Econ.MorrisShin.lossOf, Econ.MorrisShin.loss}
+\leanok
+With best response $a_i=(1-r)E_i\theta+rE_i\bar a$, public precision $\alpha$ and private precision $\beta$, a linear equilibrium
+$a_i=\kappa y+(1-\kappa)x_i$ requires $(1-r\kappa)\frac{\alpha}{\alpha+\beta}+r\kappa=\kappa$. The loss is
+$E(a_i-\theta)^2=\kappa^2/\alpha+(1-\kappa)^2/\beta$.
+\end{definition}
+
+\begin{theorem}[Morris--Shin]
+\label{thm:morris_shin}
+\lean{Econ.MorrisShin.isEqWeight_iff, Econ.MorrisShin.kappa_ge_bayes, Econ.MorrisShin.loss_eq, Econ.MorrisShin.hasDerivAt_loss_alpha, Econ.MorrisShin.public_info_harmful_iff, Econ.MorrisShin.public_info_helps_of_le_half, Econ.MorrisShin.harmful_region_nonempty, Econ.MorrisShin.hasDerivAt_loss_beta, Econ.MorrisShin.private_info_helps}
+\leanok
+\uses{def:morris_shin}
+The unique linear equilibrium weight is $\kappa=\alpha/(\alpha+\beta(1-r))\ge\alpha/(\alpha+\beta)$, with loss
+$(\alpha+\beta(1-r)^2)/(\alpha+\beta(1-r))^2$. Its derivative in $\alpha$ is positive iff $\alpha<\beta(1-r)(2r-1)$ (a non-empty
+region), and negative when $r\le1/2$; its derivative in $\beta$ is always negative.
+\end{theorem}
+\begin{proof}
+\leanok
+Solve the linear fixed-point equation; substitute $\kappa$; differentiate the quotient:
+$\partial_\alpha L=(\beta(1-r)(2r-1)-\alpha)/(\alpha+\beta(1-r))^3$.
+\end{proof}
+
+\section{Equilibrium wage dispersion}
+
+\begin{definition}[Burdett--Mortensen]
+\label{def:burdett_mortensen}
+\lean{Econ.BurdettMortensen.Params, Econ.BurdettMortensen.wbarOf, Econ.BurdettMortensen.Params.F, Econ.BurdettMortensen.Params.Fc, Econ.BurdettMortensen.Params.wbar, Econ.BurdettMortensen.Params.l}
+\leanok
+With separation rate $\delta$, offer rate $\lambda$, productivity $p$ and reservation wage $b<p$, let
+$F(w)=\frac{\delta+\lambda}{\lambda}\bigl(1-\sqrt{(p-w)/(p-b)}\bigr)$ (clamped to $[0,1]$), $\bar w=p-(p-b)(\delta/(\delta+\lambda))^2$, and
+firm size $l(w)=\delta\lambda/(\delta+\lambda(1-F(w)))^2$ for $w\ge b$, $l(w)=0$ for $w<b$.
+\end{definition}
+
+\begin{theorem}[Equilibrium wage dispersion]
+\label{thm:burdett_mortensen}
+\lean{Econ.BurdettMortensen.Params.pb_pos, Econ.BurdettMortensen.Params.ratio_mem, Econ.BurdettMortensen.Params.b_lt_wbar, Econ.BurdettMortensen.Params.wbar_lt_p, Econ.BurdettMortensen.Params.F_b, Econ.BurdettMortensen.Params.sqrt_wbar, Econ.BurdettMortensen.Params.F_wbar, Econ.BurdettMortensen.Params.F_strictMonoOn, Econ.BurdettMortensen.Params.denom_eq, Econ.BurdettMortensen.Params.F_mem, Econ.BurdettMortensen.Params.Fc_eq, Econ.BurdettMortensen.Params.one_le_F, Econ.BurdettMortensen.Params.Fc_eq_one, Econ.BurdettMortensen.Params.profit_eq, Econ.BurdettMortensen.Params.profit_pos, Econ.BurdettMortensen.Params.equal_profit, Econ.BurdettMortensen.Params.no_profitable_deviation, Econ.BurdettMortensen.Params.isEquilibrium, Econ.BurdettMortensen.tendsto_wbar_atTop, Econ.BurdettMortensen.tendsto_wbar_zero}
+\leanok
+\uses{def:burdett_mortensen}
+$F$ rises strictly from $F(b)=0$ to $F(\bar w)=1$ with $b<\bar w<p$. Every $w\in[b,\bar w]$ earns profit $\delta\lambda(p-b)/(\delta+\lambda)^2$;
+no wage earns more. As $\lambda\to\infty$, $\bar w\to p$; as $\lambda\to0$, $\bar w\to b$ (Diamond paradox).
+\end{theorem}
+\begin{proof}
+\leanok
+$\delta+\lambda(1-F(w))=(\delta+\lambda)\sqrt{(p-w)/(p-b)}$, so $(p-w)l(w)$ is constant on the support. Above $\bar w$ the clamped $F$ is
+$1$, so size equals $l(\bar w)$ while the margin falls; below $b$ size is zero. The limits follow by continuity.
+\end{proof}
+
+\section{The external finance premium}
+
+\begin{definition}[Lending schedule and premium]
+\label{def:bgg}
+\lean{Econ.BGG.Schedule, Econ.BGG.Schedule.IsFace, Econ.BGG.Schedule.efp, Econ.BGG.uniform}
+\leanok
+The lender's net expected return $g(D)$ on face value $D$ is continuous, strictly increasing and strictly concave on $[0,D_{\max}]$ with
+$g(0)=0$; expected monitoring costs are $m(D)\ge0$. Loan $L$ requires $g(D)=L$. The external finance premium is $(g(D)+m(D))/L$.
+For returns uniform on $[0,1]$ and monitoring cost $\mu\omega$, $g(D)=D-(1+\mu)D^2/2$ and $m(D)=\mu D^2/2$.
+\end{definition}
+
+\begin{theorem}[External finance premium]
+\label{thm:bgg}
+\lean{Econ.BGG.Schedule.existsUnique_face, Econ.BGG.Schedule.face_pos, Econ.BGG.Schedule.face_strictMono, Econ.BGG.Schedule.avg_anti, Econ.BGG.Schedule.contractRate_strictMono, Econ.BGG.Schedule.efp_eq, Econ.BGG.Schedule.efp_eq_one_iff, Econ.BGG.Schedule.one_lt_efp, Econ.BGG.uniform_efp_zero, Econ.BGG.uniform_efp_strictMono, Econ.BGG.uniform_efp_anti_netWorth}
+\leanok
+\uses{def:bgg, thm:csv}
+Each feasible loan has a unique face value, increasing in the loan, and the contract rate $D/L$ rises with the loan. The premium is
+$1+m(D)/L$: it equals $1$ iff monitoring costs vanish. With uniform returns and $\mu>0$ it rises strictly with the loan, hence falls
+strictly with net worth.
+\end{theorem}
+\begin{proof}
+\leanok
+Existence by the intermediate value theorem, uniqueness by strict monotonicity. Strict concavity with $g(0)=0$ makes $g(D)/D$
+decreasing. In the uniform case the premium is $1+\mu D/(2-(1+\mu)D)$, increasing in $D$.
+\end{proof}

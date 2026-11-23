@@ -190,4 +190,125 @@ theorem sign_restrictions_set_identify :
     simp only [c] at this
     linarith
 
+/-! ### Sign restrictions at longer horizons -/
+
+/-- Sign restrictions on impulse responses at several horizons (Uhlig 2005):
+each `(h, i, j, s)` requires `s · (Φ_h B)ᵢⱼ ≥ 0`, where `Φ_h` are the reduced-form
+moving-average coefficients (`Φ₀ = I`). -/
+def SignOKH (Φ : ℕ → Matrix n n ℝ) (R : Set (ℕ × n × n × ℝ)) (B : Matrix n n ℝ) : Prop :=
+  ∀ r ∈ R, 0 ≤ r.2.2.2 * (Φ r.1 * B) r.2.1 r.2.2.1
+
+/-- The identified set under horizon sign restrictions. -/
+def identifiedSetH (S : Matrix n n ℝ) (Φ : ℕ → Matrix n n ℝ) (R : Set (ℕ × n × n × ℝ)) :
+    Set (Matrix n n ℝ) :=
+  {B | B * Bᵀ = S ∧ SignOKH Φ R B}
+
+/-- The rotation characterisation holds for horizon restrictions too. -/
+theorem identifiedSetH_eq {S B₀ : Matrix n n ℝ} (hB₀ : IsUnit B₀.det) (hS : B₀ * B₀ᵀ = S)
+    (Φ : ℕ → Matrix n n ℝ) (R : Set (ℕ × n × n × ℝ)) :
+    identifiedSetH S Φ R = {B | ∃ Q : Matrix n n ℝ, Q * Qᵀ = 1 ∧ B = B₀ * Q ∧ SignOKH Φ R B} := by
+  ext B
+  simp only [identifiedSetH, Set.mem_ofPred_eq]
+  rw [← hS]
+  constructor
+  · rintro ⟨h, hR⟩
+    obtain ⟨Q, hQ, rfl⟩ := (obsEquiv_iff_orthogonal hB₀).mp h
+    exact ⟨Q, hQ, rfl, hR⟩
+  · rintro ⟨Q, hQ, rfl, hR⟩
+    exact ⟨(obsEquiv_iff_orthogonal hB₀).mpr ⟨Q, hQ, rfl⟩, hR⟩
+
+omit [LinearOrder n] in
+/-- **More restrictions, smaller identified set**: adding restrictions (e.g. at
+further horizons) can only shrink the identified set. -/
+theorem identifiedSetH_anti (S : Matrix n n ℝ) (Φ : ℕ → Matrix n n ℝ)
+    {R R' : Set (ℕ × n × n × ℝ)} (h : R ⊆ R') :
+    identifiedSetH S Φ R' ⊆ identifiedSetH S Φ R :=
+  fun _ ⟨hB, hR⟩ => ⟨hB, fun r hr => hR r (h hr)⟩
+
+/-- Impact restrictions are the horizon-0 case (`Φ₀ = I`). -/
+theorem identifiedSetH_impact (S : Matrix n n ℝ) (Φ : ℕ → Matrix n n ℝ) (hΦ : Φ 0 = 1)
+    (R : Set (n × n × ℝ)) :
+    identifiedSetH S Φ ((fun r => (0, r)) '' R) = identifiedSet S R := by
+  ext B
+  simp only [identifiedSetH, identifiedSet, SignOKH, SignOK, Set.mem_ofPred_eq,
+    Set.forall_mem_image, hΦ, Matrix.one_mul]
+
+/-! ### Zero restrictions: the order condition is not sufficient -/
+
+/-- Zero restrictions on the impact matrix: `B i j = 0` for `(i, j) ∈ Z`. -/
+def ZeroOK (Z : Set (n × n)) (B : Matrix n n ℝ) : Prop := ∀ p ∈ Z, B p.1 p.2 = 0
+
+/-- **The order condition does not guarantee existence** (Rubio-Ramírez–Waggoner–Zha
+2010, §4): with `n = 3`, the `n(n−1)/2 = 3` restrictions "shock 1 has no impact on
+any variable" meet the count, yet no impact matrix satisfies them and
+`B Bᵀ = I`: a zero column makes `B` singular. -/
+theorem order_condition_not_sufficient_existence :
+    let Z : Set (Fin 3 × Fin 3) := {(0, 0), (1, 0), (2, 0)}
+    ¬ ∃ B : Matrix (Fin 3) (Fin 3) ℝ, ZeroOK Z B ∧ B * Bᵀ = 1 := by
+  intro Z ⟨B, hZ, hB⟩
+  have hcol : ∀ i, B i 0 = 0 := by
+    intro i
+    fin_cases i
+    · exact hZ (0, 0) (by simp [Z])
+    · exact hZ (1, 0) (by simp [Z])
+    · exact hZ (2, 0) (by simp [Z])
+  have hdet : B.det = 0 := det_eq_zero_of_column_eq_zero 0 hcol
+  have := congrArg det hB
+  rw [det_mul, det_transpose, hdet, zero_mul, det_one] at this
+  exact zero_ne_one this
+
+/-- **The order condition does not guarantee uniqueness**: with `n = 3` and the
+restrictions `B₀₁ = B₀₂ = 0` (variable 1 responds only to shock 1) and `B₁₀ = 0`,
+the count `n(n−1)/2 = 3` is met, but the block of shocks 2 and 3 can still be
+rotated: `I` and a 90° rotation of that block both satisfy the restrictions and
+`B Bᵀ = I`. This is why RWZ's rank condition is needed. -/
+theorem order_condition_not_sufficient_uniqueness :
+    let Z : Set (Fin 3 × Fin 3) := {(0, 1), (0, 2), (1, 0)}
+    let B₂ : Matrix (Fin 3) (Fin 3) ℝ := !![1, 0, 0; 0, 0, -1; 0, 1, 0]
+    ZeroOK Z 1 ∧ ZeroOK Z B₂ ∧ (1 : Matrix (Fin 3) (Fin 3) ℝ) * 1ᵀ = 1 ∧ B₂ * B₂ᵀ = 1 ∧
+      (1 : Matrix (Fin 3) (Fin 3) ℝ) ≠ B₂ := by
+  intro Z B₂
+  refine ⟨?_, ?_, by simp, ?_, ?_⟩
+  · intro p hp
+    simp only [Z, Set.mem_insert_iff, Set.mem_singleton_iff] at hp
+    rcases hp with rfl | rfl | rfl <;> simp
+  · intro p hp
+    simp only [Z, Set.mem_insert_iff, Set.mem_singleton_iff] at hp
+    rcases hp with rfl | rfl | rfl <;> simp [B₂]
+  · ext i j
+    fin_cases i <;> fin_cases j <;> simp [B₂, Matrix.mul_apply, Fin.sum_univ_three]
+  · intro h
+    have := congrFun (congrFun h 1) 1
+    simp [B₂] at this
+
+/-- **A continuum of observationally equivalent impact matrices** under the same
+three restrictions `B₀₁ = B₀₂ = B₁₀ = 0`: for every angle `θ`, rotating shocks 2
+and 3 by `θ` gives an orthogonal `B_θ` satisfying them, with a positive diagonal
+when `|θ| < π/2`, and different angles with different sines give different
+matrices. So the failure of uniqueness is not a labelling or sign artefact. -/
+theorem order_condition_continuum (θ : ℝ) :
+    let Z : Set (Fin 3 × Fin 3) := {(0, 1), (0, 2), (1, 0)}
+    let B : ℝ → Matrix (Fin 3) (Fin 3) ℝ := fun t =>
+      !![1, 0, 0; 0, Real.cos t, -Real.sin t; 0, Real.sin t, Real.cos t]
+    ZeroOK Z (B θ) ∧ B θ * (B θ)ᵀ = 1 ∧
+      (|θ| < Real.pi / 2 → ∀ i, 0 < B θ i i) ∧
+      (∀ θ', Real.sin θ ≠ Real.sin θ' → B θ ≠ B θ') := by
+  intro Z B
+  refine ⟨?_, ?_, ?_, ?_⟩
+  · intro p hp
+    simp only [Z, Set.mem_insert_iff, Set.mem_singleton_iff] at hp
+    rcases hp with rfl | rfl | rfl <;> simp [B]
+  · ext i j
+    fin_cases i <;> fin_cases j <;>
+      simp [B, Matrix.mul_apply, Fin.sum_univ_three] <;>
+      nlinarith [Real.sin_sq_add_cos_sq θ]
+  · intro hθ i
+    have hc : 0 < Real.cos θ := Real.cos_pos_of_mem_Ioo ⟨by linarith [neg_abs_le θ],
+      by linarith [le_abs_self θ]⟩
+    fin_cases i <;> simp [B, hc]
+  · intro θ' hs h
+    have := congrFun (congrFun h 2) 1
+    simp [B] at this
+    exact hs this
+
 end Econ.TimeSeries.SVAR

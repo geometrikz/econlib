@@ -108,3 +108,50 @@ change after good news is predictably below its rational counterpart.
 \leanok
 Geometric series; the diagnostic term only loads on news, which is present on impact only.
 \end{proof}
+
+\section{Forward guidance in general equilibrium}
+
+\begin{definition}[Forward-guidance experiment]
+\label{def:bm-fgge}
+\uses{def:bm-cnk}
+\lean{Econ.CognitiveNK.iter, Econ.CognitiveNK.iter_bound, Econ.CognitiveNK.iter_tendsto_zero, Econ.CognitiveNK.Model.IsRatePath, Econ.CognitiveNK.Model.response}
+\leanok
+The nominal rate is at steady state except for a unit cut at date $T$, and the economy is at steady state after $T$.
+Solving backward, $(x_0,\pi_0)=B^T(1/\sigma,\kappa/\sigma)$ with $B=\begin{pmatrix}M&1/\sigma\\ \kappa M&\beta M^f+\kappa/\sigma\end{pmatrix}$.
+\end{definition}
+
+\begin{theorem}[Gabaix: forward-guidance puzzle and its resolution]
+\label{thm:bm-fgge}
+\uses{def:bm-fgge, thm:bm-cnk-det}
+\lean{Econ.CognitiveNK.Model.fgGE_response, Econ.CognitiveNK.Model.fgGE_path_exists, Econ.CognitiveNK.Model.fgGE_puzzle_bound, Econ.CognitiveNK.Model.fgGE_puzzle, Econ.CognitiveNK.Model.fgGE_vanishes, Econ.CognitiveNK.Model.iter_nonneg, Econ.CognitiveNK.Model.fgGE_not_vanishes, Econ.CognitiveNK.Model.fgGE_vanishes_iff, Econ.CognitiveNK.Model.fgGE_vanishes_iff_determinate}
+\leanok
+Under rational expectations the output response to a cut $T$ periods ahead is at least $1/\sigma+T\kappa/\sigma^2$, so
+it grows without bound in $T$. If cognitive discounting makes a peg determinate, $\kappa<\sigma(1-M)(1-\beta M^f)$,
+the output and inflation responses tend to $0$ as $T\to\infty$; conversely the output response vanishes only if the
+peg is determinate. (Under rational expectations the return-to-steady-state path is a selection among bounded solutions.)
+\end{theorem}
+\begin{proof}
+\leanok
+At $M=M^f=1$, $\pi$ stays above $\kappa/\sigma$ and each backward step adds at least $\kappa/\sigma^2$ to $x$.
+Under the peg condition, $w=(1,w_2)$ with $w_2$ between $\kappa M/(1-\beta M^f-\kappa/\sigma)$ and $\sigma(1-M)$ satisfies
+$Bw\le\rho w$ for some $\rho<1$, so the nonnegative iterates are bounded by $c\rho^T w$. Otherwise
+$\ell=(1,(1-M)/(\kappa M))$ satisfies $\ell B\ge\ell$, so $\ell\cdot(x_T,\pi_T)$ stays above $1/\sigma$.
+\end{proof}
+
+\section{Diagnostic credit cycles}
+
+\begin{theorem}[Bordalo--Gennaioli--Shleifer: credit cycles]
+\label{thm:bm-credit}
+\uses{def:bm-de, thm:bm-bgs-price}
+\lean{Econ.CreditCycles.spreadIRF, Econ.CreditCycles.investIRF, Econ.CreditCycles.forecastIRF_diagnostic, Econ.CreditCycles.spreadIRF_eq, Econ.CreditCycles.investIRF_eq, Econ.CreditCycles.spread_too_low, Econ.CreditCycles.invest_boom, Econ.CreditCycles.spread_reversal, Econ.CreditCycles.invest_bust, Econ.CreditCycles.invest_bust_lt, Econ.CreditCycles.spread_reversal_pos, Econ.CreditCycles.spread, Econ.CreditCycles.fcNext, Econ.CreditCycles.spreadNext, Econ.CreditCycles.condExp, Econ.CreditCycles.fcNext_eq, Econ.CreditCycles.condExp_spreadNext, Econ.CreditCycles.spread_sentiment, Econ.CreditCycles.expected_spread_change_eq, Econ.CreditCycles.cov_expected_change}
+\leanok
+With spreads $S_t=-\chi\hat E_ta_{t+1}$ and investment $k_{t+1}=\hat E_ta_{t+1}/(1-\alpha)$, after good news spreads fall and
+investment rises by more than under rational expectations; next period spreads rise by $\chi\theta\rho$ more and
+investment falls by $\theta\rho/(1-\alpha)$ more. The expected future spread $E_tS_{t+1}=-\chi\rho^2a_t$ does not depend on $\theta$, so the
+spread's sentiment component $-\chi\theta\rho\varepsilon_t$ fully reverts: the expected spread change exceeds its rational
+value by $\chi\theta\rho\varepsilon_t$, which covaries positively with news and negatively with sentiment.
+\end{theorem}
+\begin{proof}
+\leanok
+The diagnostic forecast response is $(1+\theta[k=0])\rho^{k+1}$, and $\hat E_ta_{t+1}=\rho a_t+\theta\rho\varepsilon_t$.
+\end{proof}

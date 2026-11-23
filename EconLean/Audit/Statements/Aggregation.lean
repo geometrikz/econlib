@@ -15,6 +15,7 @@ public import EconLean.Bridges.Aggregation.GrossSubstitutes
 public import EconLean.Bridges.Aggregation.LawOfDemand
 public import EconLean.Bridges.Aggregation.Gorman
 public import EconLean.Bridges.Aggregation.Tatonnement
+public import EconLean.Bridges.Aggregation.SMD
 
 @[expose] public section
 
@@ -140,5 +141,61 @@ theorem frozen_grossSubstitutes_cost_pos_two_goods {z : (Fin 2 → ℝ) → (Fin
   hGS.cost_pos_two_goods hhom hW hps hq hzs hzq
 
 end Tatonnement
+
+section SMD
+
+theorem frozen_openPriceSimplex_def {ι : Type*} [Fintype ι] (p : ι → ℝ) :
+    p ∈ openPriceSimplex ι ↔ (∀ i, 0 < p i) ∧ ∑ i, p i = 1 := Iff.rfl
+
+theorem frozen_excessWARP_def {ι : Type*} [Fintype ι] (z : (ι → ℝ) → (ι → ℝ))
+    (D : Set (ι → ℝ)) :
+    ExcessWARP z D ↔
+      ∀ p ∈ D, ∀ p' ∈ D, z p ≠ z p' → cost p (z p') ≤ 0 → 0 < cost p' (z p) := Iff.rfl
+
+theorem frozen_debreu_decomposition {ι : Type*} [Fintype ι] [DecidableEq ι] [Nonempty ι]
+    {z : (ι → ℝ) → (ι → ℝ)} {c : ℝ} {D : Set (ι → ℝ)} (hD : D ⊆ openPriceSimplex ι)
+    (hW : WalrasLaw z D) (hα : ∀ p ∈ D, ∀ l, 0 < z p l + c * p l) :
+    ∃ zs : ι → (ι → ℝ) → (ι → ℝ), (∀ p ∈ D, ∑ l, zs l p = z p) ∧
+      ∀ l, WalrasLaw (zs l) D ∧ ExcessWARP (zs l) D :=
+  debreu_decomposition hD hW hα
+
+theorem frozen_debreu_decomposition_of_boundedBelow {ι : Type*} [Fintype ι] [DecidableEq ι]
+    [Nonempty ι] {z : (ι → ℝ) → (ι → ℝ)} {D : Set (ι → ℝ)} (hD : D ⊆ openPriceSimplex ι)
+    (hW : WalrasLaw z D) {ε s : ℝ} (hε : 0 < ε) (hεD : ∀ p ∈ D, ∀ i, ε ≤ p i)
+    (hb : ∀ p ∈ D, ∀ l, -s < z p l) :
+    ∃ zs : ι → (ι → ℝ) → (ι → ℝ), (∀ p ∈ D, ∑ l, zs l p = z p) ∧
+      ∀ l, WalrasLaw (zs l) D ∧ ExcessWARP (zs l) D :=
+  debreu_decomposition_of_boundedBelow hD hW hε hεD hb
+
+theorem frozen_debreuPiece_def {ι : Type*} [Fintype ι] [DecidableEq ι]
+    (z : (ι → ℝ) → (ι → ℝ)) (c : ℝ) (l : ι) (p : ι → ℝ) :
+    debreuPiece z c l p = (z p l + c * p l) • (Pi.single l 1 - (p l / cost p p) • p) := rfl
+
+theorem frozen_debreu_pieces {ι : Type*} [Fintype ι] [DecidableEq ι] [Nonempty ι]
+    {z : (ι → ℝ) → (ι → ℝ)} {c : ℝ} {D : Set (ι → ℝ)} (hD : D ⊆ openPriceSimplex ι)
+    (hW : WalrasLaw z D) (hα : ∀ p ∈ D, ∀ l, 0 < z p l + c * p l) :
+    (∀ p ∈ D, ∑ l, debreuPiece z c l p = z p) ∧
+      ∀ l, WalrasLaw (debreuPiece z c l) D ∧ ExcessWARP (debreuPiece z c l) D :=
+  ⟨fun p hp => sum_debreuPiece c (hD hp).1 (hW p hp),
+    fun l => ⟨walrasLaw_debreuPiece z c l hD, excessWARP_debreuPiece hD fun p hp => hα p hp l⟩⟩
+
+theorem frozen_continuousOn_debreuPiece {ι : Type*} [Fintype ι] [DecidableEq ι] [Nonempty ι]
+    {z : (ι → ℝ) → (ι → ℝ)} (c : ℝ) (l : ι) {D : Set (ι → ℝ)} (hD : D ⊆ openPriceSimplex ι)
+    (hz : ContinuousOn z D) : ContinuousOn (debreuPiece z c l) D :=
+  continuousOn_debreuPiece c l hD hz
+
+theorem frozen_zBad_def (p : Fin 2 → ℝ) :
+    SMDExamples.zBad p = ![(p 0 - 1 / 4) * (p 0 - 3 / 4),
+      -(p 0 * ((p 0 - 1 / 4) * (p 0 - 3 / 4))) / p 1] := rfl
+
+theorem frozen_DBad_def (p : Fin 2 → ℝ) :
+    p ∈ SMDExamples.DBad ↔ p ∈ openPriceSimplex (Fin 2) ∧ ∀ i, 1 / 8 ≤ p i := Iff.rfl
+
+theorem frozen_zBad_smd : ¬ ExcessWARP SMDExamples.zBad SMDExamples.DBad ∧
+    ∃ zs : Fin 2 → (Fin 2 → ℝ) → (Fin 2 → ℝ), (∀ p ∈ SMDExamples.DBad, ∑ l, zs l p = SMDExamples.zBad p) ∧
+      ∀ l, WalrasLaw (zs l) SMDExamples.DBad ∧ ExcessWARP (zs l) SMDExamples.DBad :=
+  SMDExamples.zBad_smd
+
+end SMD
 
 end Econ.Audit

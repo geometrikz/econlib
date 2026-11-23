@@ -323,3 +323,93 @@ rule. Walras' law: $\cos\varphi(-\sin\varphi) + \sin\varphi\cos\varphi = 0$. And
 $p^* \cdot z(p(t)) = \tfrac{\pi}{8}e^{-t}(\cos\varphi - \sin\varphi) > 0$ because $\sin\varphi < \sin(\pi/2 - \varphi) =
 \cos\varphi$ for $\varphi < \pi/4$. Theorem~\ref{thm:tatonnement} applies.
 \end{proof}
+
+\section{Sonnenschein--Mantel--Debreu: Debreu's decomposition}
+\label{sec:smd}
+
+\begin{definition}[Open simplex; Debreu's pieces]
+\label{def:debreu_piece}
+\lean{Econ.openPriceSimplex, Econ.debreuPiece}
+\leanok
+$\Delta^\circ = \{p \gg 0 : \sum_i p_i = 1\}$. For $z$, a constant $c$ and a good $l$,
+$z^l(p) = (z_l(p) + c\, p_l)\,\big(e_l - \tfrac{p_l}{\|p\|^2} p\big)$.
+\end{definition}
+
+\begin{lemma}[Each piece satisfies Walras' law; the pieces sum to $z$]
+\label{lem:debreu_pieces}
+\lean{Econ.cost_self_pos, Econ.cost_single_right, Econ.cost_debreuDir, Econ.walrasLaw_debreuPiece,
+  Econ.sum_debreuPiece, Econ.continuousOn_debreuPiece}
+\leanok
+\uses{def:debreu_piece}
+$p \cdot (e_l - \frac{p_l}{\|p\|^2} p) = p_l - p_l = 0$, so $p \cdot z^l(p) = 0$. If $p \cdot z(p) = 0$ then
+$\sum_l z^l(p) = z(p)$. Each $z^l$ is continuous wherever $z$ is.
+\end{lemma}
+\begin{proof}
+\leanok
+With $\alpha = z(p) + c p$: $\sum_l \alpha_l (e_l - \frac{p_l}{\|p\|^2} p) = \alpha - \frac{\alpha \cdot p}{\|p\|^2} p$, and
+$\alpha \cdot p = p \cdot z(p) + c\|p\|^2 = c \|p\|^2$, so the sum is $z(p) + cp - cp = z(p)$. Continuity: sums, products
+and the quotient $p_l / \|p\|^2$ with $\|p\|^2 > 0$.
+\end{proof}
+
+\begin{lemma}[Strict Cauchy--Schwarz on the open simplex]
+\label{lem:sq_cost_lt}
+\lean{Econ.sq_cost_lt}
+\leanok
+For distinct $p, q \in \Delta^\circ$, $(p \cdot q)^2 < \|p\|^2 \|q\|^2$.
+\end{lemma}
+\begin{proof}
+\leanok
+Lagrange's identity: $\|p\|^2\|q\|^2 - (p\cdot q)^2 = \tfrac12 \sum_{i,j} (p_i q_j - p_j q_i)^2$. If every term vanished then
+$p_i \sum_j q_j = q_i \sum_j p_j$, i.e.\ $p_i = q_i$ for all $i$ (both sum to $1$), contradicting $p \ne q$.
+\end{proof}
+
+\begin{lemma}[Each piece satisfies the weak axiom]
+\label{lem:debreu_warp}
+\lean{Econ.excessWARP_debreuPiece}
+\leanok
+\uses{lem:debreu_pieces, lem:sq_cost_lt, def:law_of_demand}
+If $z_l(p) + c\,p_l > 0$ on $D \subseteq \Delta^\circ$, then $z^l$ satisfies WARP on $D$.
+\end{lemma}
+\begin{proof}
+\leanok
+Let $p, q \in D$ with $z^l(p) \ne z^l(q)$ (so $p \ne q$) and $p \cdot z^l(q) \le 0$. Write $N_p = \|p\|^2$, $N_q = \|q\|^2$,
+$C = p \cdot q > 0$. Then $p \cdot z^l(q) = \alpha(q)(p_l - q_l C / N_q)$ with $\alpha(q) > 0$, so $p_l \le q_l C/N_q$. Hence
+$q \cdot z^l(p) = \alpha(p)(q_l - p_l C/N_p)$ and $p_l C / N_p \le q_l C^2/(N_p N_q) < q_l$ by Lemma~\ref{lem:sq_cost_lt}, so
+$q \cdot z^l(p) > 0$.
+\end{proof}
+
+\begin{theorem}[Debreu's decomposition; SMD, revealed-preference form]
+\label{thm:debreu_decomposition}
+\lean{Econ.debreu_decomposition, Econ.debreu_decomposition_of_boundedBelow}
+\leanok
+\uses{lem:debreu_pieces, lem:debreu_warp}
+Let $z$ satisfy Walras' law on $D \subseteq \Delta^\circ$ with $z_l(p) + c\,p_l > 0$ on $D$ for some $c$ (in particular if $z$
+is bounded below by $-s$ and all prices in $D$ are at least $\varepsilon > 0$, taking $c = \max(s,0)/\varepsilon$). Then $z$
+is a sum of $L$ functions, each satisfying Walras' law and the weak axiom on $D$. Not formalized: that each piece is the
+excess demand of a rational consumer (Debreu's second step); WARP is necessary for that, and sufficient
+for two goods, but not for $L \ge 3$.
+\end{theorem}
+\begin{proof}
+\leanok
+Take the pieces $z^l$ of Definition~\ref{def:debreu_piece} and apply Lemmas~\ref{lem:debreu_pieces} and
+\ref{lem:debreu_warp}. For the bounded-below form, $z_l(p) + c p_l > -s + \max(s,0) \ge 0$ since $c p_l \ge \max(s, 0)$.
+\end{proof}
+
+\begin{theorem}[An aggregate violating WARP that decomposes into WARP pieces]
+\label{thm:zbad_smd}
+\lean{Econ.SMDExamples.fBad, Econ.SMDExamples.zBad, Econ.SMDExamples.DBad, Econ.SMDExamples.DBad_subset,
+  Econ.SMDExamples.convex_DBad, Econ.SMDExamples.walrasLaw_zBad, Econ.SMDExamples.not_excessWARP_zBad,
+  Econ.SMDExamples.zBad_weight_pos, Econ.SMDExamples.zBad_smd}
+\leanok
+\uses{thm:debreu_decomposition, thm:warp_convex}
+With $f(t) = (t - \frac14)(t - \frac34)$ and $z(p) = (f(p_0), -p_0 f(p_0)/p_1)$ on
+$D = \{p \in \Delta^\circ : p_i \ge \frac18\}$, $z$ satisfies Walras' law, has equilibria $(\frac14, \frac34)$ and
+$(\frac34, \frac14)$ but not their midpoint, hence violates WARP; yet it is a sum of two WARP excess demands.
+\end{theorem}
+\begin{proof}
+\leanok
+Walras' law: $p_0 f - p_1 \cdot p_0 f/p_1 = 0$. $D$ is convex. If $z$ satisfied WARP, its equilibrium set would be convex
+(Theorem~\ref{thm:warp_convex}), but $f(\frac12) = -\frac1{16} \ne 0$. Weights with $c = 16$: $f(p_0) + 16 p_0 \ge -\frac1{16} + 2$,
+and $-p_0 f(p_0)/p_1 + 16 p_1 > 0$ because $p_0 f(p_0) \le \frac3{16} < \frac14 \le 16 p_1^2$. Apply
+Theorem~\ref{thm:debreu_decomposition}.
+\end{proof}

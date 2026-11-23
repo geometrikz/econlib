@@ -708,3 +708,120 @@ immune to such deviations is $s=1$, and at $s=1$ outbidding strictly hurts. Acce
 The loser gets $-\alpha/2$. Winning at $s'=s$ gives strictly more (two cases, $s\ge1/2$ and $s<1/2$, using
 $\beta<1$), and the winning utility is continuous in $s'$.
 \end{proof}
+
+
+\section{Procedural choice and welfare}
+
+\begin{theorem}[Simon: satisficing is rationalizable]
+\label{thm:beh-satisfice}
+\lean{Econ.Satisficing.sat, Econ.Satisficing.satisfice, Econ.Satisficing.satisfice_mem, Econ.Satisficing.rank, Econ.Satisficing.rank_injective, Econ.Satisficing.satisfice_isMax, Econ.Satisficing.satisfice_warp, Econ.Satisficing.satisfice_ne_argmax}
+\leanok
+Searching in a fixed order and taking the first alternative with $u\ge v$ (else the last one) maximizes the strict
+ranking that puts satisfactory alternatives first (earlier ones better) and unsatisfactory ones after (later ones
+better). Hence satisficing satisfies WARP, although the ranking need not agree with $u$.
+\end{theorem}
+\begin{proof}
+\leanok
+Case analysis on whether the menu contains a satisfactory alternative.
+\end{proof}
+
+\begin{theorem}[Masatlioglu--Nakajima--Ozbay: revealed attention]
+\label{thm:beh-mno}
+\lean{Econ.LimitedAttention.IsAttentionFilter, Econ.LimitedAttention.IsCLA, Econ.LimitedAttention.WARPLA, Econ.LimitedAttention.mem_attention_of_change, Econ.LimitedAttention.revealed_pref, Econ.LimitedAttention.warpLA_of_cla, Econ.LimitedAttention.Γex, Econ.LimitedAttention.uex, Econ.LimitedAttention.cex, Econ.LimitedAttention.example_cla, Econ.LimitedAttention.WARP, Econ.LimitedAttention.example_violates_warp, Econ.LimitedAttention.RevPref, Econ.LimitedAttention.exists_undominated, Econ.LimitedAttention.exists_rank, Econ.LimitedAttention.revealedAttention, Econ.LimitedAttention.cla_of_warpLA, Econ.LimitedAttention.cla_iff_warpLA, Econ.LimitedAttention.revPref_ranked}
+\leanok
+(MNO Theorems 1 and 2.) For a choice with limited attention, if removing $x\ne c(T)$ from $T$ changes the choice then $c(T)$ is revealed better
+than $x$, and the choice satisfies WARP(LA). Conversely, on a finite set of alternatives every choice function satisfying
+WARP(LA) is a choice with limited attention, so the two are equivalent. Every revealed preference ($x$ chosen from $T$,
+and removing $y$ changes the choice) is respected by every representing ranking. A choice picking $a$ from $\{a,b,c\}$
+and $b$ from $\{a,b\}$ violates WARP but is a choice with limited attention.
+\end{theorem}
+\begin{proof}
+\leanok
+If $x$ were not considered, removing it would leave attention and hence the choice unchanged. For WARP(LA), take $x^*$
+the best element of $S$. For sufficiency, WARP(LA) makes the revealed preference acyclic in the sense that every nonempty
+set has an undominated element; strong induction then gives an injective ranking extending it. Take as attention
+at $S$ the chosen element together with the elements it is revealed preferred to. This is an attention filter, and
+$c(S)$ is its best element. The example is checked by computation.
+\end{proof}
+
+\begin{theorem}[Bernheim--Rangel: choice-based welfare]
+\label{thm:beh-br}
+\lean{Econ.ChoiceWelfare.Data, Econ.ChoiceWelfare.Data.Pstar, Econ.ChoiceWelfare.Data.Rich, Econ.ChoiceWelfare.Data.IsWeakOptimum, Econ.ChoiceWelfare.Data.chosen_isWeakOptimum, Econ.ChoiceWelfare.Data.exists_weak_optimum, Econ.ChoiceWelfare.Data.pstar_acyclic, Econ.ChoiceWelfare.Data.pstar_asymm, Econ.ChoiceWelfare.Data.pstar_iff_of_utility, Econ.ChoiceWelfare.Data.frame_ambiguity}
+\leanok
+Let $xP^*y$ when $y$ is never chosen with $x$ available. Every choice is a weak welfare optimum. On a rich domain
+weak optima exist in every menu and $P^*$ is acyclic. When choice maximizes a utility independently of frames,
+$xP^*y\iff u(y)<u(x)$. Conflicting frames leave $P^*$ incomplete.
+\end{theorem}
+\begin{proof}
+\leanok
+Any element chosen from the menu of a cycle would be dominated by its predecessor.
+\end{proof}
+
+\section{Smooth ambiguity}
+
+\begin{theorem}[Klibanoff--Marinacci--Mukerji: ambiguity aversion]
+\label{thm:beh-kmm}
+\lean{Econ.SmoothAmbiguity.E, Econ.SmoothAmbiguity.V, Econ.SmoothAmbiguity.reduced, Econ.SmoothAmbiguity.V_le_reduced, Econ.SmoothAmbiguity.concaveOn_of_averse, Econ.SmoothAmbiguity.V_mix_ge, Econ.SmoothAmbiguity.hedging, Econ.SmoothAmbiguity.V_linear}
+\leanok
+With $V(f)=\sum_i\pi_i\phi(E_{p_i}f)$, concave $\phi$ gives $V(f)\le\phi(\sum_i\pi_iE_{p_i}f)$, and conversely
+this inequality on all two-model problems forces $\phi$ concave. Concave $\phi$ makes $V$ concave in the act, so hedging
+between indifferent acts is weakly preferred; linear $\phi$ gives subjective expected utility.
+\end{theorem}
+\begin{proof}
+\leanok
+Jensen; for the converse, let model $i$ be a point mass on state $i$.
+\end{proof}
+
+\section{Robust control}
+
+\begin{theorem}[Hansen--Sargent: multiplier preferences]
+\label{thm:beh-multiplier}
+\lean{Econ.Multiplier.mult, Econ.Multiplier.penalized, Econ.Multiplier.worstCase, Econ.Multiplier.penalized_eq_neg_objective, Econ.Multiplier.worstCase_isProb, Econ.Multiplier.mult_eq_at_worstCase, Econ.Multiplier.mult_le_penalized, Econ.Multiplier.isLeast_mult, Econ.Multiplier.eq_worstCase_of_min, Econ.Multiplier.worstCase_tilts, Econ.Multiplier.mult_le_eu, Econ.Multiplier.min_le_mult, Econ.Multiplier.mult_add_const, Econ.Multiplier.mult_mono, Econ.Multiplier.mult_concave}
+\leanok
+\uses{thm:beh-gibbs}
+For a full-support reference model $p$ and $\theta>0$,
+\[\min_q\Big(\sum_s q(s)u(s)+\theta\,\mathrm{KL}(q\Vert p)\Big)=-\theta\log\sum_s p(s)e^{-u(s)/\theta},\]
+attained uniquely at the exponential tilt $q^*(s)\propto p(s)e^{-u(s)/\theta}$, whose likelihood ratio $q^*/p$ is strictly
+decreasing in $u$. The value lies between $\min_s u(s)$ and $E_pu$, and is translation invariant, monotone and concave.
+\end{theorem}
+\begin{proof}
+\leanok
+The objective is the negative of the rational-inattention objective with payoffs $-u$, so the Gibbs variational
+principle applies. Bounds: evaluate at $q=p$, and use $\mathrm{KL}\ge0$. Concavity: evaluate both utilities at the
+worst case of the mixture.
+\end{proof}
+
+\section{Learning and evolution in games}
+
+\begin{theorem}[Hart--Mas-Colell: no regret and correlated equilibrium]
+\label{thm:beh-noregret}
+\lean{Econ.NoRegret.cceGain, Econ.NoRegret.IsCCE, Econ.NoRegret.IsCE, Econ.NoRegret.emp, Econ.NoRegret.extRegret, Econ.NoRegret.intRegret, Econ.NoRegret.isCE_zero_iff, Econ.NoRegret.cceGain_eq_sum, Econ.NoRegret.isCCE_of_isCorrelatedEq, Econ.NoRegret.sum_periods, Econ.NoRegret.emp_mem, Econ.NoRegret.extRegret_eq, Econ.NoRegret.intRegret_eq, Econ.NoRegret.isCCE_emp_iff, Econ.NoRegret.isCorrelatedEq_emp_iff, Econ.NoRegret.continuous_obedienceGain, Econ.NoRegret.continuous_cceGain, Econ.NoRegret.isClosed_lotteries, Econ.NoRegret.isCorrelatedEq_of_limit, Econ.NoRegret.isCCE_of_limit}
+\leanok
+For a finite play history, the empirical distribution of play is an $\varepsilon$-coarse correlated equilibrium iff
+every player's average external regret is at most $\varepsilon$, and an $\varepsilon$-correlated equilibrium iff every
+average internal (pairwise) regret is at most $\varepsilon$. Every correlated equilibrium is a coarse correlated
+equilibrium. If regrets vanish along a sequence of histories, every limit point of the empirical distributions is a
+(coarse) correlated equilibrium.
+\end{theorem}
+\begin{proof}
+\leanok
+Average regret is a sum over periods; grouping periods by the realized profile turns it into the expectation under
+the empirical distribution. The equilibrium gains are continuous in the distribution, so the closed conditions
+pass to limits.
+\end{proof}
+
+\begin{theorem}[Maynard Smith--Price: evolutionarily stable strategies]
+\label{thm:beh-ess}
+\lean{Econ.ESS.E, Econ.ESS.IsESS, Econ.ESS.IsNash, Econ.ESS.isNash_of_isESS, Econ.ESS.isESS_of_strict, Econ.ESS.E_mix_left, Econ.ESS.E_mix_right, Econ.ESS.advantage_eq, Econ.ESS.isESS_iff_invasion, Econ.ESS.hawkDove, Econ.ESS.hdMix, Econ.ESS.E_hawkDove, Econ.ESS.hdMix_surj, Econ.ESS.hawkDove_isESS, Econ.ESS.hawk_not_nash}
+\leanok
+In a symmetric game, an ESS is a symmetric Nash equilibrium, and a strict symmetric Nash equilibrium is an ESS.
+A strategy $x$ is an ESS iff every mutant $y\ne x$ has a positive invasion barrier: $x$ earns strictly more than $y$
+against $(1-\varepsilon)x+\varepsilon y$ for all small $\varepsilon>0$ (Weibull, Proposition 2.2). In Hawk--Dove with
+$0<V<C$, playing Hawk with probability $V/C$ is an ESS, and pure Hawk is not a Nash equilibrium.
+\end{theorem}
+\begin{proof}
+\leanok
+The payoff advantage against the post-entry population is $(1-\varepsilon)(E(x,x)-E(y,x))+\varepsilon(E(x,y)-E(y,y))$,
+which is affine in $\varepsilon$. In Hawk--Dove every mutant ties against $V/C$ and
+$E(x,y)-E(y,y)=\tfrac{C}{2}(q-V/C)^2>0$.
+\end{proof}

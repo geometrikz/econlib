@@ -271,3 +271,25 @@ for each further price. All firms charging $p$ is an equilibrium iff $p = u$, th
 \leanok
 Below $u$ a firm can raise its price to $\min(u, p + s)$ without losing anyone; above $u$ nobody buys.
 \end{proof}
+
+\section{The linear city}
+\label{sec:hotelling}
+
+\begin{theorem}[Quadratic transport costs; d'Aspremont--Gabszewicz--Thisse 1979]
+\label{thm:linear-city}
+\lean{Econ.hotellingShare, Econ.hotellingPrice, Econ.hotellingProfit, Econ.hotelling_equilibrium, Econ.hotellingDemand, Econ.one_sub_hotellingShare, Econ.one_sub_hotellingDemand, Econ.hotelling_bestResponse, Econ.hotelling_nash, Econ.hotelling_symmetric, Econ.hotelling_max_differentiation}
+\leanok
+Consumers are uniform on $[0,1]$, firms sit at $a$ and $1-b$ with cost $c$, and transport costs $t\,d^2$. With the
+truncated demands (firm 1 sells to the left of the indifferent consumer, firm 2 to the rest), the prices
+$p_1^* = c + t(1-a-b)(1 + (a-b)/3)$ and $p_2^*$ (swap $a$ and $b$) form a Nash equilibrium, with market share
+$(3+a-b)/6$ and profit $t(1-a-b)(3+a-b)^2/18$ for firm 1. At the ends of the city prices are $c+t$ and profits $t/2$.
+Firm 1's equilibrium profit strictly falls as it moves inward, which drives maximal differentiation (the location
+game itself is not formalized).
+\end{theorem}
+\begin{proof}
+\leanok
+Firm 2's demand at $(p_1, p_2)$ is firm 1's formula with $a, b$ and the prices swapped, so it suffices to treat
+firm 1. Where the share is nonnegative, firm 1's profit is $\pi^* - (p - p_1^*)^2/(2t(1-a-b))$. With $s = 3 + a - b$ the
+profit is $t(4 - 2b - s)s^2/18$, whose difference between $s < s'$ factors as
+$(s'-s)\bigl(s^2 + ss' + s'^2 - (4-2b)(s+s')\bigr)$, positive since $s, s' \ge 3 - b$.
+\end{proof}

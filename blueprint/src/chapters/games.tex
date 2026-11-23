@@ -340,3 +340,79 @@ $(1-\delta)u_i(t,a_{-i}) + \delta u_i(e) \le u_i(a)$; in a dirty state the other
 The verification theorem bounds the deviation payoff by $W_0$, which is grim trigger's own payoff.
 For the folk theorem take $\delta \ge \max_i (M - u_i(a))/(M - u_i(e))$.
 \end{proof}
+
+\section{Potential games}
+\label{sec:potential}
+
+\begin{definition}[Exact and ordinal potentials; Monderer--Shapley 1996]
+\label{def:potential}
+\lean{Econ.IsExactPotential, Econ.IsOrdinalPotential, Econ.IsExactPotential.isOrdinalPotential, Econ.IsImprovementPath}
+\leanok
+\uses{def:nash}
+$\Phi$ is an exact potential if every unilateral deviation changes the deviator's payoff by exactly the change in
+$\Phi$, and an ordinal potential if it changes it in the same direction. An improvement path is a sequence of
+profiles in which each step is a strictly profitable unilateral deviation.
+\end{definition}
+
+\begin{theorem}[Pure equilibria and the finite improvement property]
+\label{thm:potential}
+\lean{Econ.isNash_of_isMaxOn_potential, Econ.exists_isNash_of_potential, Econ.not_infinite_improvementPath}
+\leanok
+\uses{def:potential}
+A maximizer of an ordinal potential is a pure Nash equilibrium, so every finite game with an ordinal potential has
+one. In a finite game with an ordinal potential there is no infinite improvement path.
+\end{theorem}
+\begin{proof}
+\leanok
+A profitable deviation from a maximizer would raise $\Phi$. Along an improvement path $\Phi$ strictly increases, so
+the path is injective, which is impossible in a finite set of profiles.
+\end{proof}
+
+\begin{theorem}[Congestion games; Rosenthal 1973]
+\label{thm:rosenthal}
+\lean{Econ.load, Econ.congestionPayoff, Econ.rosenthal, Econ.load_update_of_mem_of_mem, Econ.load_update_of_not_mem_of_not_mem, Econ.load_update_of_not_mem_of_mem, Econ.load_update_of_mem_of_not_mem, Econ.congestion_isExactPotential, Econ.congestion_exists_isNash}
+\leanok
+\uses{thm:potential}
+In a congestion game each player chooses a set of resources and pays $\sum_{r \in s_i} c_r(n_r(s))$, where $n_r$
+is the load on $r$. The function $-\sum_r \sum_{k=1}^{n_r(s)} c_r(k)$ is an exact potential, so every congestion
+game with finite feasible sets has a pure Nash equilibrium.
+\end{theorem}
+\begin{proof}
+\leanok
+When player $i$ switches from $A$ to $B$, loads rise by one on $B \setminus A$, fall by one on $A \setminus B$ and
+are unchanged elsewhere. Resource by resource, the change in $i$'s cost equals the change in the inner sum
+$\sum_{k \le n_r} c_r(k)$.
+\end{proof}
+
+\section{Supermodular games}
+\label{sec:supermodular}
+
+\begin{lemma}[Fixed point by iteration from the top]
+\label{lem:tarski-finite}
+\lean{Econ.exists_greatest_fixed_of_mono}
+\leanok
+In a finite partial order with a greatest element $a_0$, the iterates $f^n(a_0)$ of a monotone map decrease and
+reach a fixed point $x$ with $y \le x$ for every $y \le f(y)$.
+\end{lemma}
+\begin{proof}
+\leanok
+The sequence is antitone, and by pigeonhole it repeats a value, so it is constant from there on. By induction,
+$y \le f(y)$ implies $y \le f^n(a_0)$ for every $n$.
+\end{proof}
+
+\begin{theorem}[Extremal equilibria under strategic complements; Topkis 1979, Milgrom--Roberts 1990]
+\label{thm:supermodular}
+\lean{Econ.HasStrategicComplements, Econ.bestResponses, Econ.bestResponses_nonempty, Econ.greatestBR, Econ.leastBR, Econ.greatestBR_isBR, Econ.leastBR_isBR, Econ.le_greatestBR, Econ.leastBR_le, Econ.greatestBR_mono, Econ.leastBR_mono, Econ.supermodular_greatest_nash, Econ.supermodular_least_nash}
+\leanok
+\uses{lem:tarski-finite, def:nash}
+Let strategy sets be finite linear orders and payoffs have increasing differences between a player's own strategy
+and the profile. Then the greatest and least best responses are nondecreasing in the profile (Topkis), and the
+game has a greatest and a least pure Nash equilibrium, between which all equilibria lie.
+\end{theorem}
+\begin{proof}
+\leanok
+If the greatest best response $t'$ at $s' \ge s$ were below $t$, the greatest one at $s$, then $t$ beating $t'$ at
+$s$ would by increasing differences also beat it at $s'$, contradicting maximality of $t'$. Apply the lemma to the
+joint greatest best response (and to the least best response in the dual order): an equilibrium $s$ satisfies
+$s \le \overline{BR}(s)$, so it lies below the fixed point.
+\end{proof}

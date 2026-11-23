@@ -219,3 +219,27 @@ Divide the SDF pricing equation by $p_z > 0$. $E_z[m] > 0$ since some $Q_{zz'} >
 $1 = E[mR] = E[m]E[R] + \mathrm{Cov}(m,R)$ gives the premium formula; squaring it and applying
 $\mathrm{Cov}^2 \le \mathrm{Var}\cdot\mathrm{Var}$ gives the bound.
 \end{proof}
+
+\section{Pledgeable income}
+
+\begin{definition}[Fixed-investment model]
+\label{def:ht_model}
+\lean{Econ.HolmstromTirole.Model, Econ.HolmstromTirole.Model.Feasible, Econ.HolmstromTirole.Model.pledgeable, Econ.HolmstromTirole.Model.threshold}
+\leanok
+A contract $(R_b, R_l) \ge 0$ with $R_b + R_l = R$ is feasible if $\Delta p\,R_b \ge B$ and $p_HR_l \ge I - A$. The
+pledgeable income is $p_H(R - B/\Delta p)$, and the threshold is $\bar A = I - p_H(R - B/\Delta p)$.
+\end{definition}
+
+\begin{theorem}[Holmstr\"om--Tirole]
+\label{thm:ht}
+\lean{Econ.HolmstromTirole.Model.feasible_iff, Econ.HolmstromTirole.Model.credit_rationing}
+\leanok
+\uses{def:ht_model}
+A feasible contract exists iff $A \ge \bar A$ (when $B/\Delta p \le R$). Below $\bar A$ there is none, even for projects
+with positive NPV.
+\end{theorem}
+\begin{proof}
+\leanok
+Incentive compatibility gives $R_b \ge B/\Delta p$, so $R_l \le R - B/\Delta p$. Conversely, the contract
+$R_b = B/\Delta p$ works.
+\end{proof}

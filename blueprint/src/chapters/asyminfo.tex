@@ -136,3 +136,85 @@ efficient and gives the principal the first-best profit.
 on the support of $f_H$, so strict Jensen gives $\mathbb{E}_H\varphi(\nu) > \varphi(\mathbb{E}_H\nu) \ge \varphi(\bar u + g_H)$.
 (iii) Direct computation.
 \end{proof}
+
+\section{Agreeing to disagree}
+\label{sec:aumann}
+
+\begin{theorem}[Aumann 1976]
+\label{thm:aumann}
+\lean{Econ.infoCell, Econ.probOf, Econ.posterior, Econ.IsSelfEvident, Econ.probOf_inter_of_selfEvident, Econ.aumann_agreement}
+\leanok
+On a finite state space with a common full-support prior, let a set $C \ni \omega_0$ be a union of cells of both
+agents' partitions (so any event containing $C$ is common knowledge at $\omega_0$). If agent 1's posterior of $E$
+equals $a$ and agent 2's equals $b$ throughout $C$, then $a = b$.
+\end{theorem}
+\begin{proof}
+\leanok
+Summing $\mu(E \cap P_1(\omega)) = a\,\mu(P_1(\omega))$ over the cells of agent 1 that make up $C$ gives
+$\mu(E \cap C) = a\,\mu(C)$; likewise $\mu(E \cap C) = b\,\mu(C)$, and $\mu(C) > 0$.
+\end{proof}
+
+\section{Informational cascades}
+\label{sec:cascades}
+
+\begin{lemma}[Posterior after binary signals]
+\label{lem:bayes-binary}
+\lean{Econ.bayesPost, Econ.likelihood_lt_iff, Econ.bayesPost_gt_half_iff, Econ.bayesPost_eq_half_iff}
+\leanok
+With prior $1/2$ and signals of precision $p \in (1/2, 1)$, the posterior after $h$ high and $l$ low signals
+exceeds $1/2$ iff $h > l$, and equals $1/2$ iff $h = l$.
+\end{lemma}
+\begin{proof}
+\leanok
+Compare $p^h(1-p)^l$ with $(1-p)^h p^l$: their ratio is $(p/(1-p))^{h-l}$.
+\end{proof}
+
+\begin{theorem}[Cascades; Bikhchandani--Hirshleifer--Welch 1992, Banerjee 1992]
+\label{thm:cascades}
+\lean{Econ.signalSign, Econ.cascadeAction, Econ.cascadeAction_eq_bayes, Econ.cascadeAction_injective_of_abs_le_one, Econ.cascadeAction_const_of_two_le_abs, Econ.cascadeState, Econ.cascadePlay, Econ.cascade_absorbing, Econ.cascade_of_first_two}
+\leanok
+\uses{lem:bayes-binary}
+Each agent adopts iff the net count $d$ of revealed high signals plus her own is positive (following her own signal
+when it is zero), which is the Bayesian decision. An action reveals the signal iff $|d| \le 1$. Once $|d| \ge 2$
+no further signal is revealed and all later agents take the same action whatever their signals. In particular, if
+the first two signals agree, everybody from the third agent on copies them.
+\end{theorem}
+\begin{proof}
+\leanok
+By the lemma the decision depends on the sign of $d \pm 1$; for $|d| \ge 2$ both signs agree. By induction the
+public state is then frozen.
+\end{proof}
+
+\section{Cheap talk}
+\label{sec:cheap-talk}
+
+\begin{lemma}[The receiver's best response]
+\label{lem:midpoint}
+\lean{Econ.integral_sq_loss, Econ.midpoint_minimizes}
+\leanok
+$\int_a^c (y-\theta)^2\,d\theta = (c-a)\bigl(y - \tfrac{a+c}{2}\bigr)^2 + (c-a)^3/12$, so the midpoint minimizes the
+receiver's expected quadratic loss under a uniform posterior on $[a,c]$.
+\end{lemma}
+\begin{proof}
+\leanok
+Substitute $x = y - \theta$ and integrate $x^2$.
+\end{proof}
+
+\begin{theorem}[Partition equilibria; Crawford--Sobel 1982, uniform-quadratic case]
+\label{thm:crawford-sobel}
+\lean{Econ.ctAction, Econ.IsPartitionEq, Econ.partitionEq_arbitrage, Econ.partitionEq_closed_form, Econ.partitionEq_ic_of_boundary, Econ.partitionEq_exists_iff, Econ.babbling_isPartitionEq}
+\leanok
+\uses{lem:midpoint}
+Types are uniform on $[0,1]$, the receiver's loss is $(y-\theta)^2$ and the sender's is $(y-\theta-b)^2$ with
+$b > 0$. In an $N$-step partition equilibrium the receiver plays interval midpoints and every type prefers her own
+interval's action. The boundaries satisfy $a_{i+2} - a_{i+1} = a_{i+1} - a_i + 4b$ and
+$a_i = i a_1 + 2i(i-1)b$, and an $N$-step equilibrium exists iff $2N(N-1)b < 1$; babbling always exists.
+\end{theorem}
+\begin{proof}
+\leanok
+The boundary type belongs to both neighbouring intervals, so she is indifferent between their actions; since
+those differ, she is at their midpoint. Conversely, if the steps grow by $4b$ then for a type in interval $i$
+the ideal point $\theta + b$ lies between the midpoints of $(y_{i-1}, y_i)$ and $(y_i, y_{i+1})$, so by
+$(y_j - x)^2 - (y_i - x)^2 = (y_j - y_i)(y_j + y_i - 2x)$ she prefers $y_i$. Solving $a_N = 1$ gives
+$a_1 = (1 - 2N(N-1)b)/N$, which is positive iff $2N(N-1)b < 1$.
+\end{proof}

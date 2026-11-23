@@ -39,3 +39,60 @@ Dividing the two conditions, the ratio grows each period by $(1+r_{t+1})/(1+(1-\
 $q = (1+\underline r)/(1+(1-\underline\tau)\underline r) > 1$. Hence the ratio is at least $q^t$ times its initial
 value.
 \end{proof}
+
+\section{The Ramsey problem in primal form}
+
+\begin{definition}[Primal Ramsey problem]
+\label{def:ramsey_primal}
+\lean{Econ.RamseyPrimal.Problem, Econ.RamseyPrimal.Problem.Feasible, Econ.RamseyPrimal.Problem.value, Econ.RamseyPrimal.Problem.IsOptimal, Econ.RamseyPrimal.Problem.varK, Econ.RamseyPrimal.Problem.varC}
+\leanok
+For a given multiplier on implementability, maximize $\sum_t\beta^tW(c_t)$ subject to $k_{t+1} = F(k_t) - c_t - g_t$ from a
+given $k_0$, over paths with $c, k \ge 0$ and summable value.
+\end{definition}
+
+\begin{theorem}[Planner's Euler equation and Chamley--Judd]
+\label{thm:ramsey_primal}
+\lean{Econ.RamseyPrimal.Problem.feasible_var, Econ.RamseyPrimal.Problem.varC_eq, Econ.RamseyPrimal.Problem.value_var, Econ.RamseyPrimal.Problem.planner_euler, Econ.RamseyPrimal.Problem.isRamseyFOC, Econ.RamseyPrimal.Problem.chamley_judd_primal, Econ.RamseyPrimal.Problem.nonvacuous}
+\leanok
+\uses{def:ramsey_primal, def:cj_foc, thm:cj}
+At an optimum with $c_t, c_{t+1}, k_{t+1} > 0$, $W'(c_t) = \beta W'(c_{t+1})F'(k_{t+1})$. If the allocation is decentralized by capital taxes, the
+conditions of Definition~\ref{def:cj_foc} hold, so convergence implies a zero limiting capital tax.
+\end{theorem}
+\begin{proof}
+\leanok
+Save $\varepsilon$ more at $t$ and consume the proceeds at $t+1$. For small $|\varepsilon|$ this is feasible
+(interiority and continuity of $F$), and it changes the value only at two
+dates, so $J(\varepsilon) \le J(0) = 0$. The derivative at the interior maximum vanishes:
+$-\beta^tW'(c_t) + \beta^{t+1}W'(c_{t+1})F'(k_{t+1}) = 0$. For non-vacuity, with $\beta = 1/2$, $W = \mathrm{id}$,
+$F(k) = 2k$, the plan $c = k = 1$ is optimal: telescoping gives $\sum_t2^{-t}c'_t \le 2k'_0$.
+\end{proof}
+
+\section{Ricardian equivalence and tax smoothing}
+
+\begin{theorem}[Ricardian equivalence]
+\label{thm:ricardian}
+\lean{Econ.Ricardian.pv, Econ.Ricardian.budget, Econ.Ricardian.GovBudget, Econ.Ricardian.pv_sub, Econ.Ricardian.budget_eq, Econ.Ricardian.ricardian, Econ.Ricardian.budgetNB, Econ.Ricardian.not_ricardian_of_constraint}
+\leanok
+Two tax paths that both satisfy the government's budget constraint give the same household budget set, and hence
+the same optimal consumption. With a no-borrowing constraint, a debt-financed tax cut can change optimal
+consumption.
+\end{theorem}
+\begin{proof}
+\leanok
+The budget depends on taxes only through $\mathrm{PV}(\tau) = \mathrm{PV}(g)$. For the counterexample, take income
+$(0,2)$, taxes $(0,0)$ versus $(-1,1)$, and $U = -(c_0-1)^2 - (c_1-1)^2$: after the cut $(1,1)$ gives $U = 0$,
+while without it $c_0 \le 0$ forces $U \le -1$.
+\end{proof}
+
+\begin{theorem}[Tax smoothing]
+\label{thm:tax_smoothing}
+\lean{Econ.TaxSmoothing.cost, Econ.TaxSmoothing.Feasible, Econ.TaxSmoothing.ann, Econ.TaxSmoothing.ann_pos, Econ.TaxSmoothing.smooth, Econ.TaxSmoothing.smooth_feasible, Econ.TaxSmoothing.cost_decomp, Econ.TaxSmoothing.smooth_optimal, Econ.TaxSmoothing.smooth_unique}
+\leanok
+With $\beta R = 1$, the constant tax $B/\sum_t\beta^t$ uniquely minimizes $\sum_t\beta^t\tau_t^2$ subject to
+$\sum_t\beta^t\tau_t = B$.
+\end{theorem}
+\begin{proof}
+\leanok
+Cost equals the smooth cost plus the cost of the deviation, because the cross term is proportional to
+$\sum_t\beta^t(\tau_t - \bar\tau) = 0$.
+\end{proof}

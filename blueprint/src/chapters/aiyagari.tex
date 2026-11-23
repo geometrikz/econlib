@@ -400,3 +400,158 @@ $\sqrt{\cdot}$ is monotone, and uniqueness forces $g = 0$. The policy kernel is 
 so the minorization holds with $\varepsilon=1$ and Theorem~\ref{thm:doeblin_unique} gives UniqueStationary
 (degenerate in assets; non-degenerate uniqueness is open).
 \end{remark}
+
+\section{Aiyagari stationary general equilibrium}
+\label{sec:aiyagari_ge}
+
+\begin{definition}[Cobb--Douglas firm]
+\label{def:cd_firm}
+\lean{Econ.CDFirm, Econ.CDFirm.kOfR, Econ.CDFirm.wage, Econ.CDFirm.capDemand, Econ.CDFirm.output,
+  Econ.CDFirm.one_sub_α_pos, Econ.CDFirm.kOfR_pos, Econ.CDFirm.wage_pos}
+\leanok
+$Y = K^\alpha L^{1-\alpha}$, $0<\alpha<1$, depreciation $\delta\ge0$. For $r > -\delta$:
+$k(r) = (\alpha/(r+\delta))^{1/(1-\alpha)} > 0$, $w(r) = (1-\alpha)k(r)^\alpha > 0$, $K_d(r) = L\,k(r)$.
+\end{definition}
+
+\begin{lemma}[Firm optimality and zero profit]
+\label{lem:cd_firm_foc}
+\lean{Econ.CDFirm.foc_capital, Econ.CDFirm.foc_labor, Econ.CDFirm.output_eq, Econ.CDFirm.zero_profit}
+\leanok
+\uses{def:cd_firm}
+$\alpha k(r)^{\alpha-1} = r+\delta$; $(1-\alpha)k(r)^\alpha = w(r)$; and for $L>0$,
+$(r+\delta)K_d + wL = K_d^\alpha L^{1-\alpha}$.
+\end{lemma}
+\begin{proof}
+\leanok
+$k^{\alpha-1} = (\alpha/(r+\delta))^{\frac{\alpha-1}{1-\alpha}} = (\alpha/(r+\delta))^{-1}$ (\texttt{Real.rpow\_mul}).
+Output at $K = Lk$ is $Lk^\alpha$ (\texttt{Real.mul\_rpow}, \texttt{Real.rpow\_add}). Then
+$(r+\delta)Lk = \alpha k^{\alpha-1}\cdot kL = \alpha Lk^\alpha$ (\texttt{Real.rpow\_sub\_one}) and
+$wL = (1-\alpha)Lk^\alpha$; they sum to $Lk^\alpha$.
+\end{proof}
+
+\begin{lemma}[Capital demand: continuity, monotonicity, divergence]
+\label{lem:cd_capdemand}
+\lean{Econ.CDFirm.continuousOn_kOfR, Econ.CDFirm.continuousOn_wage, Econ.CDFirm.continuousOn_capDemand,
+  Econ.CDFirm.strictAntiOn_kOfR, Econ.CDFirm.tendsto_kOfR, Econ.CDFirm.exists_capDemand_ge}
+\leanok
+\uses{def:cd_firm}
+On $r>-\delta$: $k$, $w$, $K_d$ are continuous; $k$ is strictly decreasing; $k(r)\to\infty$ as $r\downarrow-\delta$.
+Hence for $L>0$, any $B$ and $r_0 > -\delta$ there is $r\in(-\delta, r_0]$ with $K_d(r)\ge B$.
+\end{lemma}
+\begin{proof}
+\leanok
+Continuity: \texttt{ContinuousOn.rpow\_const} with a nonnegative exponent. Monotonicity:
+\texttt{Real.rpow\_lt\_rpow} with positive exponent. Divergence: $r+\delta\to0^+$, so
+$\alpha/(r+\delta)\to\infty$ (\texttt{tendsto\_inv\_nhdsGT\_zero}), then \texttt{tendsto\_rpow\_atTop}.
+The last claim intersects the eventual set $\{k \ge B/L\}$ with $(-\delta, r_0]$.
+\end{proof}
+
+\begin{lemma}[Income marginals and stationary assets]
+\label{lem:aiyagari_marg}
+\lean{Econ.ParamSavings.zfun, Econ.ParamSavings.zfun_apply, Econ.ParamSavings.marg,
+  Econ.ParamSavings.integral_zfun, Econ.ParamSavings.marg_isInvariant, Econ.ParamSavings.integral_policy_eq}
+\leanok
+\uses{def:param_savings, def:policy_kernel, def:markov}
+For any policy $g$ and any stationary $\mu$ of its kernel: the income marginal $q(z) = \mu(Z=z)$ is a
+$Q$-invariant distribution, $\int F(z)\,d\mu = \sum_z F(z)q(z)$, and $\int g\,d\mu = \int a\,d\mu$.
+\end{lemma}
+\begin{proof}
+\leanok
+\uses{lem:policy_kernel, lem:feller_integrals}
+Write $F(z) = \sum_z F(z)\mathbf 1_{\{z\}}$ and integrate (\texttt{integral\_finsetSum}). For invariance,
+$q(z') = \int \mathbf 1_{z'}\,d(\kappa\circ\mu) = \int \sum_{z''}Q(z,z'')\mathbf 1_{z'}(z'')\,d\mu = \int Q(z,z')\,d\mu =
+\sum_z q(z)Q(z,z')$. For assets, $\int a\,d\mu = \int a\,d(\kappa\circ\mu) = \int \sum_{z'}Q(z,z')g(a,z)\,d\mu =
+\int g\,d\mu$ since rows of $Q$ sum to one.
+\end{proof}
+
+\begin{theorem}[A lower bound on savings by a one-period deviation]
+\label{thm:le_policy}
+\lean{Econ.ParamSavings.le_policy}
+\leanok
+\uses{def:param_savings}
+If saving $m$ is always feasible, cash on hand is monotone in assets, and for every state, every $y<m$ and every
+continuation choice $x(z')\le h(y,z')$,
+$u(h-y) - u(h-m) < \beta\sum_{z'}Q(z,z')[u(h(m,z')-x(z')) - u(h(y,z')-x(z'))]$, then the optimal policy saves at
+least $m$ everywhere.
+\end{theorem}
+\begin{proof}
+\leanok
+\uses{thm:stoch_bellman}
+Suppose $y = g(a,z) < m$. Let $x(z') = g(y,z')$. Bellman: $V(a,z) = F(y) + \beta\sum Q V(y,\cdot)$ and
+$V(y,z') = F(y,z',x) + \beta\sum QV(x,\cdot)$ (\texttt{value\_eq\_of\_mem\_policy}). Feasibility of $m$ today and of $x(z')$
+from $m$ tomorrow (monotone $h$) gives $V(a,z) \ge F(m) + \beta\sum QV(m,\cdot)$ and
+$V(m,z') \ge F(m,z',x) + \beta\sum QV(x,\cdot)$ (\texttt{value\_ge}). Subtracting yields
+$F(y) - F(m) \ge \beta\sum Q[F(m,z',x) - F(y,z',x)]$, contradicting the hypothesis.
+\end{proof}
+
+\begin{definition}[Aiyagari economy]
+\label{def:aiyagari_economy}
+\lean{Econ.AiyagariEconomy, Econ.AiyagariEconomy.L, Econ.AiyagariEconomy.mem_Ioi,
+  Econ.AiyagariEconomy.household, Econ.AiyagariEconomy.household_h, Econ.AiyagariEconomy.household_h_mono}
+\leanok
+\uses{def:param_savings, def:cd_firm, def:markov}
+Households ($u,\beta,Q$, efficiency units $e\ge0$, cap $\bar k$), a Cobb--Douglas firm, prices
+$r\in[r_{lo},r_{hi}]$ with $r_{lo} > -\delta$, $r_{lo}\ge-1$; $Q$ has a unique invariant $\bar q$ and
+$L = \sum_z\bar q(z)e(z) > 0$. The household family has cash on hand $(1+r)a + w(r)e(z)$, monotone in $a$.
+\end{definition}
+
+\begin{theorem}[Existence of a stationary equilibrium with an exogenous asset cap]
+\label{thm:aiyagari_ge}
+\lean{Econ.AiyagariEconomy.exists_stationary_equilibrium}
+\leanok
+\uses{def:aiyagari_economy}
+If $\bar k \le K_d(r_{lo})$ and at $r_{hi}$ some stationary distribution supplies at least $K_d(r_{hi})$, there are
+$r$, the optimal policy $g$ at $(r,w(r))$, and a stationary $\pi$ with: $K = \int a\,d\pi = L\,k(r)$;
+$\int e\,d\pi = L$; $\alpha(K/L)^{\alpha-1} = r+\delta$ and $w(r) = (1-\alpha)(K/L)^\alpha$; and
+$\int c\,d\pi + \delta K = K^\alpha L^{1-\alpha}$ with $c = (1+r)a + we - g$. Household optimality is subject to
+$a'\le\bar k$, and the cap need not be slack; deriving an endogenous cap from $\beta(1+r)<1$ is open.
+\end{theorem}
+\begin{proof}
+\leanok
+\uses{thm:aiyagari_equilibrium, lem:aiyagari_marg, lem:cd_firm_foc, lem:cd_capdemand}
+Apply Theorem~\ref{thm:aiyagari_equilibrium} with $K_d = L\,k(\cdot)$ (continuous on the interval). Labor: by
+Lemma~\ref{lem:aiyagari_marg} the income marginal of $\pi$ is $Q$-invariant, hence equals $\bar q$, so
+$\int e\,d\pi = L$. Firm: $K/L = k(r)$ and Lemma~\ref{lem:cd_firm_foc}. Goods: $\int c = (1+r)K + wL - \int g =
+rK + wL$ (Lemma~\ref{lem:aiyagari_marg}), and zero profit gives $rK + wL + \delta K = Y$.
+\end{proof}
+
+\begin{lemma}[Upper boundary condition from a savings bound]
+\label{lem:hhi_of_le_policy}
+\lean{Econ.AiyagariEconomy.hhi_of_le_policy}
+\leanok
+\uses{def:aiyagari_economy}
+If at $r_{hi}$ every optimal policy saves at least $m \ge K_d(r_{hi})$ in every state, then some stationary
+distribution at $r_{hi}$ supplies at least $K_d(r_{hi})$.
+\end{lemma}
+\begin{proof}
+\leanok
+\uses{lem:aiyagari_marg, def:unique_stationary}
+Take a stationary $\mu$ (\texttt{exists\_stationary\_of\_policy}); $\int a\,d\mu = \int g\,d\mu \ge m$.
+\end{proof}
+
+\begin{theorem}[A capped economy as a non-vacuity witness]
+\label{thm:sqrt_equilibrium}
+\lean{Econ.sqrt_sub_le_div, Econ.div_le_sqrt_sub, Econ.CDFirm.half, Econ.CDFirm.half_kOfR,
+  Econ.CDFirm.half_wage, Econ.half_isInvariant, Econ.AiyagariEconomy.sqrtEconomy,
+  Econ.AiyagariEconomy.sqrt_L, Econ.AiyagariEconomy.sqrt_rhi, Econ.AiyagariEconomy.sqrt_saving,
+  Econ.AiyagariEconomy.sqrt_equilibrium}
+\leanok
+\uses{thm:aiyagari_ge, thm:le_policy, lem:hhi_of_le_policy}
+With $u=\sqrt c$, $\beta = 9/10$, i.i.d.\ two-state $Q$ with $e\equiv1$ ($L=1$), $\bar k = 1$, $\alpha=1/2$,
+$\delta = 1/10$, $r\in[0,19/10]$: a stationary equilibrium of the capped economy exists. This only shows the
+hypotheses of Theorem~\ref{thm:aiyagari_ge} are jointly satisfiable: there is no income risk, and since supply is at
+most $\bar k=1$ every equilibrium has $r\ge 2/5$, so $\beta(1+r)>1$ and the cap binds. It is not a textbook Aiyagari
+equilibrium, which has $r<1/\beta-1$.
+\end{theorem}
+\begin{proof}
+\leanok
+\uses{thm:doeblin}
+$\bar q = (1/2,1/2)$ is the unique invariant distribution (Theorem~\ref{thm:doeblin}). $k(0) = 25 \ge \bar k$.
+At $r_{hi} = 19/10$: $k = 1/16$, $w = 1/8$, $h = \tfrac{29}{10}a + \tfrac18$. Theorem~\ref{thm:le_policy} with
+$m = 1/16$: with $d = m-y$, the cost today is $\sqrt{h-y}-\sqrt{h-m} \le d/(2\sqrt{h-m}) \le 2d$ since $h-m\ge1/16$;
+the gain tomorrow in each state is $\sqrt A - \sqrt B \ge \tfrac{29}{10}d/(2\sqrt A) \ge \tfrac{29}{10}d/(2\cdot\tfrac{14}{25})$
+since $A \le \tfrac{29}{160}+\tfrac18 \le (14/25)^2$; and $\tfrac{9}{10}\cdot\tfrac{29}{10}/\tfrac{28}{25} =
+\tfrac{261}{112} > 2$. So Lemma~\ref{lem:hhi_of_le_policy} gives the upper condition, and
+Theorem~\ref{thm:aiyagari_ge} applies; $K = L\,k(r) > 0$. Note $\beta(1+r_{hi}) > 1$, so the asset cap is what keeps
+saving bounded at $r_{hi}$.
+\end{proof}

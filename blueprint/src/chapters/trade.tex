@@ -1,0 +1,26 @@
+% Lean: EconLean/Macro/Trade/ACR.lean
+\chapter{Gains from Trade}
+\label{chap:trade}
+
+Sources: Arkolakis--Costinot--Rodr\'iguez-Clare (2012); Armington (1969).
+
+\begin{definition}[Armington world]
+\label{def:acr_world}
+\lean{Econ.ACR.World, Econ.ACR.World.S, Econ.ACR.World.S_pos, Econ.ACR.World.P, Econ.ACR.World.lamjj, Econ.ACR.World.lamjj_pos, Econ.ACR.World.lamjj_le_one}
+\leanok
+$P_j = (\sum_i(\tau_{ij}w_i/A_i)^{-\varepsilon})^{-1/\varepsilon}$ and $\lambda_{jj} = (w_j/A_j)^{-\varepsilon}/\sum_i(\tau_{ij}w_i/A_i)^{-\varepsilon}
+\in (0,1]$.
+\end{definition}
+
+\begin{theorem}[ACR]
+\label{thm:acr}
+\lean{Econ.ACR.World.realWage_eq, Econ.ACR.World.acr, Econ.ACR.World.gains_from_trade}
+\leanok
+\uses{def:acr_world}
+$w_j/P_j = A_j\lambda_{jj}^{-1/\varepsilon}$. Welfare ratios between equilibria are $(\lambda'_{jj}/\lambda_{jj})^{-1/\varepsilon}$, and
+the gains from trade relative to autarky are $\lambda_{jj}^{-1/\varepsilon} \ge 1$.
+\end{theorem}
+\begin{proof}
+\leanok
+$\lambda_{jj}^{-1/\varepsilon} = (w_j/A_j)/P_j$ by $(x^a)^{1/a} = x$. Then use $\lambda_{jj} \le 1$ and a negative exponent.
+\end{proof}

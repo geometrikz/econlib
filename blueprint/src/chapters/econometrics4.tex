@@ -1,0 +1,264 @@
+% Lean: EconLean/Econometrics/Asymptotics/{MLE,GaussianLimits,JTest}.lean, GLS.lean,
+%       Structural/BLPContraction.lean, TimeSeries/SVARRestrictions.lean (horizon and zero restrictions)
+\chapter{Econometrics: limit laws, the J test, GLS and robust covariance, the BLP contraction}
+\label{chap:econometrics4}
+
+This chapter completes several items left open in Chapter~\ref{chap:econometrics3}: the Kullback--Leibler gap of the
+expected log-likelihood is derived from densities, the Gaussian limits of Z-estimators, MLE and GMM get their
+covariance matrices, Hansen's J test gets its limit and the $\chi^2(l-k)$ structure, GLS and robust covariance
+estimators are added, sign restrictions are extended to impulse-response horizons, the order condition for zero
+restrictions is shown insufficient, and the BLP iteration is shown to be a contraction that converges globally.
+
+\section{Maximum likelihood with densities}
+\label{sec:mle-density}
+
+Sources: Newey and McFadden (1994) Lemma~2.2 and Thm~2.5; van der Vaart (1998) \S5.5. The model has densities
+$f_\theta > 0$ with respect to a $\sigma$-finite measure $\nu$, $P_\theta = f_\theta\cdot\nu$.
+
+\begin{lemma}[Log-likelihood ratio of density models]
+\label{lem:llr-density}
+\lean{Econ.Asymptotics.densityMeasure, Econ.Asymptotics.llr_densityMeasure, Econ.Asymptotics.densityMeasure_ac}
+\leanok
+If $f_0, f_1 > 0$ are measurable then $P_0 \ll P_1$ and $\log\frac{dP_0}{dP_1} = \log f_0 - \log f_1$, $P_0$-a.e.
+\end{lemma}
+\begin{proof}
+\leanok
+The Radon--Nikodym derivative of $f_0\nu$ with respect to $f_1\nu$ is $f_0/f_1$ $\nu$-a.e. (chain rule for densities,
+using $f_1 > 0$), and $\nu$-a.e.\ statements hold $P_0$-a.e.\ because $P_0 \ll \nu$. Positivity of $f_1$ gives
+$\nu \ll P_1$, hence $P_0 \ll P_1$.
+\end{proof}
+
+\begin{theorem}[KL gap of the expected log-likelihood]
+\label{thm:kl-gap}
+\lean{Econ.Asymptotics.integral_log_sub_eq_klDiv, Econ.Asymptotics.expectedLogLik, Econ.Asymptotics.expectedLogLik_unique_max, Econ.Asymptotics.mle_consistent_of_density}
+\leanok
+\uses{lem:llr-density, thm:mle-consistent, thm:extremum-consistent}
+For probability density models with integrable log-densities,
+$E_{P_0}[\log f_0] - E_{P_0}[\log f_1] = \mathrm{KL}(P_0\|P_1) < \infty$. Hence in an identified model
+$Q_0(\theta) = E_{\theta_0}[\log f_\theta]$ is uniquely maximised at $\theta_0$, and with a compact parameter space,
+continuous $Q_0$ and a uniform law of large numbers the MLE is consistent.
+\end{theorem}
+\begin{proof}
+\leanok
+By Lemma~\ref{lem:llr-density} the log-likelihood ratio equals $\log f_0 - \log f_1$ a.e., so it is integrable and
+$\mathrm{KL} = \int \log\frac{dP_0}{dP_1}\,dP_0$ is finite and equals the gap. This is the hypothesis of
+Theorem~\ref{thm:mle-consistent}, whose conclusion then feeds Theorem~\ref{thm:extremum-consistent}.
+\end{proof}
+
+\section{Covariances of Gaussian limits}
+\label{sec:gaussian-limits}
+
+Sources: Hayashi (2000) Prop.~3.3, 3.5 and~7.9; Newey and McFadden (1994) Thm~3.1--3.3. A limit $L$ is
+$N(0,\Sigma)$ when its law is Mathlib's multivariate Gaussian with covariance $\Sigma$.
+
+\begin{lemma}[Linear images of Gaussians]
+\label{lem:gaussian-linear}
+\lean{Econ.Asymptotics.euclidCLM, Econ.Asymptotics.euclidCLM_apply, Econ.Asymptotics.adjoint_euclidCLM, Econ.Asymptotics.map_multivariateGaussian, Econ.Asymptotics.map_mulVec_of_gaussian}
+\leanok
+If $\Sigma$ is positive semidefinite, $A\cdot N(0,\Sigma) = N(0, A\Sigma A^\top)$; so $L\sim N(0,\Sigma)$ implies
+$AL \sim N(0, A\Sigma A^\top)$.
+\end{lemma}
+\begin{proof}
+\leanok
+A linear image of a Gaussian measure is Gaussian; Gaussians are determined by mean and covariance. The mean is
+$A\cdot 0 = 0$ and the covariance form transforms as $\langle u, A\Sigma A^\top v\rangle$, using that the adjoint of
+$x\mapsto Ax$ is $x\mapsto A^\top x$.
+\end{proof}
+
+\begin{theorem}[Limit laws of Z-estimators, MLE and GMM]
+\label{thm:limit-laws}
+\lean{Econ.Asymptotics.z_estimator_limit_law, Econ.Asymptotics.mle_limit_law, Econ.Asymptotics.gmm_limit_law, Econ.Asymptotics.gmm_limit_law_efficient}
+\leanok
+\uses{lem:gaussian-linear, thm:z-estimator, thm:gmm-asymptotic}
+If the score limit is $L\sim N(0,V)$, the Z-estimator limit $-H_0^{-1}L$ is $N(0, H_0^{-1}VH_0^{-\top})$. Under the
+information equality ($H_0 = -I$, $V = I$, $I$ symmetric invertible) it is $N(0, I^{-1})$. For linear GMM with
+symmetric weight $W$ and moment limit $N(0,S)$ the limit is $N(0, \mathrm{Avar}(W))$ with the sandwich
+$(G^\top WG)^{-1}G^\top WSWG(G^\top WG)^{-1}$, and with $W = S^{-1}$, $S$ positive definite and $G$ of full column
+rank, it is $N(0, (G^\top S^{-1}G)^{-1})$.
+\end{theorem}
+\begin{proof}
+\leanok
+Apply Lemma~\ref{lem:gaussian-linear} with $A = -H_0^{-1}$ or $A = (G^\top WG)^{-1}G^\top W$. For MLE,
+$(-I)^{-1} = -I^{-1}$ and $I^{-1} I I^{-\top} = I^{-1}$ by symmetry. For efficient GMM the sandwich collapses.
+\end{proof}
+
+\section{Hansen's J test}
+\label{sec:jtest}
+
+Sources: Hansen (1982) Lemma~4.2; Hayashi (2000) Prop.~3.6. With $l$ moments and $k$ parameters, the moment residual
+at the estimate is $\hat m_n = \hat s_n - \hat S_n\hat\theta_n$ and $J_n = n\,\hat m_n^\top \hat W_n \hat m_n$.
+
+\begin{definition}[J statistic and residual maker]
+\label{def:jstat}
+\lean{Econ.Asymptotics.residMaker, Econ.Asymptotics.jForm, Econ.Asymptotics.projP, Econ.Asymptotics.jStat, Econ.Asymptotics.residMakerFn}
+\leanok
+$M = I - G(G^\top WG)^{-1}G^\top W$; in the efficient case
+$Q = S^{-1} - S^{-1}G(G^\top S^{-1}G)^{-1}G^\top S^{-1}$.
+\end{definition}
+
+\begin{lemma}[Algebra of the efficient J form]
+\label{lem:jform}
+\lean{Econ.Asymptotics.gram_unit, Econ.Asymptotics.residMaker_eq, Econ.Asymptotics.jForm_eq_projP, Econ.Asymptotics.projP_mul_self, Econ.Asymptotics.transpose_projP_mul, Econ.Asymptotics.jForm_transpose, Econ.Asymptotics.jForm_eq, Econ.Asymptotics.jForm_mul_G, Econ.Asymptotics.jForm_mul_S_mul, Econ.Asymptotics.trace_jForm_mul}
+\leanok
+\uses{def:jstat}
+With $S$ positive definite and $G$ of full column rank: $M^\top S^{-1}M = Q$, $QG = 0$, $QSQ = Q$ and
+$\mathrm{tr}(QS) = l - k$.
+\end{lemma}
+\begin{proof}
+\leanok
+$P = G(G^\top S^{-1}G)^{-1}G^\top S^{-1}$ is idempotent and $P^\top S^{-1} = S^{-1}P$, so
+$M^\top S^{-1}M = S^{-1}(I-P)$, which is $Q$. The other identities follow by expanding; the trace uses
+$\mathrm{tr}(P) = \mathrm{tr}((G^\top S^{-1}G)^{-1}G^\top S^{-1}G) = k$.
+\end{proof}
+
+\begin{theorem}[Limit of the J statistic]
+\label{thm:jtest}
+\lean{Econ.Asymptotics.residMakerFn_eq, Econ.Asymptotics.residMakerFn_mulVec, Econ.Asymptotics.continuousAt_residMakerFn, Econ.Asymptotics.measurable_residMakerFn, Econ.Asymptotics.resid_eq, Econ.Asymptotics.jStat_tendsto, Econ.Asymptotics.jLimit_efficient, Econ.Asymptotics.integral_mul_multivariateGaussian, Econ.Asymptotics.integrable_mul_eval, Econ.Asymptotics.integral_jLimit}
+\leanok
+\uses{lem:jform, thm:gmm-asymptotic, lem:conv-tools}
+If $\hat S_n\to_p G$, $\hat W_n\to_p W$, the rank condition holds and $\sqrt n\,\hat g_n\to_d L$, then
+$J_n \to_d (ML)^\top W(ML)$. With $W = S^{-1}$ this limit is $L^\top QL$, and if $L\sim N(0,S)$ its mean is
+$\mathrm{tr}(QS) = l - k$, the mean of $\chi^2(l-k)$.
+\end{theorem}
+\begin{proof}
+\leanok
+On the event where $\hat S_n^\top\hat W_n\hat S_n$ is invertible (probability tending to one) the residual is
+$\hat m_n = M(\hat S_n,\hat W_n)\hat g_n$, so $J_n$ is a continuous function of $(\hat S_n,\hat W_n,\sqrt n\hat g_n)$;
+Slutsky and the continuous mapping theorem give the limit. The efficient form is Lemma~\ref{lem:jform}, and
+$E[L^\top QL] = \sum_{ij}Q_{ij}S_{ji} = \mathrm{tr}(QS)$.
+\end{proof}
+
+The $\chi^2$ law itself is not stated, as Mathlib has no $\chi^2$ distribution; Lemma~\ref{lem:jform} gives the
+idempotent-of-rank-$(l-k)$ structure that determines it.
+
+\section{Generalised least squares and robust covariance}
+\label{sec:gls}
+
+Sources: Aitken (1935); Hayashi (2000) \S1.6 and \S2.5; White (1980); MacKinnon and White (1985); Newey and West
+(1987). The model is $y = X\beta+\varepsilon$ with fixed design and $E[\varepsilon\varepsilon^\top] = V$.
+
+\begin{definition}[GLS, sandwich and HC0]
+\label{def:gls}
+\lean{Econ.OLS.glsMat, Econ.OLS.gls, Econ.OLS.sandwich, Econ.OLS.hc0}
+\leanok
+$\hat\beta_{GLS} = (X^\top V^{-1}X)^{-1}X^\top V^{-1}y$; the sandwich
+$(X^\top X)^{-1}X^\top\mathrm{diag}(w)X(X^\top X)^{-1}$; HC0 is the sandwich with $w_i = e_i^2$.
+\end{definition}
+
+\begin{theorem}[Aitken]
+\label{thm:aitken}
+\lean{Econ.OLS.glsMat_mul, Econ.OLS.transpose_of_posDef, Econ.OLS.isUnit_det_of_posDef, Econ.OLS.glsMat_mul_mul_transpose, Econ.OLS.aitken_matrix, Econ.OLS.cov_gls, Econ.OLS.aitken, Econ.OLS.ols_cov_sub_gls_posSemidef, Econ.OLS.gls_eq_ols_transformed, Econ.OLS.gls_witness}
+\leanok
+\uses{def:gls, thm:linear-unbiased}
+With $V$ positive definite and $X^\top V^{-1}X$ invertible, GLS is linear unbiased with covariance
+$(X^\top V^{-1}X)^{-1}$, and every linear unbiased $Cy$ has $\mathrm{Cov}(Cy) - \mathrm{Cov}(\hat\beta_{GLS})$
+positive semidefinite; in particular OLS is no better. If $V = LL^\top$, GLS is OLS on $(L^{-1}X, L^{-1}y)$.
+\end{theorem}
+\begin{proof}
+\leanok
+Write $C = C_G + D$ with $DX = 0$. Then $DVC_G^\top = DX(X^\top V^{-1}X)^{-1} = 0$, so
+$CVC^\top = C_GVC_G^\top + DVD^\top$ and $C_GVC_G^\top = (X^\top V^{-1}X)^{-1}$. The covariance of $Cy$ is $CVC^\top$
+by Theorem~\ref{thm:linear-unbiased}. The transformation identity uses $V^{-1} = L^{-\top}L^{-1}$.
+\end{proof}
+
+\begin{theorem}[Heteroskedasticity-robust covariance and leverage]
+\label{thm:robust-se}
+\lean{Econ.OLS.sandwich_eq, Econ.OLS.sandwich_posSemidef, Econ.OLS.hc0_posSemidef, Econ.OLS.cov_ols_hetero, Econ.OLS.sandwich_apply, Econ.OLS.integral_sandwich_sq, Econ.OLS.secondMoments_resid, Econ.OLS.integral_resid_sq, Econ.OLS.hc2_unbiased}
+\leanok
+\uses{def:gls, thm:linear-unbiased, def:ols}
+With uncorrelated errors of variances $\sigma_i^2$, $\mathrm{Cov}(\hat\beta_{OLS})$ is the sandwich with $w = \sigma^2$;
+HC0 is positive semidefinite, and its infeasible version with $\varepsilon_i^2$ is unbiased. Residuals have second
+moments $MVM$, so under homoskedasticity $E[e_i^2] = \sigma^2(1-h_{ii})$ and $e_i^2/(1-h_{ii})$ (HC2) is unbiased.
+\end{theorem}
+\begin{proof}
+\leanok
+The sandwich equals $C_0\,\mathrm{diag}(w)\,C_0^\top$ with $C_0 = (X^\top X)^{-1}X^\top$, which is positive semidefinite
+for $w\ge 0$ and linear in $w$. The residual is $e = My = M\varepsilon$, and $M$ is symmetric idempotent, so
+$E[ee^\top] = MVM = \sigma^2 M$ under homoskedasticity, with diagonal $\sigma^2(1-h_{ii})$.
+\end{proof}
+
+\begin{theorem}[Newey--West]
+\label{thm:newey-west}
+\lean{Econ.OLS.nwWindow, Econ.OLS.bartlett, Econ.OLS.bartlett_eq, Econ.OLS.bartlett_posSemidef, Econ.OLS.neweyWest, Econ.OLS.neweyWest_posSemidef, Econ.OLS.truncated_not_posSemidef}
+\leanok
+The Bartlett-weighted estimator $\sum_{t,s}(1-|t-s|/(L+1))^+ g_tg_s^\top$ is positive semidefinite for every data set
+and lag $L$; the unweighted truncated estimator need not be.
+\end{theorem}
+\begin{proof}
+\leanok
+The Bartlett matrix is $BB^\top/(L+1)$ where $B_{tm} = 1[t\le m\le t+L]$: two windows of length $L+1$ starting at $t$
+and $s$ overlap in $(L+1-|t-s|)^+$ points. For the truncated estimator, $T = 3$, $L = 1$, $g = (1,-1,1)$ gives $-1$.
+\end{proof}
+
+\section{Further SVAR restrictions}
+\label{sec:svar-more}
+
+Sources: Uhlig (2005); Rubio-Ram\'irez, Waggoner and Zha (2010).
+
+\begin{theorem}[Sign restrictions at horizons]
+\label{thm:sign-horizon}
+\lean{Econ.TimeSeries.SVAR.SignOKH, Econ.TimeSeries.SVAR.identifiedSetH, Econ.TimeSeries.SVAR.identifiedSetH_eq, Econ.TimeSeries.SVAR.identifiedSetH_anti, Econ.TimeSeries.SVAR.identifiedSetH_impact}
+\leanok
+\uses{thm:sign-restrictions}
+Restrictions on the sign of the response $(\Phi_hB)_{ij}$ at horizon $h$ define an identified set that is the set of
+rotations $B_0Q$ satisfying them; more restrictions shrink it, and horizon-0 restrictions with $\Phi_0 = I$ are the
+impact restrictions.
+\end{theorem}
+\begin{proof}
+\leanok
+As for impact restrictions: observational equivalence is rotation by an orthogonal $Q$, and the sign condition is
+evaluated on $B = B_0Q$.
+\end{proof}
+
+\begin{theorem}[The order condition is not sufficient]
+\label{thm:order-condition}
+\lean{Econ.TimeSeries.SVAR.ZeroOK, Econ.TimeSeries.SVAR.order_condition_not_sufficient_existence, Econ.TimeSeries.SVAR.order_condition_not_sufficient_uniqueness, Econ.TimeSeries.SVAR.order_condition_continuum}
+\leanok
+With $n = 3$, $n(n-1)/2 = 3$ zero restrictions can admit no impact matrix with $BB^\top = I$ (all three on one column)
+or many (restrictions $B_{01} = B_{02} = B_{10} = 0$ leave a rotation of shocks 2 and 3 free: a continuum of orthogonal $B_\theta$ with positive diagonal for $|\theta|<\pi/2$).
+\end{theorem}
+\begin{proof}
+\leanok
+A zero column makes $\det B = 0$, contradicting $BB^\top = I$. For uniqueness, $I$ and the block rotation
+$\begin{psmallmatrix}1&0&0\\0&0&-1\\0&1&0\end{psmallmatrix}$ both satisfy the restrictions and are orthogonal; more generally $B_\theta = \mathrm{diag}(1, R_\theta)$ does, with diagonal $(1,\cos\theta,\cos\theta)$, and $\sin\theta$ is read off the $(2,1)$ entry.
+\end{proof}
+
+\section{The BLP contraction}
+\label{sec:blp-contraction}
+
+Sources: Berry, Levinsohn and Pakes (1995) Appendix~I; Berry (1994) \S5. The BLP map is
+$T(\delta) = \delta + \log s - \log\sigma(\delta)$ with mixed-logit shares $\sigma$.
+
+\begin{lemma}[Denominator and share-ratio bounds]
+\label{lem:blp-bounds}
+\lean{Econ.Structural.BLP.denom, Econ.Structural.BLP.denom_bounds, Econ.Structural.BLP.share_ratio_bounds, Econ.Structural.BLP.mixedShare_pos}
+\leanok
+\uses{def:logit-shares}
+If $|\delta_k - \delta'_k|\le c$ for all $k$ and $c>0$, the logit denominators satisfy
+$e^{-c}D(\delta') < D(\delta) < e^cD(\delta')$, so
+$e^{\delta_j-\delta'_j-c}\sigma_j(\delta') < \sigma_j(\delta) < e^{\delta_j-\delta'_j+c}\sigma_j(\delta')$.
+\end{lemma}
+\begin{proof}
+\leanok
+Each $e^{\delta_k}$ moves by a factor in $[e^{-c},e^c]$ and the outside good's $1$ does not move, so the inequalities
+are strict.
+\end{proof}
+
+\begin{theorem}[BLP contraction and global convergence]
+\label{thm:blp-contraction}
+\lean{Econ.Structural.BLP.blpMap, Econ.Structural.BLP.blpMap_fixed_iff, Econ.Structural.BLP.blpMap_dist_lt, Econ.Structural.BLP.continuous_blpMap, Econ.Structural.BLP.blpMap_iterate_tendsto, Econ.Structural.BLP.blp_contraction_witness}
+\leanok
+\uses{lem:blp-bounds, thm:blp-injective}
+Fixed points of $T$ are exactly the $\delta$ with $\sigma(\delta) = s$. For $\delta\ne\delta'$,
+$\|T\delta - T\delta'\|_\infty < \|\delta-\delta'\|_\infty$. If $\sigma(\delta^*) = s$ then $T^n\delta^0\to\delta^*$ from
+every starting point (positivity of $s$ follows from $\sigma(\delta^*) = s$).
+\end{theorem}
+\begin{proof}
+\leanok
+Averaging the bounds of Lemma~\ref{lem:blp-bounds} over consumer types and taking logs gives
+$|(T\delta-T\delta')_j| < c$ with $c = \|\delta-\delta'\|_\infty$. For convergence, the distance to $\delta^*$ is
+nonincreasing and the iterates stay in a compact ball; a limit point $y$ of the iterates has $d(y,\delta^*) =
+d(Ty,\delta^*)$, which by strict contraction forces $y = \delta^*$ (Edelstein's argument).
+\end{proof}
+
+Existence of $\delta^*$ for the mixed logit is not proved; for the plain logit it is Theorem~\ref{thm:berry}.

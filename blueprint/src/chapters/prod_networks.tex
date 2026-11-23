@@ -110,3 +110,33 @@ Differentiate with the chain rule. For the exact change, factor $S(x+d)/S(x) = \
 Jensen's inequality for $\exp$ gives $\log\sum\lambda_ie^{u_i} \ge \sum\lambda_iu_i$; dividing by $\theta-1$ fixes the
 direction. Add the bounds for $\pm s$.
 \end{proof}
+
+\section{Two-layer CES networks}
+
+\begin{lemma}[One-layer derivatives along paths]
+\label{lem:bf_path}
+\lean{Econ.BaqaeeFarhi.Economy.hasDerivAt_S_path, Econ.BaqaeeFarhi.Economy.hasDerivAt_logY_path, Econ.BaqaeeFarhi.Economy.hasDerivAt_domar_path}
+\leanok
+\uses{def:bf_economy}
+Along a differentiable path $y(t)$: $(\log Y)' = \sum_i\lambda_iy_i'$ and
+$\lambda_i' = (\theta-1)\lambda_i(y_i' - \sum_j\lambda_jy_j')$.
+\end{lemma}
+\begin{proof}
+\leanok
+Use the chain and quotient rules on $S(y) = \sum_ib_ie^{(\theta-1)y_i}$.
+\end{proof}
+
+\begin{theorem}[Baqaee--Farhi in a nested CES economy]
+\label{thm:bf_nested}
+\lean{Econ.BaqaeeFarhi.Nested, Econ.BaqaeeFarhi.Nested.logY, Econ.BaqaeeFarhi.Nested.Λ, Econ.BaqaeeFarhi.Nested.m, Econ.BaqaeeFarhi.Nested.line, Econ.BaqaeeFarhi.Nested.hasDerivAt_line, Econ.BaqaeeFarhi.Nested.hasDerivAt_inner, Econ.BaqaeeFarhi.Nested.hasDerivAt_logY, Econ.BaqaeeFarhi.Nested.second_order}
+\leanok
+\uses{lem:bf_path}
+With $\log Y = \log Y_0(g \mapsto \log Y_g(x_g))$, the first derivative is $\sum_g\Lambda_gm_g$ with
+$m_g = \sum_i\lambda_{gi}d_{gi}$, and
+$d^2\log Y = (\theta_0-1)\mathrm{Var}_\Lambda(m) + \sum_g\Lambda_g(\theta_g-1)\mathrm{Var}_{\lambda_g}(d_g)$.
+\end{theorem}
+\begin{proof}
+\leanok
+Apply the path lemma at the top node with inner paths $t \mapsto \log Y_g(x_g + td_g)$, at every $t$. Then differentiate
+$\sum_g\Lambda_gm_g$ by the product rule, using the path lemma for $\Lambda_g$ and for each $\lambda_{gi}$.
+\end{proof}

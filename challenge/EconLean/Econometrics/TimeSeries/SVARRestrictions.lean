@@ -64,4 +64,51 @@ theorem sign_restrictions_set_identify :
       (1 : Matrix (Fin 2) (Fin 2) ℝ) ≠ B₂ := by
   sorry
 
+def SignOKH (Φ : ℕ → Matrix n n ℝ) (R : Set (ℕ × n × n × ℝ)) (B : Matrix n n ℝ) : Prop :=
+  ∀ r ∈ R, 0 ≤ r.2.2.2 * (Φ r.1 * B) r.2.1 r.2.2.1
+
+def identifiedSetH (S : Matrix n n ℝ) (Φ : ℕ → Matrix n n ℝ) (R : Set (ℕ × n × n × ℝ)) :
+    Set (Matrix n n ℝ) :=
+  {B | B * Bᵀ = S ∧ SignOKH Φ R B}
+
+theorem identifiedSetH_eq {S B₀ : Matrix n n ℝ} (hB₀ : IsUnit B₀.det) (hS : B₀ * B₀ᵀ = S)
+    (Φ : ℕ → Matrix n n ℝ) (R : Set (ℕ × n × n × ℝ)) :
+    identifiedSetH S Φ R = {B | ∃ Q : Matrix n n ℝ, Q * Qᵀ = 1 ∧ B = B₀ * Q ∧ SignOKH Φ R B} := by
+  sorry
+
+omit [LinearOrder n] in
+
+theorem identifiedSetH_anti (S : Matrix n n ℝ) (Φ : ℕ → Matrix n n ℝ)
+    {R R' : Set (ℕ × n × n × ℝ)} (h : R ⊆ R') :
+    identifiedSetH S Φ R' ⊆ identifiedSetH S Φ R := by
+  sorry
+
+theorem identifiedSetH_impact (S : Matrix n n ℝ) (Φ : ℕ → Matrix n n ℝ) (hΦ : Φ 0 = 1)
+    (R : Set (n × n × ℝ)) :
+    identifiedSetH S Φ ((fun r => (0, r)) '' R) = identifiedSet S R := by
+  sorry
+
+def ZeroOK (Z : Set (n × n)) (B : Matrix n n ℝ) : Prop := ∀ p ∈ Z, B p.1 p.2 = 0
+
+theorem order_condition_not_sufficient_existence :
+    let Z : Set (Fin 3 × Fin 3) := {(0, 0), (1, 0), (2, 0)}
+    ¬ ∃ B : Matrix (Fin 3) (Fin 3) ℝ, ZeroOK Z B ∧ B * Bᵀ = 1 := by
+  sorry
+
+theorem order_condition_not_sufficient_uniqueness :
+    let Z : Set (Fin 3 × Fin 3) := {(0, 1), (0, 2), (1, 0)}
+    let B₂ : Matrix (Fin 3) (Fin 3) ℝ := !![1, 0, 0; 0, 0, -1; 0, 1, 0]
+    ZeroOK Z 1 ∧ ZeroOK Z B₂ ∧ (1 : Matrix (Fin 3) (Fin 3) ℝ) * 1ᵀ = 1 ∧ B₂ * B₂ᵀ = 1 ∧
+      (1 : Matrix (Fin 3) (Fin 3) ℝ) ≠ B₂ := by
+  sorry
+
+theorem order_condition_continuum (θ : ℝ) :
+    let Z : Set (Fin 3 × Fin 3) := {(0, 1), (0, 2), (1, 0)}
+    let B : ℝ → Matrix (Fin 3) (Fin 3) ℝ := fun t =>
+      !![1, 0, 0; 0, Real.cos t, -Real.sin t; 0, Real.sin t, Real.cos t]
+    ZeroOK Z (B θ) ∧ B θ * (B θ)ᵀ = 1 ∧
+      (|θ| < Real.pi / 2 → ∀ i, 0 < B θ i i) ∧
+      (∀ θ', Real.sin θ ≠ Real.sin θ' → B θ ≠ B θ') := by
+  sorry
+
 end Econ.TimeSeries.SVAR

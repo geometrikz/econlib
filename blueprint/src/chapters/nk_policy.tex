@@ -112,3 +112,83 @@ The equation is linear in $p_t$ with coefficient $1-\Lambda_t(1-\alpha) \ge \alp
 $(1-\lambda)^{t+1} \le (1-\lambda)^{T+1}$ when $t \ge T$, together with the denominator bound. For recovery,
 $u \mapsto u/(\alpha + (1-\alpha)u)$ is increasing and $u_t = (1-\lambda)^{t+1}$ falls.
 \end{proof}
+
+\section{The saddle path}
+
+\begin{definition}[Solution with a predetermined variable]
+\label{def:saddle_solution}
+\lean{Econ.Saddle.IsSolution}
+\leanok
+\uses{def:bk_determinate}
+For $z_{t+1} = Mz_t$ in $\mathbb{R}^2$, coordinate $0$ is predetermined. A solution from $k_0$ is a bounded orbit with
+$z_{0,0} = k_0$.
+\end{definition}
+
+\begin{lemma}[Bounded orbits lie on the stable eigenline]
+\label{lem:saddle_span}
+\lean{Econ.Saddle.isOrbit_eig, Econ.Saddle.bounded_eig, Econ.Saddle.isOrbit_add, Econ.Saddle.isOrbit_sub, Econ.Saddle.bounded_add, Econ.Saddle.bounded_sub, Econ.Saddle.mulVec_eq_of_bounded, Econ.Saddle.cross_eq_zero, Econ.Saddle.not_scalar, Econ.Saddle.bounded_mem_span}
+\leanok
+\uses{def:saddle_solution, lem:bk_algebra}
+Let the real roots satisfy $\mu_1 + \mu_2 = \mathrm{tr}\,M$, $\mu_1\mu_2 = \det M$ and $|\mu_1| < 1 < |\mu_2|$, and let
+$Mv = \mu_1v$. Then every bounded orbit has $z_0$ proportional to $v$.
+\end{lemma}
+\begin{proof}
+\leanok
+By Cayley--Hamilton, $p_t = z_{t+1} - \mu_1z_t$ satisfies $p_t = \mu_2^tp_0$. Boundedness forces $p_0 = 0$, so
+$Mz_0 = \mu_1z_0$. Since $\mu_1 \ne \mu_2$, $M \ne \mu_1I$, so the $\mu_1$-eigenspace is a line.
+\end{proof}
+
+\begin{theorem}[Blanchard--Kahn counting rule]
+\label{thm:saddle}
+\lean{Econ.Saddle.saddle, Econ.Saddle.no_solution_of_rank, Econ.Saddle.no_solution_of_explosive, Econ.Saddle.indeterminate}
+\leanok
+\uses{lem:saddle_span, lem:bk_real}
+With one stable and one unstable root and $v_0 \ne 0$, every $k_0$ has a unique solution $z_t = \mu_1^t(k_0/v_0)v$.
+If $v_0 = 0$, or if both roots are unstable, there is no solution from $k_0 \ne 0$. If both roots are stable and
+distinct, every solution has another solution with the same $k_0$.
+\end{theorem}
+\begin{proof}
+\leanok
+Existence comes from the eigen-orbit. For uniqueness, the difference of two solutions is a bounded orbit with zero
+predetermined part; by the lemma it is a multiple of $v$ with first coordinate $0$, hence $0$. With two stable roots,
+add an eigen-orbit combination whose predetermined part vanishes.
+\end{proof}
+
+\section{Calvo pricing}
+
+\begin{definition}[Calvo price dynamics]
+\label{def:calvo}
+\lean{Econ.Calvo.reset, Econ.Calvo.PriceDynamics}
+\leanok
+$x_t = (1-\beta\theta)\sum_k(\beta\theta)^k(p_{t+k} + mc_{t+k})$ and $p_{t+1} = \theta p_t + (1-\theta)x_{t+1}$.
+\end{definition}
+
+\begin{theorem}[New Keynesian Phillips curve]
+\label{thm:calvo_nkpc}
+\lean{Econ.Calvo.summable_terms, Econ.Calvo.reset_rec, Econ.Calvo.nkpc}
+\leanok
+\uses{def:calvo}
+For bounded paths, $x_t = (1-\beta\theta)(p_t + mc_t) + \beta\theta x_{t+1}$, and
+$\pi_{t+1} = \beta\pi_{t+2} + \kappa\,mc_{t+1}$ with $\kappa = (1-\theta)(1-\beta\theta)/\theta$.
+\end{theorem}
+\begin{proof}
+\leanok
+Split off the first term of the series. The dynamics give $x_s = (p_s - \theta p_{s-1})/(1-\theta)$; substitute this at
+$s = t+1, t+2$ into the recursion and simplify.
+\end{proof}
+
+\section{Rules versus discretion}
+
+\begin{theorem}[Barro--Gordon]
+\label{thm:barro_gordon}
+\lean{Econ.BarroGordon.loss, Econ.BarroGordon.bestResponse, Econ.BarroGordon.IsDiscretionEq, Econ.BarroGordon.discretion_eq, Econ.BarroGordon.commitment_optimal, Econ.BarroGordon.commitment_better}
+\leanok
+With loss $\pi^2 + \lambda(\pi - \pi^e - k)^2$, the best response to $\pi^e$ is $\lambda(\pi^e + k)/(1+\lambda)$. The
+unique discretionary equilibrium is $\pi = \lambda k$. Under commitment $\pi = 0$ is optimal, and it gives strictly lower loss when
+$k \ne 0$.
+\end{theorem}
+\begin{proof}
+\leanok
+The loss is the minimum plus $(1+\lambda)(\pi - \pi^*)^2$. Setting $\pi^e = \pi$ in the best response gives $\pi = \lambda k$.
+Then compare $\lambda k^2$ with $\lambda^2k^2 + \lambda k^2$.
+\end{proof}
