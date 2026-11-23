@@ -27,7 +27,7 @@ to follow the Lean proof step by step and linked to it with `\lean{...}`.
   the consumer theory chapters, with a Mermaid dependency graph.
 
 GitHub Actions builds the blueprint (web and PDF), checks that every `\lean{...}`
-name exists (`lake exe checkdecls blueprint/lean_decls`), builds the API docs and
+name exists (`lake exe checkdecls blueprint/lean_decls`) and
 publishes them to GitHub Pages on every push to `main`. To build locally (optional):
 ```
 pip install leanblueprint   # also needs graphviz and a TeX distribution with xelatex

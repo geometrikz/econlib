@@ -1,10 +1,14 @@
-name: Blueprint and docs
+name: Blueprint
 
 # Builds the Lean project, the blueprint (web + PDF), checks that every
-# \lean{...} name in the blueprint exists (checkdecls), builds the API docs,
-# and deploys everything to GitHub Pages at
-# https://geometrikz.github.io/econlib/
+# \lean{...} name in the blueprint exists (checkdecls), and deploys to
+# GitHub Pages at https://geometrikz.github.io/econlib/
 # Requires: Settings > Pages > Source = "GitHub Actions".
+#
+# Written out step by step rather than with docgen-action: that action always
+# builds Mathlib API docs (its api-docs input is ignored), and doc-gen fails on
+# `srcUri.github` for our dependencies. Blueprint "Lean" links go to
+# home_page/docs/find/, which redirects to the declaration on GitHub.
 
 on:
   push:
@@ -12,8 +16,7 @@ on:
       - main
   workflow_dispatch:
 
-# Do not cancel a running deploy: pushes are frequent and the first run (Mathlib
-# API docs) is long. GitHub keeps the running job plus only the newest queued one.
+# Do not cancel a running deploy; GitHub keeps it plus only the newest queued run.
 concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
   cancel-in-progress: false
@@ -24,41 +27,58 @@ permissions:
   id-token: write
 
 jobs:
-  build_project:
+  build:
     runs-on: ubuntu-latest
-    name: Build project, blueprint and docs
+    name: Build project and blueprint
     steps:
-      - name: Cleanup to free disk space
-        uses: jlumbroso/free-disk-space@54081f138730dfa15788a46383842cd2f914a1be # v1.3.0
-        with:
-          tool-cache: false
-          android: true
-          dotnet: false
-          haskell: false
-          large-packages: false
-          docker-images: false
-          swap-storage: false
-
       - name: Checkout project
         uses: actions/checkout@08c6903cd8c0fde910a37f88322edcfb5dd907a8 # v5.0.0
-        with:
-          fetch-depth: 0
 
       - name: Build project
         uses: leanprover/lean-action@434f25c2f80ded67bba02502ad3a86f25db50709 # 2025-07-02
         with:
           build: true
 
-      # Runs `leanblueprint pdf` and `leanblueprint web`, then
-      # `lake exe checkdecls blueprint/lean_decls`, then API docs, then
-      # Jekyll on home_page/, then deploys to Pages.
-      # The first run builds Mathlib's API docs and is slow; later runs hit the cache.
-      - name: Compile blueprint and documentation
-        uses: leanprover-community/docgen-action@deed0cdc44dd8e5de07a300773eb751d33e32fc8 # 2025-10-26
+      - name: Build blueprint (PDF and web)
+        uses: xu-cheng/texlive-action@f886de8159e5952a131848a5fa9c3196a2132b5d # v2
         with:
-          blueprint: true
-          homepage: home_page
-          # API docs are off: doc-gen failed on `srcUri.github` for every
-          # dependency (run 45128674576). Blueprint "Lean" links go to
-          # home_page/docs/find/, which redirects to GitHub code search.
-          api-docs: "false"
+          docker_image: ghcr.io/xu-cheng/texlive-full:20250401
+          run: |
+            apk update
+            apk add --update make py3-pip git pkgconfig graphviz graphviz-dev gcc musl-dev
+            git config --global --add safe.directory $GITHUB_WORKSPACE
+            git config --global --add safe.directory `pwd`
+            python3 -m venv env
+            source env/bin/activate
+            pip install --upgrade pip requests wheel
+            pip install pygraphviz --config-settings="--global-option=build_ext" --config-settings="--global-option=-L/usr/lib/graphviz/" --config-settings="--global-option=-R/usr/lib/graphviz/"
+            pip install leanblueprint
+            leanblueprint pdf
+            leanblueprint web
+
+      - name: Check every \lean{...} name exists
+        run: ~/.elan/bin/lake exe checkdecls blueprint/lean_decls
+
+      - name: Assemble site
+        run: |
+          mkdir -p _site
+          cp -r home_page/. _site/
+          cp -r blueprint/web _site/blueprint
+          cp blueprint/print/print.pdf _site/blueprint.pdf
+          touch _site/.nojekyll
+
+      - name: Upload site
+        uses: actions/upload-pages-artifact@56afc609e74202658d3ffba0e8f6dda462b719fa # v3.0.1
+        with:
+          path: _site
+
+  deploy:
+    needs: build
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - name: Deploy to GitHub Pages
+        id: deployment
+        uses: actions/deploy-pages@d6db90164ac5ed86f2b6aed7e0febac5b3c0c03e # v4.0.5
