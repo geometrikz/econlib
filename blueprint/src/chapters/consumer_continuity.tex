@@ -1,0 +1,173 @@
+% Lean: EconLean/Consumer/Continuity.lean
+\section{Continuity of Demand and Indirect Utility}
+\label{sec:continuity}
+
+This section corresponds to \texttt{EconLean/Consumer/Continuity.lean} (MWG Props.~3.D.2--3.D.3,
+\S3.AA; AB ch.~17). The plan: show the budget correspondence is continuous on the domain
+$p \gg 0$, $w > 0$, then apply Berge's theorem (Chapter~\ref{chap:foundations}).
+
+\begin{definition}[Price--wealth domain and budget correspondence]
+\label{def:budgetCorr}
+\lean{Econ.PriceWealth, Econ.budgetCorr}
+\leanok
+\uses{def:budgetSet}
+Let $\Omega = \{(p, w) \in \R^\iota \times \R \mid p \gg 0,\ w > 0\}$ with the subspace topology, and
+define the budget correspondence $\Omega \twoheadrightarrow \R^\iota$, $(p, w) \mapsto \B(p, w)$.
+\end{definition}
+
+\begin{lemma}[Closed graph]
+\label{lem:closed_graph_budget}
+\lean{Econ.continuous_cost_joint, Econ.isClosed_graph_budgetCorr}
+\leanok
+\uses{def:budgetCorr, def:contCorr}
+The map $((p, w), x) \mapsto p \cdot x$ is continuous, and the graph of the budget correspondence is closed.
+\end{lemma}
+\begin{proof}
+\leanok
+$p \cdot x = \sum_i p_i x_i$ is a finite sum of products of coordinate projections. The graph is
+$\{((p, w), x) \mid 0 \le x\} \cap \{((p, w), x) \mid p \cdot x \le w\}$, an intersection of two sets
+defined by non-strict inequalities between continuous functions.
+\end{proof}
+
+\begin{lemma}[Nearby prices and wealth]
+\label{lem:eventually_near}
+\lean{Econ.eventually_near}
+\leanok
+\uses{def:budgetCorr}
+For every $(p, w) \in \Omega$, all $(q, w')$ sufficiently close satisfy $q_i > p_i / 2$ for all $i$ and
+$w' < 2w$.
+\end{lemma}
+\begin{proof}
+\leanok
+Each coordinate map $(q, w') \mapsto q_i$ and $(q, w') \mapsto w'$ is continuous, and $p_i / 2 < p_i$,
+$w < 2w$ (as $p_i, w > 0$); strict inequalities persist on a neighbourhood. There are finitely many
+$i$, so the finitely many neighbourhoods intersect to a neighbourhood.
+\end{proof}
+
+\begin{theorem}[Budget correspondence is UHC]
+\label{thm:uhc_budget}
+\lean{Econ.upperHemicontinuous_budgetCorr}
+\leanok
+\uses{lem:closed_graph_budget, lem:eventually_near, thm:uhc_of_closed_graph, lem:le_div_budgetSet}
+The budget correspondence is upper hemicontinuous on $\Omega$.
+\end{theorem}
+\begin{proof}
+\leanok
+Fix $(p, w)$. By Theorem~\ref{thm:uhc_of_closed_graph} and Lemma~\ref{lem:closed_graph_budget} it
+suffices to find a compact box containing $\B(q, w')$ for all $(q, w')$ near $(p, w)$. Take
+$K = \prod_i [0, 4w/p_i]$. For $(q, w')$ as in Lemma~\ref{lem:eventually_near} and $x \in \B(q, w')$:
+$x \ge 0$, and Lemma~\ref{lem:le_div_budgetSet} gives $x_i q_i \le w'$. Since
+$x_i (2q_i - p_i) \ge 0$, we get $x_i p_i \le 2 x_i q_i \le 2w' < 4w$, i.e.\ $x_i \le 4w/p_i$.
+\end{proof}
+
+\begin{theorem}[Budget correspondence is LHC]
+\label{thm:lhc_budget}
+\lean{Econ.lowerHemicontinuous_budgetCorr}
+\leanok
+\uses{def:budgetCorr, def:lhc, lem:cost_props}
+The budget correspondence is lower hemicontinuous on $\Omega$ (this uses $w > 0$).
+\end{theorem}
+\begin{proof}
+\leanok
+Use the textbook form (Definition~\ref{def:lhc}). Let $U$ be open and $y \in \B(p, w) \cap U$.
+\emph{Step 1 (shrink $y$).} The map $t \mapsto t y$ is continuous and $1 \cdot y \in U$, so for $t < 1$
+close enough to $1$ we have $t y \in U$; pick such a $t \in (0, 1)$ and set $z = t y$. Then $z \ge 0$
+and $p \cdot z = t (p \cdot y) < w$: indeed $0 \le p \cdot y \le w$, $w > 0$ and $t < 1$.
+\emph{Step 2 (perturb).} The map $(q, w') \mapsto w' - q \cdot z$ is continuous and positive at
+$(p, w)$, so it stays positive nearby. For such $(q, w')$, $z \in \B(q, w') \cap U$.
+\end{proof}
+
+\begin{corollary}[Budget correspondence satisfies Berge's hypotheses]
+\label{cor:budget_berge}
+\lean{Econ.continuousCorrespondence_budgetCorr, Econ.budgetCorr_nonempty, Econ.isCompact_budgetCorr}
+\leanok
+\uses{thm:uhc_budget, thm:lhc_budget, lem:zero_mem_budgetSet, thm:isCompact_budgetSet}
+On $\Omega$ the budget correspondence is continuous, with nonempty (it contains $0$,
+Lemma~\ref{lem:zero_mem_budgetSet}) and compact (Theorem~\ref{thm:isCompact_budgetSet}) values.
+\end{corollary}
+
+\begin{lemma}[The UMP as a Berge problem]
+\label{lem:ump_berge}
+\lean{Econ.continuous_uncurry_utility, Econ.argmax_eq_demand}
+\leanok
+\uses{def:maxValue, def:demand, def:prefOf}
+If $u$ is continuous, then $((p, w), x) \mapsto u(x)$ is continuous, and the Berge argmax for this
+objective over the budget correspondence is, by definition, Walrasian demand $x(\pref_u; p, w)$.
+\end{lemma}
+
+\begin{theorem}[Continuity of indirect utility; MWG Prop.~3.D.3]
+\label{thm:continuous_v}
+\lean{Econ.continuous_indirectUtility}
+\leanok
+\uses{lem:ump_berge, cor:budget_berge, thm:continuous_maxValue, def:duality_objs}
+If $u$ is continuous, then $v(p, w)$ is continuous on $\Omega$.
+\end{theorem}
+\begin{proof}
+\leanok
+$v(p, w)$ is by definition Berge's value function $m$ for this problem; apply
+Theorem~\ref{thm:continuous_maxValue} with Lemma~\ref{lem:ump_berge} and Corollary~\ref{cor:budget_berge}.
+\end{proof}
+
+\begin{theorem}[Upper hemicontinuity of demand]
+\label{thm:uhc_demand}
+\lean{Econ.upperHemicontinuous_demand}
+\leanok
+\uses{lem:ump_berge, cor:budget_berge, thm:uhc_argmax}
+If $u$ is continuous, the Walrasian demand correspondence is UHC on $\Omega$.
+\end{theorem}
+\begin{proof}
+\leanok
+Theorem~\ref{thm:uhc_argmax}, with the argmax identified as demand by Lemma~\ref{lem:ump_berge}.
+\end{proof}
+
+\begin{theorem}[Single-valued demand is continuous; MWG \S3.AA]
+\label{thm:continuous_demand_function}
+\lean{Econ.continuous_demand_function}
+\leanok
+\uses{lem:ump_berge, cor:budget_berge, cor:continuous_argmax_singleton}
+If $u$ is continuous and $x(\pref_u; p, w) = \{x(p, w)\}$ for all $(p, w) \in \Omega$, then
+$(p, w) \mapsto x(p, w)$ is continuous.
+\end{theorem}
+\begin{proof}
+\leanok
+Corollary~\ref{cor:continuous_argmax_singleton}.
+\end{proof}
+
+\begin{definition}[Strict quasiconcavity]
+\label{def:strictlyQuasiconcave}
+\lean{Econ.StrictlyQuasiconcave}
+\leanok
+$u$ is \emph{strictly quasiconcave} if for all $x \neq y$ and $t \in (0, 1)$,
+$\min(u(x), u(y)) < u(t x + (1-t) y)$.
+\end{definition}
+
+\begin{proposition}[Uniqueness of demand; MWG Prop.~3.D.2(iii)]
+\label{prop:demand_subsingleton}
+\lean{Econ.demand_subsingleton}
+\leanok
+\uses{def:strictlyQuasiconcave, def:demand, thm:convex_budgetSet}
+If $u$ is strictly quasiconcave, $x(\pref_u; p, w)$ has at most one element.
+\end{proposition}
+\begin{proof}
+\leanok
+Let $x, y$ be demanded and suppose $x \neq y$. The midpoint $m = \tfrac12 x + \tfrac12 y$ is affordable
+because $\B(p, w)$ is convex (Proposition~\ref{thm:convex_budgetSet}). Strict quasiconcavity gives
+$\min(u(x), u(y)) < u(m)$. But both $x$ and $y$ are optimal, so $u(m) \le u(x)$ and $u(m) \le u(y)$,
+i.e.\ $u(m) \le \min(u(x), u(y))$. Contradiction.
+\end{proof}
+
+\begin{theorem}[Continuous demand function]
+\label{thm:exists_continuous_demand}
+\lean{Econ.exists_continuous_demand_function}
+\leanok
+\uses{thm:demand_nonempty, prop:demand_subsingleton, thm:continuous_demand_function}
+If $u$ is continuous and strictly quasiconcave, there is a continuous function $x : \Omega \to \R^\iota$
+with $x(\pref_u; p, w) = \{x(p, w)\}$ for all $(p, w) \in \Omega$.
+\end{theorem}
+\begin{proof}
+\leanok
+Demand is nonempty at every $(p, w) \in \Omega$ (Theorem~\ref{thm:demand_nonempty}, using $p \gg 0$ and
+$w \ge 0$); choose an element $x(p, w)$. By Proposition~\ref{prop:demand_subsingleton} demand is a
+subsingleton containing $x(p, w)$, hence equals $\{x(p, w)\}$. Continuity follows from
+Theorem~\ref{thm:continuous_demand_function}.
+\end{proof}

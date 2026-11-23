@@ -32,5 +32,17 @@ public import EconLean.Macro.Misallocation
 public import EconLean.Macro.Banking.DiamondDybvig
 public import EconLean.Macro.Hulten
 public import EconLean.Audit.Statements.QuickMacro
+public import EconLean.Macro.DP.Monotone
+public import EconLean.Macro.Growth.Ramsey
+public import EconLean.Macro.DP.Stochastic
+public import EconLean.Macro.DP.MarkovChain
+public import EconLean.Macro.DP.StochasticExamples
+public import EconLean.Audit.Statements.RamseyStochastic
+public import EconLean.Behavioral.PresentBias
+public import EconLean.Behavioral.RankDependent
+public import EconLean.Behavioral.ReferenceDependence
+public import EconLean.Behavioral.Temptation
+public import EconLean.Behavioral.Logit
+public import EconLean.Audit.Statements.Behavioral
 
 @[expose] public section

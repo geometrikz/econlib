@@ -355,7 +355,10 @@ section Euler
 
 variable {E : Type*} [AddCommGroup E] [Module ℝ E] [PartialOrder E]
 
-/-- **Sufficiency of the Euler equations and the transversality condition**
+/-- **Euler + transversality, local form.** As `euler_transversality`, but the
+supergradient inequality and `F_x ≥ 0` are only required at the points
+`(x*_t, x*_{t+1})` of the candidate plan (which is all the proof uses). This
+lets the theorem apply when `F` is differentiable only along the candidate.
 (SL Thm 4.15). States live in an ordered real vector space `E` (SL: `ℝ^l`),
 and feasible states are nonnegative. The return `F` has partial derivatives
 `F_x(x, y)`, `F_y(x, y)` (linear functionals) and is concave in the sense of
@@ -367,13 +370,14 @@ uses). `F` is nondecreasing in the state: `F_x(x, y) z ≥ 0` for `z ≥ 0`.
 If a feasible plan `x*` satisfies the **Euler equations**
 `F_y(x*_t, x*_{t+1}) + β F_x(x*_{t+1}, x*_{t+2}) = 0` and the **transversality
 condition** `β^t F_x(x*_t, x*_{t+1}) x*_t → 0`, then `x*` is optimal. -/
-theorem euler_transversality {F : E → E → ℝ} {Γ : E → Set E} {β : ℝ}
+theorem euler_transversality_along {F : E → E → ℝ} {Γ : E → Set E} {β : ℝ}
     (hβ : 0 ≤ β) (Fx Fy : E → E → E →ₗ[ℝ] ℝ)
-    (hconc : ∀ x y x' y', y ∈ Γ x → y' ∈ Γ x' →
-      F x' y' ≤ F x y + Fx x y (x' - x) + Fy x y (y' - y))
+    {x₀ : E} {xs : ℕ → E}
+    (hconc : ∀ t x' y', y' ∈ Γ x' → F x' y' ≤ F (xs t) (xs (t + 1)) +
+      Fx (xs t) (xs (t + 1)) (x' - xs t) + Fy (xs t) (xs (t + 1)) (y' - xs (t + 1)))
     (hΓ : ∀ x y, y ∈ Γ x → 0 ≤ y)
-    (hFx : ∀ x y z, y ∈ Γ x → 0 ≤ z → 0 ≤ Fx x y z)
-    {x₀ : E} {xs : ℕ → E} (hxs : IsFeasiblePlan Γ x₀ xs)
+    (hFx : ∀ t z, 0 ≤ z → 0 ≤ Fx (xs t) (xs (t + 1)) z)
+    (hxs : IsFeasiblePlan Γ x₀ xs)
     (heuler : ∀ t, Fy (xs t) (xs (t + 1)) + β • Fx (xs (t + 1)) (xs (t + 2)) = 0)
     (htvc : Tendsto (fun t => β ^ t * Fx (xs t) (xs (t + 1)) (xs t)) atTop (𝓝 0)) :
     IsOptimalPlan Γ F β x₀ xs := by
@@ -387,7 +391,7 @@ theorem euler_transversality {F : E → E → ℝ} {Γ : E → Set E} {β : ℝ}
   have hstep : ∀ t, Dx t (z t) + Dy t (z (t + 1)) ≤
       F (xs t) (xs (t + 1)) - F (x t) (x (t + 1)) := by
     intro t
-    have := hconc (xs t) (xs (t + 1)) (x t) (x (t + 1)) (hxs.2 t) (hx.2 t)
+    have := hconc t (x t) (x (t + 1)) (hx.2 t)
     have e1 : Fx (xs t) (xs (t + 1)) (x t - xs t) = - Dx t (z t) := by
       simp only [Dx, z, ← map_neg, neg_sub]
     have e2 : Fy (xs t) (xs (t + 1)) (x (t + 1) - xs (t + 1)) = - Dy t (z (t + 1)) := by
@@ -420,7 +424,7 @@ theorem euler_transversality {F : E → E → ℝ} {Γ : E → Set E} {β : ℝ}
     -- `x_n ≥ 0` for `n ≥ 1` (feasible states are nonnegative) and `F_x ≥ 0`.
     obtain ⟨m, rfl⟩ : ∃ m, n = m + 1 := ⟨n - 1, by omega⟩
     have hxn : 0 ≤ Dx (m + 1) (x (m + 1)) :=
-      hFx _ _ _ (hxs.2 (m + 1)) (hΓ _ _ (hx.2 m))
+      hFx (m + 1) _ (hΓ _ _ (hx.2 m))
     have : Dx (m + 1) (z (m + 1)) = Dx (m + 1) (xs (m + 1)) - Dx (m + 1) (x (m + 1)) := by
       simp only [z, map_sub]
     rw [this] at hsum
@@ -432,6 +436,33 @@ theorem euler_transversality {F : E → E → ℝ} {Γ : E → Set E} {β : ℝ}
   have := hdiff n h1
   have := hn.1
   linarith
+
+
+/-- **Sufficiency of the Euler equations and the transversality condition**
+(SL Thm 4.15). States live in an ordered real vector space `E` (SL: `ℝ^l`),
+and feasible states are nonnegative. The return `F` has partial derivatives
+`F_x(x, y)`, `F_y(x, y)` (linear functionals) and is concave in the sense of
+the **supergradient inequality** on the graph of `Γ`:
+  `F(x', y') ≤ F(x, y) + F_x(x, y)(x' - x) + F_y(x, y)(y' - y)`
+(this is what concavity plus differentiability gives, and all SL's proof
+uses). `F` is nondecreasing in the state: `F_x(x, y) z ≥ 0` for `z ≥ 0`.
+
+If a feasible plan `x*` satisfies the **Euler equations**
+`F_y(x*_t, x*_{t+1}) + β F_x(x*_{t+1}, x*_{t+2}) = 0` and the **transversality
+condition** `β^t F_x(x*_t, x*_{t+1}) x*_t → 0`, then `x*` is optimal. -/
+theorem euler_transversality {F : E → E → ℝ} {Γ : E → Set E} {β : ℝ}
+    (hβ : 0 ≤ β) (Fx Fy : E → E → E →ₗ[ℝ] ℝ)
+    (hconc : ∀ x y x' y', y ∈ Γ x → y' ∈ Γ x' →
+      F x' y' ≤ F x y + Fx x y (x' - x) + Fy x y (y' - y))
+    (hΓ : ∀ x y, y ∈ Γ x → 0 ≤ y)
+    (hFx : ∀ x y z, y ∈ Γ x → 0 ≤ z → 0 ≤ Fx x y z)
+    {x₀ : E} {xs : ℕ → E} (hxs : IsFeasiblePlan Γ x₀ xs)
+    (heuler : ∀ t, Fy (xs t) (xs (t + 1)) + β • Fx (xs (t + 1)) (xs (t + 2)) = 0)
+    (htvc : Tendsto (fun t => β ^ t * Fx (xs t) (xs (t + 1)) (xs t)) atTop (𝓝 0)) :
+    IsOptimalPlan Γ F β x₀ xs :=
+  euler_transversality_along hβ Fx Fy
+    (fun t _ _ hy' => hconc _ _ _ _ (hxs.2 t) hy') hΓ
+    (fun t _ hz => hFx _ _ _ (hxs.2 t) hz) hxs heuler htvc
 
 end Euler
 

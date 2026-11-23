@@ -1,0 +1,346 @@
+% Lean: EconLean/Foundations/Correspondence.lean, EconLean/Foundations/Maximum.lean
+\chapter{Correspondences and Berge's Maximum Theorem}
+\label{chap:foundations}
+
+Sources: Aliprantis--Border (AB), \emph{Infinite Dimensional Analysis}, \S17;
+Stokey--Lucas (SL) \S3.3; MWG Appendix M.H, M.K.
+
+A \emph{correspondence} $\Phi : X \twoheadrightarrow Y$ assigns to each $x \in X$ a set
+$\Phi(x) \subseteq Y$; in Lean it is a function \texttt{X → Set Y}. Throughout, $X$ and $Y$
+are topological spaces and values may be empty unless a hypothesis says otherwise.
+Mathlib supplies the definitions of upper and lower hemicontinuity (UHC, LHC); we restate
+them in textbook form and build the rest.
+
+\section{Hemicontinuity and graphs}
+\label{sec:hemicontinuity}
+
+\begin{definition}[Upper hemicontinuity, textbook form; AB Def.~17.2]
+\label{def:uhc}
+\lean{Econ.upperHemicontinuousAt_iff_textbook}
+\leanok
+$\Phi$ is \emph{upper hemicontinuous at $x$} iff for every open $U \supseteq \Phi(x)$ there is a
+neighbourhood $N$ of $x$ with $\Phi(x') \subseteq U$ for all $x' \in N$.
+\end{definition}
+\begin{proof}
+\leanok
+Mathlib phrases UHC with the neighbourhood filter of the set $\Phi(x)$; the equivalence with the
+open-set form is the Mathlib lemma \texttt{upperHemicontinuousAt\_iff\_forall\_isOpen}.
+\end{proof}
+
+\begin{definition}[Lower hemicontinuity, textbook form; AB Def.~17.2]
+\label{def:lhc}
+\lean{Econ.lowerHemicontinuousAt_iff_textbook}
+\leanok
+$\Phi$ is \emph{lower hemicontinuous at $x$} iff for every open $U$ with
+$\Phi(x) \cap U \neq \emptyset$ there is a neighbourhood $N$ of $x$ with
+$\Phi(x') \cap U \neq \emptyset$ for all $x' \in N$.
+\end{definition}
+\begin{proof}
+\leanok
+This is Mathlib's \texttt{lowerHemicontinuousAt\_iff}.
+\end{proof}
+
+\begin{definition}[Continuous correspondence; graph]
+\label{def:contCorr}
+\lean{Econ.ContinuousCorrespondence, Econ.graph, Econ.mem_graph}
+\leanok
+\uses{def:uhc, def:lhc}
+$\Phi$ is \emph{continuous} if it is UHC and LHC at every point. Its \emph{graph} is
+$\operatorname{Gr}\Phi = \{(x, y) \in X \times Y \mid y \in \Phi(x)\}$.
+\end{definition}
+
+\begin{lemma}[UHC is local]
+\label{lem:uhc_congr}
+\lean{Econ.UpperHemicontinuousAt.congr'}
+\leanok
+\uses{def:uhc}
+If $\Phi$ is UHC at $x$ and $\Phi(x') = \Psi(x')$ for all $x'$ in a neighbourhood of $x$, then
+$\Psi$ is UHC at $x$.
+\end{lemma}
+\begin{proof}
+\leanok
+Use the textbook form. Let $U \supseteq \Psi(x)$ be open. Since $\Phi(x) = \Psi(x)$ (the equality holds
+at $x$ itself), $U \supseteq \Phi(x)$, so UHC of $\Phi$ gives a neighbourhood on which
+$\Phi(x') \subseteq U$. On the intersection with the neighbourhood where $\Phi = \Psi$, we get
+$\Psi(x') \subseteq U$.
+\end{proof}
+
+\begin{lemma}[Closed graph gives closed values]
+\label{lem:closed_values}
+\lean{Econ.isClosed_of_isClosed_graph}
+\leanok
+\uses{def:contCorr}
+If $\operatorname{Gr}\Phi$ is closed then every $\Phi(x)$ is closed.
+\end{lemma}
+\begin{proof}
+\leanok
+$\Phi(x)$ is the preimage of $\operatorname{Gr}\Phi$ under the continuous map $y \mapsto (x, y)$.
+\end{proof}
+
+\begin{theorem}[UHC with closed values has closed graph; AB Thm~17.10]
+\label{thm:closed_graph_of_uhc}
+\lean{Econ.isClosed_graph_of_upperHemicontinuous}
+\leanok
+\uses{def:uhc, def:contCorr}
+If $Y$ is regular, $\Phi$ is UHC everywhere and every $\Phi(x)$ is closed, then
+$\operatorname{Gr}\Phi$ is closed.
+\end{theorem}
+\begin{proof}
+\leanok
+We show the complement is open. Take $(x, y)$ with $y \notin \Phi(x)$. Since $\Phi(x)$ is closed and
+$Y$ is regular, the point $y$ and the set $\Phi(x)$ have disjoint neighbourhoods: an open
+$W' \supseteq \Phi(x)$ and a neighbourhood $V$ of $y$ with $W' \cap V = \emptyset$. By UHC there is a
+neighbourhood $N$ of $x$ on which $\Phi(x') \subseteq W'$. Then $N \times V$ is a neighbourhood of
+$(x, y)$, and any $(x', y') \in N \times V$ with $y' \in \Phi(x')$ would put $y'$ in both $W'$ and $V$,
+which is impossible. So $N \times V$ misses the graph.
+\end{proof}
+
+\begin{theorem}[Intersection with a closed-graph correspondence; AB Thm~17.25]
+\label{thm:uhc_inter}
+\lean{Econ.UpperHemicontinuousAt.inter_of_isClosed_graph}
+\leanok
+\uses{def:uhc, def:contCorr}
+If $\Phi$ is UHC at $x$ with $\Phi(x)$ compact, and $\Psi$ has closed graph, then
+$x' \mapsto \Phi(x') \cap \Psi(x')$ is UHC at $x$.
+\end{theorem}
+\begin{proof}
+\leanok
+Let $U$ be open with $\Phi(x) \cap \Psi(x) \subseteq U$. The set $C = \Phi(x) \setminus U$ is compact
+(closed subset of a compact set), and $\{x\} \times C$ lies outside $\operatorname{Gr}\Psi$: a point
+$y \in C$ in $\Psi(x)$ would lie in $\Phi(x) \cap \Psi(x) \subseteq U$. The complement of
+$\operatorname{Gr}\Psi$ is open, so the generalized tube lemma gives open $u \ni x$ and
+$v \supseteq C$ with $(u \times v) \cap \operatorname{Gr}\Psi = \emptyset$. Now
+$\Phi(x) \subseteq U \cup v$, which is open, so by UHC $\Phi(x') \subseteq U \cup v$ for $x'$ near $x$;
+also $x' \in u$ near $x$. For such $x'$ and $y \in \Phi(x') \cap \Psi(x')$: either $y \in U$, as
+wanted, or $y \in v$, in which case $(x', y) \in u \times v$ is in the graph of $\Psi$, a contradiction.
+\end{proof}
+
+\begin{theorem}[Closed graph and locally bounded values give UHC; AB Thm~17.11]
+\label{thm:uhc_of_closed_graph}
+\lean{Econ.upperHemicontinuousAt_of_isClosed_graph, Econ.upperHemicontinuous_of_isClosed_graph}
+\leanok
+\uses{def:uhc, def:contCorr}
+If $\operatorname{Gr}\Phi$ is closed and there is a compact $K$ with $\Phi(x') \subseteq K$ for all
+$x'$ near $x$, then $\Phi$ is UHC at $x$. In particular, if $Y$ is compact, a closed graph implies UHC.
+\end{theorem}
+\begin{proof}
+\uses{thm:uhc_inter, lem:uhc_congr}
+\leanok
+The constant correspondence $x' \mapsto K$ is UHC with compact value, so by
+Theorem~\ref{thm:uhc_inter} the correspondence $x' \mapsto K \cap \Phi(x')$ is UHC at $x$. Near $x$
+it equals $\Phi$ (since $\Phi(x') \subseteq K$), so $\Phi$ is UHC at $x$ by Lemma~\ref{lem:uhc_congr}.
+For compact $Y$ take $K = Y$.
+\end{proof}
+
+\begin{theorem}[Compact images; AB Lemma~17.8]
+\label{thm:compact_image}
+\lean{Econ.IsCompact.biUnion_of_upperHemicontinuous}
+\leanok
+\uses{def:uhc}
+If $K \subseteq X$ is compact and $\Phi$ is UHC with compact values at every point of $K$, then
+$\bigcup_{x \in K}\Phi(x)$ is compact.
+\end{theorem}
+\begin{proof}
+\leanok
+Use the finite-subcover criterion. Let $\{U_i\}$ be an open cover of the union. For each $x \in K$, the
+compact set $\Phi(x)$ is covered by finitely many $U_i$, $i \in t_x$. By UHC, $\Phi(x') \subseteq
+\bigcup_{i \in t_x} U_i$ for all $x'$ in a neighbourhood $N_x$ of $x$. The $N_x$ cover $K$, so by
+compactness finitely many $N_{x_1}, \ldots, N_{x_m}$ do. Then $\bigcup_k t_{x_k}$ is a finite index set
+whose $U_i$ cover every $\Phi(x')$, $x' \in K$.
+\end{proof}
+
+\begin{proposition}[Closed graph, sequential form; AB 17.16]
+\label{prop:closed_graph_seq}
+\lean{Econ.isClosed_graph_iff_seq}
+\leanok
+\uses{def:contCorr}
+If $X$ and $Y$ are first countable, $\operatorname{Gr}\Phi$ is closed iff whenever $x_n \to x$,
+$y_n \to y$ and $y_n \in \Phi(x_n)$ for all $n$, we have $y \in \Phi(x)$.
+\end{proposition}
+\begin{proof}
+\leanok
+($\Rightarrow$) $(x_n, y_n) \to (x, y)$ and every term lies in the closed graph, so the limit does.
+($\Leftarrow$) In a first-countable space closed equals sequentially closed. A sequence $q_n$ in the
+graph converging to $p$ has coordinates $q_{n,1} \to p_1$ and $q_{n,2} \to p_2$ with
+$q_{n,2} \in \Phi(q_{n,1})$; the hypothesis gives $p \in \operatorname{Gr}\Phi$.
+\end{proof}
+
+\begin{proposition}[Convergent subsequences under UHC; AB 17.20]
+\label{prop:uhc_subseq}
+\lean{Econ.UpperHemicontinuousAt.exists_tendsto_subseq}
+\leanok
+\uses{def:uhc}
+Let $Y$ be a (pseudo)metric space, $\Phi$ UHC at $x$ with $\Phi(x)$ compact. If $x_n \to x$ and
+$y_n \in \Phi(x_n)$, then some subsequence $y_{\varphi(n)}$ converges to a point of $\Phi(x)$.
+\end{proposition}
+\begin{proof}
+\leanok
+First, $\Phi(x) \neq \emptyset$: otherwise UHC with $U = \emptyset$ forces $\Phi(x_n) = \emptyset$ for
+large $n$, contradicting $y_n \in \Phi(x_n)$. Next, $d(y_n, \Phi(x)) \to 0$: for $\varepsilon > 0$ the set
+$\{y \mid d(y, \Phi(x)) < \varepsilon\}$ is open and contains $\Phi(x)$, so by UHC it contains
+$\Phi(x_n) \ni y_n$ for large $n$. Since $\Phi(x)$ is compact and nonempty, choose nearest points
+$z_n \in \Phi(x)$ with $d(y_n, z_n) = d(y_n, \Phi(x))$. By compactness a subsequence
+$z_{\varphi(n)} \to y \in \Phi(x)$. Finally
+$d(y_{\varphi(n)}, y) \le d(y_{\varphi(n)}, z_{\varphi(n)}) + d(z_{\varphi(n)}, y) \to 0$.
+\end{proof}
+
+\section{Berge's maximum theorem}
+\label{sec:berge}
+
+Let $f : X \times Y \to \R$ (written $f(x, y)$) and $\Phi : X \twoheadrightarrow Y$.
+
+\begin{definition}[Value function and argmax]
+\label{def:maxValue}
+\lean{Econ.maxValue, Econ.argmax}
+\leanok
+The \emph{value function} is $m(x) = \sup\{f(x, y) \mid y \in \Phi(x)\}$ and the \emph{argmax} is
+$\mu(x) = \{y \in \Phi(x) \mid \forall y' \in \Phi(x),\ f(x, y') \le f(x, y)\}$.
+In Lean the supremum of an empty or unbounded set of reals is $0$, so every result below assumes
+nonempty compact values, under which $m(x)$ is a genuine maximum.
+\end{definition}
+
+\begin{lemma}[The maximum is attained]
+\label{lem:isGreatest_maxValue}
+\lean{Econ.continuous_section, Econ.isGreatest_maxValue}
+\leanok
+\uses{def:maxValue}
+If $f$ is jointly continuous then each section $f(x, \cdot)$ is continuous, and if $\Phi(x)$ is nonempty
+and compact then $m(x)$ is the greatest element of $f(x, \Phi(x))$.
+\end{lemma}
+\begin{proof}
+\leanok
+The section is $f$ composed with $y \mapsto (x, y)$. The image of the nonempty compact $\Phi(x)$
+under the continuous $f(x, \cdot)$ is nonempty and compact in $\R$, so contains its supremum.
+\end{proof}
+
+\begin{lemma}[Argmax as a superlevel set]
+\label{lem:argmax_eq}
+\lean{Econ.argmax_eq}
+\leanok
+\uses{lem:isGreatest_maxValue}
+Under the same hypotheses, $\mu(x) = \Phi(x) \cap \{y \mid m(x) \le f(x, y)\}$.
+\end{lemma}
+\begin{proof}
+\leanok
+If $y \in \mu(x)$, pick $y_0 \in \Phi(x)$ attaining $m(x)$ (Lemma~\ref{lem:isGreatest_maxValue});
+then $m(x) = f(x, y_0) \le f(x, y)$. Conversely if $m(x) \le f(x, y)$ then for every feasible $y'$,
+$f(x, y') \le m(x) \le f(x, y)$.
+\end{proof}
+
+\begin{theorem}[Berge, upper half]
+\label{thm:usc_maxValue}
+\lean{Econ.upperSemicontinuous_maxValue}
+\leanok
+\uses{lem:isGreatest_maxValue, def:uhc}
+If $f$ is continuous and $\Phi$ is UHC with nonempty compact values, then $m$ is upper semicontinuous.
+\end{theorem}
+\begin{proof}
+\leanok
+Fix $x$ and $c > m(x)$. Every $y \in \Phi(x)$ has $f(x, y) \le m(x) < c$, so $\{x\} \times \Phi(x)$ lies in
+the open set $W = \{(x', y) \mid f(x', y) < c\}$. By the tube lemma (with $\{x\}$ and $\Phi(x)$ compact)
+there are open $u \ni x$ and $v \supseteq \Phi(x)$ with $u \times v \subseteq W$. By UHC,
+$\Phi(x') \subseteq v$ for $x'$ near $x$, and also $x' \in u$. For such $x'$ take a maximizer $y'$
+with $f(x', y') = m(x')$; then $(x', y') \in u \times v \subseteq W$, so $m(x') < c$.
+\end{proof}
+
+\begin{theorem}[Berge, lower half]
+\label{thm:lsc_maxValue}
+\lean{Econ.lowerSemicontinuous_maxValue}
+\leanok
+\uses{lem:isGreatest_maxValue, def:lhc}
+If $f$ is continuous and $\Phi$ is LHC with nonempty compact values, then $m$ is lower semicontinuous.
+\end{theorem}
+\begin{proof}
+\leanok
+Fix $x$ and $c < m(x)$. Pick a maximizer $y \in \Phi(x)$ with $f(x, y) = m(x) > c$. The set
+$\{(x', y') \mid c < f(x', y')\}$ is open and contains $(x, y)$, so it contains a box $u \times v$ with
+$x \in u$, $y \in v$. Since $v$ meets $\Phi(x)$ at $y$, LHC gives, for $x'$ near $x$ (and in $u$), a
+feasible $y' \in \Phi(x') \cap v$. Then $c < f(x', y') \le m(x')$.
+\end{proof}
+
+\begin{theorem}[Berge: continuity of the value]
+\label{thm:continuous_maxValue}
+\lean{Econ.continuous_maxValue}
+\leanok
+\uses{thm:usc_maxValue, thm:lsc_maxValue, def:contCorr}
+If $f$ is continuous and $\Phi$ is a continuous correspondence with nonempty compact values, then $m$ is
+continuous.
+\end{theorem}
+\begin{proof}
+\leanok
+A real function is continuous iff it is both lower and upper semicontinuous; apply
+Theorems~\ref{thm:lsc_maxValue} and~\ref{thm:usc_maxValue}.
+\end{proof}
+
+\begin{lemma}[Argmax nonempty and compact]
+\label{lem:argmax_props}
+\lean{Econ.argmax_nonempty, Econ.isCompact_argmax}
+\leanok
+\uses{lem:argmax_eq}
+If $f$ is continuous and $\Phi(x)$ is nonempty and compact, then $\mu(x)$ is nonempty and compact.
+\end{lemma}
+\begin{proof}
+\leanok
+Nonempty: a continuous function attains its maximum on a nonempty compact set (Weierstrass).
+Compact: by Lemma~\ref{lem:argmax_eq}, $\mu(x)$ is the intersection of the compact $\Phi(x)$ with the
+closed set $\{y \mid m(x) \le f(x, y)\}$.
+\end{proof}
+
+\begin{theorem}[Berge: UHC of the argmax]
+\label{thm:uhc_argmax}
+\lean{Econ.upperHemicontinuous_argmax}
+\leanok
+\uses{thm:continuous_maxValue, thm:uhc_inter, lem:argmax_eq, lem:uhc_congr}
+If $f$ is continuous and $\Phi$ is a continuous correspondence with nonempty compact values, then $\mu$
+is UHC.
+\end{theorem}
+\begin{proof}
+\leanok
+Let $\Psi(x) = \{y \mid m(x) \le f(x, y)\}$. Since $m$ is continuous
+(Theorem~\ref{thm:continuous_maxValue}) and $f$ is continuous, $\operatorname{Gr}\Psi =
+\{(x, y) \mid m(x) \le f(x, y)\}$ is closed. By Theorem~\ref{thm:uhc_inter}, $\Phi \cap \Psi$ is UHC at
+each $x$, and by Lemma~\ref{lem:argmax_eq} $\Phi \cap \Psi = \mu$ everywhere, so $\mu$ is UHC
+(Lemma~\ref{lem:uhc_congr}).
+\end{proof}
+
+\begin{theorem}[Berge's maximum theorem; AB 17.31, SL 3.6, MWG M.K.6]
+\label{thm:berge}
+\lean{Econ.berge_maximum_theorem}
+\leanok
+\uses{lem:isGreatest_maxValue, thm:continuous_maxValue, lem:argmax_props, thm:uhc_argmax}
+Let $f : X \times Y \to \R$ be continuous and $\Phi$ a continuous correspondence with nonempty compact
+values. Then (1) $m(x)$ is attained for every $x$; (2) $m$ is continuous; (3) $\mu$ has nonempty compact
+values; (4) $\mu$ is UHC.
+\end{theorem}
+\begin{proof}
+\leanok
+Collect Lemma~\ref{lem:isGreatest_maxValue}, Theorem~\ref{thm:continuous_maxValue},
+Lemma~\ref{lem:argmax_props} and Theorem~\ref{thm:uhc_argmax}.
+\end{proof}
+
+\begin{corollary}[Unique maximizers vary continuously]
+\label{cor:continuous_argmax_singleton}
+\lean{Econ.continuous_of_argmax_eq_singleton}
+\leanok
+\uses{thm:uhc_argmax}
+In the setting of Theorem~\ref{thm:berge}, if $\mu(x) = \{g(x)\}$ for every $x$, then $g$ is continuous.
+\end{corollary}
+\begin{proof}
+\leanok
+A singleton-valued correspondence $x \mapsto \{g(x)\}$ is UHC iff $g$ is continuous (Mathlib's
+\texttt{upperHemicontinuous\_singleton\_iff}); apply Theorem~\ref{thm:uhc_argmax}.
+\end{proof}
+
+\begin{remark}[LHC cannot be dropped]
+\label{rem:jumpCorr}
+\lean{Econ.jumpCorr}
+\leanok
+\uses{thm:continuous_maxValue}
+The Lean file also checks a counterexample: $\Phi(0) = [0, 1]$, $\Phi(x) = \{0\}$ for $x \neq 0$, with
+$f(x, y) = y$. $\Phi$ has closed graph $(\{0\} \times [0,1]) \cup (\R \times \{0\})$ with values inside
+$[0, 1]$, so it is UHC with nonempty compact values (Theorem~\ref{thm:uhc_of_closed_graph}). It is not
+LHC at $0$: the open set $(1/2, \infty)$ meets $\Phi(0)$ but misses $\Phi(x)$ for $x \neq 0$. And
+$m(0) = 1$ while $m(x) = 0$ for $x \neq 0$, so $m(1/(n+1)) = 0 \not\to 1$. A second check verifies
+all hypotheses of Theorem~\ref{thm:berge} for $\max_{y \in [-1,1]} -(y - x)^2$, so the theorem is not
+vacuous.
+\end{remark}
