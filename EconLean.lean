@@ -19,5 +19,12 @@ public import EconLean.Macro.OLG.LogHousehold
 public import EconLean.Macro.OLG.Diamond
 public import EconLean.Macro.OLG.Samuelson
 public import EconLean.Audit.Statements.GrowthOLG
+public import EconLean.Macro.DP.Blackwell
+public import EconLean.Macro.DP.SequenceProblem
+public import EconLean.Macro.DP.Bellman
+public import EconLean.Macro.DP.Concavity
+public import EconLean.Macro.DP.BrockMirman
+public import EconLean.Macro.DP.Examples
+public import EconLean.Audit.Statements.DP
 
 @[expose] public section
