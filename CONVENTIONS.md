@@ -61,7 +61,8 @@ Details and a template: `blueprint/README.md`.
   stronger than the textbook one, say so in a sentence.
 - `Audit/` statement files are not blueprinted.
 - CI fails if a `\lean{...}` name does not exist (`checkdecls`). Before handing
-  off, run `leanblueprint web` (or ask the integrator) and fix any LaTeX errors.
+  off, run `leanblueprint pdf` (stricter than `web`: it catches unescaped `_` in
+  `\texttt` and `]` inside `[...]` titles; brace such titles) and fix any errors.
 
 ## Versions
 Lean `v4.36.0`, Mathlib `v4.36.0` (see `lean-toolchain`, `lakefile.toml`).
