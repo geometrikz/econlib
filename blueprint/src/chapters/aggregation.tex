@@ -548,3 +548,117 @@ Theorem~\ref{thm:smd_consumers} on $D$.
 \leanok
 $D$ is closed (an equality and inequalities) and inside $[0,1]^2$, hence compact; $z$ is continuous on $D$ since $p_1 \ge \frac18$.
 \end{proof}
+
+\subsection{Step 2 with continuous, strongly monotone consumers}
+\label{sec:smd_standard}
+
+Keep the notation of \S\ref{sec:smd_consumers}, write $d(q) = e_l - (q_l/\|q\|^2)q$ (so $y(q) = a(q)d(q)$), and assume all
+prices in $K$ are at least $2\varepsilon > 0$. Let $Q = \{q : \varepsilon \le q_i \le 2\}$.
+
+\begin{definition}[Level test and utility]
+\label{def:std_utility}
+\lean{Econ.cnorm, Econ.dvec, Econ.csGap, Econ.priceBox, Econ.levelGap, Econ.ReachesLevel, Econ.stdUtility,
+  Econ.PieceData, Econ.weightedPiece_eq_smul_dvec}
+\leanok
+\uses{def:piece_utility}
+For $q \in Q$, $p' \in K$ and $\theta \in \mathbb{R}$ let $G(q,p',\theta) = a(p')\bigl(q\cdot d(p') + \|q\|(V(p') - \theta)\bigr)$.
+A net trade $x$ \emph{reaches} $\theta$ if for every $q \in Q$ some $p' \in K$ has $G(q,p',\theta) \le q\cdot x$. Let
+$u(x) = -\inf\{\theta : x \text{ reaches } \theta\}$.
+\end{definition}
+
+\begin{lemma}[Euclidean estimates]
+\label{lem:std_estimates}
+\lean{Econ.cost_self_nonneg', Econ.cnorm_nonneg, Econ.cnorm_sq, Econ.cnorm_mul_self, Econ.cost_sq_le,
+  Econ.abs_cost_le, Econ.cost_le_cnorm_mul, Econ.cost_sub_sub, Econ.cost_comm', Econ.abs_cnorm_sub_le,
+  Econ.abs_apply_le_cnorm, Econ.cnorm_mul_sub_cost_le, Econ.cost_dvec, Econ.csGap_nonneg, Econ.cost_dvec_eq,
+  Econ.dirCos_eq, Econ.cnorm_pos, Econ.abs_dirCos_sub_le, Econ.abs_csGap_sub_le, Econ.cnorm_ge_of_mem_priceBox,
+  Econ.cnorm_le_of_mem_priceBox, Econ.abs_cost_le_of_mem_priceBox, Econ.abs_cost_dvec_add_le,
+  Econ.sInf_le_sInf_add, Econ.exists_eps_of_compact}
+\leanok
+\uses{lem:piece_identity}
+Cauchy--Schwarz $|p\cdot q| \le \|p\|\|q\|$ and $\bigl|\|q\| - \|p\|\bigr| \le \|q - p\|$. Also
+$\|q\|\|p\| - q\cdot p \le \|q-p\|^2/2$ and $|V(q) - V(p)| \le 2\|q-p\|/\|q\|$. The gap
+$g(q,p') = \frac{p'_l}{\|p'\|^2}(\|q\|\|p'\| - q\cdot p') \ge 0$ satisfies $|g(q,p') - g(p,p')| \le 2\|q - p\|$. On $Q$:
+$\varepsilon \le \|q\| \le 2L$, $|q \cdot x| \le 2L\|x\|_\infty$ and $|q\cdot d(p') + \|q\|V(p')| \le 6L$. Finally,
+$q \cdot d(p') = \|q\|(V(q) - V(p')) + g(q,p')$.
+\end{lemma}
+\begin{proof}
+\leanok
+Cauchy--Schwarz by Lagrange's identity. The others follow by expanding $\|q - p\|^2 = \|q\|^2 + \|p\|^2 - 2q\cdot p$ and using
+$|q_i| \le \|q\|$. The last identity is Lemma~\ref{lem:piece_identity}.
+\end{proof}
+
+\begin{theorem}[The utility is continuous, strongly monotone and quasiconcave]
+\label{thm:std_utility_props}
+\lean{Econ.PieceData.nonemptyι, Econ.PieceData.mem_priceBox, Econ.PieceData.exists_min, Econ.PieceData.exists_max,
+  Econ.PieceData.levels_nonempty, Econ.PieceData.levels_bddBelow, Econ.PieceData.reaches_mono,
+  Econ.PieceData.reaches_shift, Econ.PieceData.stdUtility_lipschitz, Econ.PieceData.continuous_stdUtility,
+  Econ.PieceData.stdUtility_strictMono, Econ.PieceData.quasiconcaveOn_stdUtility, Econ.levelGap_add}
+\leanok
+\uses{def:std_utility, lem:std_estimates}
+$u$ is Lipschitz with constant $2L/(m\varepsilon)$, strictly increasing in the coordinatewise order, and quasiconcave.
+\end{theorem}
+\begin{proof}
+\leanok
+$G(q,p',\theta+\Delta) = G(q,p',\theta) - a(p')\|q\|\Delta$ with $m\varepsilon \le a\|q\| \le 2LM$. The set of reached
+levels is nonempty and bounded below by the bounds on $Q$. If $x$ reaches $\theta$, then $x'$ reaches
+$\theta + 2L\|x - x'\|/(m\varepsilon)$ because $|q\cdot(x - x')| \le 2L\|x - x'\|$, so $u$ is Lipschitz. If $x \le x'$ with
+$x_i < x'_i$, then $q \cdot (x' - x) \ge \varepsilon(x'_i - x_i)$ on $Q$. So $x'$ reaches $\theta - \varepsilon(x'_i - x_i)/(2LM)$,
+and $u(x') > u(x)$. Each test is a half-space in $x$: given $p_1, p_2$ for $x_1, x_2$, the one with smaller $G$ works for any
+convex combination. Hence the reached sets are convex and increase with $\theta$, which gives quasiconcavity as in
+Theorem~\ref{thm:piece_utility}.
+\end{proof}
+
+\begin{lemma}[Quantitative uniqueness]
+\label{lem:std_gap}
+\lean{Econ.reaches_self, Econ.PieceData.not_reaches_below, Econ.PieceData.exists_gap,
+  Econ.PieceData.stdUtility_self, Econ.PieceData.stdUtility_lt}
+\leanok
+\uses{thm:std_utility_props}
+$u(y(p)) = -V(p)$ for $p \in K$, and $u(x) < u(y(p))$ whenever $p \cdot x \le 0$ and $x \ne y(p)$.
+\end{lemma}
+\begin{proof}
+\leanok
+$y(p)$ reaches $V(p)$ (take $p' = p$: $G(q,p,V(p)) = q\cdot y(p)$). At $q = p$, $G(p,p',\theta) = a(p')(g(p,p') + \|p\|(V(p) - \theta)) > 0$
+for $\theta < V(p)$, so nothing with $p\cdot x \le 0$ reaches below $V(p)$.
+
+For $x \ne y(p)$ with $p\cdot x \le 0$, let $w = x - y(p)$, $\gamma = \|w\|^2 > 0$ and test with $q = p - t w$ for small $t > 0$.
+Then $q \in Q$, $\|q - p\| = t\|w\|$ and $q \cdot x \le q\cdot y(p) - t\gamma$. Write $E(q,p') = q\cdot d(p') + \|q\|(V(p') - V(p)) =
+D + g(q,p')$ with $D = \|q\|(V(q) - V(p))$, $|D| \le N C_V t$, and $g(q,p) \le C_g t^2$. Then
+$a(p')E(q,p') - a(p)E(q,p) = (a(p') - a(p))D + a(p')g(q,p') - a(p)g(q,p)$.
+
+Choose $\eta_0 = \gamma/(4NC_V)$. When $|a(p') - a(p)| < \eta_0$ this is $\ge -\gamma t/2$. Otherwise $p'$ lies in a compact set
+avoiding $p$, where $g(p,\cdot) \ge \mu > 0$. Then $a(p')g(q,p') \ge m(\mu - 2t\|w\|)$ dominates for small $t$. Since
+$a(p)E(q,p) = q\cdot y(p)$, every $p'$ gives
+$G(q,p',\theta) \ge q\cdot y(p) - \tfrac34\gamma t > q\cdot x$ for $\theta < V(p) + \delta$ with $\delta = \gamma t/(4MN)$.
+So $x$ does not reach any such $\theta$, and $u(x) \le -V(p) - \delta$.
+\end{proof}
+
+\begin{theorem}[A standard consumer for each piece]
+\label{thm:std_consumer_piece}
+\lean{Econ.exists_standard_consumer_weightedPiece}
+\leanok
+\uses{lem:std_gap}
+There are a continuous, strongly monotone, quasiconcave $U$ and an endowment $\omega \gg 0$ such that, for all $p \in K$, the
+Walrasian demand of $U$ at income $p\cdot\omega$ is exactly $\{\omega + y(p)\}$.
+\end{theorem}
+\begin{proof}
+\leanok
+$\varepsilon$ exists by compactness. Take $U(x) = u(x - \omega)$ with $\omega = \max(b,1)\mathbf 1$, where $b$ bounds $\|y\|$ on $K$, and
+argue as in Theorem~\ref{thm:consumer_piece}. If $K$ is empty, $U(x) = \sum_i x_i$ works.
+\end{proof}
+
+\begin{theorem}[Sonnenschein--Mantel--Debreu, with standard consumers]
+\label{thm:smd_standard}
+\lean{Econ.sonnenschein_mantel_debreu_monotone, Econ.SMDExamples.zBad_standard_consumers}
+\leanok
+\uses{thm:std_consumer_piece, thm:smd_consumers}
+Let $z$ be continuous and satisfy Walras' law on a compact $K \subseteq \Delta^\circ$. Then $z$ is the aggregate excess demand on $K$
+of $L$ consumers with continuous, strongly monotone, quasiconcave utilities and endowments $\omega_l \gg 0$, each with single-valued
+demand. In particular, the WARP-violating $z$ of Theorem~\ref{thm:zbad_smd} arises this way. Caveat: Debreu's preferences are also
+strictly convex. These are only convex, so individual demand is guaranteed single-valued only on $K$.
+\end{theorem}
+\begin{proof}
+\leanok
+As in Theorem~\ref{thm:smd_consumers}, using Theorem~\ref{thm:std_consumer_piece} for each piece.
+\end{proof}

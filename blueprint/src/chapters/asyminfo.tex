@@ -336,5 +336,43 @@ $U$, then at any $x$ with $G((U - x)/\varepsilon) < x$ the other invests with pr
 $1 - G((U - x)/\varepsilon)$, so the gain is positive and every round-$(n+1)$ survivor invests at $x$. If
 $U_0 > \tfrac12$, continuity of $G$ at $0$ gives such $x$ slightly below $U_0$ for $U$ close to $U_0$, contradicting
 minimality. So $U_0 \le \tfrac12$, and every $x > \tfrac12$ is decided after finitely many rounds; symmetrically
-below. The final claim is the combination, with the threshold strategy's survival $\ge \tfrac12$.
+below. The final claim is the combination, with the threshold strategy's survival.
+\end{proof}
+
+\section{Relational contracts}
+
+A principal and an agent interact in periods $t = 0, 1, \dots$ with discount factor $\delta \in (0,1)$. Each period
+the principal pays an enforceable wage $w_t$, the agent chooses an observable effort $e_t$ at cost $c(e_t) \ge 0$
+producing $y(e_t)$, and then a discretionary bonus $b_t$ of either sign is paid. Any deviation ends the relationship
+(outside options $0$); some effort is costless. Write $s = y - c$ for per-period surplus.
+
+\begin{definition}[Self-enforcing relational contract]
+\label{def:self-enforcing}
+\lean{Econ.RelContract, Econ.IsSelfEnforcing, Econ.stationaryRel, Econ.stationaryFeasible}
+\leanok
+Bounded continuation values $U_t, P_t$ satisfying the Bellman recursions with
+$U_t, P_t \ge 0$, $b_t - c(e_t) + \delta U_{t+1} \ge -c(e')$ for every $e'$, $b_t \le \delta P_{t+1}$ and
+$-b_t \le \delta U_{t+1}$.
+\end{definition}
+
+\begin{theorem}[Stationary contracts are optimal; Levin 2003, observable effort; MacLeod--Malcomson 1989]
+\label{thm:levin-stationary}
+\lean{Econ.stationary_selfEnforcing, Econ.selfEnforcing_dynamic, Econ.levin_stationary_optimal, Econ.constant_effort_iff}
+\leanok
+\uses{def:self-enforcing}
+If $(1-\delta)c(e) \le \delta s(e)$, every nonnegative split of $s(e)$ is supported by a stationary self-enforcing
+contract. In any self-enforcing contract $c(e_t) \le \delta (U_{t+1} + P_{t+1})$. With finitely many efforts, if a
+self-enforcing contract exists, let $s^*$ be the largest $s(e)$ with $(1-\delta)c(e) \le \delta s(e)$: the stationary
+contract attains $s^*/(1-\delta)$ and every self-enforcing contract has $(1-\delta)(U_t + P_t) \le s^*$ at every
+date. A constant effort $e$ is sustainable iff $(1-\delta)c(e) \le \delta s(e)$. Witnesses: $y = 3$, $c = 1$ for high
+effort is sustainable at $\delta = \tfrac12$ and not at $\delta = \tfrac1{10}$.
+\end{theorem}
+\begin{proof}
+\leanok
+Adding the agent's constraint at the costless effort to the principal's bonus constraint gives
+$c(e_t) \le \delta S_{t+1}$ with $S = U + P$. Let $M = \sup_t S_t$; every effort used lies in
+$F = \{e : c(e) \le \delta M\}$, so per-period surplus is at most $\hat s = \max_F s$. From
+$S_t = s(e_t) + \delta S_{t+1}$ and boundedness, $S_t \le \hat s/(1-\delta)$, hence $M \le \hat s/(1-\delta)$ and the
+maximizer $\hat e$ satisfies $c(\hat e) \le \delta \hat s/(1-\delta)$: it is stationary-feasible, so $\hat s \le s^*$.
+For the stationary contract take $U = u/(1-\delta)$, $P = \pi/(1-\delta)$ and $b = \delta P$.
 \end{proof}

@@ -350,7 +350,7 @@ design. New foundation items, added to PLAN.md §2: **F25** uniform LLN
 | C2.4 | Delta method | scalar and vector | van der Vaart 3 | C2.1 (reuse Coretto) | M | ME2 | ✅ (scalar and multivariate delta method at rate √n, Gaussian form N(0, JΣJᵀ)) |
 | C2.5 | Extremum estimators | consistency (identification + ULLN) | Newey–McFadden 1994 | F25 | M | ME2 | 🟢 (consistency and Z-estimator normality done with ULLN/CLT as hypotheses; ULLN itself F25) |
 | C2.6 | MLE | information equality, Cramér–Rao, asymptotic efficiency | Lehmann–Casella; Newey–McFadden | C2.5 | M–H | ME2 | 🟢 (KL gap from densities, identification, consistency given ULLN, N(0, I⁻¹) limit given the information equality; information equality from densities and Cramér–Rao open) |
-| C2.7 | GMM | consistency, asymptotic normality, efficient weight, J-test | Hansen 1982 (Nobel 2013) | C2.5, F27 | M–H | ME2 | ✅ (linear GMM consistency, asymptotic normality, limit covariance, efficient weight, J limit with tr = l − k; χ² law of J and nonlinear GMM open) |
+| C2.7 | GMM | consistency, asymptotic normality, efficient weight, J-test | Hansen 1982 (Nobel 2013) | C2.5, F27 | M–H | ME2 | ✅ (linear GMM consistency, asymptotic normality, limit covariance, efficient weight, J limit with tr = l − k; efficient GMM with estimated weight Ŵ = Ŝ⁻¹: limit law N(0,(GᵀS⁻¹G)⁻¹) and J limit; χ² law of J, first-step construction of Ŝ and nonlinear GMM open) |
 | C2.8 | Robust SEs | HC and Newey–West PSD | White 1980; Newey–West 1987 | Mathlib | E–M | ME2 | ✅ (OLS sandwich, HC0 PSD, infeasible HC0 unbiased, HC2 unbiased under homoskedasticity, Newey–West PSD; consistency open) |
 | C2.9 | Bootstrap | consistency for the mean | Efron 1979; Bickel–Freedman 1981 | F27 | H | ME2 | 🟡 |
 | C2.10 | Weak instruments | Staiger–Stock asymptotics | Staiger–Stock 1997 | F27 | H | ME2 | 🟡 |
@@ -359,7 +359,7 @@ design. New foundation items, added to PLAN.md §2: **F25** uniform LLN
 | ID | Model / result | Key theorems | Source | Deps | Diff | MS | Status |
 |---|---|---|---|---|---|---|---|
 | C3.1 | Potential outcomes | randomization identifies ATE; SUTVA | Rubin 1974; Imbens–Rubin 2015 | Mathlib expectation | E | ME1 | ✅ |
-| C3.2 | Selection on observables | unconfoundedness + overlap ⇒ ATE; IPW identity | Rosenbaum–Rubin 1983 | Mathlib cond. expectation | E–M | ME1 | ✅ |
+| C3.2 | Selection on observables | unconfoundedness + overlap ⇒ ATE; IPW identity | Rosenbaum–Rubin 1983 | Mathlib cond. expectation | E–M | ME1 | ✅(adjustment, IPW; propensity score theorem: mean unconfoundedness, balancing and overlap pass to e(X)) |
 | C3.3 | Linear IV | rank condition identification; 2SLS = IV | Wright 1928; Hayashi 3 | C1.1 | E | ME1 | ✅ |
 | C3.4 | LATE | Wald = complier ATE under monotonicity | Imbens–Angrist 1994 (Nobel 2021) | Mathlib | E–M | ME1 | ✅ |
 | C3.5 | MTE | LATE/ATE/ATT as MTE weighted averages | Heckman–Vytlacil 2005 | C3.4 | M | ME1 | 🟢 |
@@ -378,7 +378,7 @@ design. New foundation items, added to PLAN.md §2: **F25** uniform LLN
 ### C4. Time series
 | ID | Model / result | Key theorems | Source | Deps | Diff | MS | Status |
 |---|---|---|---|---|---|---|---|
-| C4.1 | ARMA | stationarity ⟺ roots outside unit circle; MA(∞) | Hamilton 3; Brockwell–Davis | Mathlib polynomials | M | ME3 | ✅ (AR(p) stationarity ⟺ lag roots outside the unit circle via companion eigenvalues and Gelfand radius; bounded MA(∞) solution and uniqueness; ψ-weights, autocovariances and L² stationary solution open) |
+| C4.1 | ARMA | stationarity ⟺ roots outside unit circle; MA(∞) | Hamilton 3; Brockwell–Davis | Mathlib polynomials | M | ME3 | ✅ (AR(p) stationarity ⟺ lag roots outside the unit circle via companion eigenvalues and Gelfand radius; bounded MA(∞) solution and uniqueness; Yule–Walker equations, identification φ = Γ⁻¹γ, AR(1) autocovariances and |φ| < 1; ψ-weights and L² stationary solution open) |
 | C4.2 | VAR | companion-form stability; impulse responses | Sims 1980 (Nobel 2011) | B1.9 | M | ME3 | 🟢 (stability, MA(∞), IRFs done for bounded shocks; companion form open) |
 | C4.3 | SVAR identification | recursive, long-run, sign restrictions | Blanchard–Quah 1989; Uhlig 2005 | C4.2 | M | ME3 | ✅ (recursive, Blanchard–Quah, impact and horizon sign restrictions, order condition counterexamples; RWZ rank condition open) |
 | C4.4 | LP = VAR | equivalence of population IRFs | Plagborg-Møller–Wolf 2021 | C4.2 | M | ME3 | 🟢 |

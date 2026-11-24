@@ -1,0 +1,149 @@
+% Lean: EconLean/Econometrics/Causal/PropensityScore.lean, TimeSeries/YuleWalker.lean, Asymptotics/TwoStepGMM.lean
+\chapter{Econometrics: the propensity score, Yule--Walker equations, efficient GMM with an estimated weight}
+\label{chap:econometrics6}
+
+This chapter proves the Rosenbaum--Rubin propensity score theorem, the Yule--Walker equations for autoregressions,
+and the asymptotics of efficient GMM when the optimal weight is estimated, including Hansen's $J$ test.
+
+\section{The propensity score}
+\label{sec:pscore}
+
+Sources: Rosenbaum and Rubin (1983) Thm~1--3; Imbens and Rubin (2015) \S12.3. Covariates $X$ take finitely many
+values, and unconfoundedness is conditional mean independence as in Section~\ref{sec:unconfoundedness}. A
+\emph{coarsening} $g(X)$ is a \emph{balancing score} when the propensity score $e(x) = P(D = 1\mid X = x)$ is constant
+on the non-null strata of each fibre $\{x : g(x) = c\}$. Only the ``if'' direction of Rosenbaum--Rubin Thm~2 is
+formalised.
+
+\begin{lemma}[Cells of a coarsening]
+\label{lem:pscore-cells}
+\lean{Econ.Causal.cell_comp_eq, Econ.Causal.stratum_comp_eq, Econ.Causal.measureReal_cell_add, Econ.Causal.measureReal_cell_le, Econ.Causal.cell_cross, Econ.Causal.setIntegral_cell}
+\leanok
+\uses{def:unconfoundedness, lem:total-expectation}
+The cell $\{g(X) = c, D = d\}$ is the disjoint union of the cells $\{X = x, D = d\}$ over $g(x) = c$, and likewise for
+strata. The two cells of a stratum partition it. If $e(x) = e(x')$ then $P(x, d)\,P(x') = P(x', d)\,P(x)$ for both
+arms $d$. Under mean unconfoundedness, $\int_{\{X=x,D=d\}} Y = P(X=x,D=d)\,E[Y\mid X = x]$.
+\end{lemma}
+\begin{proof}
+\leanok
+Set algebra for the unions. For the cross identity: if either stratum is null both sides vanish; otherwise equal
+propensities give the identity for $d = 1$, and subtracting it from $P(x)P(x') = P(x')P(x)$ gives $d = 0$. The integral
+identity is $\int_s Y = P(s)E[Y\mid s]$ with the conditional mean replaced by the stratum mean.
+\end{proof}
+
+\begin{theorem}[Balancing scores]
+\label{thm:balancing}
+\lean{Econ.Causal.condMean_coarsen, Econ.Causal.meanUnconfounded_coarsen, Econ.Causal.armProb_coarsen, Econ.Causal.overlap_coarsen}
+\leanok
+\uses{lem:pscore-cells}
+Let $g(X)$ be a balancing score. Then (i) $P(D = d\mid g(X) = g(x)) = P(D = d\mid X = x)$ on every non-null stratum
+(balancing); (ii) if potential outcomes are mean-unconfounded given $X$, they are mean-unconfounded given $g(X)$; and
+(iii) overlap given $X$ implies overlap given $g(X)$, for any $g$.
+\end{theorem}
+\begin{proof}
+\leanok
+Fix a fibre $c$ and arm $d$. Summing Lemma~\ref{lem:pscore-cells} over the fibre,
+$\int_{\{g(X)=c,D=d\}}Y = \sum_{g(x)=c}P(x,d)E[Y\mid x]$ and $\int_{\{g(X)=c\}}Y = \sum_{g(x)=c}P(x)E[Y\mid x]$. On a
+fibre the ratio $P(x,d)/P(x)$ is the common value $e$ (or $1-e$), so the first sum is that ratio times the second, and
+dividing by the cell and stratum probabilities gives equal conditional means. Taking $Y\equiv1$ gives (i). For
+(iii), a non-null fibre contains a non-null stratum $x$, whose cell lies inside the fibre's cell.
+\end{proof}
+
+\begin{theorem}[Propensity score theorem]
+\label{thm:rosenbaum-rubin}
+\lean{Econ.Causal.pscore, Econ.Causal.rosenbaum_rubin}
+\leanok
+\uses{thm:balancing}
+If $(Y_0, Y_1)$ are mean-unconfounded given $X$, they are mean-unconfounded given the scalar propensity score $e(X)$
+alone, and $e(X)$ balances: $P(D = d\mid e(X) = e(x)) = P(D = d\mid X = x)$.
+\end{theorem}
+\begin{proof}
+\leanok
+The propensity score is trivially a balancing score (take $g = e$, valued in its finite range). Apply
+Theorem~\ref{thm:balancing}.
+\end{proof}
+
+\section{The Yule--Walker equations}
+\label{sec:yule-walker}
+
+Sources: Yule (1927); Walker (1931); Hamilton (1994) \S3.4, eq.~3.4.5--3.4.6, 3.4.29--3.4.30; Brockwell and Davis (1991)
+\S8.1. In Lean the model with parameter $p$ has $p+1$ lags: $x_t = \sum_{j=0}^{p}\varphi_jx_{t-1-j} + \varepsilon_t$.
+Stationarity of the second moments, $E[x_tx_s] = \gamma(t-s)$, and orthogonality of innovations to the past,
+$E[\varepsilon_tx_s] = 0$ for $s<t$ with $E[\varepsilon_tx_t] = \sigma^2$, are hypotheses. The moments are uncentred, so
+$\gamma$ is the autocovariance when the process has mean zero; the identities hold either way. The only witnesses on a
+finite sample space are degenerate ($\sigma^2 = 0$).
+
+\begin{definition}[Autoregression, stationary second moments, innovations, Toeplitz matrix]
+\label{def:yule-walker}
+\lean{Econ.TimeSeries.YuleWalker.IsAR, Econ.TimeSeries.YuleWalker.Autocov, Econ.TimeSeries.YuleWalker.Innovation, Econ.TimeSeries.YuleWalker.toeplitz}
+\leanok
+The pathwise AR recursion, $E[x_tx_s] = \gamma(t-s)$, the innovation conditions above, and $\Gamma_{ij} = \gamma(i-j)$.
+\end{definition}
+
+\begin{theorem}[Yule--Walker equations]
+\label{thm:yule-walker}
+\lean{Econ.TimeSeries.YuleWalker.autocov_neg, Econ.TimeSeries.YuleWalker.integral_ar_mul, Econ.TimeSeries.YuleWalker.yule_walker, Econ.TimeSeries.YuleWalker.yule_walker_zero, Econ.TimeSeries.YuleWalker.yule_walker_identify}
+\leanok
+\uses{def:yule-walker}
+$\gamma$ is even, $\gamma(h) = \sum_j\varphi_j\gamma(h-1-j)$ for $h\ge1$, and $\gamma(0) = \sum_j\varphi_j\gamma(1+j)+\sigma^2$.
+Hence $\Gamma\varphi = (\gamma(1),\dots,\gamma(p+1))$, and if $\Gamma$ is invertible then
+$\varphi = \Gamma^{-1}(\gamma(1),\dots,\gamma(p+1))$, the population Yule--Walker estimator.
+\end{theorem}
+\begin{proof}
+\leanok
+Multiply the recursion at $t = h$ by $x_0$ and take expectations; the innovation term vanishes for $h\ge1$ and equals
+$\sigma^2$ for $h = 0$. Evenness is $E[x_0x_h] = E[x_hx_0]$. The system is the lag $h = i+1$ equations.
+\end{proof}
+
+\begin{theorem}[AR(1) autocovariances]
+\label{thm:ar1-autocov}
+\lean{Econ.TimeSeries.YuleWalker.ar1_autocov, Econ.TimeSeries.YuleWalker.ar1_stationary_bound}
+\leanok
+\uses{thm:yule-walker}
+For an AR(1), $\gamma(h) = \varphi^h\gamma(0)$ for $h\ge0$ and $(1-\varphi^2)\gamma(0) = \sigma^2$, so
+$\gamma(0) = \sigma^2/(1-\varphi^2)$ when $\varphi^2\ne1$. If $\sigma^2 > 0$ then $|\varphi| < 1$.
+\end{theorem}
+\begin{proof}
+\leanok
+Induction on $h$ with the lag equation, and the lag-zero equation with $\gamma(1) = \varphi\gamma(0)$. Since
+$\gamma(0) = E[x_0^2]\ge0$, a positive $\sigma^2$ forces $1-\varphi^2 > 0$.
+\end{proof}
+
+\section{Efficient GMM with an estimated weight}
+\label{sec:two-step-gmm}
+
+Sources: Hansen (1982) Thm~3.2 and Lemma~4.2; Hayashi (2000) Prop.~3.5--3.6; Newey and McFadden (1994) \S5. This is
+the second step of two-step GMM: the weight is $\hat W_n = \hat S_n^{-1}$ for a consistent $\hat S_n\to_p S$. The
+first-step estimator and the construction of $\hat S_n$ are not modelled. The $\chi^2(l-k)$ law of the $J$ limit is
+not stated, as Mathlib has no $\chi^2$ distribution; its mean is.
+
+\begin{lemma}[Consistency of the estimated weight]
+\label{lem:weight-consistent}
+\lean{Econ.Asymptotics.invFn, Econ.Asymptotics.of_invFn, Econ.Asymptotics.continuousAt_invFn, Econ.Asymptotics.measurable_invFn, Econ.Asymptotics.tendstoInMeasure_invFn, Econ.Asymptotics.of_invFn_symm, Econ.Asymptotics.rank_two_step}
+\leanok
+\uses{thm:gmm-asymptotic}
+If $\hat S_n\to_p S$ with $S$ invertible then $\hat S_n^{-1}\to_p S^{-1}$. If $S$ is positive definite and $G$ has
+full column rank, $G^\top S^{-1}G$ is invertible.
+\end{lemma}
+\begin{proof}
+\leanok
+Matrix inversion is continuous at invertible matrices (continuous mapping theorem). $S^{-1}$ is positive definite, so
+the Gram matrix is too.
+\end{proof}
+
+\begin{theorem}[Efficient GMM with an estimated weight]
+\label{thm:two-step-gmm}
+\lean{Econ.Asymptotics.two_step_gmm, Econ.Asymptotics.two_step_jtest, Econ.Asymptotics.two_step_witness}
+\leanok
+\uses{lem:weight-consistent, thm:gmm-asymptotic, thm:limit-laws, thm:jtest, lem:jform}
+Let $\hat S_n\to_p S$ positive definite, $\hat G_n\to_p G$ of full column rank and $\sqrt n\,\hat g_n\to_d L$. Then
+$\sqrt n(\hat\theta_n-\theta_0)\to_d AL$ with $A = (G^\top S^{-1}G)^{-1}G^\top S^{-1}$, and if $L\sim N(0,S)$ the
+limit is $N(0,(G^\top S^{-1}G)^{-1})$, the efficiency bound. Hansen's statistic $J_n$ computed with $\hat W_n$ converges
+to $L^\top QL$ with $Q$ the efficient $J$ form, whose mean is $l-k$ when $L\sim N(0,S)$. A heteroskedastic example
+($l=2$, $k=1$, $S = \mathrm{diag}(1,2)$, $Z\sim N(0,S)$) satisfies every hypothesis.
+\end{theorem}
+\begin{proof}
+\leanok
+Apply Theorem~\ref{thm:gmm-asymptotic} with $\hat W_n\to_p S^{-1}$ (Lemma~\ref{lem:weight-consistent}); the limit law
+follows from Theorem~\ref{thm:limit-laws} with $W_0 = S^{-1}$. The $J$ limit is Theorem~\ref{thm:jtest} specialised to
+the efficient weight, and its mean is the trace of the idempotent form (Lemma~\ref{lem:jform}).
+\end{proof}

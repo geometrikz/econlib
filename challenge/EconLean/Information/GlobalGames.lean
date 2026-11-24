@@ -7,7 +7,6 @@ public import Mathlib.Topology.Order.Basic
 public import Mathlib.Topology.MetricSpace.Pseudo.Defs
 public import Mathlib.Order.ConditionallyCompleteLattice.Basic
 public import Mathlib.Analysis.SpecificLimits.Basic
-public import Mathlib.MeasureTheory.Measure.Lebesgue.Basic
 public import Mathlib.Topology.Order.MonotoneContinuity
 public import Mathlib.Topology.Algebra.Order.Group
 

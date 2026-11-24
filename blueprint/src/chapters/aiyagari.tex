@@ -362,10 +362,11 @@ an invariant $\pi_\theta$ (Theorem~\ref{thm:exists_invariant_of_feller}). The fa
 
 \begin{theorem}[Asset-market clearing in Aiyagari's model; existence without uniqueness]
 \label{thm:aiyagari_equilibrium}
-\lean{Econ.ParamSavings.exists_asset_market_clearing}
+\lean{Econ.ParamSavings.exists_asset_market_clearing, Econ.ParamSavings.exists_asset_market_clearing_of_supply}
 \leanok
 \uses{def:unique_stationary}
-Prices range over $[r_{lo}, r_{hi}]$. Assume $K_d$ continuous, $K_d(r_{lo})\ge\bar k$, and $K_d(r_{hi}) \le \int a\,d\mu$
+Prices range over $[r_{lo}, r_{hi}]$. Assume $K_d$ continuous, $\int a\,d\mu \le K_d(r_{lo})$ for some stationary $\mu$
+at $r_{lo}$ (e.g.\ $K_d(r_{lo})\ge\bar k$), and $K_d(r_{hi}) \le \int a\,d\mu$
 for some stationary $\mu$ at $r_{hi}$. Then some $r$ and stationary $\pi$ at $r$ satisfy $\int a\,d\pi = K_d(r)$.
 Gaps: $K_d$ is an arbitrary demand curve (no firm, wage or labor-market clearing); the upper boundary condition
 and the asset cap $\bar k$ are assumed, not derived; if the cap binds, the equilibrium need not be one of the
@@ -697,3 +698,88 @@ $\tfrac52<\tfrac{279}{400}\cdot4$; $(R-1)A = C^*$ in both cases.
 \noindent\emph{Not covered.} $r\le0$; persistent (Markov) income; and a general-equilibrium witness in which both
 boundary conditions of Theorem~\ref{thm:aiyagari_ge} are derived \emph{and} the cap is slack (this needs the
 divergence of supply as $\beta(1+r)\uparrow1$).
+
+\section{Huggett's endowment economy}
+\label{sec:huggett}
+
+\begin{lemma}[Value through cash on hand; continuity; per-state saving bound]
+\label{lem:huggett_tools}
+\lean{Econ.StochSavings.value_eq_of_h_eq, Econ.StochSavings.continuous_of_policy,
+  Econ.StochSavings.le_policy_at, Econ.StochSavings.measure_gt_eq_zero_of_bound}
+\leanok
+\uses{def:stoch_savings, lem:asset_bound_tools, thm:stoch_value_concave}
+(i) Two states with the same shock and cash on hand have the same value. (ii) The optimal policy is continuous.
+(iii) If at a state $s$ saving $m$ is feasible, cash is monotone in assets, and for every $y<m$ and every
+continuation $x(z')$ feasible after $y$, $u(h-y)-u(h-m) < \beta\sum_{z'}Q(z,z')[u(h(m,z')-x(z')) - u(h(y,z')-x(z'))]$,
+then $g(s)\ge m$. (iv) If $g\le\max(A,b)$ and $g<b$ for $b>A$, stationary distributions give $\{b>A\}$ measure zero.
+\end{lemma}
+\begin{proof}
+\leanok
+(i) The Bellman objectives coincide, so each value attains the other. (ii) The policy equals the continuous policy
+of Theorem~\ref{thm:stoch_value_concave}. (iii) If $y = g(s) < m$, deviating to $m$ today and to $x = g(y,\cdot)$
+tomorrow gains. (iv) As in Theorem~\ref{thm:asset_bound}.
+\end{proof}
+
+\begin{definition}[Huggett economy]
+\label{def:huggett}
+\lean{Econ.HuggettEconomy, Econ.HuggettEconomy.household, Econ.HuggettEconomy.lo, Econ.HuggettEconomy.hi,
+  Econ.HuggettEconomy.household_h}
+\leanok
+\uses{def:param_savings, def:markov}
+Endowment $y(z)\ge0$ with Markov $Q$ and unique invariant $\bar q$; a bond in zero net supply with return $1+r$,
+$r\in[-1,r_{hi}]$, and borrowing limit $a\ge-\varphi$, $\varphi>0$; $r_{hi}\varphi\le y(z)$. In $b = a+\varphi\in[0,\bar k]$
+cash on hand is $(1+r)b + y(z) - r\varphi$. The bond market clears when $\int b\,d\pi = \varphi$.
+\end{definition}
+
+\begin{theorem}[Boundary conditions]
+\label{thm:huggett_boundary}
+\lean{Econ.HuggettEconomy.policy_lo, Econ.HuggettEconomy.supply_lo, Econ.HuggettEconomy.supply_ge_of_save}
+\leanok
+\uses{def:huggett, lem:huggett_tools, lem:aiyagari_marg}
+At $r=-1$ the policy is $b'=0$, so every stationary distribution has $\int b = 0\le\varphi$. If households in
+state $z_h$ always save at least $m$, every stationary distribution has $\int b\,d\pi \ge m\,\bar q(z_h)$.
+\end{theorem}
+\begin{proof}
+\leanok
+At $r=-1$ cash $y(z)+\varphi$ does not depend on $b$, so continuation values do not depend on the choice
+(Lemma~\ref{lem:huggett_tools}(i)) and $u$ is nondecreasing: $0$ is optimal, hence the policy.
+Then $\int b = \int g = 0$ (Lemma~\ref{lem:aiyagari_marg}). For the second claim, the income marginal is
+$\bar q$ and $g\ge m\mathbf 1_{z=z_h}$, so $\int b = \int g \ge m\,\bar q(z_h)$.
+\end{proof}
+
+\begin{theorem}[Existence of a stationary equilibrium; Huggett 1993]
+\label{thm:huggett_existence}
+\lean{Econ.HuggettEconomy.exists_stationary_equilibrium, Econ.HuggettEconomy.policy_le_max,
+  Econ.HuggettEconomy.exists_stationary_equilibrium_slack}
+\leanok
+\uses{thm:huggett_boundary, thm:aiyagari_equilibrium, lem:huggett_tools}
+If at $r_{hi}$ some stationary distribution has $\int b\ge\varphi$, there are $r\in(-1,r_{hi}]$, the optimal policy
+and a stationary $\pi$ with $\int b\,d\pi = \varphi$. If $r_{hi}<0$, $y\le\bar y$ and $A = (\bar y+\varphi)/(-r_{hi}) < \bar k$,
+then also $g<\bar k$ everywhere, $\pi\{b>A\} = 0$ and $r<0$.
+\end{theorem}
+\begin{proof}
+\leanok
+Theorem~\ref{thm:aiyagari_equilibrium} with constant demand $\varphi$; the lower condition is
+Theorem~\ref{thm:huggett_boundary}. If $r=-1$ the policy is $0$ and $\int b = 0\ne\varphi$. For $r\le r_{hi}<0$:
+$g\le(1+r)b + \bar y + \varphi \le b + (-r_{hi})(A-b)$, which is $\le\max(A,b)$ and $<b$ for $b>A$;
+then Lemma~\ref{lem:huggett_tools}(iv).
+\end{proof}
+
+\begin{theorem}[A fully derived Huggett equilibrium]
+\label{thm:huggett_example}
+\lean{Econ.HuggettEconomy.huggettExample, Econ.HuggettEconomy.huggett_saving,
+  Econ.HuggettEconomy.huggett_equilibrium}
+\leanok
+\uses{thm:huggett_existence, lem:huggett_tools}
+$u=\sqrt c$, $\beta = 9/10$, i.i.d.\ endowment $y\in\{0,2\}$, $\varphi = 1/10$, $r\in[-1,-1/10]$, $\bar k = 25$.
+There is an equilibrium with $-1<r<0$, $\int b\,d\pi = 1/10$, $g<25$ everywhere and $\pi\{b>21\}=0$.
+\end{theorem}
+\begin{proof}
+\leanok
+\uses{thm:doeblin}
+At $r=-1/10$ cash is $\tfrac9{10}b + y + \tfrac1{100}$. High-endowment households save at least $m = 1/5$
+(Lemma~\ref{lem:huggett_tools}(iii)): with $d = m - y$, the cost today is at most $d/(2\cdot\tfrac{13}{10}) = \tfrac5{13}d$;
+the gain tomorrow in the zero-endowment state is at least $\tfrac9{10}d/(2\cdot0.44) = \tfrac{45}{44}d$, and
+$\tfrac9{10}\cdot\tfrac12\cdot\tfrac{45}{44} > \tfrac5{13}$. So $\int b\ge m\bar q(z_h) = \tfrac1{10} = \varphi$.
+$A = 2.1/0.1 = 21 < 25$.
+\end{proof}

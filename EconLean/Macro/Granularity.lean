@@ -23,11 +23,13 @@ variance `σ²` (on a finite probability space, `Econ.CAPM.Prob`). Aggregate
 * `zipf_herfindahl`, `var_zipf_ge`: with Zipf shares `s_i ∝ 1/i`,
   `h² ≥ 1/(1 + log N)²`, so `Var(GDP) ≥ σ²/(1 + log N)²`: volatility decays
   only like `σ/log N` (Gabaix's key rate), not `σ/√N`.
+* `zipf_herfindahl_le`, `var_zipf_le`: conversely `h² ≤ 2/(log(N + 1))²`,
+  so under Zipf's law `h` is of exact order `1/log N`.
 
 **Deviations.** Shares are normalized to sum to one; Gabaix's Domar weights
 (sales/GDP) sum to more than one, which only strengthens the lower bounds.
-The Zipf lower bound uses only the largest firm; Gabaix's matching upper
-bound `h ≲ 1/log N` is not formalized.
+Volatility bounds are stated for a given `N`; the asymptotic `∼` form is
+not stated as a limit.
 -/
 module
 
@@ -91,17 +93,22 @@ theorem herfindahl_equal [Nonempty ι] :
   rw [sum_const, card_univ, nsmul_eq_mul]
   field_simp
 
+omit [Fintype ι] in
+/-- The common variance is nonnegative. -/
+theorem v_nonneg (ε : ι → σ → ℝ) {v : ℝ}
+    (hcov : ∀ i j, P.E (fun ω => ε i ω * ε j ω) = if i = j then v else 0) (k : ι) : 0 ≤ v := by
+  have := hcov k k
+  simp only [↓reduceIte] at this
+  rw [← this]
+  exact sum_nonneg fun ω _ => mul_nonneg (P.pos ω).le (mul_self_nonneg _)
+
 /-- **The granular bound.** Aggregate variance is at least `σ² s_k²` for
 every firm `k`. -/
 theorem granular_bound (s : ι → ℝ) (ε : ι → σ → ℝ) {v : ℝ}
     (hmean : ∀ i, P.E (ε i) = 0)
     (hcov : ∀ i j, P.E (fun ω => ε i ω * ε j ω) = if i = j then v else 0)
     (k : ι) : v * s k ^ 2 ≤ P.Var (agg s ε) := by
-  have hv : 0 ≤ v := by
-    have := hcov k k
-    simp only [↓reduceIte] at this
-    rw [← this]
-    exact sum_nonneg fun ω _ => mul_nonneg (P.pos ω).le (mul_self_nonneg _)
+  have hv := v_nonneg P ε hcov k
   rw [var_agg P s ε hmean hcov]
   exact mul_le_mul_of_nonneg_left
     (single_le_sum (f := fun i => s i ^ 2) (fun i _ => sq_nonneg _) (mem_univ k)) hv
@@ -149,12 +156,55 @@ theorem zipf_herfindahl {N : ℕ} (hN : 0 < N) :
 
 /-- **Granular volatility under Zipf's law**: `Var(GDP) ≥ σ²/(1 + log N)²`,
 so aggregate volatility decays like `σ/log N`, not `σ/√N`. -/
-theorem var_zipf_ge {N : ℕ} (hN : 0 < N) (ε : Fin N → σ → ℝ) {v : ℝ} (hv : 0 ≤ v)
+theorem var_zipf_ge {N : ℕ} (hN : 0 < N) (ε : Fin N → σ → ℝ) {v : ℝ}
     (hmean : ∀ i, P.E (ε i) = 0)
     (hcov : ∀ i j, P.E (fun ω => ε i ω * ε j ω) = if i = j then v else 0) :
     v / (1 + Real.log N) ^ 2 ≤ P.Var (agg (zipf N) ε) := by
+  have hv := v_nonneg P ε hcov ⟨0, hN⟩
   rw [var_agg P _ ε hmean hcov, div_eq_mul_one_div]
   exact mul_le_mul_of_nonneg_left (zipf_herfindahl hN) hv
+
+theorem sum_inv_sq_le (N : ℕ) : ∑ i ∈ range N, (1 / ((i : ℝ) + 1)) ^ 2 ≤ 2 - 2 / ((N : ℝ) + 1) := by
+  induction N with
+  | zero => norm_num
+  | succ n ih =>
+    rw [sum_range_succ]
+    have h1 : (0 : ℝ) < n + 1 := by positivity
+    have key : (1 / ((n : ℝ) + 1)) ^ 2 ≤ 2 / ((n : ℝ) + 1) - 2 / ((n : ℝ) + 1 + 1) := by
+      rw [div_sub_div _ _ h1.ne' (by positivity), div_pow, one_pow, div_le_div_iff₀ (by positivity)
+        (by positivity)]
+      nlinarith
+    push_cast
+    linarith
+
+/-- **Zipf Herfindahl, upper bound**: `h² ≤ 2/(log(N + 1))²`. Together with
+`zipf_herfindahl`, `h ≍ 1/log N`. -/
+theorem zipf_herfindahl_le {N : ℕ} (hN : 0 < N) :
+    ∑ i, zipf N i ^ 2 ≤ 2 / Real.log (N + 1) ^ 2 := by
+  have hH := harmonic_pos hN
+  have hN1 : (1 : ℝ) ≤ N := by exact_mod_cast hN
+  have hlog : 0 < Real.log (N + 1) := Real.log_pos (by linarith)
+  have hle : Real.log (N + 1) ≤ (harmonic N : ℝ) := by
+    have := log_add_one_le_harmonic N; push_cast at this ⊢; exact_mod_cast this
+  have hs : ∑ i : Fin N, (1 / ((i : ℝ) + 1)) ^ 2 ≤ 2 := by
+    rw [Fin.sum_univ_eq_sum_range (fun i => (1 / ((i : ℝ) + 1)) ^ 2)]
+    have := sum_inv_sq_le N
+    have : 0 ≤ 2 / ((N : ℝ) + 1) := by positivity
+    linarith
+  calc ∑ i, zipf N i ^ 2 = (∑ i : Fin N, (1 / ((i : ℝ) + 1)) ^ 2) / (harmonic N : ℝ) ^ 2 := by
+        simp only [zipf, div_pow, ← sum_div]
+    _ ≤ 2 / (harmonic N : ℝ) ^ 2 := div_le_div_of_nonneg_right hs (by positivity)
+    _ ≤ 2 / Real.log (N + 1) ^ 2 :=
+        div_le_div_of_nonneg_left (by norm_num) (by positivity) (pow_le_pow_left₀ hlog.le hle 2)
+
+/-- **Zipf volatility, upper bound**: `Var(GDP) ≤ 2σ²/(log(N + 1))²`. -/
+theorem var_zipf_le {N : ℕ} (hN : 0 < N) (ε : Fin N → σ → ℝ) {v : ℝ}
+    (hmean : ∀ i, P.E (ε i) = 0)
+    (hcov : ∀ i j, P.E (fun ω => ε i ω * ε j ω) = if i = j then v else 0) :
+    P.Var (agg (zipf N) ε) ≤ 2 * v / Real.log (N + 1) ^ 2 := by
+  have hv := v_nonneg P ε hcov ⟨0, hN⟩
+  rw [var_agg P _ ε hmean hcov, mul_comm 2 v, mul_div_assoc]
+  exact mul_le_mul_of_nonneg_left (zipf_herfindahl_le hN) hv
 
 end Granular
 end Econ

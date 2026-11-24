@@ -24,3 +24,7 @@ the Barro premium ratio and two-point covariance. No sign errors, no blocking is
 Checks after fixes: all four files compile warning-free; `#print axioms` standard
 only (57 declarations); leanchecker passes on all five modules; nanoda checked
 43753 declarations with no typechecker errors.
+
+Follow-up (batch 13 review, 2026-11-24): `var_zipf_ge` no longer takes `hv : 0 ≤ v`
+(it is derived from `hcov` by `v_nonneg`); the frozen statement was strengthened
+accordingly by dropping that hypothesis.

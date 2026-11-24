@@ -130,6 +130,9 @@ public import EconLean.Econometrics.GLS
 public import EconLean.Econometrics.TimeSeries.ARMA
 public import EconLean.Econometrics.TimeSeries.Kalman
 public import EconLean.Econometrics.Asymptotics.DeltaMethodVec
+public import EconLean.Econometrics.Causal.PropensityScore
+public import EconLean.Econometrics.TimeSeries.YuleWalker
+public import EconLean.Econometrics.Asymptotics.TwoStepGMM
 public import EconLean.Macro.Growth.RamseyGlobal
 public import EconLean.Macro.DP.StochasticPlan
 public import EconLean.Macro.DP.InvariantMeasure
@@ -145,10 +148,13 @@ public import EconLean.Macro.HA.AiyagariGE
 public import EconLean.Audit.Statements.AiyagariGE
 public import EconLean.Macro.HA.AssetBound
 public import EconLean.Audit.Statements.AssetBound
+public import EconLean.Macro.HA.Huggett
+public import EconLean.Audit.Statements.Huggett
 public import EconLean.Audit.Statements.HAStochastic
 public import EconLean.Bridges.Aggregation.Tatonnement
 public import EconLean.Bridges.Aggregation.SMD
 public import EconLean.Bridges.Aggregation.SMDConsumer
+public import EconLean.Bridges.Aggregation.SMDStandard
 public import EconLean.Games.Strategic
 public import EconLean.Games.Potential
 public import EconLean.Games.Supermodular
@@ -168,6 +174,7 @@ public import EconLean.Information.Informativeness
 public import EconLean.Information.BayesCorrelated
 public import EconLean.Information.PropertyRights
 public import EconLean.Information.GlobalGames
+public import EconLean.Contracts.Relational
 public import EconLean.Information.Signaling
 public import EconLean.Information.Screening
 public import EconLean.Information.MoralHazard
@@ -208,6 +215,7 @@ public import EconLean.Audit.Statements.InfoBatch6
 public import EconLean.Audit.Statements.MatchingBargaining
 public import EconLean.Audit.Statements.Assignment
 public import EconLean.Audit.Statements.GlobalGames
+public import EconLean.Audit.Statements.Relational
 public import EconLean.Macro.Consumption.Precautionary
 public import EconLean.Macro.Consumption.PIH
 public import EconLean.Finance.SequentialMarkets
@@ -257,6 +265,10 @@ public import EconLean.Macro.PublicFinance.InverseEuler
 public import EconLean.Macro.Granularity
 public import EconLean.Finance.RareDisasters
 public import EconLean.Audit.Statements.MacroBatch12
+public import EconLean.Macro.PublicFinance.TwoTypeMirrlees
+public import EconLean.Macro.PublicFinance.RamseyCommodityTax
+public import EconLean.Macro.IKC
+public import EconLean.Audit.Statements.MacroBatch13
 public import EconLean.Behavioral.BeliefRule
 public import EconLean.Behavioral.CognitiveDiscounting
 public import EconLean.Behavioral.DiagnosticExpectations

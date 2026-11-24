@@ -17,6 +17,7 @@ public import EconLean.Bridges.Aggregation.Gorman
 public import EconLean.Bridges.Aggregation.Tatonnement
 public import EconLean.Bridges.Aggregation.SMD
 public import EconLean.Bridges.Aggregation.SMDConsumer
+public import EconLean.Bridges.Aggregation.SMDStandard
 
 @[expose] public section
 
@@ -239,5 +240,44 @@ theorem frozen_zBad_rational_consumers : ¬ ExcessWARP SMDExamples.zBad SMDExamp
   SMDExamples.zBad_rational_consumers
 
 end SMDConsumer
+
+section SMDStandard
+/-! SMD with continuous, strongly monotone consumers (`SMDStandard.lean`), frozen
+after the isolated review of 2026-11-24 (`Audit/REVIEW-smd-standard.md`). -/
+
+open Set
+
+theorem frozen_stronglyMonotone_def {ι : Type*} [Fintype ι] (U : (ι → ℝ) → ℝ) :
+    StronglyMonotone (prefOf U) ↔
+      ∀ x y : ι → ℝ, 0 ≤ x → x ≤ y → x ≠ y → U x ≤ U y ∧ ¬ U y ≤ U x := Iff.rfl
+
+theorem frozen_exists_standard_consumer_weightedPiece {ι : Type*} [Fintype ι] [DecidableEq ι]
+    {K : Set (ι → ℝ)} {a : (ι → ℝ) → ℝ} (l : ι) (hK : IsCompact K)
+    (hKS : K ⊆ openPriceSimplex ι) (ha : ContinuousOn a K) (hapos : ∀ q ∈ K, 0 < a q) :
+    ∃ (U : (ι → ℝ) → ℝ) (ω : ι → ℝ), Continuous U ∧ StronglyMonotone (prefOf U) ∧
+      QuasiconcaveOn ℝ univ U ∧ (∀ i, 0 < ω i) ∧
+      ∀ p ∈ K, demand (prefOf U) p (cost p ω) = {ω + weightedPiece a l p} :=
+  exists_standard_consumer_weightedPiece l hK hKS ha hapos
+
+theorem frozen_sonnenschein_mantel_debreu_monotone {ι : Type*} [Fintype ι] [DecidableEq ι]
+    [Nonempty ι] {z : (ι → ℝ) → (ι → ℝ)} {K : Set (ι → ℝ)} (hK : IsCompact K)
+    (hKS : K ⊆ openPriceSimplex ι) (hz : ContinuousOn z K) (hW : WalrasLaw z K) :
+    ∃ (U : ι → (ι → ℝ) → ℝ) (ω : ι → ι → ℝ),
+      (∀ l, Continuous (U l) ∧ StronglyMonotone (prefOf (U l)) ∧
+        QuasiconcaveOn ℝ univ (U l) ∧ ∀ i, 0 < ω l i) ∧
+      ∀ p ∈ K, ∃ x : ι → ι → ℝ,
+        (∀ l, demand (prefOf (U l)) p (cost p (ω l)) = {x l}) ∧ ∑ l, (x l - ω l) = z p :=
+  sonnenschein_mantel_debreu_monotone hK hKS hz hW
+
+theorem frozen_zBad_standard_consumers : ¬ ExcessWARP SMDExamples.zBad SMDExamples.DBad ∧
+    ∃ (U : Fin 2 → (Fin 2 → ℝ) → ℝ) (ω : Fin 2 → Fin 2 → ℝ),
+      (∀ l, Continuous (U l) ∧ StronglyMonotone (prefOf (U l)) ∧
+        QuasiconcaveOn ℝ univ (U l) ∧ ∀ i, 0 < ω l i) ∧
+      ∀ p ∈ SMDExamples.DBad, ∃ x : Fin 2 → Fin 2 → ℝ,
+        (∀ l, demand (prefOf (U l)) p (cost p (ω l)) = {x l}) ∧
+          ∑ l, (x l - ω l) = SMDExamples.zBad p :=
+  SMDExamples.zBad_standard_consumers
+
+end SMDStandard
 
 end Econ.Audit

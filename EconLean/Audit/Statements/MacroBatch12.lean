@@ -70,10 +70,10 @@ theorem frozen_granular_var_equal {σ : Type*} [Fintype σ] (P : Econ.CAPM.Prob 
   Econ.Granular.var_equal P hN ε hmean hcov
 
 theorem frozen_granular_var_zipf_ge {σ : Type*} [Fintype σ] (P : Econ.CAPM.Prob σ) {N : ℕ}
-    (hN : 0 < N) (ε : Fin N → σ → ℝ) {v : ℝ} (hv : 0 ≤ v) (hmean : ∀ i, P.E (ε i) = 0)
+    (hN : 0 < N) (ε : Fin N → σ → ℝ) {v : ℝ} (hmean : ∀ i, P.E (ε i) = 0)
     (hcov : ∀ i j, P.E (fun ω => ε i ω * ε j ω) = if i = j then v else 0) :
     v / (1 + Real.log N) ^ 2 ≤ P.Var (Econ.Granular.agg (Econ.Granular.zipf N) ε) :=
-  Econ.Granular.var_zipf_ge P hN ε hv hmean hcov
+  Econ.Granular.var_zipf_ge P hN ε hmean hcov
 
 theorem frozen_disasters_premium_pos (P : Econ.Disasters.Params) (hp : 0 < P.p) :
     P.Rf < P.ERe :=

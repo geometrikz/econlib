@@ -484,18 +484,13 @@ theorem policy_lt_kbar (hg : ∀ s, M.toStochDynProg.policy s = {g s}) (hgc : Co
 
 variable [MeasurableSpace Z] [BorelSpace Z]
 
-/-- **Every stationary distribution lives on `[0, A]`**: `π{a > A} = 0`.
-(Proof: `φ(a) = max(a - A, 0)` has the same mean under `π` and under its image
-by the policy, while `φ(g) ≤ φ(a)` with strict inequality when `a > A`.) -/
-theorem measure_gt_eq_zero (hg : ∀ s, M.toStochDynProg.policy s = {g s})
-    (hgc : Continuous g)
-    {R ybar Cstar A : ℝ} {inc : Z → ℝ} (hh : ∀ k z, M.h k z = R * k + inc z) (hR : 1 < R)
-    (hinc0 : ∀ z, 0 ≤ inc z) (hincb : ∀ z, inc z ≤ ybar)
-    (hiid : ∀ z₁ z₂ z', M.Q z₁ z' = M.Q z₂ z')
-    (hI : ∀ K ε : ℝ, 0 < ε → ∃ d, 0 < d ∧ d ≤ ε ∧ K * d < M.u d - M.u 0)
-    (hE0 : ∀ c, 0 < c → EulerGap M.u M.β R 0 c)
-    (hEC : ∀ c, Cstar < c → EulerGap M.u M.β R ybar c)
-    (hA0 : 0 < A) (hAy : ybar / R ≤ A) (hAC : Cstar ≤ (R - 1) * A)
+/-- **A stationary distribution cannot put mass where assets strictly fall.**
+If `g(a, z) ≤ max(A, a)` everywhere and `g(a, z) < a` whenever `a > A`, every
+stationary distribution gives `{a > A}` measure zero. (Proof: `φ(a) = max(a - A, 0)`
+has the same mean under `π` and under its image by the policy, while
+`φ(g) ≤ φ(a)` with strict inequality when `a > A`.) -/
+theorem measure_gt_eq_zero_of_bound {g : M.S × Z → M.S} (hgc : Continuous g) {A : ℝ}
+    (hle : ∀ s, (g s : ℝ) ≤ max A s.1) (hlt : ∀ s, A < (s.1 : ℝ) → (g s : ℝ) < s.1)
     (hgm : Measurable g) (μ : Measure (M.S × Z)) [IsProbabilityMeasure μ]
     (hμ : Kernel.Invariant (policyKernel M.Q g hgm) μ) : μ {s | A < (s.1 : ℝ)} = 0 := by
   have : CompactSpace M.S := isCompact_iff_compactSpace.1 isCompact_Icc
@@ -508,14 +503,13 @@ theorem measure_gt_eq_zero (hg : ∀ s, M.toStochDynProg.policy s = {g s})
         continuous_const).sub
         (((continuous_subtype_val.comp hgc).sub continuous_const).max continuous_const)⟩
   have hD0 : 0 ≤ ⇑D := fun s => by
-    have := policy_le_max hg hgc hh hR hinc0 hincb hiid hI hE0 hEC hA0 hAy hAC s
+    have := hle s
     show 0 ≤ max ((s.1 : ℝ) - A) 0 - max ((g s : ℝ) - A) 0
     rw [sub_nonneg]
     refine max_le ?_ (le_max_right _ _)
     rcases le_total A s.1 with h | h
     · rw [max_eq_right h] at this; exact (sub_le_sub_right this A).trans (le_max_left _ _)
     · rw [max_eq_left h] at this; linarith [le_max_right ((s.1 : ℝ) - A) 0]
-  -- `∫ φ dμ = ∫ φ ∘ g dμ` by invariance
   have := isMarkovKernel_policyKernel M.Q_nonneg M.Q_sum g hgm
   have hμ' : policyKernel M.Q g hgm ∘ₘ μ = μ := hμ
   have hφ : ∫ s, φ s ∂μ = ∫ s, max ((g s : ℝ) - A) 0 ∂μ := by
@@ -537,11 +531,26 @@ theorem measure_gt_eq_zero (hg : ∀ s, M.toStochDynProg.policy s = {g s})
   have hae := (integral_eq_zero_iff_of_nonneg hD0 (D.integrable μ)).1 hint
   refine measure_mono_null (fun s (hs : A < (s.1 : ℝ)) => ?_) (ae_iff.1 hae)
   show D s ≠ 0
-  have hlt := policy_lt_self hg hgc hh hR hinc0 hincb hiid hI hE0 hEC hA0 hAy hAC s hs.le
+  have hlt := hlt s hs
   show max ((s.1 : ℝ) - A) 0 - max ((g s : ℝ) - A) 0 ≠ 0
   rw [max_eq_left (by linarith : (0 : ℝ) ≤ s.1 - A)]
   have : max ((g s : ℝ) - A) 0 < (s.1 : ℝ) - A := max_lt (by linarith) (by linarith)
   linarith
+
+/-- **Every stationary distribution lives on `[0, A]`**: `π{a > A} = 0`. -/
+theorem measure_gt_eq_zero (hg : ∀ s, M.toStochDynProg.policy s = {g s})
+    (hgc : Continuous g)
+    {R ybar Cstar A : ℝ} {inc : Z → ℝ} (hh : ∀ k z, M.h k z = R * k + inc z) (hR : 1 < R)
+    (hinc0 : ∀ z, 0 ≤ inc z) (hincb : ∀ z, inc z ≤ ybar)
+    (hiid : ∀ z₁ z₂ z', M.Q z₁ z' = M.Q z₂ z')
+    (hI : ∀ K ε : ℝ, 0 < ε → ∃ d, 0 < d ∧ d ≤ ε ∧ K * d < M.u d - M.u 0)
+    (hE0 : ∀ c, 0 < c → EulerGap M.u M.β R 0 c)
+    (hEC : ∀ c, Cstar < c → EulerGap M.u M.β R ybar c)
+    (hA0 : 0 < A) (hAy : ybar / R ≤ A) (hAC : Cstar ≤ (R - 1) * A)
+    (hgm : Measurable g) (μ : Measure (M.S × Z)) [IsProbabilityMeasure μ]
+    (hμ : Kernel.Invariant (policyKernel M.Q g hgm) μ) : μ {s | A < (s.1 : ℝ)} = 0 :=
+  measure_gt_eq_zero_of_bound hgc (policy_le_max hg hgc hh hR hinc0 hincb hiid hI hE0 hEC hA0 hAy hAC)
+    (fun s hs => policy_lt_self hg hgc hh hR hinc0 hincb hiid hI hE0 hEC hA0 hAy hAC s hs.le) hgm μ hμ
 
 end StochSavings
 

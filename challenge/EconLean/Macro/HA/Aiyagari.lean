@@ -160,6 +160,24 @@ theorem integral_assets_le [Nonempty Z] (μ : ProbabilityMeasure (M.S × Z)) :
 
 end ParamSavings
 
+theorem ParamSavings.exists_asset_market_clearing_of_supply {Z : Type*} [Fintype Z] [TopologicalSpace Z]
+    [DiscreteTopology Z] [MeasurableSpace Z] [BorelSpace Z] [Nonempty Z] {rlo rhi : ℝ}
+    (hr : rlo ≤ rhi) (M : ParamSavings (Icc rlo rhi) Z)
+    (Kd : ℝ → ℝ) (hKd : ContinuousOn Kd (Icc rlo rhi))
+    (hlo : ∀ (g : M.S × Z → M.S) (hg : Measurable g),
+      (∀ s, (M.slice ⟨rlo, le_rfl, hr⟩).toStochDynProg.policy s = {g s}) →
+      ∃ μ : ProbabilityMeasure (M.S × Z), Kernel.Invariant (policyKernel M.Q g hg) μ ∧
+        ∫ s, M.assets s ∂(μ : Measure (M.S × Z)) ≤ Kd rlo)
+    (hhi : ∀ (g : M.S × Z → M.S) (hg : Measurable g),
+      (∀ s, (M.slice ⟨rhi, hr, le_rfl⟩).toStochDynProg.policy s = {g s}) →
+      ∃ μ : ProbabilityMeasure (M.S × Z), Kernel.Invariant (policyKernel M.Q g hg) μ ∧
+        Kd rhi ≤ ∫ s, M.assets s ∂(μ : Measure (M.S × Z))) :
+    ∃ r : Icc rlo rhi, ∃ (g : M.S × Z → M.S) (hg : Measurable g) (π : ProbabilityMeasure (M.S × Z)),
+      (∀ s, (M.slice r).toStochDynProg.policy s = {g s}) ∧
+      Kernel.Invariant (policyKernel M.Q g hg) π ∧
+      ∫ s, M.assets s ∂(π : Measure (M.S × Z)) = Kd r := by
+  sorry
+
 theorem ParamSavings.exists_asset_market_clearing {Z : Type*} [Fintype Z] [TopologicalSpace Z]
     [DiscreteTopology Z] [MeasurableSpace Z] [BorelSpace Z] [Nonempty Z] {rlo rhi : ℝ}
     (hr : rlo ≤ rhi) (M : ParamSavings (Icc rlo rhi) Z)

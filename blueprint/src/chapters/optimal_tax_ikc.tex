@@ -1,0 +1,99 @@
+% Lean: EconLean/Macro/PublicFinance/{TwoTypeMirrlees,RamseyCommodityTax}.lean, EconLean/Macro/IKC.lean,
+%       EconLean/Macro/Granularity.lean (Zipf upper bound)
+\chapter{Optimal Taxation and the Intertemporal Keynesian Cross}
+\label{chap:optimal_tax_ikc}
+
+Sources: Mirrlees (1971); Stiglitz (1982); Salanié, \emph{The Economics of Taxation}; Ramsey (1927); Atkinson--Stiglitz,
+\emph{Lectures on Public Economics}; Auclert--Rognlie--Straub (2024); Gabaix (2011).
+
+\section{Optimal income taxation with two types}
+
+\begin{definition}[Two-type tax problem]
+\label{def:mirrlees2}
+\lean{Econ.Mirrlees2.Params, Econ.Mirrlees2.Params.U, Econ.Mirrlees2.Params.S, Econ.Mirrlees2.Params.Φ, Econ.Mirrlees2.Params.κ, Econ.Mirrlees2.Params.W, Econ.Mirrlees2.Params.welfare, Econ.Mirrlees2.Params.Feasible, Econ.Mirrlees2.Params.ICH, Econ.Mirrlees2.Params.ICL, Econ.Mirrlees2.Params.wedge, Econ.Mirrlees2.Params.IsOptimum}
+\leanok
+Types $\theta_L<\theta_H$ with shares $\pi_L,\pi_H$ and weights $g_L>g_H\ge0$, $\pi_Lg_L+\pi_Hg_H=1$; utility $c-v(y/\theta)$.
+The planner maximizes $\sum g_i\pi_iU_i$ subject to resources and both incentive constraints. Surplus
+$S=\sum\pi_i(y_i-v(y_i/\theta_i))$, rent $\Phi(y)=v(y/\theta_L)-v(y/\theta_H)$, $\kappa=\pi_L\pi_H(g_L-g_H)$,
+$W=S-\kappa\Phi(y_L)$; the marginal tax rate is $1-v'(y/\theta)/\theta$.
+\end{definition}
+
+\begin{theorem}[No distortion at the top, positive tax at the bottom]
+\label{thm:mirrlees2}
+\lean{Econ.Mirrlees2.Params.κ_pos, Econ.Mirrlees2.Params.welfare_eq, Econ.Mirrlees2.Params.welfare_le, Econ.Mirrlees2.Params.welfare_eq_W_iff, Econ.Mirrlees2.Params.exists_alloc, Econ.Mirrlees2.Params.hasDerivAt_comp_div, Econ.Mirrlees2.Params.no_distortion_top, Econ.Mirrlees2.Params.bottom_foc, Econ.Mirrlees2.Params.bottom_tax_pos, Econ.Mirrlees2.Params.Φ_le_of_IC, Econ.Mirrlees2.Params.W_le_of_optimum, Econ.Mirrlees2.Params.optimum_welfare_eq, Econ.Mirrlees2.Params.optimum_isLocalMax_top, Econ.Mirrlees2.Params.optimum_isLocalMax_bottom, Econ.Mirrlees2.Params.continuousAt_Φ, Econ.Mirrlees2.Params.optimum_no_distortion_top, Econ.Mirrlees2.Params.optimum_bottom_tax_pos}
+\leanok
+\uses{def:mirrlees2}
+Feasible allocations satisfying the high type's constraint have welfare at most $W(y_L,y_H)$, with equality iff it binds, and
+the bound is attained whenever $\Phi(y_L)\le\Phi(y_H)$. At an optimum of the full program with positive incomes and no bunching,
+the high type's marginal tax is zero, and with strictly convex $v$ the low type's marginal tax is strictly positive.
+\end{theorem}
+\begin{proof}
+\leanok
+On the resource constraint welfare is $S-\kappa(U_H-U_L)$ and the high type's constraint says $U_H-U_L\ge\Phi(y_L)$. The two
+incentive constraints give $\Phi(y_L)\le\Phi(y_H)$; continuity of $\Phi$ makes $(y_L,y_H)$ a local maximum of $W$ in each argument.
+The first-order conditions are $v'(y_H/\theta_H)/\theta_H=1$ and
+$\pi_L(1-v'(y_L/\theta_L)/\theta_L)=\kappa\Phi'(y_L)>0$.
+\end{proof}
+
+\section{Ramsey commodity taxation}
+
+\begin{definition}[Ramsey problem]
+\label{def:ramsey_tax}
+\lean{Econ.RamseyTax.welfare, Econ.RamseyTax.revenue, Econ.RamseyTax.elasticity}
+\leanok
+With independent demands $x_i(q_i)$, $q_i=p_i+t_i$, welfare is $\sum CS_i(q_i)$ with $CS_i'=-x_i$, revenue is
+$\sum t_ix_i(q_i)$ and $\varepsilon=-qx'/x$.
+\end{definition}
+
+\begin{theorem}[Ramsey and inverse elasticity rules]
+\label{thm:ramsey_tax}
+\lean{Econ.RamseyTax.hasStrictFDerivAt_coord, Econ.RamseyTax.ramsey_rule, Econ.RamseyTax.inverse_elasticity, Econ.RamseyTax.inverse_elasticity_pos}
+\leanok
+\uses{def:ramsey_tax}
+At a local maximum of welfare on a revenue level set there is $\theta$ with $t_kx_k'=\theta x_k$ for all $k$; hence
+$t_k/q_k=c/\varepsilon_k$. With positive revenue, prices, demands and elasticities, $c>0$ and more elastic goods are taxed at
+strictly lower rates.
+\end{theorem}
+\begin{proof}
+\leanok
+Lagrange multipliers: $a(x_k+t_kx_k')-bx_k=0$ with $(a,b)\ne0$; $a=0$ would force $b=0$. If $c\le0$ every $t_k\le0$ and
+revenue would be nonpositive.
+\end{proof}
+
+\section{The intertemporal Keynesian cross}
+
+\begin{definition}[IKC]
+\label{def:ikc}
+\lean{Econ.IKC.IsEq}
+\leanok
+$dY=dG+M(dY-dT)$ for the matrix of intertemporal MPCs $M$.
+\end{definition}
+
+\begin{theorem}[IKC]
+\label{thm:ikc}
+\lean{Econ.IKC.isEq_iff, Econ.IKC.isEq_iff_inv, Econ.IKC.existsUnique_eq, Econ.IKC.not_isUnit_of_pv, Econ.IKC.balanced_budget_isEq, Econ.IKC.balanced_budget_iff, Econ.IKC.balanced_budget, Econ.IKC.pv_budget, Econ.IKC.static_cross, Econ.IKC.static_isUnit}
+\leanok
+\uses{def:ikc}
+With $dT=dG$, $dY=dG$ is always an equilibrium and the others differ by $\ker(I-M)$; it is the unique one if $I-M$ is
+invertible, in which case $dY=(I-M)^{-1}(dG-MdT)$. If $q^\top M=q^\top$ then any equilibrium has $q\cdot dG=q\cdot dT$, and for
+$q\ne0$, $I-M$ is singular. With $M=\mu I$, $dY=(dG-\mu dT)/(1-\mu)$.
+\end{theorem}
+\begin{proof}
+\leanok
+Rearrange to $(I-M)dY=dG-MdT$; take $q\cdot$ of both sides; $q^\top(I-M)=0$ gives $\det(I-M)=0$.
+\end{proof}
+
+\section{Zipf granularity: the upper bound}
+
+\begin{theorem}[Zipf Herfindahl upper bound]
+\label{thm:zipf_upper}
+\lean{Econ.Granular.v_nonneg, Econ.Granular.sum_inv_sq_le, Econ.Granular.zipf_herfindahl_le, Econ.Granular.var_zipf_le}
+\leanok
+\uses{thm:granular}
+For Zipf shares, $\sum s_i^2\le2/\log(N+1)^2$, so $\operatorname{Var}\le2\sigma^2/\log(N+1)^2$; with the lower bound, $h$ is of
+order $1/\log N$.
+\end{theorem}
+\begin{proof}
+\leanok
+$\sum_{i\le N}1/i^2\le2-2/(N+1)$ by induction, and $H_N\ge\log(N+1)$.
+\end{proof}

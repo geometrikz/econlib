@@ -149,6 +149,12 @@ theorem policy_lt_kbar (hg : ∀ s, M.toStochDynProg.policy s = {g s}) (hgc : Co
 
 variable [MeasurableSpace Z] [BorelSpace Z]
 
+theorem measure_gt_eq_zero_of_bound {g : M.S × Z → M.S} (hgc : Continuous g) {A : ℝ}
+    (hle : ∀ s, (g s : ℝ) ≤ max A s.1) (hlt : ∀ s, A < (s.1 : ℝ) → (g s : ℝ) < s.1)
+    (hgm : Measurable g) (μ : Measure (M.S × Z)) [IsProbabilityMeasure μ]
+    (hμ : Kernel.Invariant (policyKernel M.Q g hgm) μ) : μ {s | A < (s.1 : ℝ)} = 0 := by
+  sorry
+
 theorem measure_gt_eq_zero (hg : ∀ s, M.toStochDynProg.policy s = {g s})
     (hgc : Continuous g)
     {R ybar Cstar A : ℝ} {inc : Z → ℝ} (hh : ∀ k z, M.h k z = R * k + inc z) (hR : 1 < R)

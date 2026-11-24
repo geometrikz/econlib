@@ -343,9 +343,9 @@ end ParamSavings
 
 /-- **Asset-market clearing in Aiyagari's model** (Aiyagari 1994; LS ch. 18;
 existence without uniqueness as in Açıkgöz 2018). Prices range over
-`[r_lo, r_hi]`, and `K_d` is a continuous capital-demand curve. Suppose demand
-exceeds any feasible supply at the low price (`K_d(r_lo) ≥ k̄`), and at `r_hi`
-some stationary distribution supplies at least `K_d(r_hi)`. Then there is a
+`[r_lo, r_hi]`, and `K_d` is a continuous capital-demand curve. Suppose at `r_lo`
+some stationary distribution supplies at most `K_d(r_lo)`, and at `r_hi` some
+stationary distribution supplies at least `K_d(r_hi)`. Then there is a
 price `r` and a stationary distribution `π` of the optimal policy at `r` at
 which the asset market clears: `∫ a dπ = K_d(r)`.
 
@@ -355,11 +355,14 @@ is convex, so the set of aggregate supplies is an interval-valued correspondence
 with closed graph. A connectedness argument on `[r_lo, r_hi]` then finds a price
 at which `K_d(r)` lies between two stationary supplies, and a mixture of the two
 distributions clears the market. -/
-theorem ParamSavings.exists_asset_market_clearing {Z : Type*} [Fintype Z] [TopologicalSpace Z]
+theorem ParamSavings.exists_asset_market_clearing_of_supply {Z : Type*} [Fintype Z] [TopologicalSpace Z]
     [DiscreteTopology Z] [MeasurableSpace Z] [BorelSpace Z] [Nonempty Z] {rlo rhi : ℝ}
     (hr : rlo ≤ rhi) (M : ParamSavings (Icc rlo rhi) Z)
     (Kd : ℝ → ℝ) (hKd : ContinuousOn Kd (Icc rlo rhi))
-    (hlo : M.kbar ≤ Kd rlo)
+    (hlo : ∀ (g : M.S × Z → M.S) (hg : Measurable g),
+      (∀ s, (M.slice ⟨rlo, le_rfl, hr⟩).toStochDynProg.policy s = {g s}) →
+      ∃ μ : ProbabilityMeasure (M.S × Z), Kernel.Invariant (policyKernel M.Q g hg) μ ∧
+        ∫ s, M.assets s ∂(μ : Measure (M.S × Z)) ≤ Kd rlo)
     (hhi : ∀ (g : M.S × Z → M.S) (hg : Measurable g),
       (∀ s, (M.slice ⟨rhi, hr, le_rfl⟩).toStochDynProg.policy s = {g s}) →
       ∃ μ : ProbabilityMeasure (M.S × Z), Kernel.Invariant (policyKernel M.Q g hg) μ ∧
@@ -403,8 +406,8 @@ theorem ParamSavings.exists_asset_market_clearing {Z : Type*} [Fintype Z] [Topol
   let lo : Icc rlo rhi := ⟨rlo, le_rfl, hr⟩
   let hi : Icc rlo rhi := ⟨rhi, hr, le_rfl⟩
   have hloA : lo ∈ A := by
-    obtain ⟨μ, hμ⟩ := hex lo
-    exact ⟨(lo, μ), ⟨hμ, (M.integral_assets_le μ).trans hlo⟩, rfl⟩
+    obtain ⟨μ, hμ, hle⟩ := hlo _ (hgm lo) (hg lo)
+    exact ⟨(lo, μ), ⟨hμ, hle⟩, rfl⟩
   have hhiB : hi ∈ B := by
     obtain ⟨μ, hμ, hle⟩ := hhi _ (hgm hi) (hg hi)
     exact ⟨(hi, μ), ⟨hμ, hle⟩, rfl⟩
@@ -445,6 +448,31 @@ theorem ParamSavings.exists_asset_market_clearing {Z : Type*} [Fintype Z] [Topol
     change t * k1 + (1 - t) * k2 = Kd r2
     have : t * (k2 - k1) = k2 - Kd r2 := div_mul_cancel₀ _ (by linarith)
     linarith
+
+/-- **Asset-market clearing in Aiyagari's model** (Aiyagari 1994; LS ch. 18;
+existence without uniqueness as in Açıkgöz 2018). Prices range over
+`[r_lo, r_hi]`, and `K_d` is a continuous capital-demand curve. Suppose demand
+exceeds any feasible supply at the low price (`K_d(r_lo) ≥ k̄`), and at `r_hi`
+some stationary distribution supplies at least `K_d(r_hi)`. Then there is a
+price `r` and a stationary distribution `π` of the optimal policy at `r` at
+which the asset market clears: `∫ a dπ = K_d(r)`. (A special case of
+`exists_asset_market_clearing_of_supply`.) -/
+theorem ParamSavings.exists_asset_market_clearing {Z : Type*} [Fintype Z] [TopologicalSpace Z]
+    [DiscreteTopology Z] [MeasurableSpace Z] [BorelSpace Z] [Nonempty Z] {rlo rhi : ℝ}
+    (hr : rlo ≤ rhi) (M : ParamSavings (Icc rlo rhi) Z)
+    (Kd : ℝ → ℝ) (hKd : ContinuousOn Kd (Icc rlo rhi))
+    (hlo : M.kbar ≤ Kd rlo)
+    (hhi : ∀ (g : M.S × Z → M.S) (hg : Measurable g),
+      (∀ s, (M.slice ⟨rhi, hr, le_rfl⟩).toStochDynProg.policy s = {g s}) →
+      ∃ μ : ProbabilityMeasure (M.S × Z), Kernel.Invariant (policyKernel M.Q g hg) μ ∧
+        Kd rhi ≤ ∫ s, M.assets s ∂(μ : Measure (M.S × Z))) :
+    ∃ r : Icc rlo rhi, ∃ (g : M.S × Z → M.S) (hg : Measurable g) (π : ProbabilityMeasure (M.S × Z)),
+      (∀ s, (M.slice r).toStochDynProg.policy s = {g s}) ∧
+      Kernel.Invariant (policyKernel M.Q g hg) π ∧
+      ∫ s, M.assets s ∂(π : Measure (M.S × Z)) = Kd r :=
+  M.exists_asset_market_clearing_of_supply hr Kd hKd (fun g hg hpol => by
+    obtain ⟨μ, hμ⟩ := M.exists_stationary_of_policy _ g hg hpol
+    exact ⟨μ, hμ, (M.integral_assets_le μ).trans hlo⟩) hhi
 
 /-! ### Non-vacuity -/
 

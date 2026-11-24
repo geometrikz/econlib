@@ -36,8 +36,10 @@ Main results:
 Not formalized: the derivation of these posteriors from a prior and a noise distribution, and
 common-prior consistency of the two players' beliefs (not needed here); proper priors and the
 vanishing-noise limit (Carlsson–van Damme); general payoffs, many actions, and more than two
-players or a continuum of players (Frankel–Morris–Pauzner 2003; Morris–Shin 1998). The fields
-`cont` and `bdd` of `GlobalBeliefs` are implied by the others but kept for convenience.
+players or a continuum of players (Frankel–Morris–Pauzner 2003; Morris–Shin 1998). The field
+`cont` and the upper bound `G ≤ 1` in `bdd` are implied by the others but kept for convenience;
+the lower bound `0 ≤ G` is needed. The beliefs `μ` about the other's signal are a free primitive:
+they are not tied to a posterior over `θ` (whose mean `x` is hard-coded in `investGain`).
 `uniformNoise_spec` is a consistency check: uniform beliefs about the other's signal arise from
 perfectly anti-correlated noise, not from i.i.d. noise.
 -/
@@ -49,7 +51,6 @@ public import Mathlib.Topology.Order.Basic
 public import Mathlib.Topology.MetricSpace.Pseudo.Defs
 public import Mathlib.Order.ConditionallyCompleteLattice.Basic
 public import Mathlib.Analysis.SpecificLimits.Basic
-public import Mathlib.MeasureTheory.Measure.Lebesgue.Basic
 public import Mathlib.Topology.Order.MonotoneContinuity
 public import Mathlib.Topology.Algebra.Order.Group
 

@@ -39,6 +39,12 @@ theorem herfindahl_equal [Nonempty ι] :
     ∑ _i : ι, (1 / (Fintype.card ι : ℝ)) ^ 2 = 1 / (Fintype.card ι : ℝ) := by
   sorry
 
+omit [Fintype ι] in
+
+theorem v_nonneg (ε : ι → σ → ℝ) {v : ℝ}
+    (hcov : ∀ i j, P.E (fun ω => ε i ω * ε j ω) = if i = j then v else 0) (k : ι) : 0 ≤ v := by
+  sorry
+
 theorem granular_bound (s : ι → ℝ) (ε : ι → σ → ℝ) {v : ℝ}
     (hmean : ∀ i, P.E (ε i) = 0)
     (hcov : ∀ i j, P.E (fun ω => ε i ω * ε j ω) = if i = j then v else 0)
@@ -66,10 +72,23 @@ theorem zipf_herfindahl {N : ℕ} (hN : 0 < N) :
     1 / (1 + Real.log N) ^ 2 ≤ ∑ i, zipf N i ^ 2 := by
   sorry
 
-theorem var_zipf_ge {N : ℕ} (hN : 0 < N) (ε : Fin N → σ → ℝ) {v : ℝ} (hv : 0 ≤ v)
+theorem var_zipf_ge {N : ℕ} (hN : 0 < N) (ε : Fin N → σ → ℝ) {v : ℝ}
     (hmean : ∀ i, P.E (ε i) = 0)
     (hcov : ∀ i j, P.E (fun ω => ε i ω * ε j ω) = if i = j then v else 0) :
     v / (1 + Real.log N) ^ 2 ≤ P.Var (agg (zipf N) ε) := by
+  sorry
+
+theorem sum_inv_sq_le (N : ℕ) : ∑ i ∈ range N, (1 / ((i : ℝ) + 1)) ^ 2 ≤ 2 - 2 / ((N : ℝ) + 1) := by
+  sorry
+
+theorem zipf_herfindahl_le {N : ℕ} (hN : 0 < N) :
+    ∑ i, zipf N i ^ 2 ≤ 2 / Real.log (N + 1) ^ 2 := by
+  sorry
+
+theorem var_zipf_le {N : ℕ} (hN : 0 < N) (ε : Fin N → σ → ℝ) {v : ℝ}
+    (hmean : ∀ i, P.E (ε i) = 0)
+    (hcov : ∀ i j, P.E (fun ω => ε i ω * ε j ω) = if i = j then v else 0) :
+    P.Var (agg (zipf N) ε) ≤ 2 * v / Real.log (N + 1) ^ 2 := by
   sorry
 
 end Granular
