@@ -167,6 +167,7 @@ public import EconLean.Information.CheapTalk
 public import EconLean.Information.Informativeness
 public import EconLean.Information.BayesCorrelated
 public import EconLean.Information.PropertyRights
+public import EconLean.Information.GlobalGames
 public import EconLean.Information.Signaling
 public import EconLean.Information.Screening
 public import EconLean.Information.MoralHazard
@@ -206,6 +207,7 @@ public import EconLean.Audit.Statements.GamesInfoIO
 public import EconLean.Audit.Statements.InfoBatch6
 public import EconLean.Audit.Statements.MatchingBargaining
 public import EconLean.Audit.Statements.Assignment
+public import EconLean.Audit.Statements.GlobalGames
 public import EconLean.Macro.Consumption.Precautionary
 public import EconLean.Macro.Consumption.PIH
 public import EconLean.Finance.SequentialMarkets
@@ -292,5 +294,7 @@ public import EconLean.Audit.Statements.BehavioralXI
 public import EconLean.BoundedRationality.Robinson
 public import EconLean.BoundedRationality.PoissonCH
 public import EconLean.Audit.Statements.BehavioralXII
+public import EconLean.BoundedRationality.ESSUniform
+public import EconLean.Audit.Statements.BehavioralXIII
 
 @[expose] public section

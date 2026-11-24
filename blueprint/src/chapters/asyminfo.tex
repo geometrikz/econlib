@@ -299,3 +299,42 @@ Both comparisons are instances of the lemma: surplus minus her payoff is $(V - v
 ownership structures differ by $(v' - v)/2$ plus a constant. Specificity under the smaller ownership follows from specificity under the larger one plus $v' - v$
 nondecreasing. Surplus is nondecreasing below the efficient level.
 \end{proof}
+
+\section{Global games}
+
+Two players each invest or not. Investing pays $\theta - 1$, plus $1$ if the other player also invests; not investing
+pays $0$. Under a diffuse prior with noise scale $\varepsilon > 0$, a player with signal $x$ believes $E[\theta \mid x] = x$
+and that the other's signal is distributed as $\mu_x$, with $\mu_x((-\infty, t]) = G((t - x)/\varepsilon)$ for a
+nondecreasing $G$ with $G(0) = \tfrac12$. A strategy is the set of signals at which a player invests.
+
+\begin{definition}[Iterated dominance]
+\label{def:global-survives}
+\lean{Econ.investGain, Econ.survives, Econ.GlobalBeliefs}
+\leanok
+The gain from investing at $x$ against the strategy $B$ is $x - 1 + \mu_x(B)$. Every measurable set survives round $0$;
+$A$ survives round $n+1$ if it survives round $n$ and, at every signal, its action is a best reply to some strategy
+surviving round $n$.
+\end{definition}
+
+\begin{theorem}[Laplacian threshold; Morris--Shin 2003, \S2]
+\label{thm:global-games}
+\lean{Econ.GlobalBeliefs.threshold_survives, Econ.GlobalBeliefs.globalGame_invest, Econ.GlobalBeliefs.globalGame_noInvest, Econ.GlobalBeliefs.globalGame_unique, Econ.uniformNoise_spec}
+\leanok
+\uses{def:global-survives}
+For every $\varepsilon > 0$, the threshold strategy ``invest iff $x > \tfrac12$'' survives every round, and every
+strategy surviving all rounds invests for $x > \tfrac12$ and does not invest for $x < \tfrac12$. The hypotheses hold
+for uniform beliefs on $[x - 1, x + 1]$. (The origin of the approach, with the vanishing-noise limit, is
+Carlsson--van Damme 1993.)
+\end{theorem}
+\begin{proof}
+\leanok
+The threshold strategy survives: at $x > \tfrac12$ the other invests with probability
+$1 - G((\tfrac12 - x)/\varepsilon) \ge \tfrac12$, so the gain is $\ge 0$, and symmetrically below.
+Hence no bound ``all round-$n$ survivors invest above $U$'' can have $U < \tfrac12$. Let $U_0$ be the infimum of such
+bounds ($U = 1$ works in round $1$, since investing is dominant above $1$). If every round-$n$ survivor invests above
+$U$, then at any $x$ with $G((U - x)/\varepsilon) < x$ the other invests with probability at least
+$1 - G((U - x)/\varepsilon)$, so the gain is positive and every round-$(n+1)$ survivor invests at $x$. If
+$U_0 > \tfrac12$, continuity of $G$ at $0$ gives such $x$ slightly below $U_0$ for $U$ close to $U_0$, contradicting
+minimality. So $U_0 \le \tfrac12$, and every $x > \tfrac12$ is decided after finitely many rounds; symmetrically
+below. The final claim is the combination, with the threshold strategy's survival $\ge \tfrac12$.
+\end{proof}

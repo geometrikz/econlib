@@ -826,6 +826,27 @@ which is affine in $\varepsilon$. In Hawk--Dove every mutant ties against $V/C$ 
 $E(x,y)-E(y,y)=\tfrac{C}{2}(q-V/C)^2>0$.
 \end{proof}
 
+\begin{theorem}[Uniform invasion barrier and local superiority]
+\label{thm:beh-ess-uniform}
+\uses{thm:beh-ess}
+\lean{Econ.ESS.post, Econ.ESS.lotteries_le_one, Econ.ESS.post_mem, Econ.ESS.exists_ray, Econ.ESS.adv, Econ.ESS.adv_eq, Econ.ESS.advantage_ray, Econ.ESS.abs_E_le, Econ.ESS.continuous_E_left, Econ.ESS.continuous_E_right, Econ.ESS.continuous_E_diag, Econ.ESS.isESS_iff_uniform, Econ.ESS.isESS_iff_locallySuperior, Econ.ESS.hawkDove_uniform_locallySuperior}
+\leanok
+Let $x\in\Delta$. Then $x$ is an ESS iff there is a single $\bar\varepsilon\in(0,1]$ such that for every $y\in\Delta$,
+$y\ne x$, and every $\varepsilon\in(0,\bar\varepsilon)$, $E(y,w)<E(x,w)$ with $w=(1-\varepsilon)x+\varepsilon y$
+(Weibull, Proposition 2.5). Also, $x$ is an ESS iff it is locally superior: there is $\delta>0$ with $E(y,y)<E(x,y)$ for all
+$y\in\Delta\setminus\{x\}$ with $\max_i|y_i-x_i|<\delta$ (Weibull, Proposition 2.6; Hofbauer--Schuster--Sigmund).
+\end{theorem}
+\begin{proof}
+\leanok
+Let $Z_x$ be the strategies in $\Delta$ that put zero weight on some pure strategy in the support of $x$; it is compact and
+excludes $x$. Every $y\ne x$ is $(1-\lambda)x+\lambda z$ with $z\in Z_x$, $\lambda\in(0,1]$, and the advantage of $x$ over
+$y$ at $\varepsilon$ equals $\lambda$ times its advantage over $z$ at $\varepsilon\lambda$. On $Z_x$ the continuous
+function $\max(E(x,x)-E(z,x),\,E(x,z)-E(z,z))$ is positive under ESS, hence bounded below by some $m>0$; with
+$M=\sum|A_{ij}|$, $\bar\varepsilon=m/(m+2M+1)$ works. Local superiority follows by taking $\delta=\bar\varepsilon\min_{x_i>0}x_i$,
+which forces $\lambda<\bar\varepsilon$, and writing $E(x,y)-E(y,y)=\lambda(E(x,y)-E(z,y))$. Conversely the post-entry
+population is near $x$ for small $\varepsilon$.
+\end{proof}
+
 \begin{theorem}[Hart--Mas-Colell: regret matching]
 \label{thm:beh-regret-matching}
 \lean{Econ.RegretMatching.potential, Econ.RegretMatching.potential_nonneg, Econ.RegretMatching.potential_add_le, Econ.RegretMatching.potential_le, Econ.RegretMatching.regret_le, Econ.RegretMatching.rm, Econ.RegretMatching.rm_mem, Econ.RegretMatching.rm_orth, Econ.RegretMatching.regrets, Econ.RegretMatching.play, Econ.RegretMatching.avgDist, Econ.RegretMatching.play_isMixedProfile, Econ.RegretMatching.avgDist_mem, Econ.RegretMatching.cceGain_profileProb, Econ.RegretMatching.regrets_succ, Econ.RegretMatching.regrets_eq, Econ.RegretMatching.abs_mixedPayoff_le, Econ.RegretMatching.cceGain_avgDist_le, Econ.RegretMatching.eventually_isCCE, Econ.RegretMatching.isCCE_of_tendsto}

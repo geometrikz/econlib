@@ -145,6 +145,7 @@ public import EconLean.Information.CheapTalk
 public import EconLean.Information.Informativeness
 public import EconLean.Information.BayesCorrelated
 public import EconLean.Information.PropertyRights
+public import EconLean.Information.GlobalGames
 public import EconLean.Information.Signaling
 public import EconLean.Information.Screening
 public import EconLean.Information.MoralHazard
@@ -248,5 +249,6 @@ public import EconLean.BoundedRationality.BayesianLearning
 public import EconLean.Behavioral.VariationalPreferences
 public import EconLean.BoundedRationality.Robinson
 public import EconLean.BoundedRationality.PoissonCH
+public import EconLean.BoundedRationality.ESSUniform
 
 @[expose] public section
