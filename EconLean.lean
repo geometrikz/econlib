@@ -158,6 +158,9 @@ public import EconLean.Information.Lemons
 public import EconLean.Information.Agreement
 public import EconLean.Information.Cascades
 public import EconLean.Information.CheapTalk
+public import EconLean.Information.Informativeness
+public import EconLean.Information.BayesCorrelated
+public import EconLean.Information.PropertyRights
 public import EconLean.Information.Signaling
 public import EconLean.Information.Screening
 public import EconLean.Information.MoralHazard
@@ -174,6 +177,7 @@ public import EconLean.Mechanism.SecondPrice
 public import EconLean.Mechanism.Implementation
 public import EconLean.Matching.StrategyProof
 public import EconLean.Matching.Assortative
+public import EconLean.Matching.Boston
 public import EconLean.Partial.Externalities
 public import EconLean.Partial.PublicGoods
 public import EconLean.Partial.Oligopoly
@@ -188,6 +192,7 @@ public import EconLean.Cooperative.Shapley
 public import EconLean.Cooperative.Core
 public import EconLean.Audit.Statements.PartialSocial
 public import EconLean.Audit.Statements.GamesInfoIO
+public import EconLean.Audit.Statements.InfoBatch6
 public import EconLean.Macro.Consumption.Precautionary
 public import EconLean.Macro.Consumption.PIH
 public import EconLean.Finance.SequentialMarkets
@@ -227,6 +232,11 @@ public import EconLean.Macro.Growth.DirectedTechChange
 public import EconLean.Macro.Trade.EatonKortum
 public import EconLean.Macro.Trade.Melitz
 public import EconLean.Audit.Statements.MacroBatch10
+public import EconLean.Finance.CAPM
+public import EconLean.Finance.ModiglianiMiller
+public import EconLean.Macro.NK.THANK
+public import EconLean.Macro.Monetary.CashInAdvance
+public import EconLean.Audit.Statements.MacroBatch11
 public import EconLean.Behavioral.BeliefRule
 public import EconLean.Behavioral.CognitiveDiscounting
 public import EconLean.Behavioral.DiagnosticExpectations

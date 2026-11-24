@@ -1,0 +1,100 @@
+% Lean: EconLean/Finance/{CAPM,ModiglianiMiller}.lean, EconLean/Macro/NK/THANK.lean,
+%       EconLean/Macro/Monetary/CashInAdvance.lean
+\chapter{CAPM, Capital Structure, THANK and the Friedman Rule}
+\label{chap:finance_policy}
+
+Sources: Sharpe (1964); Lintner (1965); Cochrane, \emph{Asset Pricing}; Modigliani--Miller (1958); Berk--DeMarzo;
+Bilbiie (2008, 2020, 2024); Lucas--Stokey (1987); Walsh, \emph{Monetary Theory and Policy}; Ljungqvist--Sargent.
+
+\section{The CAPM}
+
+\begin{definition}[Moments and linear SDF]
+\label{def:capm}
+\lean{Econ.CAPM.Prob, Econ.CAPM.Prob.E, Econ.CAPM.Prob.Cov, Econ.CAPM.Prob.Var, Econ.CAPM.Prob.IsLinearSDF, Econ.CAPM.Prob.Prices, Econ.CAPM.Prob.quadSDF}
+\leanok
+On a finite state space with full-support probabilities, an SDF $m$ prices a gross return $R$ if $E[mR]=1$; it is linear in $R_m$
+if $m=a-bR_m$. The quadratic-utility SDF is $\beta(\kappa-WR_m)/(\kappa-c_0)$.
+\end{definition}
+
+\begin{theorem}[Beta pricing]
+\label{thm:capm}
+\lean{Econ.CAPM.Prob.E_const, Econ.CAPM.Prob.E_affine, Econ.CAPM.Prob.E_affine_mul, Econ.CAPM.Prob.excess_return_eq, Econ.CAPM.Prob.beta_pricing, Econ.CAPM.Prob.market_premium_pos, Econ.CAPM.Prob.hasDerivAt_quadU, Econ.CAPM.Prob.linearSDF_of_quadratic, Econ.CAPM.Prob.capm_of_quadratic}
+\leanok
+\uses{def:capm}
+With a linear SDF, $E R-R_f=R_fb\operatorname{Cov}(R,R_m)$, so $E R_i-R_f=\beta_i(E R_m-R_f)$ with
+$\beta_i=\operatorname{Cov}(R_i,R_m)/\operatorname{Var}R_m$. Quadratic utility gives a linear SDF with $b>0$, hence beta pricing and a
+positive market premium.
+\end{theorem}
+\begin{proof}
+\leanok
+$1=E[mR]=aER-bE[R_mR]$ and $1=E[m]R_f=(a-bER_m)R_f$; combine. Apply to $R$ and to $R_m$ and divide.
+\end{proof}
+
+\section{Modigliani--Miller}
+
+\begin{definition}[Claims on the firm]
+\label{def:mm}
+\lean{Econ.MM.value, Econ.MM.debt, Econ.MM.equity}
+\leanok
+Value at state prices $m$ is $\sum_sm_sz_s$; debt with face $F$ pays $\min(X,F)$, equity pays $\max(X-F,0)$.
+\end{definition}
+
+\begin{theorem}[MM I and II]
+\label{thm:mm}
+\lean{Econ.MM.mm_I, Econ.MM.debt_add_equity, Econ.MM.mm_I_debt, Econ.MM.mm_I_market, Econ.MM.mm_II, Econ.MM.mm_II_mono}
+\leanok
+\uses{def:mm, thm:ftap}
+Any split of the cash flow is worth the cash flow; in a market with no arbitrage, traded claims that split a traded cash flow cost
+as much as it. Expected returns satisfy $r_E=r_A+(r_A-r_D)D/E$ for debt of any riskiness.
+\end{theorem}
+\begin{proof}
+\leanok
+Linearity of value, $\min(X,F)+\max(X-F,0)=X$, and the FTAP state prices. For MM II, $r_EE=r_AV-r_DD$ with $V=D+E$.
+\end{proof}
+
+\section{THANK}
+
+\begin{definition}[Two-agent NK demand block]
+\label{def:thank}
+\lean{Econ.THANK.Params, Econ.THANK.Params.δ, Econ.THANK.Params.IsEq}
+\leanok
+A share $\lambda$ of hand-to-mouth households consume $\chi y_t$; savers follow $c^S_t=c^S_{t+1}-\sigma(r_t-r^n_t)$; and
+$y_t=\lambda c^H_t+(1-\lambda)c^S_t$, with $\lambda\chi<1$. Let $\delta=(1-\lambda)/(1-\lambda\chi)$.
+\end{definition}
+
+\begin{theorem}[THANK IS curve and amplification]
+\label{thm:thank}
+\lean{Econ.THANK.Params.one_sub_pos, Econ.THANK.Params.cS_eq, Econ.THANK.Params.aggregate_IS, Econ.THANK.Params.amplification_iff, Econ.THANK.Params.δ_eq_one_of_rank, Econ.THANK.Params.iterate, Econ.THANK.Params.impact}
+\leanok
+\uses{def:thank}
+$y_t=y_{t+1}-\delta\sigma(r_t-r^n_t)$; if $y_T=0$ then $y_0=-\delta\sigma\sum_{t<T}(r_t-r^n_t)$. For $\lambda>0$, $\delta>1$ iff
+$\chi>1$; $\delta=1$ in RANK.
+\end{theorem}
+\begin{proof}
+\leanok
+Market clearing gives $c^S=\frac{1-\lambda\chi}{1-\lambda}y$; substitute into the saver Euler equation and iterate.
+\end{proof}
+
+\section{The Friedman rule with cash and credit goods}
+
+\begin{definition}[Cash-in-advance steady state]
+\label{def:cia}
+\lean{Econ.CIA.Env, Econ.CIA.nominalRate, Econ.CIA.Env.W, Econ.CIA.Env.IsEq, Econ.CIA.Env.IsEfficient, Econ.CIA.Env.IsEqμ}
+\leanok
+Utility $U_1(c_1)+U_2(c_2)$ with strictly decreasing positive marginal utilities and Inada conditions; $c_1+c_2=y$. Equilibrium at
+nominal rate $i$: $U_1'(c_1)=(1+i)U_2'(c_2)$, with $1+i=(1+\mu)/\beta$.
+\end{definition}
+
+\begin{theorem}[Optimality of the Friedman rule]
+\label{thm:cia}
+\lean{Econ.CIA.nominalRate_eq_zero_iff, Econ.CIA.Env.hasDerivAt_W, Econ.CIA.Env.dW_strictAnti, Econ.CIA.Env.W_lt_of_deriv_pos, Econ.CIA.Env.W_lt_of_deriv_neg, Econ.CIA.Env.efficient_iff, Econ.CIA.Env.wedge_pos, Econ.CIA.Env.friedman_rule, Econ.CIA.Env.wedge_strictAnti, Econ.CIA.Env.existsUnique_eq, Econ.CIA.Env.friedman_rule_μ, Econ.CIA.Env.welfare_anti}
+\leanok
+\uses{def:cia}
+For each $i\ge0$ there is a unique equilibrium. It is efficient iff $i=0$, i.e.\ iff $\mu=\beta-1$; for $i>0$ cash-good consumption
+and welfare are strictly lower, and welfare falls strictly with $i$.
+\end{theorem}
+\begin{proof}
+\leanok
+Welfare $W(c)=U_1(c)+U_2(y-c)$ has strictly decreasing derivative $U_1'(c)-U_2'(y-c)$. Existence: Inada conditions give a sign
+change of the wedge and Darboux's theorem a zero; uniqueness from strict monotonicity. Comparisons by the mean value theorem.
+\end{proof}
