@@ -324,6 +324,76 @@ $p^* \cdot z(p(t)) = \tfrac{\pi}{8}e^{-t}(\cos\varphi - \sin\varphi) > 0$ becaus
 \cos\varphi$ for $\varphi < \pi/4$. Theorem~\ref{thm:tatonnement} applies.
 \end{proof}
 
+\section{Tâtonnement with any number of goods}
+\label{sec:tatonnement_sup}
+
+\begin{lemma}[Extreme relative prices]
+\label{lem:gs_extreme_ratio}
+\lean{Econ.GrossSubstitutes.excess_nonpos_of_max_ratio, Econ.GrossSubstitutes.excess_neg_of_max_ratio,
+  Econ.GrossSubstitutes.excess_nonneg_of_min_ratio}
+\leanok
+\uses{lem:gs_path}
+Let $z$ have gross substitutes and be homogeneous of degree zero, and let $p^* \gg 0$ with $z(p^*) = 0$. At any
+$q \gg 0$, if $k$ maximizes $q_i/p^*_i$ then $z_k(q) \le 0$ (strictly if $q$ is not a multiple of $p^*$), and if $k$ minimizes it then $z_k(q) \ge 0$.
+\end{lemma}
+\begin{proof}
+\leanok
+Let $c = q_k/p^*_k$ and $q' = c p^*$, so $z(q') = 0$. In the max case $q \le q'$ with $q_k = q'_k$. If $q = q'$ then
+$z_k(q) = 0$; otherwise Lemma~\ref{lem:gs_path} gives $z_k(q) < z_k(q') = 0$. The min case is symmetric.
+\end{proof}
+
+\begin{lemma}[Danskin-type monotonicity]
+\label{lem:sup_antitone}
+\lean{Econ.antitoneOn_sup'_of_hasDerivWithinAt}
+\leanok
+Let $f_1, \dots, f_n$ have right derivatives $f_i'(t)$ within $[0,\infty)$. If at every $t \ge 0$ each $f_i$ attaining
+$\max_j f_j(t)$ has $f_i'(t) \le 0$, then $M(t) = \max_i f_i(t)$ is nonincreasing on $[0,\infty)$.
+\end{lemma}
+\begin{proof}
+\leanok
+At each $x \ge 0$ and $r > 0$, for $y > x$ close to $x$: maximizing indices satisfy $f_i(y) < M(x) + r(y-x)$ because
+their slopes tend to $f_i'(x) \le 0 < r$, and the other indices stay below $M(x)$ by continuity. So the right slope of $M$
+is eventually below $r$. The barrier lemma (Mathlib's \texttt{image\_le\_of\_liminf\_slope\_right\_lt\_deriv\_boundary'})
+with $B(t) = M(a) + \varepsilon(t-a)$ gives $M(b) \le M(a) + \varepsilon(b-a)$ for every $\varepsilon > 0$.
+\end{proof}
+
+\begin{theorem}[Arrow--Hurwicz: the max-ratio Lyapunov function]
+\label{thm:tatonnement_sup}
+\lean{Econ.maxRatio, Econ.minRatio, Econ.IsTatonnementPath.hasDerivWithinAt_ratio,
+  Econ.tatonnement_maxRatio_antitone, Econ.tatonnement_minRatio_monotone, Econ.tatonnement_bounded}
+\leanok
+\uses{lem:gs_extreme_ratio, lem:sup_antitone, def:tatonnement}
+Let $z$ have gross substitutes and be homogeneous of degree zero, with equilibrium $p^* \gg 0$, for any number of goods.
+Along a tâtonnement path that stays in the positive orthant for $t \ge 0$, $\max_i p_i(t)/p^*_i$ is nonincreasing and
+$\min_i p_i(t)/p^*_i$ is nondecreasing. Hence $m\,p^* \le p(t) \le M\,p^*$ for all $t \ge 0$, with $m, M$ the extreme
+relative prices at time $0$. Invariance of this box implies Lyapunov stability of each equilibrium $c p^*$ (not stated
+formally). Convergence is not claimed.
+\end{theorem}
+\begin{proof}
+\leanok
+Apply Lemma~\ref{lem:sup_antitone} to $f_i(t) = p_i(t)/p^*_i$, whose derivative is $z_i(p(t))/p^*_i$, nonpositive at a
+maximizing index by Lemma~\ref{lem:gs_extreme_ratio}; and to $-f_i$ for the minimum.
+\end{proof}
+
+\begin{theorem}[A nonconstant witness]
+\label{thm:tatonnement_sup_example}
+\lean{Econ.TatonnementSupExamples.zEx, Econ.TatonnementSupExamples.pEx,
+  Econ.TatonnementSupExamples.grossSubstitutes_zEx, Econ.TatonnementSupExamples.homogeneousZero_zEx,
+  Econ.TatonnementSupExamples.zEx_one, Econ.TatonnementSupExamples.pEx_pos, Econ.TatonnementSupExamples.zEx_pEx,
+  Econ.TatonnementSupExamples.isTatonnementPath_pEx, Econ.TatonnementSupExamples.pEx_bounded,
+  Econ.TatonnementSupExamples.pEx_nonconstant}
+\leanok
+\uses{thm:tatonnement_sup}
+$z(p) = \bigl((p_1 - p_0)/(p_0+p_1),\ (p_0 - p_1)/(p_0+p_1)\bigr)$ has gross substitutes, is homogeneous of degree zero,
+and vanishes at $(1,1)$. The path $p(t) = (1 - e^{-t}/2,\ 1 + e^{-t}/2)$ is a nonconstant tâtonnement path in the
+positive orthant, so Theorem~\ref{thm:tatonnement_sup} applies. ($z$ does not satisfy Walras' law, which the theorem
+does not use.)
+\end{theorem}
+\begin{proof}
+\leanok
+Direct computation: $p_1 - p_0 = e^{-t}$ and $p_0 + p_1 = 2$, so $z(p(t)) = (e^{-t}/2, -e^{-t}/2) = \dot p(t)$.
+\end{proof}
+
 \section{Sonnenschein--Mantel--Debreu: Debreu's decomposition}
 \label{sec:smd}
 

@@ -1,0 +1,219 @@
+% Lean: EconLean/Econometrics/Asymptotics/ChiSquared.lean, Asymptotics/ChiSquaredTests.lean
+\chapter{Econometrics: the \texorpdfstring{$\chi^2$}{chi-squared} distribution, the \texorpdfstring{$J$}{J} test and the Wald test}
+\label{chap:econometrics8}
+
+This chapter defines the $\chi^2$ distribution, proves that idempotent quadratic forms in Gaussian vectors are
+$\chi^2$ (Cochran), and derives the asymptotic $\chi^2$ laws and asymptotic rejection probabilities of Hansen's $J$
+test and of the Wald test.
+
+\section{The \texorpdfstring{$\chi^2$}{chi-squared} distribution and Gaussian quadratic forms}
+\label{sec:chi-squared}
+
+Sources: Cochran (1934); Rao (1973) \S3b.4; Johnson, Kotz and Balakrishnan (1994) ch.~18; Hayashi (2000) \S2.4.
+
+\begin{definition}[$\chi^2$ distribution]
+\label{def:chi-squared}
+\lean{Econ.Asymptotics.chiSq, Econ.Asymptotics.map_sum_sq_eq_chiSq, Econ.Asymptotics.map_sum_sq_finset_eq_chiSq}
+\leanok
+$\chi^2(r)$ is the law of $Z_1^2+\dots+Z_r^2$ with $Z_1,\dots,Z_r$ independent standard normal. The sum of squares of
+independent standard normals indexed by any finite set $J$ is $\chi^2(|J|)$, and so is the sum over a subset $J$ of a
+larger independent family.
+\end{definition}
+\begin{proof}
+\leanok
+Reindex the product measure along a bijection $J\simeq\{1,\dots,|J|\}$; for a subset, the product measure splits as
+the product of the coordinates in $J$ and the rest, and the second factor is a probability measure.
+\end{proof}
+
+\begin{lemma}[Mean and atoms]
+\label{lem:chi-squared-props}
+\lean{Econ.Asymptotics.integral_chiSq, Econ.Asymptotics.chiSq_singleton, Econ.Asymptotics.chiSq_add}
+\leanok
+\uses{def:chi-squared}
+$E[\chi^2(r)] = r$; for $r\ge1$, $\chi^2(r)$ has no atoms: $P(\chi^2(r) = c) = 0$ for every $c$; and the sum of
+independent $\chi^2(a)$ and $\chi^2(b)$ variables is $\chi^2(a+b)$.
+\end{lemma}
+\begin{proof}
+\leanok
+Each $E[Z_i^2] = \operatorname{Var}(Z_i) = 1$. For atoms, split off $Z_1$: for fixed $Z_2,\dots,Z_r$ the event
+$Z_1^2 = c - \sum_{i\ge2}Z_i^2$ allows at most two values of $Z_1$, which have normal probability zero; integrate
+(Fubini). Additivity: split $\{1,\dots,a+b\}$ into the first $a$ and last $b$ coordinates; the product measure
+splits accordingly.
+\end{proof}
+
+\begin{theorem}[Idempotent quadratic forms are $\chi^2$]
+\label{thm:cochran}
+\lean{Econ.Asymptotics.eigenvalues_idempotent, Econ.Asymptotics.quadForm_eigenbasis, Econ.Asymptotics.map_quadForm_idempotent}
+\leanok
+\uses{def:chi-squared}
+If $z$ has independent standard normal coordinates and $M$ is symmetric and idempotent with $\operatorname{tr}M = r$,
+then $z^\top Mz\sim\chi^2(r)$.
+\end{theorem}
+\begin{proof}
+\leanok
+Take an orthonormal eigenbasis $b_1,\dots,b_l$ of $M$ with eigenvalues $\lambda_i$. From $M^2 = M$,
+$\lambda_i^2 = \lambda_i$, so $\lambda_i\in\{0,1\}$, and the number of ones is $\sum_i\lambda_i = \operatorname{tr}M =
+r$. The standard Gaussian is rotation invariant, so $z = \sum_iw_ib_i$ with $w$ again independent standard normal, and
+$z^\top Mz = \sum_i\lambda_iw_i^2 = \sum_{\lambda_i = 1}w_i^2\sim\chi^2(r)$ by Definition~\ref{def:chi-squared}.
+\end{proof}
+
+\begin{theorem}[Quadratic forms in $N(0,S)$]
+\label{thm:quadform-gaussian}
+\lean{Econ.Asymptotics.map_multivariateGaussian_eq, Econ.Asymptotics.map_quadForm_gaussian}
+\leanok
+\uses{thm:cochran}
+Let $L\sim N(0,S)$ with $S\succeq0$, and let $A$ be symmetric with $ASA = A$ and $\operatorname{tr}(AS) = r$. Then
+$L^\top AL\sim\chi^2(r)$.
+\end{theorem}
+\begin{proof}
+\leanok
+Write $L = S^{1/2}z$ with $z$ standard normal and $S^{1/2}$ the symmetric square root. Then $L^\top AL = z^\top Mz$ with
+$M = S^{1/2}AS^{1/2}$ symmetric, $M^2 = S^{1/2}ASAS^{1/2} = M$ and $\operatorname{tr}M = \operatorname{tr}(AS) = r$.
+Apply Theorem~\ref{thm:cochran}.
+\end{proof}
+
+\begin{lemma}[Asymptotic rejection probability]
+\label{lem:chi-squared-size}
+\lean{Econ.Asymptotics.tendsto_prob_gt_of_chiSq}
+\leanok
+\uses{lem:chi-squared-props}
+If $T_n\to_d Z$ with $Z\sim\chi^2(r)$ and $r\ge1$, then $P(T_n > c)\to P(\chi^2(r) > c)$ for every $c$.
+\end{lemma}
+\begin{proof}
+\leanok
+The boundary of $(c,\infty)$ is $\{c\}$, which has $\chi^2(r)$-probability zero (Lemma~\ref{lem:chi-squared-props});
+apply the portmanteau theorem.
+\end{proof}
+
+\section{The \texorpdfstring{$J$}{J} test is asymptotically \texorpdfstring{$\chi^2(l-k)$}{chi-squared(l-k)}}
+\label{sec:jtest-chi-squared}
+
+Sources: Hansen (1982) Lemma~4.2; Hayashi (2000) Prop.~3.6.
+
+\begin{theorem}[The efficient $J$ limit is $\chi^2(l-k)$]
+\label{thm:jlimit-chi-squared}
+\lean{Econ.Asymptotics.card_le_of_injective, Econ.Asymptotics.jLimit_chiSq, Econ.Asymptotics.map_jLimit_chiSq}
+\leanok
+\uses{thm:quadform-gaussian, lem:jform}
+Let $S$ be positive definite and $G$ ($l\times k$) of full column rank. If $L\sim N(0,S)$ then $L^\top QL\sim\chi^2(l-k)$
+for the efficient $J$ form $Q = S^{-1}-S^{-1}G(G^\top S^{-1}G)^{-1}G^\top S^{-1}$.
+\end{theorem}
+\begin{proof}
+\leanok
+$Q$ is symmetric with $QSQ = Q$ and $\operatorname{tr}(QS) = l-k$ (Lemma~\ref{lem:jform}); full column rank gives
+$k\le l$. Apply Theorem~\ref{thm:quadform-gaussian}.
+\end{proof}
+
+\begin{theorem}[Two-step $J$ test]
+\label{thm:jtest-chi-squared}
+\lean{Econ.Asymptotics.two_step_jtest_chiSq, Econ.Asymptotics.two_step_feasible_jtest_chiSq}
+\leanok
+\uses{thm:jlimit-chi-squared, lem:chi-squared-size, thm:two-step-gmm, thm:feasible-gmm}
+Under the assumptions of Theorem~\ref{thm:two-step-gmm} with $L\sim N(0,S)$, $J_n\to_d L^\top QL\sim\chi^2(l-k)$, and if
+$k<l$ the test rejecting when $J_n > c$ has $P(J_n > c)\to P(\chi^2(l-k) > c)$. The same holds for the feasible
+two-step estimator of Theorem~\ref{thm:feasible-gmm}, whose weight is built from first-step residuals.
+\end{theorem}
+\begin{proof}
+\leanok
+Combine the convergence in distribution of Theorems~\ref{thm:two-step-gmm} and~\ref{thm:feasible-gmm} with
+Theorem~\ref{thm:jlimit-chi-squared} and Lemma~\ref{lem:chi-squared-size}.
+\end{proof}
+
+\begin{theorem}[Overidentified example]
+\label{thm:jtest-chi-squared-witness}
+\lean{Econ.Asymptotics.two_step_jtest_chiSq_witness}
+\leanok
+\uses{thm:jtest-chi-squared}
+With $l = 2$, $k = 1$, $S = \operatorname{diag}(1,2)$, $G = (1,1)^\top$ and $\sqrt n\,\hat g_n\sim N(0,S)$, the $J$ test
+has $P(J_n > c)\to P(\chi^2(1) > c)$.
+\end{theorem}
+\begin{proof}
+\leanok
+The hypotheses are those verified in Theorem~\ref{thm:two-step-gmm}'s example; apply Theorem~\ref{thm:jtest-chi-squared}.
+\end{proof}
+
+\section{The Wald test}
+\label{sec:wald}
+
+Sources: Wald (1943); Newey and McFadden (1994) \S9.1; Hayashi (2000) Prop.~2.3. For $H_0: R\theta_0 = c$ with $R$ a
+$q\times k$ matrix, the Wald statistic is
+$W_n = n(R\hat\theta_n-c)^\top(R\hat V_nR^\top)^{-1}(R\hat\theta_n-c)$, where $\hat V_n$ estimates the asymptotic
+variance of $\sqrt n\,\hat\theta_n$.
+
+\begin{definition}[Wald statistic]
+\label{def:wald}
+\lean{Econ.Asymptotics.waldStat, Econ.Asymptotics.waldWeight, Econ.Asymptotics.of_waldWeight, Econ.Asymptotics.continuous_waldArg, Econ.Asymptotics.continuousAt_waldWeight, Econ.Asymptotics.measurable_waldWeight}
+\leanok
+The statistic above, and the weight $(R\hat VR^\top)^{-1}$ as a function of $\hat V$, which is continuous wherever
+$RVR^\top$ is invertible.
+\end{definition}
+
+\begin{theorem}[Wald test]
+\label{thm:wald}
+\lean{Econ.Asymptotics.wald_tendsto, Econ.Asymptotics.wald_chiSq}
+\leanok
+\uses{def:wald, thm:quadform-gaussian, lem:chi-squared-size, lem:gaussian-linear}
+Suppose $H_0$ holds, $\sqrt n(\hat\theta_n-\theta_0)\to_d L$, $\hat V_n\to_p V$ and $RVR^\top$ is invertible. Then
+$W_n\to_d(RL)^\top(RVR^\top)^{-1}(RL)$. If moreover $V\succeq0$ and $L\sim N(0,V)$, the limit is $\chi^2(q)$, and for
+$q\ge1$ the test rejecting when $W_n > a$ has $P(W_n > a)\to P(\chi^2(q) > a)$.
+\end{theorem}
+\begin{proof}
+\leanok
+Under $H_0$, $W_n = x_n^\top B_nx_n$ with $x_n = R\sqrt n(\hat\theta_n-\theta_0)\to_d RL$ (continuous mapping) and
+$B_n = (R\hat V_nR^\top)^{-1}\to_p(RVR^\top)^{-1}$ (continuity of the inverse); Slutsky's theorem gives the limit. For the
+law, $RL\sim N(0,RVR^\top)$ (Lemma~\ref{lem:gaussian-linear}), and $A = (RVR^\top)^{-1}$ satisfies
+$A(RVR^\top)A = A$ and $\operatorname{tr}(A\,RVR^\top) = q$; apply Theorem~\ref{thm:quadform-gaussian} and
+Lemma~\ref{lem:chi-squared-size}.
+\end{proof}
+
+\begin{theorem}[Wald example]
+\label{thm:wald-witness}
+\lean{Econ.Asymptotics.wald_witness}
+\leanok
+\uses{thm:wald}
+Testing $\theta_1 = \theta_2$ ($R = (1,-1)$, $c = 0$) with $\sqrt n\,\hat\theta_n\sim N(0,I_2)$ and the
+non-constant consistent estimate $\hat V_n = (1+\frac1{n+1})I_2$, every hypothesis of Theorem~\ref{thm:wald} holds
+and $P(W_n > a)\to P(\chi^2(1) > a)$.
+\end{theorem}
+\begin{proof}
+\leanok
+$RR^\top = 2$ is invertible, $\hat V_n\to I_2$, and $\sqrt n\,\hat\theta_n$ has the limit law exactly for $n\ge1$;
+apply Theorem~\ref{thm:wald}.
+\end{proof}
+
+
+\section{The Wald test after efficient GMM}
+\label{sec:gmm-wald}
+
+Sources: Newey and McFadden (1994) Thm~9.2; Hayashi (2000) Prop.~3.5 and \S3.7.
+
+\begin{lemma}[Estimated efficient variance]
+\label{lem:avar-hat}
+\lean{Econ.Asymptotics.avarHat, Econ.Asymptotics.measurable_avarHat, Econ.Asymptotics.avarHat_eq, Econ.Asymptotics.continuousAt_avarHat}
+\leanok
+\uses{lem:weight-consistent}
+$\hat V = (\hat G^\top\hat S^{-1}\hat G)^{-1}$ is a measurable function of $(\hat G,\hat S)$, continuous at $(G,S)$ when
+$S$ is positive definite and $G$ has full column rank, where it equals $V = (G^\top S^{-1}G)^{-1}$.
+\end{lemma}
+\begin{proof}
+\leanok
+A composition of matrix products and inverses, each continuous at invertible matrices.
+\end{proof}
+
+\begin{theorem}[Wald test after two-step GMM]
+\label{thm:gmm-wald}
+\lean{Econ.Asymptotics.two_step_wald, Econ.Asymptotics.two_step_wald_witness}
+\leanok
+\uses{lem:avar-hat, thm:two-step-gmm, thm:wald}
+Under the assumptions of Theorem~\ref{thm:two-step-gmm} with $L\sim N(0,S)$, $H_0: R\theta_0 = c$ and $R$ of full row
+rank, the Wald statistic built from the efficient estimator and $\hat V_n$ converges in distribution to
+$(RAL)^\top(RVR^\top)^{-1}(RAL)\sim\chi^2(q)$, and for $q\ge1$ the test rejecting when $W_n > a$ has
+$P(W_n > a)\to P(\chi^2(q) > a)$. In the overidentified example of Theorem~\ref{thm:two-step-gmm} ($l = 2$, $k = 1$),
+testing $\theta = 0$ gives $P(W_n > a)\to P(\chi^2(1) > a)$.
+\end{theorem}
+\begin{proof}
+\leanok
+$\hat V_n\to_p V$ by Lemma~\ref{lem:avar-hat} and the continuous mapping theorem; $V$ is positive definite and $R$ has
+full row rank, so $RVR^\top$ is invertible. $\sqrt n(\hat\theta_n-\theta_0)\to_d AL\sim N(0,V)$ by
+Theorem~\ref{thm:two-step-gmm}. Apply Theorem~\ref{thm:wald}.
+\end{proof}

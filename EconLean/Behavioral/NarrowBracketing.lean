@@ -5,8 +5,8 @@ References. A. Tversky and D. Kahneman (1981), "The Framing of Decisions and
 the Psychology of Choice", *Science* 211 (the concurrent-decisions problem);
 D. Read, G. Loewenstein and M. Rabin (1999), "Choice Bracketing", *J. Risk
 Uncertainty* 19 (Rabin and Weizsäcker 2009, *AER* 99(4), prove a general
-version for non-CARA utility; only the Tversky–Kahneman example is formalized
-here); R. Thaler (1985), "Mental Accounting and
+version for non-CARA utility, formalized in `RabinWeizsacker.lean`; this file
+has the Tversky–Kahneman example); R. Thaler (1985), "Mental Accounting and
 Consumer Choice", *Marketing Science* 4(3) (hedonic editing).
 
 **Narrow bracketing.** Two concurrent decisions:

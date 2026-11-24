@@ -43,9 +43,9 @@ best responses. Let `a` bound `|A|`.
   `max U(t) − min V(t) < εt` for every vector system (`eventually_good`).
 
 Non-vacuity: a fictitious-play path exists (`fpRow`, `fpCol`,
-`isFPPath_fp`). Brown's original *alternating* process (Robinson notes her
-proof covers it) is not formalized, nor is the rate of convergence (Karlin's
-conjecture). The frequencies need not converge to a particular equilibrium;
+`isFPPath_fp`). Brown's original *alternating* process is in
+`AlternatingFP.lean`. The rate of convergence (Karlin's conjecture) is not
+formalized. The frequencies need not converge to a particular equilibrium;
 informally, `eventually_isEpsSaddle` says they approach the set of saddle
 points (the distance-to-the-set statement is not formalized). The lemmas on
 vector systems assume a global bound `|A k l| ≤ a`, which holds for the finite

@@ -45,8 +45,7 @@ otherwise (`rA`), and the number of `A` players is a birth–death chain. As in
 
 This is the one-revision (birth–death) version of the KMR dynamics (as in
 Binmore–Samuelson–Vaughan and Sandholm), not KMR's own chain; KMR's
-simultaneous-revision "Darwinian" chain, whose analysis needs the
-Freidlin–Wentzell tree formula, is not formalized. Only selection of `A`
+simultaneous-revision "Darwinian" chain is in `KMRDarwin.lean`. Only selection of `A`
 when `A` is risk dominant is stated (the case of `B` is symmetric).
 -/
 module

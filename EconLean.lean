@@ -82,6 +82,7 @@ public import EconLean.GE.ExistenceGeneral
 public import EconLean.GE.ExistenceInterior
 public import EconLean.GE.ExistencePreferences
 public import EconLean.GE.ExistenceRegular
+public import EconLean.GE.CobbDouglas
 public import EconLean.Audit.Statements.FixedPoint
 
 public import EconLean.Producer.Production
@@ -134,6 +135,13 @@ public import EconLean.Econometrics.Asymptotics.DeltaMethodVec
 public import EconLean.Econometrics.Causal.PropensityScore
 public import EconLean.Econometrics.TimeSeries.YuleWalker
 public import EconLean.Econometrics.Asymptotics.TwoStepGMM
+public import EconLean.Econometrics.Asymptotics.FirstStepGMM
+public import EconLean.Econometrics.TimeSeries.WhiteNoise
+public import EconLean.Econometrics.TimeSeries.KalmanRecursion
+public import EconLean.Econometrics.TimeSeries.YuleWalkerPD
+public import EconLean.Econometrics.Asymptotics.ChiSquared
+public import EconLean.Econometrics.Asymptotics.ChiSquaredTests
+public import EconLean.Econometrics.Asymptotics.GMMWald
 public import EconLean.Macro.Growth.RamseyGlobal
 public import EconLean.Macro.DP.StochasticPlan
 public import EconLean.Macro.DP.InvariantMeasure
@@ -151,8 +159,14 @@ public import EconLean.Macro.HA.AssetBound
 public import EconLean.Audit.Statements.AssetBound
 public import EconLean.Macro.HA.Huggett
 public import EconLean.Audit.Statements.Huggett
+public import EconLean.Macro.HA.AiyagariSlack
+public import EconLean.Audit.Statements.AiyagariSlack
+public import EconLean.Macro.DP.MonotoneMixing
+public import EconLean.Macro.HA.StationaryUnique
+public import EconLean.Audit.Statements.StationaryUnique
 public import EconLean.Audit.Statements.HAStochastic
 public import EconLean.Bridges.Aggregation.Tatonnement
+public import EconLean.Bridges.Aggregation.TatonnementSup
 public import EconLean.Bridges.Aggregation.SMD
 public import EconLean.Bridges.Aggregation.SMDConsumer
 public import EconLean.Bridges.Aggregation.SMDStandard
@@ -278,6 +292,9 @@ public import EconLean.Macro.Contracts.ThomasWorrall
 public import EconLean.Macro.Banking.GoldsteinPauzner
 public import EconLean.Macro.Credit.FinancialAccelerator
 public import EconLean.Audit.Statements.MacroBatch14
+public import EconLean.Macro.PublicFinance.AtkinsonStiglitz
+public import EconLean.Macro.PublicFinance.DiamondMirrlees
+public import EconLean.Audit.Statements.MacroBatch15
 public import EconLean.Behavioral.BeliefRule
 public import EconLean.Behavioral.CognitiveDiscounting
 public import EconLean.Behavioral.DiagnosticExpectations
@@ -320,5 +337,13 @@ public import EconLean.Audit.Statements.BehavioralXIII
 public import EconLean.BoundedRationality.SwapRegret
 public import EconLean.BoundedRationality.CursedMixed
 public import EconLean.Audit.Statements.BehavioralXIV
+public import EconLean.BoundedRationality.AlternatingFP
+public import EconLean.Audit.Statements.BehavioralXV
+public import EconLean.BoundedRationality.KMRDarwin
+public import EconLean.Audit.Statements.BehavioralXVI
+public import EconLean.Behavioral.RabinWeizsacker
+public import EconLean.Audit.Statements.BehavioralXVII
+public import EconLean.Behavioral.CARACharacterization
+public import EconLean.Audit.Statements.BehavioralXVIII
 
 @[expose] public section

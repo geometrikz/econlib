@@ -19,8 +19,8 @@ column rank and `√n ĝₙ →d L`:
 **Scope.** The first-step estimator and the construction of `Ŝₙ` from its
 residuals are not modelled: consistency `Ŝₙ →p S` is a hypothesis, so these are
 the results for efficient GMM with a consistently estimated weight (Hayashi
-Prop. 3.5). The χ²(l − k) law of the J limit is not stated, since Mathlib has no
-χ² distribution; its mean `l − k` is.
+Prop. 3.5); `FirstStepGMM` constructs `Ŝₙ`. The χ²(l − k) law of the J limit is in
+`ChiSquaredTests` (`two_step_jtest_chiSq`).
 -/
 module
 

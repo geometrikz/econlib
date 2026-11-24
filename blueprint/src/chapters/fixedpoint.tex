@@ -314,3 +314,38 @@ $C = x_0y_1 + y_0x_1$. Then the mixture has utility $t^2A + s^2B + tsC$ with $s 
 $C^2 - 4AB = (x_0y_1 - y_0x_1)^2 \ge 0$. If $A \le B$, this exceeds $A = (t+s)^2 A$ because $C \ge 2A$, with strict inequality
 unless $A = B$ and $C = 2A$, which forces $x = y$. Apply Theorem~\ref{thm:existence_regular}.
 \end{proof}
+
+\begin{theorem}[Cobb--Douglas economies for every exponent]
+\label{thm:cobb_douglas_existence}
+\lean{Econ.cobbDouglas, Econ.logCobbDouglas, Econ.cobbDouglas_eq_exp, Econ.continuous_cobbDouglas,
+  Econ.logCobbDouglas_strictMono, Econ.logCobbDouglas_strictConcave, Econ.positive_combo,
+  Econ.interiorRegular_cobbDouglas, Econ.ExchangeEconomy.exists_walrasianEquilibrium_cobbDouglas,
+  Econ.GEExamples.cd2Economy, Econ.GEExamples.cd2Economy_exists_equilibrium}
+\leanok
+\uses{def:regular_utility, lem:regular_from, thm:existence_regular}
+For any exponents $\alpha_i > 0$, $u(x) = \prod_i x_i^{\alpha_i}$ is interior-regular. Hence every exchange economy of
+Cobb--Douglas consumers with $\bar\omega \gg 0$ has a Walrasian equilibrium with $p \gg 0$, even if some consumers own
+nothing. Witness: exponents $(1/3, 2/3)$ owning $(1,0)$ and $(3,1)$ owning $(0,1)$.
+\end{theorem}
+\begin{proof}
+\leanok
+On the interior $u = \exp(\sum_i \alpha_i \log x_i)$. The sum is strictly increasing, and strictly concave because $\log$
+is and $x \ne y$ differ in some coordinate; $\exp$ preserves both. On the boundary some factor is $0^{\alpha_i} = 0$, while
+interior utility is positive. Continuity: $x \mapsto x^{\alpha}$ is continuous on $\mathbb{R}$ for $\alpha > 0$.
+\end{proof}
+
+\begin{theorem}[Cobb--Douglas demand and an explicit equilibrium]
+\label{thm:cobb_douglas_demand}
+\lean{Econ.cdDemand, Econ.cost_cdDemand, Econ.demand_cobbDouglas, Econ.GEExamples.cd2Economy_equilibrium}
+\leanok
+\uses{thm:cobb_douglas_existence}
+For $\alpha \gg 0$, $p \gg 0$ and $w > 0$, the demand of $u(x) = \prod_i x_i^{\alpha_i}$ is the single bundle
+$x_i = \alpha_i w / ((\sum_j \alpha_j) p_i)$ (MWG Example 3.D.1). In the economy of Theorem~\ref{thm:cobb_douglas_existence},
+prices $(1, 8/9)$ with allocations $(1/3, 3/4)$ and $(2/3, 1/4)$ form a Walrasian equilibrium.
+\end{theorem}
+\begin{proof}
+\leanok
+The bundle exhausts the budget. For any affordable $y$: if some $y_i = 0$ then $u(y) = 0 < u(x)$; otherwise
+$\sum_i \alpha_i \log(y_i/x_i) \le \sum_i \alpha_i (y_i/x_i - 1) = \frac{\sum_j \alpha_j}{w} p \cdot y - \sum_j \alpha_j \le 0$.
+Uniqueness follows from strict quasiconcavity on the interior. The equilibrium is a direct computation with the formula.
+\end{proof}

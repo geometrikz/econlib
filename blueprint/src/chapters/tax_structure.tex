@@ -1,0 +1,55 @@
+% Lean: EconLean/Macro/PublicFinance/{AtkinsonStiglitz,DiamondMirrlees}.lean
+\chapter{The Structure of Optimal Taxes}
+\label{chap:tax_structure}
+
+Sources: Atkinson--Stiglitz (1976); Laroque (2005); Kaplow (2006); Diamond--Mirrlees (1971); Mas-Colell--Whinston--Green
+\S22.
+
+\section{Uniform commodity taxation}
+
+\begin{definition}[Indirect subutility and expenditure]
+\label{def:as}
+\lean{Econ.AtkinsonStiglitz.budget, Econ.AtkinsonStiglitz.V, Econ.AtkinsonStiglitz.e, Econ.AtkinsonStiglitz.IsOptimal, Econ.AtkinsonStiglitz.c', Econ.AtkinsonStiglitz.Regime}
+\leanok
+$V(q,c)=\sup\{v(z):z\ge0,\ q\cdot z\le c\}$, $e(u)=\inf\{p\cdot z:z\ge0,\ v(z)\ge u\}$. In the old regime option $j$ gives net
+income $c_j$ and an optimal bundle $x_j$ at consumer prices $q=p+t$; the replacement is $c'_j=e(v(x_j))$ at producer prices.
+\end{definition}
+
+\begin{theorem}[Atkinson--Stiglitz, Laroque's form]
+\label{thm:as}
+\lean{Econ.AtkinsonStiglitz.V_of_optimal, Econ.AtkinsonStiglitz.dot_nonneg, Econ.AtkinsonStiglitz.e_le, Econ.AtkinsonStiglitz.V_e, Econ.AtkinsonStiglitz.exists_expenditure_min, Econ.AtkinsonStiglitz.V_new, Econ.AtkinsonStiglitz.utility_eq, Econ.AtkinsonStiglitz.ic_iff, Econ.AtkinsonStiglitz.c'_schedule, Econ.AtkinsonStiglitz.revenue_ge, Econ.AtkinsonStiglitz.aggregate_revenue_ge, Econ.AtkinsonStiglitz.income_tax_dominates, Econ.AtkinsonStiglitz.example_regime}
+\leanok
+\uses{def:as}
+With a continuous common subutility $v$, $p>0$ and $q\ge0$: $V(p,c'_j)=v(x_j)=V(q,c_j)$, so every type's payoff from every
+option, hence every incentive constraint, is unchanged; $c'$ is an income schedule; revenue from every option and in aggregate
+weakly rises. Commodity taxes are superfluous.
+\end{theorem}
+\begin{proof}
+\leanok
+$V(q,c_j)=v(x_j)$ by optimality. The expenditure minimum is attained by compactness. Duality: a cheaper-or-equal bundle with
+higher utility could be scaled down by continuity, contradicting minimality, unless it is $0$, excluded since $v(0)\le v(x_j)$.
+Revenue: $c_j-t\cdot x_j\ge p\cdot x_j\ge e(v(x_j))$.
+\end{proof}
+
+\section{Production efficiency}
+
+\begin{definition}[Diamond--Mirrlees problem]
+\label{def:dm}
+\lean{Econ.DiamondMirrlees.IsOptimum}
+\leanok
+Maximize $W(q)$ over admissible consumer prices $q\in Q$ subject to $x(q)+g\in Z$.
+\end{definition}
+
+\begin{theorem}[Production efficiency]
+\label{thm:dm}
+\lean{Econ.DiamondMirrlees.not_interior, Econ.DiamondMirrlees.mem_frontier, Econ.DiamondMirrlees.weakly_efficient, Econ.DiamondMirrlees.weakly_efficient_of_price_decrease, Econ.DiamondMirrlees.example_one_good, Econ.DiamondMirrlees.example_efficient}
+\leanok
+\uses{def:dm}
+If $q^*\in\operatorname{int}Q$, demand is continuous at $q^*$ and welfare is locally nonsatiated there (e.g.\ a small cut in
+some price raises welfare), then $x(q^*)+g\notin\operatorname{int}Z$; with free disposal no feasible plan strictly exceeds it.
+\end{theorem}
+\begin{proof}
+\leanok
+If production were interior, nearby prices would stay feasible and one of them would raise welfare. Under free disposal a
+strictly dominating plan would put $x(q^*)+g$ in an open box inside $Z$.
+\end{proof}

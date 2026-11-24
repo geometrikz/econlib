@@ -1,0 +1,193 @@
+% Lean: EconLean/Econometrics/Asymptotics/FirstStepGMM.lean, TimeSeries/{WhiteNoise,KalmanRecursion,YuleWalkerPD}.lean
+\chapter{Econometrics: feasible two-step GMM, the Kalman recursion, positive definite autocovariances}
+\label{chap:econometrics7}
+
+This chapter completes two-step GMM with a first step and a residual-based weight, proves that the Kalman filter's
+mean squared errors follow the Riccati recursion and are minimal among linear filters, studies the recursion's
+monotonicity and steady state, and shows that nondegenerate innovations make autocovariance matrices positive definite.
+
+\section{Feasible two-step GMM}
+\label{sec:feasible-gmm}
+
+Sources: Hansen (1982) Thm~3.2 and Lemma~4.2; White (1980); Hayashi (2000) Prop.~3.4--3.6; Newey and McFadden (1994)
+\S4.3. Linear moments $E[z_i(y_i - x_i^\top\theta_0)] = 0$ with $l$ instruments and $k$ regressors. The laws of large
+numbers for sample moments and the CLT for $\sqrt n\,\hat g(\theta_0)$ are hypotheses.
+
+\begin{definition}[Sample moments and the residual-based variance estimator]
+\label{def:sample-moments}
+\lean{Econ.Asymptotics.sampleG, Econ.Asymptotics.sampleZY, Econ.Asymptotics.sampleMoment, Econ.Asymptotics.sHat, Econ.Asymptotics.sCross, Econ.Asymptotics.sQuad, Econ.Asymptotics.expandS}
+\leanok
+$\hat G = n^{-1}\sum_iz_ix_i^\top$, $n^{-1}\sum_iz_iy_i$, $\hat g(\theta) = n^{-1}\sum_iz_i(y_i - x_i^\top\theta)$ and
+$\hat S(\theta) = n^{-1}\sum_i(y_i - x_i^\top\theta)^2z_iz_i^\top$, with the cross and fourth-order moments
+$n^{-1}\sum_iu_ix_{ic}z_iz_i^\top$ and $n^{-1}\sum_ix_{ic}x_{ie}z_iz_i^\top$.
+\end{definition}
+
+\begin{lemma}[Expansion and consistency of $\hat S$]
+\label{lem:shat-consistent}
+\lean{Econ.Asymptotics.sHat_eq_expandS, Econ.Asymptotics.expandS_zero, Econ.Asymptotics.continuous_expandS, Econ.Asymptotics.continuous_sHat, Econ.Asymptotics.sHat_consistent, Econ.Asymptotics.sampleZY_eq, Econ.Asymptotics.continuous_sampleG, Econ.Asymptotics.continuous_sampleZY, Econ.Asymptotics.continuous_sampleMoment}
+\leanok
+\uses{def:sample-moments}
+$\hat S(\theta) = \hat S(\theta_0) - 2M_1[\theta - \theta_0] + M_2[\theta - \theta_0,\theta - \theta_0]$, and
+$n^{-1}\sum z_iy_i = \hat G\theta_0 + \hat g(\theta_0)$. Hence if $\hat S(\theta_0)\to_pS$, $M_1$ and $M_2$ converge in
+probability and $\tilde\theta\to_p\theta_0$, then $\hat S(\tilde\theta)\to_pS$.
+\end{lemma}
+\begin{proof}
+\leanok
+Write $y_i - x_i^\top\theta = u_i - x_i^\top d$ with $d = \theta - \theta_0$ and expand the square. The expansion is
+jointly continuous in the moments and $d$ and equals $\hat S(\theta_0)$ at $d = 0$; apply the continuous mapping theorem.
+\end{proof}
+
+\begin{theorem}[Feasible two-step efficient GMM]
+\label{thm:feasible-gmm}
+\lean{Econ.Asymptotics.firstStep, Econ.Asymptotics.secondWeight, Econ.Asymptotics.twoStep, Econ.Asymptotics.measurable_firstStep, Econ.Asymptotics.aemeasurable_firstStep, Econ.Asymptotics.two_step_feasible}
+\leanok
+\uses{lem:shat-consistent, thm:two-step-gmm, thm:gmm-asymptotic}
+The first step uses any weight $\hat W_1\to_pW_1$ with $G^\top W_1G$ invertible; the second uses $\hat S(\tilde\theta)^{-1}$.
+If $\hat G\to_pG$ of full column rank, $\sqrt n\,\hat g(\theta_0)\to_dL$, $\hat S(\theta_0)\to_pS\succ0$ and the cross and
+fourth-order moments converge, then $\sqrt n(\hat\theta - \theta_0)\to_d AL$ with $A = (G^\top S^{-1}G)^{-1}G^\top S^{-1}$
+(law $N(0,(G^\top S^{-1}G)^{-1})$ if $L\sim N(0,S)$), and the $J$ statistic has the efficient $J$ limit with mean $l-k$.
+\end{theorem}
+\begin{proof}
+\leanok
+$\sqrt n\,\hat g\to_d L$ gives $\hat g\to_p0$, so the first step is consistent (GMM consistency). By
+Lemma~\ref{lem:shat-consistent}, $\hat S(\tilde\theta)\to_pS$. Apply Theorem~\ref{thm:two-step-gmm}, after rewriting
+$n^{-1}\sum z_iy_i = \hat G\theta_0 + \hat g(\theta_0)$. Measurability follows from continuity of the sample moments and
+measurability of the GMM map.
+\end{proof}
+
+\begin{theorem}[A data-generating process satisfying the hypotheses]
+\label{thm:feasible-gmm-witness}
+\lean{Econ.Asymptotics.wEps, Econ.Asymptotics.sum_wEps, Econ.Asymptotics.sum_wEps_sq, Econ.Asymptotics.two_step_feasible_witness}
+\leanok
+\uses{thm:feasible-gmm}
+With $z_i = x_i = 1$, $\theta_0 = 0$ and $y_i = Z/\sqrt n + \varepsilon_i$, where $Z\sim N(0,1)$ and the design errors
+$\varepsilon_0 = \sqrt{n/2} = -\varepsilon_1$ (zero otherwise) sum to $0$ with squares summing to $n$, every hypothesis
+holds with $S = W_1 = 1$. The example is just-identified, so it does not exercise the weighting; the overidentified case
+is covered by Theorem~\ref{thm:two-step-gmm}'s witness.
+\end{theorem}
+\begin{proof}
+\leanok
+For $n\ge2$: $\hat G = 1$, $\hat g(0) = Z/\sqrt n$, $\hat S(0) = Z^2/n + 1$, $M_1 = Z/\sqrt n$, $M_2 = 1$. Since
+$Z/\sqrt n\to_p0$, all limits follow by continuous mapping.
+\end{proof}
+
+\section{The Kalman filter recursion}
+\label{sec:kalman-recursion}
+
+Sources: Kalman (1960); Hamilton (1994) \S13.2 and \S13.5; Anderson and Moore (1979) \S3.1 and \S4.4. State
+$x_{t+1} = Fx_t + w_t$, observation $y_t = Hx_t + v_t$, filter $\hat x_{t+1} = F(\hat x_t + K_t(y_t - H\hat x_t))$.
+
+\begin{definition}[Riccati map and covariance recursions]
+\label{def:riccati}
+\lean{Econ.TimeSeries.Kalman.riccati, Econ.TimeSeries.Kalman.covSeq, Econ.TimeSeries.Kalman.gainCov}
+\leanok
+\uses{def:kalman}
+$\mathrm{ric}(P) = F\,J_P(K^*_P)\,F^\top + Q$ with the Joseph form $J$ and Kalman gain $K^*$. The Kalman recursion is
+$P_{t+1} = \mathrm{ric}(P_t)$; for an arbitrary gain sequence, $P^K_{t+1} = F\,J_{P^K_t}(K_t)\,F^\top + Q$.
+\end{definition}
+
+\begin{lemma}[Properties of the Riccati map]
+\label{lem:riccati-props}
+\lean{Econ.TimeSeries.Kalman.posSemidef_congr, Econ.TimeSeries.Kalman.joseph_posSemidef, Econ.TimeSeries.Kalman.riccati_eq, Econ.TimeSeries.Kalman.riccati_posSemidef, Econ.TimeSeries.Kalman.joseph_sub_joseph, Econ.TimeSeries.Kalman.riccati_mono, Econ.TimeSeries.Kalman.covSeq_posSemidef, Econ.TimeSeries.Kalman.covSeq_mono_zero, Econ.TimeSeries.Kalman.continuousAt_riccati}
+\leanok
+\uses{def:riccati, thm:kalman-joseph, thm:kalman-optimal}
+$\mathrm{ric}(P) = F(P - PH^\top S^{-1}HP)F^\top + Q$. It preserves positive semidefiniteness, is monotone in the
+Loewner order when $R\succ0$, and is continuous wherever $S$ is invertible. From $P_0 = 0$ the recursion is nondecreasing.
+\end{lemma}
+\begin{proof}
+\leanok
+The Joseph form is a sum of congruences. For a fixed gain, $J_{P'}(K) - J_P(K) = (I-KH)(P'-P)(I-KH)^\top$; so
+$\mathrm{ric}(P') - \mathrm{ric}(P) = F[(J_{P'}(K^*_{P'}) - J_P(K^*_{P'})) + (J_P(K^*_{P'}) - J_P(K^*_P))]F^\top$, and both
+brackets are positive semidefinite (the second by optimality of $K^*_P$). Monotonicity from zero follows by induction,
+since $\mathrm{ric}(0)\succeq0$.
+\end{proof}
+
+\begin{theorem}[Mean squared errors and optimality of the Kalman filter]
+\label{thm:kalman-mse}
+\lean{Econ.TimeSeries.Kalman.filter_error_succ, Econ.TimeSeries.Kalman.memLp_mulVec_apply, Econ.TimeSeries.Kalman.integral_mulVec_apply_mul, Econ.TimeSeries.Kalman.filter_mse, Econ.TimeSeries.Kalman.covSeq_eq_gainCov, Econ.TimeSeries.Kalman.kalman_filter_mse, Econ.TimeSeries.Kalman.kalman_optimal_gains}
+\leanok
+\uses{lem:riccati-props}
+Suppose the initial error and the noises are square integrable, the noises are white
+($E[v_sv_t^\top] = R[s=t]$, $E[w_sw_t^\top] = Q[s=t]$, $E[v_sw_t^\top] = 0$) and uncorrelated with the initial error,
+whose second moment is $P_0$. Then a filter with any gains has
+$E[(x_t-\hat x_t)(x_t-\hat x_t)^\top] = P^K_t$, and the Kalman filter has $P_t$. Moreover $P^K_t\succeq P_t$ for every
+gain sequence and every $t$.
+\end{theorem}
+\begin{proof}
+\leanok
+The error satisfies $e_{t+1} = F(I-K_tH)e_t - FK_tv_t + w_t$. By induction, $e_t$ is square integrable and uncorrelated
+with $v_s$ and $w_s$ for $s\ge t$. The stacked vector $(e_t,v_t,w_t)$ therefore has block-diagonal second moments, and
+the second moment of $e_{t+1}$ is $F\,J_{P_t}(K_t)F^\top + Q$. Optimality follows by induction as in
+Lemma~\ref{lem:riccati-props}.
+\end{proof}
+
+\begin{theorem}[Steady state]
+\label{thm:riccati-steady}
+\lean{Econ.TimeSeries.Kalman.single_dotProduct_mulVec_single, Econ.TimeSeries.Kalman.riccati_steady_state}
+\leanok
+\uses{lem:riccati-props}
+From $P_0 = 0$ with $Q\succeq0$ and $R\succ0$: if the recursion is bounded above, it converges to $P_\infty\succeq0$ solving
+the algebraic Riccati equation $P_\infty = \mathrm{ric}(P_\infty)$. The bound itself (implied by detectability) is a
+hypothesis; uniqueness of the stabilising solution is not formalised.
+\end{theorem}
+\begin{proof}
+\leanok
+Each quadratic form $v^\top P_tv$ is nondecreasing and bounded, so it converges; entries converge by polarisation. The
+limit is symmetric and positive semidefinite, and continuity of $\mathrm{ric}$ at $P_\infty$ gives the fixed point.
+\end{proof}
+
+\begin{definition}[Rademacher white noise]
+\label{def:white-noise}
+\lean{Econ.TimeSeries.WhiteNoise.coin, Econ.TimeSeries.WhiteNoise.coins, Econ.TimeSeries.WhiteNoise.sgn, Econ.TimeSeries.WhiteNoise.rad, Econ.TimeSeries.WhiteNoise.measurable_rad, Econ.TimeSeries.WhiteNoise.rad_mul_self, Econ.TimeSeries.WhiteNoise.integral_rad, Econ.TimeSeries.WhiteNoise.memLp_rad, Econ.TimeSeries.WhiteNoise.integral_rad_mul}
+\leanok
+On the infinite product of fair coins, the signs $r_i = \pm1$ are bounded with $E[r_ir_j] = [i = j]$.
+\end{definition}
+
+\begin{theorem}[Witnesses for the Kalman results]
+\label{thm:kalman-witness}
+\lean{Econ.TimeSeries.Kalman.riccati_scalar, Econ.TimeSeries.Kalman.riccati_scalar_witness, Econ.TimeSeries.Kalman.wnV, Econ.TimeSeries.Kalman.wnW, Econ.TimeSeries.Kalman.wnX, Econ.TimeSeries.Kalman.wnY, Econ.TimeSeries.Kalman.wnXh, Econ.TimeSeries.Kalman.kalman_mse_witness}
+\leanok
+\uses{thm:kalman-mse, thm:riccati-steady, def:white-noise}
+For $F = H = Q = R = 1$: $\mathrm{ric}(c) = c/(c+1) + 1$, the recursion from $0$ stays in $[0,2]$, and its limit is the
+golden ratio $(1+\sqrt5)/2$. A random walk with Rademacher state and measurement noises satisfies every hypothesis of
+Theorem~\ref{thm:kalman-mse}, with mean squared error $1$ at $t = 1$.
+\end{theorem}
+\begin{proof}
+\leanok
+Direct computation on $1\times1$ matrices; the fixed point solves $c^2 = c + 1$ with $c\ge0$. Independence of the coins
+gives the white-noise moments.
+\end{proof}
+
+\section{Positive definite autocovariances}
+\label{sec:toeplitz-pd}
+
+Sources: Brockwell and Davis (1991) \S5.1; Hamilton (1994) \S3.4.
+
+\begin{theorem}[Nondegenerate innovations give positive definite Toeplitz matrices]
+\label{thm:toeplitz-pd}
+\lean{Econ.TimeSeries.YuleWalker.toeplitz_transpose, Econ.TimeSeries.YuleWalker.toeplitz_quadForm, Econ.TimeSeries.YuleWalker.toeplitz_posDef, Econ.TimeSeries.YuleWalker.yule_walker_unique}
+\leanok
+\uses{def:yule-walker, thm:yule-walker}
+If each $x_t$ has an innovation $\varepsilon_t$ orthogonal to the past with $E[\varepsilon_tx_t] = \sigma^2 > 0$, every
+Toeplitz matrix $[\gamma(i-j)]$ is positive definite. Hence the Yule--Walker system identifies the AR coefficients without
+a rank hypothesis.
+\end{theorem}
+\begin{proof}
+\leanok
+$a^\top\Gamma a = E[(\sum_ia_ix_{-i})^2]$. If this vanishes, $\sum_ia_ix_{-i} = 0$ a.s.; pairing with
+$\varepsilon_{-i_0}$ at the first nonzero coefficient kills the later lags by orthogonality, leaving $a_{i_0}\sigma^2 = 0$.
+\end{proof}
+
+\begin{theorem}[White-noise and MA(1) witnesses]
+\label{thm:toeplitz-witness}
+\lean{Econ.TimeSeries.YuleWalker.white_noise_witness, Econ.TimeSeries.YuleWalker.ma1_witness}
+\leanok
+\uses{thm:toeplitz-pd, def:white-noise}
+Rademacher white noise is an AR process with $\varphi = 0$ and $\sigma^2 = 1$. The MA(1)
+$x_t = \varepsilon_t + \varepsilon_{t-1}/2$ has $\gamma(0) = 5/4$ and $\gamma(\pm1) = 1/2$, so its Toeplitz matrices are
+tridiagonal and positive definite.
+\end{theorem}
+\begin{proof}
+\leanok
+Expand the products and apply $E[r_ir_j] = [i=j]$.
+\end{proof}

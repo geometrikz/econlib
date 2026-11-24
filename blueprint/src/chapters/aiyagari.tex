@@ -783,3 +783,169 @@ the gain tomorrow in the zero-endowment state is at least $\tfrac9{10}d/(2\cdot0
 $\tfrac9{10}\cdot\tfrac12\cdot\tfrac{45}{44} > \tfrac5{13}$. So $\int b\ge m\bar q(z_h) = \tfrac1{10} = \varphi$.
 $A = 2.1/0.1 = 21 < 25$.
 \end{proof}
+
+\section{Aiyagari equilibrium with a non-binding cap}
+\label{sec:aiyagari_slack}
+
+\begin{lemma}[Cobb--Douglas wage]
+\label{lem:cd_wage_k}
+\lean{Econ.CDFirm.wage_eq_mul_kOfR, Econ.CDFirm.wage_anti}
+\leanok
+\uses{lem:cd_firm_foc}
+For $r>-\delta$, $w(r) = \frac{(1-\alpha)(r+\delta)}{\alpha}\,k(r)$, and $w$ is decreasing on $(-\delta,\infty)$.
+\end{lemma}
+\begin{proof}
+\leanok
+$k^\alpha = k^{\alpha-1}k = \frac{r+\delta}{\alpha}k$ by the capital first-order condition. Monotonicity: $k$ is
+decreasing and $x\mapsto x^\alpha$ is increasing.
+\end{proof}
+
+\begin{lemma}[Asset bound and supply for Aiyagari]
+\label{lem:aiyagari_slack_tools}
+\lean{Econ.AiyagariEconomy.policy_le_max, Econ.AiyagariEconomy.supply_ge_of_save}
+\leanok
+\uses{def:aiyagari_economy, lem:cd_wage_k, lem:aiyagari_marg}
+(i) If $r_{hi}<0$ and $e\le\bar e$, then with $A = w(r_{lo})\bar e/(-r_{hi})$, at every $r\in[r_{lo},r_{hi}]$ the
+optimal policy satisfies $g(a,z)\le\max(A,a)$, and $g(a,z)<a$ when $a>A$.
+(ii) If households in state $z_h$ always save at least $m$, every stationary distribution has
+$\int a\,d\pi\ge m\,\bar q(z_h)$.
+\end{lemma}
+\begin{proof}
+\leanok
+(i) $g\le(1+r)a + w(r)e(z)\le(1+r_{hi})a + w(r_{lo})\bar e = a + (-r_{hi})(A-a)$, using $a\ge0$ and that $w$ is
+decreasing; this is $\le\max(A,a)$ since $-r_{hi}\le 1$. (ii) Stationarity gives $\int a\,d\pi = \int g\,d\pi$; the
+$z$-marginal of $\pi$ is invariant for $Q$, hence equals $\bar q$, and $g\ge m\mathbf 1_{z=z_h}$.
+\end{proof}
+
+\begin{theorem}[Aiyagari equilibrium with a slack cap]
+\label{thm:aiyagari_slack}
+\lean{Econ.AiyagariEconomy.exists_stationary_equilibrium_slack}
+\leanok
+\uses{thm:aiyagari_ge, lem:aiyagari_slack_tools, lem:huggett_tools}
+Under the boundary conditions of Theorem~\ref{thm:aiyagari_ge}, if moreover $r_{hi}<0$, $e\le\bar e$ and
+$A = w(r_{lo})\bar e/(-r_{hi}) < \bar k$, there is a stationary recursive competitive equilibrium (capital, labor
+and goods markets clear, firm first-order conditions hold) in which $g<\bar k$ in every state, $\pi\{a>A\}=0$, and
+$-\delta<r<0$, so $\beta(1+r)<1$.
+\end{theorem}
+\begin{proof}
+\leanok
+Take the equilibrium of Theorem~\ref{thm:aiyagari_ge}. By Lemma~\ref{lem:aiyagari_slack_tools}(i), $g\le A<\bar k$
+when $a\le A$, and $g<a\le\bar k$ when $a>A$. The policy is continuous, so Lemma~\ref{lem:huggett_tools}(iv)
+gives $\pi\{a>A\}=0$.
+\end{proof}
+
+\begin{theorem}[A fully derived Aiyagari example]
+\label{thm:aiyagari_slack_example}
+\lean{Econ.AiyagariEconomy.slackEconomy, Econ.AiyagariEconomy.slack_saving, Econ.AiyagariEconomy.slack_A,
+  Econ.AiyagariEconomy.slack_equilibrium}
+\leanok
+\uses{thm:aiyagari_slack, lem:cd_wage_k}
+$u=\sqrt c$, $\beta=9/10$, i.i.d.\ employment shock with $e=0$ w.p.\ $9/10$ and $e=1$ w.p.\ $1/10$ (so $L=1/10$),
+$\alpha=1/10$, $\delta=2/5$, $r\in[-799/2000,-1/20]$, $\bar k = L\,k(r_{lo})$. There is a stationary recursive
+competitive equilibrium with $-\delta<r<0$, positive capital, $g<\bar k$ everywhere and $\pi\{a>\tfrac9{10}\bar k\}=0$.
+\end{theorem}
+\begin{proof}
+\leanok
+\uses{thm:doeblin}
+Lower condition: $\bar k = K_d(r_{lo})$. Upper condition: at $r_{hi}$, $w = \tfrac{63}{20}k_h$ with $k_h = k(r_{hi})\le 1$
+and $\bar k\ge 20$. Employed households save at least $k_h$: with $d = k_h - y$ and $t = \sqrt{k_h}$, the cost today
+is at most $d/(2\cdot1.46\,t)$ since cash minus $k_h$ is at least $\tfrac{43}{20}k_h$; the gain tomorrow if
+unemployed is at least $\tfrac{19}{20}d/(2\cdot0.975\,t)$, and $\tfrac9{10}\cdot\tfrac9{10}\cdot\tfrac{0.95}{1.95}\cdot
+2.92>1$. So $\int a\ge k_h\bar q(1) = K_d(r_{hi})$. Finally $w(r_{lo}) = \tfrac{9}{2000}k(r_{lo})$, so
+$A = 20\,w(r_{lo}) = \tfrac9{10}\bar k<\bar k$.
+\end{proof}
+
+\section{Uniqueness of the stationary distribution}
+\label{sec:stationary_unique}
+
+Doeblin's condition fails for wealth processes: from $(a,z)$ all next-period wealth sits at the single point
+$g(a,z)$. Uniqueness instead comes from monotonicity plus a splitting (mixing) condition
+(Hopenhayn--Prescott 1992; Bhattacharya--Lee 1988).
+
+\begin{lemma}[First-order stochastic dominance via upper sets]
+\label{lem:fosd_upper}
+\lean{Econ.integral_eq_layer, Econ.integral_le_of_upper, Econ.abs_integral_sub_le_of_upper}
+\leanok
+On a preordered measurable space, let $f$ be measurable, increasing, with $m\le f\le m+l$. Then
+$\int f\,d\mu = m + \int_0^l \mu\{f-m>t\}\,dt$. Hence (i) if $\mu(U)\le\nu(U)$ for every measurable upper set $U$,
+then $\int f\,d\mu\le\int f\,d\nu$; (ii) if $|\mu(U)-\nu(U)|\le D$ for every measurable upper set, then
+$|\int f\,d\mu-\int f\,d\nu|\le lD$.
+\end{lemma}
+\begin{proof}
+\leanok
+Layer cake applied to $f-m\ge0$; the integrand vanishes for $t\ge l$. Each $\{f-m>t\}$ is an upper set because $f$
+is increasing.
+\end{proof}
+
+\begin{lemma}[Monotone kernels]
+\label{lem:monotone_kernel}
+\lean{Econ.IsMonotoneKernel, Econ.IsMonotoneKernel.integral_mono, Econ.IsMonotoneKernel.comp,
+  Econ.IsMonotoneKernel.pow, Econ.le_comp_real}
+\leanok
+\uses{lem:fosd_upper, lem:kernel_pow}
+A Markov kernel $\kappa$ is monotone if $x\mapsto\kappa(x,U)$ is increasing for every measurable upper set $U$.
+Compositions and powers of monotone Markov kernels are monotone. Moreover if $\kappa(x,A)\ge p$ for all $x$ and
+$\eta(y,B)\ge q\ge0$ for $y\in A$, then $(\eta\circ\kappa)(x,B)\ge pq$.
+\end{lemma}
+\begin{proof}
+\leanok
+$(\eta\circ\kappa)(x,U) = \int\eta(y,U)\,\kappa(x,dy)$, and $y\mapsto\eta(y,U)$ is increasing with values in $[0,1]$;
+apply Lemma~\ref{lem:fosd_upper}(i). Powers by induction. The last claim: the integrand is at least $q\mathbf 1_A$.
+\end{proof}
+
+\begin{theorem}[Uniqueness under monotone mixing]
+\label{thm:unique_splitting}
+\lean{Econ.unique_invariant_of_splitting, Econ.generateFrom_upperSets_prod}
+\leanok
+\uses{lem:monotone_kernel, lem:fosd_upper}
+Let $\kappa$ be a monotone Markov kernel on a preordered space whose $\sigma$-algebra is generated by its measurable
+upper sets. If for some $c$, $N$ and $\delta>0$, $\kappa^N(x,\{y\le c\})\ge\delta$ and $\kappa^N(x,\{y\ge c\})\ge\delta$
+for all $x$, then $\kappa$ has at most one invariant probability measure. The generation hypothesis holds on $S\times Z$
+(componentwise order) for $S$ a second-countable linear order with its Borel $\sigma$-algebra and $Z$ a finite linear order.
+\end{theorem}
+\begin{proof}
+\leanok
+For a measurable upper set $U$, $f(x)=\kappa^N(x,U)$ is increasing; if $c\in U$ then $f\ge\delta$, and if $c\notin U$
+then $U\cap\{y\le c\}=\emptyset$, so $f\le1-\delta$. Either way the range of $f$ has length $\le1-\delta$. For invariant
+$\pi,\pi'$ and $D=\sup_U|\pi'(U)-\pi(U)|$: $|\pi'(U)-\pi(U)| = |\int f\,d\pi'-\int f\,d\pi|\le(1-\delta)D$ by
+Lemma~\ref{lem:fosd_upper}(ii), so $D\le(1-\delta)D$ and $D=0$. Upper sets form a generating $\pi$-system, so $\pi=\pi'$.
+For $S\times Z$: preimages of $[a,\infty)$ under the first projection generate the first factor, and
+$\{z\} = [z,\infty)\setminus(z,\infty)$ in the second.
+\end{proof}
+
+\begin{theorem}[Uniqueness for savings problems]
+\label{thm:savings_unique}
+\lean{Econ.policyKernel_real_apply, Econ.le_policyKernel_real, Econ.isMonotoneKernel_policyKernel,
+  Econ.StochSavings.policy_monotone, Econ.StochSavings.unique_stationary_of_splitting}
+\leanok
+\uses{thm:unique_splitting, thm:policy_cons_mono, lem:policy_kernel}
+In a savings problem with i.i.d.\ shocks and cash on hand increasing in $(a,z)$, the optimal policy is increasing
+in $(a,z)$, its transition kernel $\kappa((a,z),U)=\sum_{z'}Q(z,z')\mathbf 1_U(g(a,z),z')$ is monotone, and under
+the splitting condition there is at most one stationary distribution.
+\end{theorem}
+\begin{proof}
+\leanok
+Policy monotonicity is Theorem~\ref{thm:policy_cons_mono} (the rows of $Q$ coincide). If $s\le s'$ then
+$(g(s),z')\le(g(s'),z')$, so membership in an upper set is inherited. Then Theorem~\ref{thm:unique_splitting}.
+\end{proof}
+
+\begin{theorem}[Unique stationary distribution in the Aiyagari example]
+\label{thm:slack_unique}
+\lean{Econ.AiyagariEconomy.slack_saving_floor, Econ.AiyagariEconomy.slack_bounds,
+  Econ.AiyagariEconomy.slack_stationary_unique, Econ.AiyagariEconomy.slack_equilibrium_unique}
+\leanok
+\uses{thm:savings_unique, thm:aiyagari_slack_example, lem:aiyagari_slack_tools}
+In the economy of Theorem~\ref{thm:aiyagari_slack_example}, at every $r\in[r_{lo},r_{hi}]$ the stationary distribution
+is unique. Hence the equilibrium there comes with the unique stationary distribution at its interest rate. (Uniqueness
+of the equilibrium interest rate is not claimed.)
+\end{theorem}
+\begin{proof}
+\leanok
+Employed households save at least $k_h/100$, $k_h=k(r_{hi})$: with $t=\sqrt{k_h}$ and $R=1+r\in[0.6,1]$, the cost of
+saving $k_h/100$ instead of $y$ is at most $d/(3.4\,t)$ (cash is at least $w(r)\ge w(r_{hi})=\tfrac{63}{20}k_h$), while
+the gain if unemployed tomorrow is at least $0.6\,d/(0.2\,t)$, and $\tfrac{81}{100}\cdot3>\tfrac1{3.4}$. Unemployed wealth
+satisfies $g\le Ra\le\tfrac{19}{20}a$. Take $c=(k_h/100,\text{unemployed})$, $N=321$, $\delta=(9/10)^{321}$: after
+$N$ unemployment spells wealth is at most $(19/20)^{320}\bar k\le(19/20)^{320}\cdot4000\le k_h/100$ (using
+$k_h\ge4/49$); and after an employment spell at $N-1$, wealth is at least $k_h/100$ with probability $\ge1/100$.
+Apply Theorem~\ref{thm:savings_unique}.
+\end{proof}

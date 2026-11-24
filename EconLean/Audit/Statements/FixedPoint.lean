@@ -13,6 +13,7 @@ public import EconLean.GE.ExistenceGeneral
 public import EconLean.GE.ExistenceInterior
 public import EconLean.GE.ExistencePreferences
 public import EconLean.GE.ExistenceRegular
+public import EconLean.GE.CobbDouglas
 
 @[expose] public section
 
@@ -147,5 +148,31 @@ theorem frozen_cdEconomy_trade {p : Fin 2 → ℝ} {x : Allocation (Fin 3) (Fin 
   GEExamples.cdEconomy_trade hp h
 
 end Regular
+
+section CobbDouglas
+
+theorem frozen_cobbDouglas_def (β x : ι → ℝ) : cobbDouglas β x = ∏ i, x i ^ β i := rfl
+
+theorem frozen_interiorRegular_cobbDouglas {β : ι → ℝ} (hβ : ∀ i, 0 < β i) :
+    InteriorRegular (cobbDouglas β) :=
+  interiorRegular_cobbDouglas hβ
+
+theorem frozen_exists_walrasianEquilibrium_cobbDouglas [Nonempty ι] (E : ExchangeEconomy α ι)
+    {β : α → ι → ℝ} (hβ : ∀ a i, 0 < β a i) (hpref : ∀ a, E.pref a = prefOf (cobbDouglas (β a)))
+    (hω : PositivePrices E.totalEndowment) :
+    ∃ p x, PositivePrices p ∧ E.IsWalrasianEquilibrium p x :=
+  E.exists_walrasianEquilibrium_cobbDouglas hβ hpref hω
+
+theorem frozen_demand_cobbDouglas [Nonempty ι] {β p : ι → ℝ} (hβ : ∀ i, 0 < β i)
+    (hp : PositivePrices p) {w : ℝ} (hw : 0 < w) :
+    demand (prefOf (cobbDouglas β)) p w = {fun i => β i * w / ((∑ j, β j) * p i)} :=
+  demand_cobbDouglas hβ hp hw
+
+theorem frozen_cd2Economy_equilibrium :
+    GEExamples.cd2Economy.IsWalrasianEquilibrium ![1, 8 / 9]
+      ![![1 / 3, 3 / 4], ![2 / 3, 1 / 4]] :=
+  GEExamples.cd2Economy_equilibrium
+
+end CobbDouglas
 
 end Econ.Audit

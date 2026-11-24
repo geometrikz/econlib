@@ -678,6 +678,51 @@ and convex on losses, chooses $A$ and $D$ decision by decision.
 Monotonicity; the witness is $v(x)=\max(\min(x,270+x/10),-630+x/10)$.
 \end{proof}
 
+\begin{theorem}[Rabin--Weizs\"acker: narrow bracketing and dominated choices]
+\label{thm:beh-rabin-weizsacker}
+\uses{thm:beh-bracket}
+\lean{Econ.Bracketing.EU, Econ.Bracketing.IsProb, Econ.Bracketing.NarrowDominated, Econ.Bracketing.WealthEffect, Econ.Bracketing.combined_dominated, Econ.Bracketing.broad_prefers, Econ.Bracketing.narrowDominated_of_wealthEffect, Econ.Bracketing.cara, Econ.Bracketing.EU_cara_shift, Econ.Bracketing.cara_shift, Econ.Bracketing.cara_strictMono, Econ.Bracketing.cara_not_narrowDominated, Econ.Bracketing.caraLove, Econ.Bracketing.EU_caraLove_shift, Econ.Bracketing.caraLove_not_narrowDominated, Econ.Bracketing.linear_not_narrowDominated, Econ.Bracketing.kink, Econ.Bracketing.kink_continuous, Econ.Bracketing.kink_strictMono, Econ.Bracketing.coin, Econ.Bracketing.coin_isProb, Econ.Bracketing.kink_wealthEffect, Econ.Bracketing.kink_narrowDominated}
+\leanok
+Consider an expected-utility agent who decides each of two concurrent choices between a lottery and a sure amount in
+isolation. If the continuous utility $u$ has a wealth effect (adding $w$ reverses a strict comparison between some
+lottery $z$ and sure amount $s$), then there are two such decisions, the second lottery a shift of the first, in which
+the narrow choices combine to an outcome $\delta>0$ below the opposite combination in every state; every broad bracketer
+with strictly increasing utility prefers the latter. CARA utility $-e^{-\alpha x}$ or $e^{\beta x}$ ($\alpha,\beta>0$) and increasing linear utility never make such a
+dominated choice. A utility with a kink at $0$ has a wealth effect for a fair coin. For fair coins the converse
+characterization is Theorem~\ref{thm:beh-rw-iff}.
+\end{theorem}
+\begin{proof}
+\leanok
+Offer $z$ against $s$ and $z+w$ against a sure amount slightly off $s+w$; by continuity the narrow choices stay as in
+the wealth-effect comparison, and they pick one lottery and one sure amount whose sum is below the swapped pair. For CARA,
+$E u(z+c)=e^{-\alpha c}E u(z)$ and $u(x+c)=e^{-\alpha c}u(x)$, so shifting preserves all comparisons and the two strict
+choices force $s_2>s_1+c$ (or the reverse), contradicting dominance.
+\end{proof}
+
+\begin{theorem}[Rabin--Weizs\"acker Proposition 1, fair coins; Nagumo--de Finetti--Jessen]
+\label{thm:beh-rw-iff}
+\uses{thm:beh-rabin-weizsacker}
+\lean{Econ.Bracketing.TI, Econ.Bracketing.IsCARAorLinear, Econ.Bracketing.EU_coin, Econ.Bracketing.ti_of_not_wealthEffect, Econ.Bracketing.affine_on_Icc, Econ.Bracketing.affine_shift_of_ti, Econ.Bracketing.additive_linear, Econ.Bracketing.isCARAorLinear_of_affine_shift, Econ.Bracketing.isCARAorLinear_of_ti, Econ.Bracketing.narrowDominated_affine, Econ.Bracketing.not_narrowDominated_of_isCARAorLinear, Econ.Bracketing.rabinWeizsacker, Econ.Bracketing.kink_not_isCARAorLinear, Econ.Bracketing.cara_isCARAorLinear, Econ.Bracketing.id_isCARAorLinear}
+\leanok
+Let $u:\mathbb R\to\mathbb R$ be continuous and strictly increasing. If $u$ has no wealth effect for a fair coin, then its
+50--50 certainty equivalents are translation invariant, every shift satisfies $u(x+w)=\alpha_w u(x)+\beta_w$ with
+$\alpha_w>0$, and $u$ is linear ($ax+b$, $a>0$) or exponential ($c+de^{kx}$, $dk>0$). Consequently a narrow bracketer
+facing fair-coin lottery-versus-sure decisions (the second lottery a shift of the first) makes a state-wise dominated
+combined choice for some such pair iff $u$ is neither linear nor CARA. The ``only if'' direction is proved within this
+class of decision pairs only. Continuity is assumed in addition to the paper's monotonicity.
+\end{theorem}
+\begin{proof}
+\leanok
+No wealth effect makes the comparison of $\tfrac12 u(x)+\tfrac12 u(y)$ with $u(z)$ shift-invariant, which by continuity
+and monotonicity yields translation invariance of the midpoint mean. On $[a,b]$ the points with $u$-values at dyadic
+fractions of $[u(a),u(b)]$ are reached by repeated midpoints, so $u(\cdot+w)$ is affine in $u$ there; monotonicity and
+density extend this to all of $[a,b]$, and comparing at $\pm1$ makes the coefficients global. Writing $g=u-u(0)$ gives
+$g(x+w)=A(w)g(x)+g(w)$. If $A\equiv1$, $g$ is continuous additive, hence linear. Otherwise symmetry gives
+$g=\kappa(A-1)$ with $A$ continuous, positive and multiplicative, so $\log A$ is linear and $A(x)=e^{kx}$. Dominance is
+invariant under positive affine transforms of utility, so the CARA and linear cases reduce to the previous theorem, and
+the other direction combines the wealth-effect construction with the characterization.
+\end{proof}
+
 \begin{theorem}[Thaler: hedonic editing]
 \label{thm:beh-mental}
 \lean{Econ.Bracketing.segregate_gains, Econ.Bracketing.integrate_losses, Econ.Bracketing.integrate_mixed}
@@ -1036,7 +1081,7 @@ In a finite zero-sum matrix game, along any fictitious-play path (each player be
 other's cumulative past play), the exploitability $\max_k(Aq_t)_k-\min_l(p_tA)_l$ of the empirical frequencies $p_t,q_t$
 tends to $0$. Hence the empirical frequencies are eventually an $\varepsilon$-equilibrium for every $\varepsilon>0$,
 and, as in Robinson's own statement, $\max_k(Aq_t)_k$, $\min_l(p_tA)_l$ and the empirical payoff all converge to the
-value of the game. Fictitious-play paths exist. Brown's alternating process is not formalized.
+value of the game. Fictitious-play paths exist. Brown's alternating process is Theorem~\ref{thm:beh-alt-fp}.
 \end{theorem}
 \begin{proof}
 \leanok
@@ -1047,6 +1092,26 @@ $\sum_\tau U(T)_{i_\tau}-\sum_\tau V(T)_{j_\tau}=\sum_\tau U(0)_{i_\tau}-\sum_\t
 (or, by transposing to $-A^{\mathsf T}$, some column) is never a best response in the window, so there the system is
 one for a smaller submatrix and the gap grows by less than $\varepsilon n/2$. Going back window by window,
 $\max U(t)-\min V(t)\le4at^*+\varepsilon t/2<\varepsilon t$ for large $t$.
+\end{proof}
+
+\begin{theorem}[Brown: alternating fictitious play]
+\label{thm:beh-alt-fp}
+\uses{thm:beh-robinson}
+\lean{Econ.Robinson.IsSystemS, Econ.Robinson.IsSystem.isSystemS, Econ.Robinson.IsSystemS.mono, Econ.Robinson.U_boundsS, Econ.Robinson.V_boundsS, Econ.Robinson.gap_leS, Econ.Robinson.U_eq_sumS, Econ.Robinson.V_eq_sumS, Econ.Robinson.sum_identityS, Econ.Robinson.gap_le_of_eligibleS, Econ.Robinson.GoodS, Econ.Robinson.IsSystemS.transpose, Econ.Robinson.GoodS.transpose, Econ.Robinson.erase_stepS, Econ.Robinson.erase_stepJS, Econ.Robinson.eventually_goodS, Econ.Robinson.IsAltFPPath, Econ.Robinson.IsAltFPPath.isSystemS, Econ.Robinson.exploit_nonneg', Econ.Robinson.robinson_alt, Econ.Robinson.eventually_isEpsSaddle_alt, Econ.Robinson.tendsto_payoff_value_alt, Econ.Robinson.tendsto_max_min_value_alt, Econ.Robinson.altState, Econ.Robinson.altRow, Econ.Robinson.altCol, Econ.Robinson.altState_eq, Econ.Robinson.isAltFPPath_alt}
+\leanok
+Robinson's lemma holds for vector systems in which the chosen row and column are only $\delta$-best responses, for any
+fixed $\delta\ge0$. In Brown's alternating process the row player best responds to the columns before $t$ and then the
+column player to the rows up to and including $t$; this is a vector system with slack $2a$, where $a$ bounds $|A|$.
+Hence along any alternating path the exploitability of the empirical frequencies tends to $0$, the frequencies are
+eventually an $\varepsilon$-equilibrium, and the empirical payoff and $\max_k(Aq_t)_k$, $\min_l(p_tA)_l$ converge to
+the value. Alternating paths exist.
+\end{theorem}
+\begin{proof}
+\leanok
+Repeat Robinson's induction with eligibility meaning ``within $\delta$ of the best'': the window bound becomes
+$4an+2\delta$ and a row that is never within $\delta$ of the best is never chosen. The constant $2\delta$ is absorbed
+by $\varepsilon t$. For the alternating process, the column chosen at $t$ minimizes $V(t)+A_{i_t,\cdot}$, so it is within
+$2a$ of minimizing $V(t)$.
 \end{proof}
 
 \begin{theorem}[Camerer--Ho--Chong: Poisson cognitive hierarchy]
@@ -1088,7 +1153,7 @@ current population (ties to $A$), otherwise it picks $A$ or $B$ with equal chanc
 every large enough $N$ the stationary distribution (which exists and is unique for $0<\varepsilon\le1$) puts
 probability tending to $1$ on the all-$A$ state as $\varepsilon\to0$, and probability tending to $0$ on every other
 state. Payoffs are against the population including the reviser. This is the one-revision chain of
-Binmore--Samuelson--Vaughan and Sandholm; KMR's simultaneous-revision chain is not formalized.
+Binmore--Samuelson--Vaughan and Sandholm; KMR's simultaneous-revision chain is Theorem~\ref{thm:beh-kmr-darwin}.
 \end{theorem}
 \begin{proof}
 \leanok
@@ -1096,6 +1161,27 @@ By the birth--death formula, $\pi_z/\pi_N=\prod_{z\le k<N}d_{k+1}/u_k$. With $m=
 most $2N\varepsilon^{e_k}$, where $e_k=1$ for $k\ge m$, $e_k=-1$ for $k+1<m$ and $e_{m-1}=0$. If $2m<N$ (true for
 large $N$ when $p^*<1/2$), $\sum_{z\le k<N}e_k\ge1$, so $\pi_z\le(2N)^N\varepsilon\,\pi_N$ and
 $\pi_N\ge1/(1+N(2N)^N\varepsilon)\to1$.
+\end{proof}
+
+\begin{theorem}[Kandori--Mailath--Rob: the simultaneous-revision chain]
+\label{thm:beh-kmr-darwin}
+\uses{thm:beh-kmr}
+\lean{Econ.StochasticStability.flux_cut, Econ.StochasticStability.Coord.mutProb, Econ.StochasticStability.Coord.darwin, Econ.StochasticStability.Coord.sum_binom, Econ.StochasticStability.Coord.darwin_isStochastic, Econ.StochasticStability.Coord.darwin_exists_invariant, Econ.StochasticStability.Coord.basinA, Econ.StochasticStability.Coord.lt_resistB_of_not_mem, Econ.StochasticStability.Coord.resistB_le, Econ.StochasticStability.Coord.mem_basinA_iff, Econ.StochasticStability.Coord.last_mem_basinA, Econ.StochasticStability.Coord.resistB_mem_basinA, Econ.StochasticStability.Coord.darwin_last_ge, Econ.StochasticStability.Coord.darwin_selects, Econ.StochasticStability.Coord.darwin_tendsto_zero, Econ.StochasticStability.stagHunt_darwin}
+\leanok
+Each period all $N$ players switch to a best reply to the current population (ties to $A$), and then each
+independently mutates with probability $\varepsilon$; the number of $A$ players is a Markov chain with binomial
+transitions, which is stochastic and has a stationary distribution. With $m=\lceil Np^*\rceil$ and $2m\le N$, every
+stationary distribution puts probability at least $(1-\varepsilon)^N-2^N\varepsilon^{N+1-2m}$ on all-$A$. Hence if $A$
+is risk dominant, for every large enough $N$ the stationary probability of all-$A$ tends to $1$ as $\varepsilon\to0$,
+and that of every other state to $0$ (KMR Theorem 3, best-response special case).
+\end{theorem}
+\begin{proof}
+\leanok
+Under a stationary distribution the flow out of any set of states equals the flow into it. Leaving the $A$ basin
+takes at least $N+1-m$ mutations, so the flow out is at most $2^N\varepsilon^{N+1-m}$; from any state of the $B$
+basin, $m$ mutations reach the $A$ basin with probability at least $\varepsilon^m(1-\varepsilon)^N$. So the $B$
+basin has mass at most $2^N\varepsilon^{N+1-2m}/(1-\varepsilon)^N$, and all-$A$ receives at least $(1-\varepsilon)^N$
+times the mass of the $A$ basin.
 \end{proof}
 
 \section{Bayesian learning}

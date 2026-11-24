@@ -18,6 +18,7 @@ public import EconLean.Bridges.Aggregation.Tatonnement
 public import EconLean.Bridges.Aggregation.SMD
 public import EconLean.Bridges.Aggregation.SMDConsumer
 public import EconLean.Bridges.Aggregation.SMDStandard
+public import EconLean.Bridges.Aggregation.TatonnementSup
 
 @[expose] public section
 
@@ -279,5 +280,43 @@ theorem frozen_zBad_standard_consumers : ¬ ExcessWARP SMDExamples.zBad SMDExamp
   SMDExamples.zBad_standard_consumers
 
 end SMDStandard
+
+section TatonnementSup
+
+/-! Frozen after the adversarial review of 2026-11-24 (`Audit/REVIEW-cd-tatonnement-sup.md`). -/
+
+variable {ι : Type*} [Fintype ι] [DecidableEq ι]
+
+theorem frozen_excess_nonpos_of_max_ratio {z : (ι → ℝ) → (ι → ℝ)}
+    (hGS : GrossSubstitutes z) (hhom : HomogeneousZero z) {pstar q : ι → ℝ}
+    (hps : PositivePrices pstar) (hq : PositivePrices q) (hzs : z pstar = 0) {k : ι}
+    (hk : ∀ i, q i / pstar i ≤ q k / pstar k) : z q k ≤ 0 :=
+  hGS.excess_nonpos_of_max_ratio hhom hps hq hzs hk
+
+theorem frozen_excess_neg_of_max_ratio {z : (ι → ℝ) → (ι → ℝ)}
+    (hGS : GrossSubstitutes z) (hhom : HomogeneousZero z) {pstar q : ι → ℝ}
+    (hps : PositivePrices pstar) (hq : PositivePrices q) (hzs : z pstar = 0) {k : ι}
+    (hk : ∀ i, q i / pstar i ≤ q k / pstar k) (hne : q ≠ (q k / pstar k) • pstar) :
+    z q k < 0 :=
+  hGS.excess_neg_of_max_ratio hhom hps hq hzs hk hne
+
+theorem frozen_tatonnement_bounded [Nonempty ι] {z : (ι → ℝ) → (ι → ℝ)} {p : ℝ → ι → ℝ}
+    {pstar : ι → ℝ} (hpath : IsTatonnementPath z p) (hpos : ∀ t, 0 ≤ t → PositivePrices (p t))
+    (hGS : GrossSubstitutes z) (hhom : HomogeneousZero z) (hps : PositivePrices pstar)
+    (hzs : z pstar = 0) {t : ℝ} (ht : 0 ≤ t) (i : ι) :
+    minRatio (p 0) pstar * pstar i ≤ p t i ∧ p t i ≤ maxRatio (p 0) pstar * pstar i :=
+  tatonnement_bounded hpath hpos hGS hhom hps hzs ht i
+
+theorem frozen_tatonnement_maxRatio_antitone [Nonempty ι] {z : (ι → ℝ) → (ι → ℝ)}
+    {p : ℝ → ι → ℝ} {pstar : ι → ℝ} (hpath : IsTatonnementPath z p)
+    (hpos : ∀ t, 0 ≤ t → PositivePrices (p t)) (hGS : GrossSubstitutes z)
+    (hhom : HomogeneousZero z) (hps : PositivePrices pstar) (hzs : z pstar = 0) :
+    AntitoneOn (fun t => maxRatio (p t) pstar) (Set.Ici 0) :=
+  tatonnement_maxRatio_antitone hpath hpos hGS hhom hps hzs
+
+theorem frozen_pEx_nonconstant : TatonnementSupExamples.pEx 0 ≠ TatonnementSupExamples.pEx 1 :=
+  TatonnementSupExamples.pEx_nonconstant
+
+end TatonnementSup
 
 end Econ.Audit
