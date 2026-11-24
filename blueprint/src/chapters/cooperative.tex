@@ -226,6 +226,31 @@ buyer--seller entries of each permutation form a matching of everyone, so $\sum_
 Nonemptiness follows by Bondareva--Shapley (directly if there are no players).
 \end{proof}
 
+\begin{theorem}[Lattice of the core and competitive prices (Shapley--Shubik 1971; Roth--Sotomayor 1990, Ch.~8)]
+\label{thm:assignment-lattice}
+\lean{Econ.IsCorePayoff, Econ.isCorePayoff_iff, Econ.IsCorePayoff.weak, Econ.core_sup_inf, Econ.isCompact_core, Econ.buyer_optimal_core, Econ.seller_optimal_core, Econ.IsOptimalMatching, Econ.BMatched, Econ.SMatched, Econ.matching_sum_fst, Econ.matching_sum_snd, Econ.core_slack, Econ.IsCompEq, Econ.buyerSurplus, Econ.compEq_core, Econ.core_compEq, Econ.compEq_prices_iff, Econ.exists_min_compEq_prices, Econ.unit_assignment_value}
+\leanok
+\uses{thm:assignment-core}
+Write core payoffs as buyer payoffs $u$ and prices $p$ (net of sellers' reservation values). If $(u,p)$ and $(u',p')$
+are in the core, so are $(u \vee u', p \wedge p')$ and $(u \wedge u', p \vee p')$. There is a buyer-optimal core point
+(best for every buyer, worst for every seller) and a seller-optimal one. At a core point every pair of an optimal
+matching splits exactly its surplus and unmatched agents get $0$. A competitive equilibrium $(p, M)$ (each matched
+buyer gets a seller in her demand set, unmatched buyers demand nothing at positive surplus, unsold objects have price
+$0$) has $M$ optimal and $(\text{surpluses}, p)$ in the core; conversely core prices with any optimal matching are
+competitive. Hence competitive prices are exactly core prices, and the minimal competitive prices are those of the
+buyer-optimal core point. Witness: one buyer and one seller with surplus $1$.
+\end{theorem}
+\begin{proof}
+\leanok
+Both lattice points cover every pair (compare the larger buyer payoff with the matching price) and their totals add
+to twice the optimal value, while each is at least that value by weak duality. The core is compact, so each buyer's
+best core payoff is attained; joining these finitely many points gives the buyer-optimal point, and its prices are
+minimal since a lower price would make the meet's total fall below the optimal value. Slackness: the gap
+$\sum_{(b,s)\in M}(u_b + p_s - a_{bs}) + \sum_{\text{unmatched}} \text{payoffs}$ is a sum of nonnegative terms equal to $0$.
+For a competitive equilibrium the buyers' surpluses cover every pair and the total equals the value of $M$, which by
+weak duality is optimal.
+\end{proof}
+
 \section{The alternating-offers game}
 \label{sec:rubinstein-game}
 

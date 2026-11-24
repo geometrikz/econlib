@@ -213,3 +213,23 @@ At a fixed point doctors choose $Y = X_D \cap X_H$ from $X_D$ and hospitals from
 rationality. A blocking contract $z$ lies in $X_D \setminus X_H$ or $X_H \setminus X_D$; in the first case doctors reject
 it from $X_D$, hence by IRC from $Y \cup (Z \cap X_D)$ and by substitutes from $Y \cup Z$. The other case is symmetric.
 \end{proof}
+
+\begin{theorem}[Stable allocations are fixed points; side-optimal stable allocations (Hatfield--Milgrom 2005)]
+\label{thm:hm-optimal}
+\lean{Econ.hmFix_chooseD, Econ.hmFix_chooseH, Econ.stableXD, Econ.stableXH, Econ.choose_eq_of_rejects, Econ.stable_isFixedPoint, Econ.doctor_optimal, Econ.hospital_optimal}
+\leanok
+\uses{thm:hatfield-milgrom}
+With substitutes and IRC on both sides, every stable $Y$ equals $X_D \cap X_H$ for the fixed point
+$X_D = Y \cup \{x : x \in R_D(Y \cup \{x\}),\ x \notin R_H(Y \cup \{x\})\}$, $X_H = Y \cup \{x : x \in R_H(Y \cup \{x\})\}$.
+There is a stable $Y^*$ with $C_D(Y^* \cup Y) = Y^*$ for every stable $Y$ (doctor-optimal; for unit-demand doctors with
+strict preferences, every doctor weakly prefers $Y^*$), and symmetrically a hospital-optimal one.
+\end{theorem}
+\begin{proof}
+\leanok
+If $c$ chooses all of $Y \subseteq W$ and rejects each $x \in W \setminus Y$ from $Y \cup \{x\}$, then by substitutes $c(W)
+\subseteq Y$ and by IRC $c(W) = Y$; so hospitals choose $Y$ from $X_H$ and doctors from $X_D$. Stability against
+singletons shows that a contract outside $Y$ that doctors accept from $Y \cup \{x\}$ is rejected by hospitals; the
+fixed-point equations follow by cases. For doctor-optimality take $Y^*$ from the greatest fixed point: the fixed point
+of $Y$ lies below it, so $Y \cup Y^* \subseteq X_D^*$, and IRC gives $C_D(Y^* \cup Y) = C_D(X_D^*) = Y^*$. The least
+fixed point is hospital-optimal in the same way.
+\end{proof}

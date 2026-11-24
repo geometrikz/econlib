@@ -22,9 +22,9 @@ every buyer and every seller appears at most once. This is the TU game `assignme
   every pair whose total is the optimal assignment value.
 
 No sign restriction on `a` is needed: a pair with negative surplus is simply never matched.
-Not formalized: the lattice structure of the core and its buyer- and seller-optimal points;
-the equality of the core with competitive-equilibrium price vectors; complementary slackness
-(`u_b + p_s = a b s` on every optimal matching); the integrality of the assignment LP as a
+The lattice structure of the core, its buyer- and seller-optimal points, complementary
+slackness and the equality of core and competitive prices are in `Cooperative/AssignmentLattice`.
+Not formalized here: the integrality of the assignment LP as a
 stand-alone statement (it is used only inside the balancedness proof); the
 Demange–Gale–Sotomayor auction.
 -/

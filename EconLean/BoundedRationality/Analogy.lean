@@ -33,8 +33,8 @@ type's action maximizes it (`IsABEE`).
 
 Jehiel–Koessler allow general partitions; requiring each class to fix the own
 type is a modeling restriction here. Only pure type-contingent strategies are
-treated (Jehiel–Koessler allow mixed strategies, and a pure ABEE need not
-exist).
+treated here (a pure ABEE need not exist); behavioral strategies and
+existence are in `CursedMixed.lean`.
 -/
 module
 

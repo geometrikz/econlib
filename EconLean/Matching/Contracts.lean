@@ -24,14 +24,15 @@ Main results:
   of `F(X_D, X_H) = (X \ R_H(X_H), X \ R_D(X_D))`, then `X_D ∩ X_H` is stable.
 * `hmOrderHom`: under substitutes `F` is isotone for the order
   `X_D ⊆ X_D'`, `X_H ⊇ X_H'`.
-* `stable_exists`: with substitutes and IRC on both sides a stable allocation exists, obtained
-  from the least fixed point of `F` (Tarski). For finite `X` this is the point that the
-  generalized deferred acceptance algorithm reaches by iterating `F` from the bottom; the
-  algorithm itself, and its termination, are not formalized.
+* `stable_exists`: with substitutes and IRC on both sides a stable allocation exists (the proof
+  uses the least fixed point of `F`, by Tarski). For finite `X` this is the point reached by
+  iterating `F` from the bottom `(∅, X)`, a hospital-proposing deferred acceptance; the
+  doctor-proposing version starts from the top `(X, ∅)`. The algorithms and their termination
+  are not formalized.
 
-Not formalized: the converse half of the fixed-point theorem (every stable allocation comes
-from a fixed point), doctor-optimality of the least fixed point, and the law of aggregate
-demand results.
+The converse half of the fixed-point theorem and the doctor- and hospital-optimal stable
+allocations are in `Matching/ContractsLattice`. Not formalized: the law of aggregate demand
+results.
 -/
 module
 
@@ -144,7 +145,8 @@ def hmOrderHom {cD cH : ChoiceFn X} (hsD : cD.Substitutes) (hsH : cH.Substitutes
     exact compl_subset_compl.2 (hsD _ _ ha)
 
 /-- **Existence of a stable allocation** (Hatfield–Milgrom 2005): with substitutable choice
-satisfying IRC on both sides, the least fixed point of `F` yields a stable allocation. -/
+satisfying IRC on both sides, a stable allocation exists (in the proof, from the least fixed
+point of `F`). -/
 theorem stable_exists {cD cH : ChoiceFn X} (hsD : cD.Substitutes) (hsH : cH.Substitutes)
     (hiD : cD.IRC) (hiH : cH.IRC) : ∃ Y, IsStableAlloc cD cH Y := by
   set f := hmOrderHom hsD hsH

@@ -81,6 +81,7 @@ public import EconLean.Foundations.FixedPoint
 public import EconLean.GE.ExistenceGeneral
 public import EconLean.GE.ExistenceInterior
 public import EconLean.GE.ExistencePreferences
+public import EconLean.GE.ExistenceRegular
 public import EconLean.Audit.Statements.FixedPoint
 
 public import EconLean.Producer.Production
@@ -175,6 +176,7 @@ public import EconLean.Information.BayesCorrelated
 public import EconLean.Information.PropertyRights
 public import EconLean.Information.GlobalGames
 public import EconLean.Contracts.Relational
+public import EconLean.Contracts.RelationalMH
 public import EconLean.Information.Signaling
 public import EconLean.Information.Screening
 public import EconLean.Information.MoralHazard
@@ -194,6 +196,7 @@ public import EconLean.Matching.Assortative
 public import EconLean.Matching.Boston
 public import EconLean.Matching.HousingMarket
 public import EconLean.Matching.Contracts
+public import EconLean.Matching.ContractsLattice
 public import EconLean.Partial.Externalities
 public import EconLean.Partial.PublicGoods
 public import EconLean.Partial.Oligopoly
@@ -209,11 +212,13 @@ public import EconLean.Bargaining.RubinsteinGame
 public import EconLean.Cooperative.Shapley
 public import EconLean.Cooperative.Core
 public import EconLean.Cooperative.Assignment
+public import EconLean.Cooperative.AssignmentLattice
 public import EconLean.Audit.Statements.PartialSocial
 public import EconLean.Audit.Statements.GamesInfoIO
 public import EconLean.Audit.Statements.InfoBatch6
 public import EconLean.Audit.Statements.MatchingBargaining
 public import EconLean.Audit.Statements.Assignment
+public import EconLean.Audit.Statements.Batch13
 public import EconLean.Audit.Statements.GlobalGames
 public import EconLean.Audit.Statements.Relational
 public import EconLean.Macro.Consumption.Precautionary
@@ -269,6 +274,10 @@ public import EconLean.Macro.PublicFinance.TwoTypeMirrlees
 public import EconLean.Macro.PublicFinance.RamseyCommodityTax
 public import EconLean.Macro.IKC
 public import EconLean.Audit.Statements.MacroBatch13
+public import EconLean.Macro.Contracts.ThomasWorrall
+public import EconLean.Macro.Banking.GoldsteinPauzner
+public import EconLean.Macro.Credit.FinancialAccelerator
+public import EconLean.Audit.Statements.MacroBatch14
 public import EconLean.Behavioral.BeliefRule
 public import EconLean.Behavioral.CognitiveDiscounting
 public import EconLean.Behavioral.DiagnosticExpectations
@@ -308,5 +317,8 @@ public import EconLean.BoundedRationality.PoissonCH
 public import EconLean.Audit.Statements.BehavioralXII
 public import EconLean.BoundedRationality.ESSUniform
 public import EconLean.Audit.Statements.BehavioralXIII
+public import EconLean.BoundedRationality.SwapRegret
+public import EconLean.BoundedRationality.CursedMixed
+public import EconLean.Audit.Statements.BehavioralXIV
 
 @[expose] public section

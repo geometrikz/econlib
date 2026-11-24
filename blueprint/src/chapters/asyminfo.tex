@@ -376,3 +376,33 @@ $S_t = s(e_t) + \delta S_{t+1}$ and boundedness, $S_t \le \hat s/(1-\delta)$, he
 maximizer $\hat e$ satisfies $c(\hat e) \le \delta \hat s/(1-\delta)$: it is stationary-feasible, so $\hat s \le s^*$.
 For the stationary contract take $U = u/(1-\delta)$, $P = \pi/(1-\delta)$ and $b = \delta P$.
 \end{proof}
+
+\begin{definition}[Stationary relational contract with hidden effort]
+\label{def:stat-contract}
+\lean{Econ.expAt, Econ.IsStatContract, Econ.expAt_add_const}
+\leanok
+Effort $e$ is private and induces public output $y$ with probabilities $f(e, y)$ worth $v(y)$; the agent pays $c(e)$.
+A stationary contract pays wage $w$ and bonus $b(y)$ each period. It is self-enforcing if effort $e$ is incentive
+compatible (statically, since deviations are undetected), both parties participate, and after every $y$ the payer of
+the bonus prefers paying to losing the relationship: $b(y) \le \frac{\delta}{1-\delta}\pi$ and
+$-b(y) \le \frac{\delta}{1-\delta}u$, where $u$ and $\pi$ are per-period payoffs.
+\end{definition}
+
+\begin{theorem}[Dynamic enforcement and one-step bonuses (stationary-contract version of Levin 2003)]
+\label{thm:levin-mh}
+\lean{Econ.statContract_iff_range, Econ.one_step_bound, Econ.two_effort_iff, Econ.mhF, Econ.mhV, Econ.mhC}
+\leanok
+\uses{def:stat-contract}
+Effort $e$ is sustained by a stationary contract iff some incentive-compatible bonus schedule has range at most
+$\frac{\delta}{1-\delta}(E_e[v] - c(e))$. Against one alternative distribution, a bonus with range $\le D$ raises expected
+pay by at most $D \sum_y (f_H - f_L)^+$, attained by the one-step bonus $D \cdot \mathbf 1[f_H > f_L]$. Hence with two
+efforts, high effort is sustainable iff $s_H \ge 0$ and $c_H - c_L \le \frac{\delta}{1-\delta} s_H \sum_y (f_H - f_L)^+$.
+Witness: success probabilities $3/4$ and $1/4$, success worth $4$, cost $1$: sustainable at $\delta = 2/3$, not at $1/3$.
+\end{theorem}
+\begin{proof}
+\leanok
+Adding the two payment constraints bounds the range by $\frac{\delta}{1-\delta}(u + \pi)$, and $u + \pi$ is the surplus.
+Conversely shift the bonus to have minimum $0$ (this keeps incentives since probabilities sum to $1$) and give the
+agent zero rent. For the bound, subtract the minimum bonus (the differences of probabilities sum to $0$) and compare
+termwise.
+\end{proof}

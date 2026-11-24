@@ -12,6 +12,7 @@ module
 public import EconLean.GE.ExistenceGeneral
 public import EconLean.GE.ExistenceInterior
 public import EconLean.GE.ExistencePreferences
+public import EconLean.GE.ExistenceRegular
 
 @[expose] public section
 
@@ -103,5 +104,48 @@ theorem frozen_exists_walrasianEquilibrium_of_preferences [Nonempty ι] (E : Exc
   E.exists_walrasianEquilibrium_of_preferences hpref hu hsq hmono hω hωa
 
 end FromPreferences
+
+section Regular
+
+/-! Frozen after the adversarial review of 2026-11-24
+(`Audit/REVIEW-existence-regular.md`). -/
+
+theorem frozen_regularUtility_def (u : (ι → ℝ) → ℝ) :
+    RegularUtility u ↔ (Continuous u ∧
+      (∀ p w, PositivePrices p → 0 < w → (demand (prefOf u) p w).Subsingleton) ∧
+      LocallyNonsatiated (prefOf u) ∧
+      ∀ (xbar pbar : ι → ℝ) (W : ℝ), 0 ≤ xbar → 0 ≤ pbar → (∃ l, pbar l = 0) →
+        cost pbar xbar ≤ W → 0 < W → ∃ y, 0 ≤ y ∧ u xbar < u y ∧ cost pbar y < W) :=
+  ⟨fun h => ⟨h.cont, h.unique, h.lns, h.improve⟩, fun ⟨a, b, c, d⟩ => ⟨a, b, c, d⟩⟩
+
+theorem frozen_interiorRegular_def (u : (ι → ℝ) → ℝ) :
+    InteriorRegular u ↔ (Continuous u ∧
+      (∀ x y : ι → ℝ, PositivePrices x → x ≤ y → x ≠ y → u x < u y) ∧
+      (∀ x y : ι → ℝ, PositivePrices x → PositivePrices y → x ≠ y → ∀ t : ℝ, 0 < t → t < 1 →
+        min (u x) (u y) < u (t • x + (1 - t) • y)) ∧
+      ∀ x y : ι → ℝ, 0 ≤ x → (∃ i, x i = 0) → PositivePrices y → u x < u y) :=
+  ⟨fun h => ⟨h.cont, h.mono, h.sqc, h.boundary⟩, fun ⟨a, b, c, d⟩ => ⟨a, b, c, d⟩⟩
+
+theorem frozen_regularUtility_of_strictlyQuasiconcave [Nonempty ι] {u : (ι → ℝ) → ℝ}
+    (hu : Continuous u) (hsq : StrictlyQuasiconcave u) (hmono : StronglyMonotone (prefOf u)) :
+    RegularUtility u :=
+  regularUtility_of_strictlyQuasiconcave hu hsq hmono
+
+theorem frozen_regularUtility_of_interiorRegular [Nonempty ι] {u : (ι → ℝ) → ℝ}
+    (h : InteriorRegular u) : RegularUtility u :=
+  regularUtility_of_interiorRegular h
+
+theorem frozen_exists_walrasianEquilibrium_of_regular [Nonempty ι] (E : ExchangeEconomy α ι)
+    {u : α → (ι → ℝ) → ℝ} (hpref : ∀ a, E.pref a = prefOf (u a))
+    (hreg : ∀ a, RegularUtility (u a)) (hω : PositivePrices E.totalEndowment) :
+    ∃ p x, PositivePrices p ∧ E.IsWalrasianEquilibrium p x :=
+  E.exists_walrasianEquilibrium_of_regular hpref hreg hω
+
+theorem frozen_cdEconomy_trade {p : Fin 2 → ℝ} {x : Allocation (Fin 3) (Fin 2)}
+    (hp : PositivePrices p) (h : GEExamples.cdEconomy.IsWalrasianEquilibrium p x) :
+    x 0 ≠ GEExamples.cdEconomy.endow 0 :=
+  GEExamples.cdEconomy_trade hp h
+
+end Regular
 
 end Econ.Audit

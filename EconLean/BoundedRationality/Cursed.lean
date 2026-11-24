@@ -24,9 +24,8 @@ type's action maximizes it (`IsCursedEq`).
   with payoffs `(1 − χ) uᵢ(a, θ) + χ E[uᵢ(a, ·) | θᵢ]` (`cursedPayoff`).
 * `isCursedEq_zero_iff`: `0`-cursed equilibrium is Bayesian Nash equilibrium.
 * `exists_mixed_cursed`: the modified game has a mixed (plan-level) Bayesian
-  Nash equilibrium. No mixed version of `IsCursedEq` is defined, so this is
-  not yet an existence theorem for Eyster–Rabin's behavioral-strategy cursed
-  equilibrium (the link via Kuhn's theorem is not formalized).
+  Nash equilibrium over plans. Eyster–Rabin's behavioral-strategy cursed
+  equilibrium, its reduction and its existence are in `CursedMixed.lean`.
 * **Adverse selection** (`lemons_*`): a seller knows whether a car is a lemon
   (worth `0` to it, `3` to the buyer) or a peach (`10` and `15`), each with
   probability `1/2`; the buyer offers `6` or nothing, and the seller accepts
@@ -36,8 +35,8 @@ type's action maximizes it (`IsCursedEq`).
   (`lemons_cursed_iff`): the winner's curse. (Definitions accept any real
   `χ`; only `χ ∈ [0, 1]` is economically meaningful.)
 
-Only pure type-contingent strategies are treated in the definition; Eyster
-and Rabin allow behavioral mixed strategies.
+Only pure type-contingent strategies are treated in this file; behavioral
+mixed strategies are in `CursedMixed.lean`.
 -/
 module
 

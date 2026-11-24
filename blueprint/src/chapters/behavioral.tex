@@ -924,6 +924,23 @@ Balance is stationarity written out. Apply Blackwell's bound on the index set $S
 distribution the obedience gain of $j\to k$ is $q_j$ times the payoff difference, and it is linear in the distribution.
 \end{proof}
 
+\begin{theorem}[Blum--Mansour: swap regret]
+\label{thm:beh-swap-regret}
+\uses{thm:beh-conditional-regret}
+\lean{Econ.RegretMatching.swapGain, Econ.RegretMatching.swapGain_eq_sum, Econ.RegretMatching.obedienceGain_self, Econ.RegretMatching.isCorrelatedEq_iff_swap, Econ.RegretMatching.swapRegret, Econ.RegretMatching.swapRegret_eq, Econ.RegretMatching.swapGain_condAvg_le, Econ.RegretMatching.eventually_swapGain_le}
+\leanok
+For a swap function $\varphi:S_i\to S_i$ the swap gain $\sum_s\mu(s)\,(u_i(\varphi(s_i),s_{-i})-u_i(s))$ is the sum over $j$
+of the obedience gains of $j\to\varphi(j)$. Hence $\mu$ is a correlated equilibrium iff no player has a profitable swap
+function. Under conditional regret matching on expected payoffs the cumulative swap regret of $\varphi$ is $T$ times its
+swap gain under the average play, which is at most $2B|S_i|^2/\sqrt T$; so all swap gains are eventually below any
+$\varepsilon>0$. (Blum--Mansour's generic reduction from external regret is not formalized.)
+\end{theorem}
+\begin{proof}
+\leanok
+Exchange the sums over profiles and actions; a swap moving only $t$ to $t'$ gives back the obedience gain of $t\to t'$.
+The bound sums the conditional regret bound over $j$.
+\end{proof}
+
 \begin{theorem}[Eyster--Rabin: cursed equilibrium]
 \label{thm:beh-cursed}
 \lean{Econ.Cursed.marg, Econ.Cursed.condPayoff, Econ.Cursed.cursedPayoff, Econ.Cursed.cursedInterim, Econ.Cursed.IsCursedEq, Econ.Cursed.cursedInterim_eq, Econ.Cursed.isCursedEq_iff_isBNE, Econ.Cursed.isCursedEq_zero_iff, Econ.Cursed.exists_mixed_cursed, Econ.Cursed.lemonsPrior, Econ.Cursed.lemonsPayoff, Econ.Cursed.offerPlay, Econ.Cursed.lemonsPrior_mem, Econ.Cursed.lemons_buyer_offer, Econ.Cursed.lemons_buyer_none, Econ.Cursed.lemons_cursed_iff, Econ.Cursed.lemons_not_bne}
@@ -954,6 +971,27 @@ not Bayesian Nash.
 \leanok
 Exchange the order of summation over the true profile and the profile drawn from its class; the weight
 $p(\theta)p(\theta')/p(\text{class})$ is symmetric within a class.
+\end{proof}
+
+\begin{theorem}[Harsanyi, Eyster--Rabin, Jehiel--Koessler: behavioral strategies]
+\label{thm:beh-cursed-mixed}
+\uses{thm:beh-cursed, thm:beh-abee}
+\lean{Econ.Cursed.IsBehavProfile, Econ.Cursed.actProb, Econ.Cursed.devTo, Econ.Cursed.behavInterim, Econ.Cursed.IsBehavBNE, Econ.Cursed.avgProb, Econ.Cursed.behavCursedInterim, Econ.Cursed.IsBehavCursedEq, Econ.Cursed.behavCursedInterim_eq, Econ.Cursed.isBehavCursedEq_iff, Econ.Cursed.isBehavCursedEq_zero_iff, Econ.Cursed.agentPay, Econ.Cursed.toBehav, Econ.Cursed.sum_agent_marginal, Econ.Cursed.pureDev_agentPay, Econ.Cursed.exists_isBehavBNE, Econ.Cursed.exists_isBehavCursedEq, Econ.Cursed.behavAnalogyInterim, Econ.Cursed.IsBehavABEE, Econ.Cursed.behavAnalogyInterim_eq, Econ.Cursed.isBehavABEE_iff, Econ.Cursed.exists_isBehavABEE}
+\leanok
+In a finite Bayesian game let each type play a lottery over actions. A $\chi$-cursed type believes the others play
+their type-averaged strategy $\bar\sigma_{-i}(a_{-i}\mid\theta_i)=\sum_{\theta_{-i}}p(\theta_{-i}\mid\theta_i)\sigma_{-i}(a_{-i}\mid\theta_{-i})$
+with weight $\chi$. A behavioral profile is a $\chi$-cursed equilibrium iff it is a behavioral Bayesian Nash
+equilibrium of the game with payoffs $(1-\chi)u_i+\chi E[u_i\mid\theta_i]$, and likewise an ABEE in behavioral
+strategies is a behavioral BNE of the class-averaged game. Every finite Bayesian game with a common prior has a
+Bayesian Nash equilibrium in behavioral strategies; hence $\chi$-cursed equilibria and ABEE in behavioral strategies
+always exist.
+\end{theorem}
+\begin{proof}
+\leanok
+The reductions exchange sums as in the pure case. For existence, treat each type $(i,\theta_i)$ as a separate agent
+whose payoff is its prior-weighted interim payoff (Selten's agent normal form). In the product of the agents' mixed
+strategies the agents who are not the realized types sum out, so an agent's pure deviation earns exactly the interim
+payoff against the induced behavioral profile. Nash's theorem for the agent form gives the equilibrium.
 \end{proof}
 
 \begin{theorem}[Brown, Robinson, Fudenberg--Levine: fictitious play]

@@ -240,3 +240,77 @@ $t u(x) + (1 - t) u(y) \le u(tx + (1-t)y)$ coordinatewise by concavity, strictly
 $\min(u(x), u(y)) \le t u(x) + (1-t) u(y)$. Strong monotonicity: each square root weakly increases and one strictly. Apply
 Theorem~\ref{thm:existence_preferences}.
 \end{proof}
+
+\section{Existence with zero endowments and Cobb--Douglas-type preferences}
+\label{sec:existence_regular}
+
+\begin{definition}[Regular and interior-regular utilities]
+\label{def:regular_utility}
+\lean{Econ.RegularUtility, Econ.InteriorRegular, Econ.RegularUtility.demand_eq_empty_of_boundary}
+\leanok
+A utility $u$ is \emph{regular} if it is continuous, demand is at most a singleton at $p \gg 0$ and $w > 0$, it is locally
+nonsatiated, and it has the \emph{improvement property}: whenever $\bar x \ge 0$, $\bar p \ge 0$ has a zero coordinate, and
+$\bar p \cdot \bar x \le W$ with $W > 0$, some $y \ge 0$ has $u(y) > u(\bar x)$ and $\bar p \cdot y < W$. It is
+\emph{interior-regular} (Cobb--Douglas type) if it is continuous, strictly increasing from interior bundles, strictly
+quasiconcave on the interior, and every interior bundle is strictly better than every boundary bundle.
+\end{definition}
+
+\begin{lemma}[Both classical hypothesis sets give regularity]
+\label{lem:regular_from}
+\lean{Econ.exists_lt_one_better, Econ.cost_smul_add_single_lt, Econ.single_nonneg',
+  Econ.regularUtility_of_strictlyQuasiconcave, Econ.positive_add_const, Econ.InteriorRegular.locallyNonsatiated,
+  Econ.regularUtility_of_interiorRegular, Econ.RegularUtility.exists_continuous_demand_function}
+\leanok
+\uses{def:regular_utility}
+Continuous, strictly quasiconcave, strongly monotone utilities are regular. So are interior-regular utilities. A
+regular utility has a continuous demand function on $p \gg 0$, $w > 0$.
+\end{lemma}
+\begin{proof}
+\leanok
+Improvement: if $u(\bar x + e_l) > u(\bar x)$ with $\bar p_l = 0$, continuity gives $t \in [0,1)$ with
+$u(t\bar x + e_l) > u(\bar x)$. This $y$ costs $t\,\bar p\cdot\bar x < W$. Strong monotonicity gives the first inequality. In the
+interior-regular case it holds when $\bar x \gg 0$; if $\bar x$ is on the boundary, use the cheap interior bundle
+$y = \frac{W}{2\sum_i \bar p_i + 1}\mathbf 1$ instead. For uniqueness in the interior-regular case, every demanded bundle is
+interior: a boundary bundle is beaten by the affordable interior bundle above. So two different demanded bundles would
+have a strictly better affordable midpoint. Local nonsatiation: $x + \frac{\varepsilon}{2}\mathbf 1$ is interior and
+strictly better. Continuity of demand is Berge's theorem, as in Theorem~\ref{thm:existence_preferences}.
+\end{proof}
+
+\begin{theorem}[Existence for regular consumers]
+\label{thm:existence_regular}
+\lean{Econ.ExchangeEconomy.demand_zero_wealth, Econ.ExchangeEconomy.boundaryCondition_excessDemand_of_regular,
+  Econ.ExchangeEconomy.exists_walrasianEquilibrium_of_regular,
+  Econ.ExchangeEconomy.exists_walrasianEquilibrium_of_preferences_of_totalEndowment,
+  Econ.ExchangeEconomy.exists_walrasianEquilibrium_of_interiorRegular}
+\leanok
+\uses{lem:regular_from, lem:boundary_from_prefs, thm:existence_boundary_economy}
+If every consumer's utility is regular and $\bar\omega \gg 0$, a Walrasian equilibrium with $p \gg 0$ exists, with no
+assumption on individual endowments. In particular this holds for the hypotheses of Theorem~\ref{thm:existence_preferences}
+without $\omega_a \ne 0$, and for interior-regular (Cobb--Douglas-type) consumers.
+\end{theorem}
+\begin{proof}
+\leanok
+A consumer with $\omega_a = 0$ has budget set $\{0\}$ at $p \gg 0$ and demands $0$, a constant, hence continuous, selection.
+The others have positive wealth and a continuous demand function. The boundary condition follows as in
+Lemma~\ref{lem:boundary_from_prefs}, using the improvement property in place of strong monotonicity. Apply
+Theorem~\ref{thm:existence_boundary_economy}.
+\end{proof}
+
+\begin{theorem}[A Cobb--Douglas consumer and a consumer who owns nothing]
+\label{thm:cd_economy}
+\lean{Econ.GEExamples.uCD, Econ.GEExamples.interiorRegular_uCD, Econ.GEExamples.cdEconomy,
+  Econ.GEExamples.cdEconomy_endow_one, Econ.GEExamples.cdEconomy_exists_equilibrium,
+  Econ.GEExamples.cdEconomy_trade}
+\leanok
+\uses{thm:existence_regular, thm:sqrt_economy}
+Consumer $0$ has $u(x) = x_0 x_1$ and owns $(1,0)$; consumers $1$ and $2$ have $u(x) = \sqrt{x_0} + \sqrt{x_1}$, and
+own nothing and $(0,1)$ respectively. A Walrasian equilibrium with $p \gg 0$ exists, and in every such equilibrium
+consumer $0$ trades: its endowment has utility $0$, while the affordable bundle $(1/2, p_0/(2p_1))$ has positive utility.
+\end{theorem}
+\begin{proof}
+\leanok
+$x_0x_1$ is interior-regular. For strict quasiconcavity on the interior, write $A = x_0x_1$, $B = y_0y_1$ and
+$C = x_0y_1 + y_0x_1$. Then the mixture has utility $t^2A + s^2B + tsC$ with $s = 1 - t$, and
+$C^2 - 4AB = (x_0y_1 - y_0x_1)^2 \ge 0$. If $A \le B$, this exceeds $A = (t+s)^2 A$ because $C \ge 2A$, with strict inequality
+unless $A = B$ and $C = 2A$, which forces $x = y$. Apply Theorem~\ref{thm:existence_regular}.
+\end{proof}

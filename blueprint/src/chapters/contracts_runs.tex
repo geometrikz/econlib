@@ -1,0 +1,82 @@
+% Lean: EconLean/Macro/Contracts/ThomasWorrall.lean, EconLean/Macro/Banking/GoldsteinPauzner.lean,
+%       EconLean/Macro/Credit/FinancialAccelerator.lean
+\chapter{Limited Commitment, Bank Runs and the Financial Accelerator}
+\label{chap:contracts_runs}
+
+Sources: Thomas--Worrall (1988); Kocherlakota (1996); Ljungqvist--Sargent ch.~20; Diamond--Dybvig (1983);
+Goldstein--Pauzner (2005); Morris--Shin (2003); Bernanke--Gertler--Gilchrist (1999).
+
+\section{Self-enforcing wage contracts}
+
+\begin{definition}[Clamp rule and wage path]
+\label{def:tw}
+\lean{Econ.ThomasWorrall.clamp, Econ.ThomasWorrall.path}
+\leanok
+$\operatorname{clamp}(x;a,b)=\max(a,\min(x,b))$. Given intervals $[a_s,b_s]$ of self-enforcing wages, the wage path is
+$x_{t+1}=\operatorname{clamp}(x_t;a_{s_{t+1}},b_{s_{t+1}})$.
+\end{definition}
+
+\begin{theorem}[Thomas--Worrall dynamics]
+\label{thm:tw}
+\lean{Econ.ThomasWorrall.kkt_clamp, Econ.ThomasWorrall.clamp_mem, Econ.ThomasWorrall.clamp_eq_self, Econ.ThomasWorrall.clamp_mono, Econ.ThomasWorrall.clamp_nearest, Econ.ThomasWorrall.path_succ, Econ.ThomasWorrall.path_mem, Econ.ThomasWorrall.path_ge_of_hit, Econ.ThomasWorrall.path_le_of_hit, Econ.ThomasWorrall.path_const, Econ.ThomasWorrall.eventually_constant, Econ.ThomasWorrall.not_eventually_constant, Econ.ThomasWorrall.eventually_mem_Icc_B_A}
+\leanok
+\uses{def:tw}
+If $x'=x+\mu-\nu$ with $\mu,\nu\ge0$, $x'\in[a,b]$ and complementary slackness, then $x'=\operatorname{clamp}(x;a,b)$: the wage
+moves only when a constraint binds, to the nearest bound. Let $A=\max_sa_s$, $B=\min_sb_s$. If $A\le B$ the wage is constant once
+both extreme states have occurred; if $B<A$ it stays in $[B,A]$ thereafter and, if both extreme states recur, never settles.
+\end{theorem}
+\begin{proof}
+\leanok
+Case analysis on $\mu,\nu$. The bounds $x\ge A$ and $x\le B$ are preserved by clamping into intervals containing $[A,B]$; inside
+$[A,B]$ clamping is the identity. If $B<A$, visits to the extreme states force $x\ge A$ and $x\le B$ alternately.
+\end{proof}
+
+\section{Bank runs as a global game}
+
+\begin{definition}[Goldstein--Pauzner payoffs]
+\label{def:gp}
+\lean{Econ.GoldsteinPauzner.Params, Econ.GoldsteinPauzner.Params.v, Econ.GoldsteinPauzner.Params.A, Econ.GoldsteinPauzner.Params.I}
+\leanok
+With $\lambda$ impatient, short payment $r\in(1,1/\lambda)$ and success probability $p(\theta)$, the gain from waiting is
+$v(\theta,n)=p(\theta)R(1-nr)/(1-n)-r$ for $n<1/r$ and $-1/n$ otherwise; $A(\theta)=\int_\lambda^1v(\theta,n)\,dn$ is the
+Laplacian expected gain.
+\end{definition}
+
+\begin{theorem}[Run threshold and liquidity provision]
+\label{thm:gp}
+\lean{Econ.GoldsteinPauzner.Params.r_pos, Econ.GoldsteinPauzner.Params.lam_lt, Econ.GoldsteinPauzner.Params.inv_r_lt_one, Econ.GoldsteinPauzner.Params.v_eqOn₁, Econ.GoldsteinPauzner.Params.v_eqOn₂, Econ.GoldsteinPauzner.Params.contOn₀, Econ.GoldsteinPauzner.Params.contOn₁, Econ.GoldsteinPauzner.Params.contOn₂, Econ.GoldsteinPauzner.Params.int₁, Econ.GoldsteinPauzner.Params.int₂, Econ.GoldsteinPauzner.Params.I_pos, Econ.GoldsteinPauzner.Params.A_eq, Econ.GoldsteinPauzner.Params.continuous_A, Econ.GoldsteinPauzner.Params.A_strictMono, Econ.GoldsteinPauzner.Params.existsUnique_threshold, Econ.GoldsteinPauzner.Params.lt_threshold_iff, Econ.GoldsteinPauzner.Params.v_anti_r, Econ.GoldsteinPauzner.Params.A_anti_r, Econ.GoldsteinPauzner.Params.A_strictAnti_r, Econ.GoldsteinPauzner.Params.threshold_mono_r}
+\leanok
+\uses{def:gp}
+$A(\theta)=p(\theta)RI-(1-r\lambda)-\log r$ with $I>0$, so $A$ is continuous and strictly increasing; if it changes sign there is a
+unique threshold $\theta^*$ and depositors run iff $\theta<\theta^*$. A larger $r$ strictly lowers $A$ and strictly raises
+$\theta^*$.
+\end{theorem}
+\begin{proof}
+\leanok
+Split the integral at $1/r$ (the pieces agree there) and use $\int_{1/r}^1dn/n=\log r$. For $r<r'$, $v_{r'}\le v_r$ pointwise
+on $[\lambda,1]$ (three cases), with strict inequality on $[\lambda,1/r']$.
+\end{proof}
+
+\section{The financial accelerator}
+
+\begin{definition}[Capital market with a premium]
+\label{def:bgg}
+\lean{Econ.BGG.Env, Econ.BGG.Env.IsEq}
+\leanok
+$Af'(K)=R\,s(N/K)$ with $f'$ positive and strictly decreasing and the gross premium $s\ge1$ decreasing in net worth over assets.
+\end{definition}
+
+\begin{theorem}[Net worth and amplification]
+\label{thm:bgg}
+\lean{Econ.BGG.Env.K_strictMono_N, Econ.BGG.Env.premium_anti_N, Econ.BGG.Env.K_indep_N, Econ.BGG.Env.K_strictMono_A, Econ.BGG.Env.amplification, Econ.BGG.Env.existsUnique_K, Econ.BGG.premium_example, Econ.BGG.premium_example_ge}
+\leanok
+\uses{def:bgg}
+With $s$ strictly decreasing, capital rises and the premium falls with net worth; with $s$ constant capital is independent of net
+worth. Capital rises with $A$, and if $N=N_0+\kappa A$ the net-worth channel adds to the direct effect. Under boundary conditions
+the equilibrium exists and is unique. $s(x)=1+m/x$ is an example.
+\end{theorem}
+\begin{proof}
+\leanok
+By contradiction: if capital did not rise, $f'$ would not fall while the premium strictly falls. Existence by the intermediate
+value theorem; uniqueness because $Af'(K)-Rs(N/K)$ is strictly decreasing.
+\end{proof}
