@@ -16,6 +16,7 @@ public import EconLean.Bridges.Aggregation.LawOfDemand
 public import EconLean.Bridges.Aggregation.Gorman
 public import EconLean.Bridges.Aggregation.Tatonnement
 public import EconLean.Bridges.Aggregation.SMD
+public import EconLean.Bridges.Aggregation.SMDConsumer
 
 @[expose] public section
 
@@ -197,5 +198,46 @@ theorem frozen_zBad_smd : ¬ ExcessWARP SMDExamples.zBad SMDExamples.DBad ∧
   SMDExamples.zBad_smd
 
 end SMD
+
+section SMDConsumer
+/-! Debreu's step 2 (`SMDConsumer.lean`), frozen after the isolated review of
+2026-11-24 (`Audit/REVIEW-smd-consumers.md`). -/
+
+open Set
+
+theorem frozen_weightedPiece_def {ι : Type*} [Fintype ι] [DecidableEq ι]
+    (a : (ι → ℝ) → ℝ) (l : ι) (q : ι → ℝ) :
+    weightedPiece a l q = a q • (Pi.single l 1 - (q l / cost q q) • q) := rfl
+
+theorem frozen_demand_def {ι : Type*} [Fintype ι] (U : (ι → ℝ) → ℝ) (p : ι → ℝ) (w : ℝ) (x : ι → ℝ) :
+    x ∈ demand (prefOf U) p w ↔
+      (0 ≤ x ∧ cost p x ≤ w) ∧ ∀ y, (0 ≤ y ∧ cost p y ≤ w) → U y ≤ U x := Iff.rfl
+
+theorem frozen_exists_consumer_weightedPiece {ι : Type*} [Fintype ι] [DecidableEq ι] [Nonempty ι]
+    {K : Set (ι → ℝ)} {a : (ι → ℝ) → ℝ} (l : ι) (hK : IsCompact K)
+    (hKS : K ⊆ openPriceSimplex ι) (ha : ContinuousOn a K) (hapos : ∀ q ∈ K, 0 < a q) :
+    ∃ (U : (ι → ℝ) → ℝ) (ω : ι → ℝ), QuasiconcaveOn ℝ univ U ∧ (∀ i, 0 < ω i) ∧
+      ∀ p ∈ K, demand (prefOf U) p (cost p ω) = {ω + weightedPiece a l p} :=
+  exists_consumer_weightedPiece l hK hKS ha hapos
+
+theorem frozen_sonnenschein_mantel_debreu_quasiconcave {ι : Type*} [Fintype ι] [DecidableEq ι]
+    [Nonempty ι] {z : (ι → ℝ) → (ι → ℝ)} {K : Set (ι → ℝ)}
+    (hK : IsCompact K) (hKS : K ⊆ openPriceSimplex ι) (hz : ContinuousOn z K)
+    (hW : WalrasLaw z K) :
+    ∃ (U : ι → (ι → ℝ) → ℝ) (ω : ι → ι → ℝ),
+      (∀ l, QuasiconcaveOn ℝ univ (U l) ∧ ∀ i, 0 < ω l i) ∧
+      ∀ p ∈ K, ∃ x : ι → ι → ℝ,
+        (∀ l, demand (prefOf (U l)) p (cost p (ω l)) = {x l}) ∧ ∑ l, (x l - ω l) = z p :=
+  sonnenschein_mantel_debreu_quasiconcave hK hKS hz hW
+
+theorem frozen_zBad_rational_consumers : ¬ ExcessWARP SMDExamples.zBad SMDExamples.DBad ∧
+    ∃ (U : Fin 2 → (Fin 2 → ℝ) → ℝ) (ω : Fin 2 → Fin 2 → ℝ),
+      (∀ l, QuasiconcaveOn ℝ univ (U l) ∧ ∀ i, 0 < ω l i) ∧
+      ∀ p ∈ SMDExamples.DBad, ∃ x : Fin 2 → Fin 2 → ℝ,
+        (∀ l, demand (prefOf (U l)) p (cost p (ω l)) = {x l}) ∧
+          ∑ l, (x l - ω l) = SMDExamples.zBad p :=
+  SMDExamples.zBad_rational_consumers
+
+end SMDConsumer
 
 end Econ.Audit

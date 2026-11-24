@@ -1,0 +1,164 @@
+% Lean: EconLean/Econometrics/TimeSeries/{ARMA,Kalman}.lean, Asymptotics/DeltaMethodVec.lean
+\chapter{Econometrics: ARMA stationarity, the Kalman filter, the multivariate delta method}
+\label{chap:econometrics5}
+
+This chapter proves the classical stationarity condition for ARMA processes (roots of the AR lag polynomial outside
+the unit circle) through the companion form of Chapter~\ref{chap:econometrics2}'s VAR results, the optimality of the
+Kalman gain among linear updates, and the multivariate delta method.
+
+\section{ARMA processes}
+\label{sec:arma}
+
+Sources: Hamilton (1994) Prop.~1.1 and \S3.4--3.7; Brockwell and Davis (1991) Thm~3.1.1; L\"utkepohl (2005) \S2.1.1.
+An ARMA$(p+1,q)$ process solves $x_t = c + \sum_{j=0}^{p}\varphi_jx_{t-1-j} + w_t$, with $w_t = \varepsilon_t +
+\sum_k\theta_k\varepsilon_{t-1-k}$ the moving-average part.
+
+\begin{lemma}[Stability and the Gelfand radius]
+\label{lem:gelfand-stability}
+\lean{Econ.TimeSeries.ARMA.summable_norm_pow_iff, Econ.TimeSeries.ARMA.spectralRadius_lt_one_iff}
+\leanok
+In a normed ring, $\sum_n\|a^n\| < \infty$ iff $\lim_n\|a^n\|^{1/n} < 1$. In a complex Banach algebra this limit is the
+spectral radius, so the condition holds iff every point of the spectrum has modulus below one.
+\end{lemma}
+\begin{proof}
+\leanok
+If the series converges then $\|a^N\| < 1$ for some $N\ge1$, and the Gelfand radius is at most $\|a^N\|^{1/N}$.
+Conversely, for $\rho$ between the radius and $1$, $\|a^n\|\le C\rho^n$, a convergent geometric bound. The spectral
+statement is Gelfand's formula together with compactness and nonemptiness of the spectrum.
+\end{proof}
+
+\begin{definition}[Companion matrix, characteristic equation, lag polynomial]
+\label{def:companion}
+\lean{Econ.TimeSeries.ARMA.companion, Econ.TimeSeries.ARMA.charEq, Econ.TimeSeries.ARMA.lagPoly}
+\leanok
+The companion matrix $C$ has first row $(\varphi_0,\dots,\varphi_p)$ and ones on the subdiagonal. The characteristic
+equation is $r^{p+1} - \sum_j\varphi_jr^{p-j}$ and the lag polynomial is $\varphi(z) = 1 - \sum_j\varphi_jz^{j+1}$.
+\end{definition}
+
+\begin{theorem}[Companion eigenvalues]
+\label{thm:companion-eig}
+\lean{Econ.TimeSeries.ARMA.companion_mulVec_zero, Econ.TimeSeries.ARMA.companion_mulVec_succ, Econ.TimeSeries.ARMA.eigvec_eq, Econ.TimeSeries.ARMA.exists_eigvec_iff, Econ.TimeSeries.ARMA.mem_spectrum_companion_iff, Econ.TimeSeries.ARMA.charEq_eq_mul_lagPoly, Econ.TimeSeries.ARMA.lagPoly_zero, Econ.TimeSeries.ARMA.spectrum_lt_one_iff_roots}
+\leanok
+\uses{def:companion}
+$r$ is an eigenvalue of $C$ iff $r^{p+1} = \sum_j\varphi_jr^{p-j}$. For $r\ne0$ this is $r^{p+1}\varphi(1/r) = 0$, so all
+eigenvalues lie inside the unit circle iff all roots of $\varphi$ lie outside it.
+\end{theorem}
+\begin{proof}
+\leanok
+The subdiagonal rows of $Cv = rv$ force $v_j = r^{p-j}v_p$, so an eigenvector is nonzero iff $v_p\ne0$, and the first row
+is then the characteristic equation. Conversely $v_j = r^{p-j}$ is an eigenvector. Since $\varphi(0) = 1$, roots of
+$\varphi$ are nonzero and $z\mapsto 1/z$ exchanges them with the nonzero eigenvalues.
+\end{proof}
+
+\begin{theorem}[Stationarity condition]
+\label{thm:arma-stationary}
+\lean{Econ.TimeSeries.ARMA.compCLM, Econ.TimeSeries.ARMA.compCLM_apply, Econ.TimeSeries.ARMA.compCLM_pow_apply, Econ.TimeSeries.ARMA.norm_compCLM_pow, Econ.TimeSeries.ARMA.companion_map, Econ.TimeSeries.ARMA.norm_map_pow, Econ.TimeSeries.ARMA.stable_iff_roots_outside, Econ.TimeSeries.ARMA.ar1_witness}
+\leanok
+\uses{lem:gelfand-stability, thm:companion-eig, def:var}
+For real coefficients, the companion VAR is stable ($\sum_n\|C^n\| < \infty$) iff every complex root of $\varphi$ lies
+strictly outside the unit circle. The AR(1) with $\varphi_0 = 1/2$ is stable; the random walk ($\varphi_0 = 1$) is not.
+\end{theorem}
+\begin{proof}
+\leanok
+The operator norm of $C^n$ on $(\R^{p+1},\|\cdot\|_\infty)$ equals the $\ell^\infty$ matrix norm of $C^n$, which equals
+that of the complexified matrix, so the Gelfand radii agree. Apply Lemma~\ref{lem:gelfand-stability} and
+Theorem~\ref{thm:companion-eig}.
+\end{proof}
+
+\begin{theorem}[MA($\infty$) representation]
+\label{thm:arma-ma}
+\lean{Econ.TimeSeries.ARMA.IsARMA, Econ.TimeSeries.ARMA.state, Econ.TimeSeries.ARMA.e0, Econ.TimeSeries.ARMA.isPath_state, Econ.TimeSeries.ARMA.path_first, Econ.TimeSeries.ARMA.norm_e0, Econ.TimeSeries.ARMA.norm_state_le, Econ.TimeSeries.ARMA.arma_ma_solves, Econ.TimeSeries.ARMA.arma_unique}
+\leanok
+\uses{thm:arma-stationary, thm:var-ma}
+An ARMA path stacks into a path of the companion VAR, and the first coordinate of a VAR path solves the ARMA
+recursion. Under the stationarity condition and for bounded $w$, the first coordinate of the VAR's MA($\infty$) process
+is a bounded solution, and any two bounded solutions coincide.
+\end{theorem}
+\begin{proof}
+\leanok
+The subdiagonal rows of the VAR shift the state, so $y_t(i) = y_{t-i}(0)$; the first row is the ARMA recursion. Then
+apply Theorem~\ref{thm:var-ma} to the companion VAR, whose shocks $w_te_0$ are bounded.
+\end{proof}
+
+The solution results are pathwise for bounded inputs; the $L^2$ stationary-solution form of Brockwell and Davis
+(1991) Thm~3.1.1, which covers i.i.d.\ Gaussian noise, is not stated.
+
+\section{The Kalman filter}
+\label{sec:kalman}
+
+Sources: Kalman (1960); Anderson and Moore (1979) \S3.1; Hamilton (1994) \S13.2. The prior error $e = x - m$ has
+$E[ee^\top] = P$, the observation is $y = Hx + v$ with $E[vv^\top] = R$ and $E[ev^\top] = 0$, and a linear update is
+$\hat x = m + K(y - Hm)$.
+
+\begin{definition}[Innovation covariance, gain, Joseph form]
+\label{def:kalman}
+\lean{Econ.TimeSeries.Kalman.innovCov, Econ.TimeSeries.Kalman.gain, Econ.TimeSeries.Kalman.joseph}
+\leanok
+$S = HPH^\top + R$, $K^* = PH^\top S^{-1}$, and $J(K) = (I-KH)P(I-KH)^\top + KRK^\top$.
+\end{definition}
+
+\begin{theorem}[Error covariance of a linear update]
+\label{thm:kalman-joseph}
+\lean{Econ.TimeSeries.Kalman.update_error, Econ.TimeSeries.Kalman.secondMoments_update_error, Econ.TimeSeries.Kalman.secondMoments_predict}
+\leanok
+\uses{def:kalman, lem:linear-moments}
+The update error is $(I-KH)e - Kv$, and its second-moment matrix is $J(K)$. In the prediction step $x' = Fx + w$ with
+$E[ww^\top] = Q$ and $w$ uncorrelated with $e$, the predicted error has second moments $FPF^\top + Q$.
+\end{theorem}
+\begin{proof}
+\leanok
+Both errors are $[A, B]\,(e, v)$ for a block row $[A,B]$; with block-diagonal second moments
+$\mathrm{diag}(P, R)$ the result is $APA^\top + BRB^\top$ by Lemma~\ref{lem:linear-moments}.
+\end{proof}
+
+\begin{theorem}[Optimality of the Kalman gain]
+\label{thm:kalman-optimal}
+\lean{Econ.TimeSeries.Kalman.joseph_expand, Econ.TimeSeries.Kalman.gain_mul_innovCov, Econ.TimeSeries.Kalman.innovCov_transpose, Econ.TimeSeries.Kalman.innovCov_mul_gain_transpose, Econ.TimeSeries.Kalman.joseph_sub_gain, Econ.TimeSeries.Kalman.joseph_gain, Econ.TimeSeries.Kalman.innovCov_posSemidef, Econ.TimeSeries.Kalman.kalman_gain_optimal, Econ.TimeSeries.Kalman.innovCov_posDef, Econ.TimeSeries.Kalman.isUnit_innovCov, Econ.TimeSeries.Kalman.mul_mul_transpose_apply_self, Econ.TimeSeries.Kalman.kalman_gain_unique, Econ.TimeSeries.Kalman.kalman_witness}
+\leanok
+\uses{thm:kalman-joseph}
+If $P$ and $R$ are positive semidefinite and $S$ is invertible, then $J(K) - J(K^*) = (K-K^*)S(K-K^*)^\top$ is positive
+semidefinite for every $K$, and $J(K^*) = P - PH^\top S^{-1}HP$. If $R$ is positive definite then $S$ is, and $K^*$ is the unique gain attaining $J(K^*)$.
+\end{theorem}
+\begin{proof}
+\leanok
+Expand $J(K) = P - KHP - PH^\top K^\top + KSK^\top$ and use $PH^\top = K^*S$, $HP = SK^{*\top}$ (symmetry of $P$, $R$,
+$S$). Then $J(K) = P - KSK^{*\top} - K^*SK^\top + KSK^\top$, and completing the square gives the difference. For uniqueness, the diagonal of $DSD^\top = 0$ is $d_i^\top Sd_i$, which vanishes only for $d_i = 0$ when $S$ is positive definite.
+\end{proof}
+
+This is the one-step update and prediction; the multi-period recursion, the Riccati steady state and the Gaussian
+conditional-expectation form are not stated.
+
+\section{The multivariate delta method}
+\label{sec:delta-vec}
+
+Sources: van der Vaart (1998) Thm~3.1; Hayashi (2000) Lemma~2.5(b).
+
+\begin{lemma}[Convergence to a constant and root-$n$ consistency for vectors]
+\label{lem:const-vec}
+\lean{Econ.Asymptotics.tendstoInMeasure_of_tendstoInDistribution_const_pi, Econ.Asymptotics.tendstoInMeasure_of_sqrt_pi}
+\leanok
+\uses{thm:delta}
+Random vectors converging in distribution to a constant converge in probability. If $\sqrt n(T_n-\theta)\to_d Z$ then
+$T_n\to_p\theta$.
+\end{lemma}
+\begin{proof}
+\leanok
+Apply the scalar result to $\|X_n - c\|$. For the second claim, multiply by $1/\sqrt n\to0$ (Slutsky).
+\end{proof}
+
+\begin{theorem}[Multivariate delta method]
+\label{thm:delta-vec}
+\lean{Econ.Asymptotics.remQuot, Econ.Asymptotics.remQuot_continuousAt, Econ.Asymptotics.remQuot_measurable, Econ.Asymptotics.smul_sub_eq_remQuot, Econ.Asymptotics.delta_method_vec, Econ.Asymptotics.delta_method_gaussian, Econ.Asymptotics.delta_method_vec_gaussian}
+\leanok
+\uses{lem:const-vec, lem:gaussian-linear}
+If $\sqrt n(T_n-\theta)\to_d Z$ and $g$ is measurable and Fr\'echet differentiable at $\theta$ with derivative $g'$, then
+$\sqrt n(g(T_n) - g(\theta))\to_d g'(Z)$. If $Z\sim N(0,\Sigma)$, the limit is $N(0, J\Sigma J^\top)$ with $J$ the
+Jacobian.
+\end{theorem}
+\begin{proof}
+\leanok
+With $Z_n = \sqrt n(T_n-\theta)$ and the normalised remainder $\rho(t) = (g(t)-g(\theta)-g'(t-\theta))/\|t-\theta\|$
+(continuous at $\theta$ with $\rho(\theta) = 0$), $\sqrt n(g(T_n)-g(\theta)) = g'(Z_n) + \|Z_n\|\rho(T_n)$. By
+Lemma~\ref{lem:const-vec}, $\rho(T_n)\to_p 0$, and Slutsky's theorem for the continuous map $(z,u)\mapsto g'(z) + \|z\|u$
+gives the limit. The Gaussian case is Lemma~\ref{lem:gaussian-linear}.
+\end{proof}

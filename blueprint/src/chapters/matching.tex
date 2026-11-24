@@ -108,3 +108,108 @@ Let $c$ be the highest man not matched assortatively and $j$ the man matched to 
 $j$ and $c$ weakly raises surplus by increasing differences and fixes one more man. Induct on the number of moved
 men.
 \end{proof}
+
+
+\section{The Boston mechanism}
+\label{sec:boston}
+
+\begin{theorem}[Boston is manipulable and unstable; Abdulkadiroğlu--Sönmez 2003]
+\label{thm:boston}
+\lean{Econ.bostonRound, Econ.boston, Econ.exTruePref, Econ.exPrio, Econ.exManipPref, Econ.boston_manipulable, Econ.boston_not_stable}
+\leanok
+In the immediate-acceptance mechanism, in round $k$ every unassigned student applies to her $k$-th listed school,
+which admits its highest-priority applicant if its seat is free. In a three-student example a student obtains a
+strictly better school by ranking her second choice first, and the truthful outcome has justified envy.
+\end{theorem}
+\begin{proof}
+\leanok
+Direct computation (\texttt{decide}).
+\end{proof}
+
+\section{The housing market and top trading cycles}
+\label{sec:housing-market}
+
+\begin{definition}[TTC allocation, strict core]
+\label{def:ttc}
+\lean{Econ.IsTTC, Econ.WeaklyBlocks, Econ.InStrictCore}
+\leanok
+Each agent owns one house and has strict preferences over houses; an allocation is a permutation $\sigma$. It is a
+top trading cycles allocation if there is a stage function $r$ with $r(\sigma(i)) = r(i)$ such that each $i$
+receives her favourite house among owners of stage at least $r(i)$. A coalition weakly blocks $\sigma$ if it can
+reallocate its own houses so that every member is weakly and some member strictly better off; the strict core is
+the set of allocations no coalition weakly blocks.
+\end{definition}
+
+\begin{lemma}[Cycles]
+\label{lem:exists-cycle}
+\lean{Econ.exists_cycle, Econ.perm_image_eq_of_mapsTo}
+\leanok
+A self-map of a nonempty finite invariant set has a cycle: a nonempty invariant subset on which it is injective.
+\end{lemma}
+\begin{proof}
+\leanok
+By pigeonhole some iterate repeats, $f^a(i_0) = f^b(i_0)$ with $a < b$; the orbit of $p = f^a(i_0)$ has period
+$d = b - a$, and $f^{d-1}$ inverts $f$ on it.
+\end{proof}
+
+\begin{theorem}[Roth--Postlewaite 1977; cf. Shapley--Scarf 1974]
+\label{thm:ttc}
+\lean{Econ.ttc_exists_on, Econ.ttc_exists, Econ.ttc_in_strictCore, Econ.strictCore_eq_ttc, Econ.ttc_unique, Econ.strictCore_nonempty}
+\leanok
+\uses{def:ttc, lem:exists-cycle}
+With strict preferences a TTC allocation exists, it is in the strict core, and every strict-core allocation equals
+it. Hence the strict core is a single allocation.
+\end{theorem}
+\begin{proof}
+\leanok
+Existence: remove a cycle of the ``point to your favourite remaining house'' map, recurse on the rest, and give the
+removed cycle stage $0$. Core: by strong induction on the stage, a blocking coalition's members of stage $<k$ keep
+their TTC houses; so the reallocation maps those members onto themselves, and a stage-$k$ member must receive a house
+of stage $\ge k$, which she weakly prefers her TTC house to; with strict preferences nobody gains. Uniqueness: if a
+core allocation $\pi$ agrees with TTC below stage $k$ but differs at stage $k$, the coalition of stages $\le k$ blocks
+it with the TTC allocation.
+\end{proof}
+
+\begin{theorem}[TTC is strategy-proof and efficient; Roth 1982]
+\label{thm:ttc-strategyproof}
+\lean{Econ.strictCore_agree_below, Econ.ttc_strategyproof, Econ.ttc_pareto}
+\leanok
+\uses{thm:ttc}
+With strict preferences, no agent obtains a strictly better house (by her true preferences) by reporting any other
+strict ranking, and the TTC allocation is Pareto efficient.
+\end{theorem}
+\begin{proof}
+\leanok
+Agents trading before $i$'s stage keep their TTC houses in the strict core of any profile that agrees with theirs
+(the induction of Theorem~\ref{thm:ttc}, using that the stage-$\le k$ coalition would otherwise block). So under a
+misreport those houses are gone, and $i$ receives a house of stage at least hers, which she weakly prefers her TTC
+house to. Efficiency is the core property for the grand coalition.
+\end{proof}
+
+\section{Matching with contracts}
+\label{sec:contracts}
+
+\begin{definition}[Choice functions, substitutes, IRC, stability]
+\label{def:hm-stable}
+\lean{Econ.ChoiceFn, Econ.ChoiceFn.R, Econ.ChoiceFn.Substitutes, Econ.ChoiceFn.IRC, Econ.IsStableAlloc, Econ.hmMap}
+\leanok
+Each side chooses $C(Y) \subseteq Y$ from offered contracts and rejects $R(Y) = Y \setminus C(Y)$. Substitutes: $R$ is
+monotone. IRC: $C(Z) \subseteq Y \subseteq Z$ implies $C(Y) = C(Z)$. $Y$ is stable if both sides choose all of $Y$ and
+no nonempty set of new contracts is chosen by both sides from $Y \cup Z$.
+\end{definition}
+
+\begin{theorem}[Hatfield--Milgrom 2005, Theorems 1 and 3]
+\label{thm:hatfield-milgrom}
+\lean{Econ.hm_fixedPoint_stable, Econ.hmOrderHom, Econ.stable_exists, Econ.ChoiceFn.top, Econ.ChoiceFn.all, Econ.choiceFn_top_spec}
+\leanok
+\uses{def:hm-stable}
+If $(X_D, X_H) = (X \setminus R_H(X_H), X \setminus R_D(X_D))$ then $X_D \cap X_H$ is stable (with IRC). Under substitutes
+the map is isotone in $(X_D, X_H)$ ordered by $(\subseteq, \supseteq)$, so by Tarski a fixed point, and hence a stable
+allocation, exists.
+\end{theorem}
+\begin{proof}
+\leanok
+At a fixed point doctors choose $Y = X_D \cap X_H$ from $X_D$ and hospitals from $X_H$; IRC gives individual
+rationality. A blocking contract $z$ lies in $X_D \setminus X_H$ or $X_H \setminus X_D$; in the first case doctors reject
+it from $X_D$, hence by IRC from $Y \cup (Z \cap X_D)$ and by substitutes from $Y \cup Z$. The other case is symmetric.
+\end{proof}

@@ -1,0 +1,106 @@
+% Lean: EconLean/Macro/PublicFinance/{SaezTopRate,InverseEuler}.lean, EconLean/Macro/Granularity.lean,
+%       EconLean/Finance/RareDisasters.lean
+\chapter{Top Taxes, the Inverse Euler Equation, Granularity and Rare Disasters}
+\label{chap:public_finance_risk}
+
+Sources: Saez (2001); Diamond--Saez (2011); Piketty--Saez (2013); Rogerson (1985); Golosov--Kocherlakota--Tsyvinski (2003);
+Kocherlakota, \emph{The New Dynamic Public Finance}; Gabaix (2011); Rietz (1988); Barro (2006).
+
+\section{The optimal top income tax rate}
+
+\begin{definition}[Top-tax problem]
+\label{def:saez}
+\lean{Econ.Saez.Params, Econ.Saez.Params.zbar, Econ.Saez.Params.dSW, Econ.Saez.Params.topRate, Econ.Saez.Params.welfare}
+\leanok
+Incomes above $z^*>0$ are Pareto with tail $a>1$, mean $\bar z=az^*/(a-1)$; $e>0$ is the elasticity of top incomes with respect
+to $1-\tau$ and $\bar g\in[0,1)$ the welfare weight. $dSW(\tau)=(1-\bar g)(\bar z-z^*)-e\bar z\tau/(1-\tau)$,
+$\tau^*=(1-\bar g)/(1-\bar g+ae)$ and $W(\tau)=(1-\bar g)(\bar z-z^*)\tau+e\bar z(\tau+\log(1-\tau))$.
+\end{definition}
+
+\begin{theorem}[The Saez formula]
+\label{thm:saez}
+\lean{Econ.Saez.mean_pareto, Econ.Saez.Params.zbar_eq_integral, Econ.Saez.Params.zbar_sub, Econ.Saez.Params.zbar_pos, Econ.Saez.Params.den_pos, Econ.Saez.Params.topRate_mem, Econ.Saez.Params.dSW_scaled, Econ.Saez.Params.scale_pos, Econ.Saez.Params.dSW_eq_zero_iff, Econ.Saez.Params.dSW_pos_iff, Econ.Saez.Params.revenue_max, Econ.Saez.Params.topRate_anti_e, Econ.Saez.Params.topRate_anti_a, Econ.Saez.Params.welfare_hasDerivAt, Econ.Saez.Params.welfare_hasDerivAt_dSW, Econ.Saez.Params.hasDerivAt_welfare, Econ.Saez.Params.topRate_isMaxOn}
+\leanok
+\uses{def:saez}
+If mean top income $Z$ has $Z'=-eZ/(1-\tau)$ and top taxpayers' money-metric utility has $V'=-(Z-z^*)$ (envelope theorem),
+then $\tau(Z-z^*)+\bar gV$ has derivative $(1-\bar g)(Z-z^*)-eZ\tau/(1-\tau)$, which equals $dSW(\tau)$ where $Z=\bar z$.
+On $[0,1)$, $dSW(\tau)>0$ iff $\tau<\tau^*$ and $dSW(\tau)=0$ iff $\tau=\tau^*$; hence $\tau^*\in(0,1)$ maximizes $W$ on
+$[0,1)$. With $\bar g=0$, $\tau^*=1/(1+ae)$; $\tau^*$ falls with $e$ and with $a$.
+\end{theorem}
+\begin{proof}
+\leanok
+Product rule for the derivative. Since $\bar z-z^*=\bar z/a$, $dSW(\tau)\cdot(1-\tau)a/\bar z=(1-\bar g)-\tau(1-\bar g+ae)$ with
+a positive factor. $W'=dSW$, so $W$ is monotone on $[0,\tau^*]$ and antitone on $[\tau^*,1)$ by the mean value theorem.
+\end{proof}
+
+\section{The inverse Euler equation}
+
+\begin{definition}[Utility perturbation]
+\label{def:inverse_euler}
+\lean{Econ.InverseEuler.perturbCost}
+\leanok
+With $h=u^{-1}$, lowering today's utility by $\Delta$ and raising every state's utility tomorrow by $\Delta/\beta$ costs
+$\Phi(\Delta)=h(v_0-\Delta)+R^{-1}\sum_s\pi_sh(v_s+\Delta/\beta)$.
+\end{definition}
+
+\begin{theorem}[Inverse Euler equation and savings wedge]
+\label{thm:inverse_euler}
+\lean{Econ.InverseEuler.utility_neutral, Econ.InverseEuler.incentive_neutral, Econ.InverseEuler.inverse_euler, Econ.InverseEuler.mean_mul_mean_inv_sub, Econ.InverseEuler.one_le_mean_mul_mean_inv, Econ.InverseEuler.one_lt_mean_mul_mean_inv, Econ.InverseEuler.savings_wedge, Econ.InverseEuler.inverse_euler_wedge}
+\leanok
+\uses{def:inverse_euler}
+With $\sum\pi=1$ the perturbation leaves lifetime utility and all utility differences across states unchanged. If $\Delta=0$
+minimizes $\Phi$ locally, then $h'(v_0)=(\beta R)^{-1}\sum\pi_sh'(v_s)$, i.e.\ $1/u'(c_0)=(\beta R)^{-1}E[1/u'(c_1)]$. Then
+$u'(c_0)\le\beta RE[u'(c_1)]$, strictly if marginal utility is not constant across positive-probability states.
+\end{theorem}
+\begin{proof}
+\leanok
+$\Phi'(0)=-h'(v_0)+(\beta R)^{-1}\sum\pi_sh'(v_s)=0$. For the wedge,
+$(\sum\pi x)(\sum\pi/x)-1=\tfrac12\sum_{i,j}\pi_i\pi_j(x_i-x_j)^2/(x_ix_j)\ge0$.
+\end{proof}
+
+\section{Granular fluctuations}
+
+\begin{definition}[Aggregate growth and Zipf shares]
+\label{def:granular}
+\lean{Econ.Granular.agg, Econ.Granular.zipf}
+\leanok
+GDP growth is $\sum_is_i\varepsilon_i$. Zipf shares are $s_i=(1/i)/H_N$ with $H_N$ the harmonic number.
+\end{definition}
+
+\begin{theorem}[Granular volatility]
+\label{thm:granular}
+\lean{Econ.Granular.E_agg, Econ.Granular.var_agg, Econ.Granular.herfindahl_ge, Econ.Granular.herfindahl_equal, Econ.Granular.granular_bound, Econ.Granular.var_equal, Econ.Granular.harmonic_eq_sum, Econ.Granular.harmonic_pos, Econ.Granular.zipf_sum, Econ.Granular.zipf_herfindahl, Econ.Granular.var_zipf_ge}
+\leanok
+\uses{def:granular, def:capm}
+With mean-zero uncorrelated shocks of variance $\sigma^2$, $\operatorname{Var}=\sigma^2\sum s_i^2\ge\sigma^2s_k^2$ for every $k$, and
+$\sum s_i^2\ge1/N$. Equal shares give $\sigma^2/N$; Zipf shares give $\operatorname{Var}\ge\sigma^2/(1+\log N)^2$.
+\end{theorem}
+\begin{proof}
+\leanok
+Expand the square; cross terms vanish. Cauchy--Schwarz for $1/N$. For Zipf, keep the largest share $1/H_N$ and use
+$H_N\le1+\log N$.
+\end{proof}
+
+\section{Rare disasters}
+
+\begin{definition}[Disaster economy]
+\label{def:disasters}
+\lean{Econ.Disasters.Params, Econ.Disasters.Params.G₁, Econ.Disasters.Params.G₂, Econ.Disasters.Params.E, Econ.Disasters.Params.equityPrice, Econ.Disasters.Params.Rf, Econ.Disasters.Params.ERe}
+\leanok
+Growth is $g$ with probability $1-p$ and $(1-b)g$ with probability $p$; the SDF is $\beta G^{-\gamma}$; $R_f=1/E[m]$ and equity
+is a claim to $G$ with expected return $E[G]/E[mG]$.
+\end{definition}
+
+\begin{theorem}[Disasters and the equity premium]
+\label{thm:disasters}
+\lean{Econ.Disasters.Params.G₂_pos, Econ.Disasters.Params.G₂_lt, Econ.Disasters.Params.rpow_mul_self, Econ.Disasters.Params.E_pos, Econ.Disasters.Params.premium_ratio_eq, Econ.Disasters.Params.cov_two_point, Econ.Disasters.Params.premium_pos, Econ.Disasters.Params.premium_zero, Econ.Disasters.Params.E_mu_strictMono_p, Econ.Disasters.Params.riskfree_anti_p}
+\leanok
+\uses{def:disasters}
+$E[R_e]/R_f=E[G]E[G^{-\gamma}]/E[G^{1-\gamma}]$. With $0<p<1$ and $\gamma>0$ the premium is strictly positive; with $p=0$ it
+is zero. Holding $b,g,\gamma,\beta$ fixed, a higher $p$ strictly lowers $R_f$.
+\end{theorem}
+\begin{proof}
+\leanok
+$E[G^{1-\gamma}]-E[G]E[G^{-\gamma}]=p(1-p)(G_1-G_2)(G_1^{-\gamma}-G_2^{-\gamma})<0$. A higher $p$ moves weight to the state with
+larger $G^{-\gamma}$.
+\end{proof}

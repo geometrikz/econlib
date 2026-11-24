@@ -555,3 +555,145 @@ since $A \le \tfrac{29}{160}+\tfrac18 \le (14/25)^2$; and $\tfrac{9}{10}\cdot\tf
 Theorem~\ref{thm:aiyagari_ge} applies; $K = L\,k(r) > 0$. Note $\beta(1+r_{hi}) > 1$, so the asset cap is what keeps
 saving bounded at $r_{hi}$.
 \end{proof}
+
+\section{An endogenous asset bound}
+\label{sec:asset_bound}
+
+Throughout: a savings problem as in Definition~\ref{def:stoch_savings} with cash on hand $h(a,z) = Ra + y(z)$,
+$R>1$, $0\le y(z)\le\bar y$, i.i.d.\ shocks (all rows of $Q$ equal), optimal policy $g$ (unique, continuous) and
+consumption $c(a,z) = h(a,z) - g(a,z)$.
+
+\begin{lemma}[Concave swap and antitone increments]
+\label{lem:concave_swap}
+\lean{Econ.ConcaveOn.add_le_add_of_between, Econ.ConcaveOn.sub_le_sub_of_le}
+\leanok
+If $f$ is concave, $p\le q_1\le r$ and $q_1+q_2 = p+r$, then $f(p)+f(r)\le f(q_1)+f(q_2)$. Hence for $p\le q$ and
+$e\ge0$: $f(q)-f(q-e)\le f(p)-f(p-e)$.
+\end{lemma}
+\begin{proof}
+\leanok
+If $p<r$, write $q_1 = \lambda p + (1-\lambda) r$ and $q_2 = (1-\lambda)p + \lambda r$ and add the two concavity
+inequalities. The second claim is the first with points $p-e\le p\le q$ and $q-e$.
+\end{proof}
+
+\begin{definition}[Euler gap]
+\label{def:euler_gap}
+\lean{Econ.EulerGap}
+\leanok
+$u$ has the Euler gap at $c$ with income gap $y$ (given $\beta$, $R$) if for every $\varepsilon>0$ there is
+$d\in(0,\varepsilon]$ with $Rd\le c-y$ and $\beta[u(c-y) - u(c-y-Rd)] < u(c+d) - u(c)$: a difference form of
+$\beta R\,u'(c-y) < u'(c)$.
+\end{definition}
+
+\begin{lemma}[Optimality tools]
+\label{lem:asset_bound_tools}
+\lean{Econ.StochSavings.cons, Econ.StochSavings.obj, Econ.StochSavings.feasible, Econ.StochSavings.cons_nonneg,
+  Econ.StochSavings.obj_policy, Econ.StochSavings.obj_le, Econ.StochSavings.eq_of_swap,
+  Econ.StochSavings.sum_eq_of_row, Econ.StochSavings.extendS_coe, Econ.StochSavings.value_concaveOn,
+  Econ.StochSavings.value_sub_le, Econ.StochSavings.dev_le}
+\leanok
+\uses{def:stoch_savings, thm:stoch_value_concave}
+(i) If alternative feasible choices at two states do at least as well in sum as the optimal ones, the first
+alternative is optimal, hence equals the policy. (ii) Envelope: lowering cash on hand by $D\le c$ lowers the value by
+at most $u(c)-u(c-D)$. (iii) Deviation: saving $y\le g(s)$ raises utility today by at most
+$\beta\sum_{z'}Q(z,z')[V(g(s),z') - V(y,z')]$.
+\end{lemma}
+\begin{proof}
+\leanok
+(i) From the Bellman equation the alternative attains $V$, so it lies in the (singleton) argmax. (ii) From the
+lower-cash state, keep the same saving and consume $D$ less. (iii) Compare the Bellman equation at $g(s)$ with
+feasibility of $y$.
+\end{proof}
+
+\begin{theorem}[Monotone savings and consumption]
+\label{thm:policy_cons_mono}
+\lean{Econ.StochSavings.policy_mono, Econ.StochSavings.cons_mono}
+\leanok
+\uses{lem:asset_bound_tools, lem:concave_swap}
+For two states with the same transition row and $h(s_1)\le h(s_2)$: $g(s_1)\le g(s_2)$ and $c(s_1)\le c(s_2)$.
+\end{theorem}
+\begin{proof}
+\leanok
+Savings: if $g(s_2)<g(s_1)$, swap the choices; concavity of $u$ (Lemma~\ref{lem:concave_swap}) makes the swap
+weakly better, so by Lemma~\ref{lem:asset_bound_tools}(i) $g(s_2) = g(s_1)$. Consumption: if $c_2<c_1$, choose
+$h_1 - c_2$ at $s_1$ and $h_2-c_1$ at $s_2$ (consumption swapped); utility today is unchanged and concavity of
+$W(y) = \sum_{z'}Q(\cdot,z')V(y,z')$ makes the continuation weakly better, a contradiction as before.
+\end{proof}
+
+\begin{lemma}[Euler inequality and its two uses]
+\label{lem:asset_bound_steps}
+\lean{Econ.StochSavings.euler_ineq, Econ.StochSavings.cons_le_of_le_policy, Econ.StochSavings.cons_pos}
+\leanok
+\uses{lem:asset_bound_tools, thm:policy_cons_mono, def:euler_gap}
+(a) If tomorrow's consumption is at least $p\ge Rd$ in every shock and $d\le g(s)$, then
+$u(c+d) - u(c) \le \beta[u(p) - u(p-Rd)]$. (b) If $a\ge \bar y/R$, $a>0$, $g(a,z)\ge a$ and the Euler gap with income
+gap $\bar y$ holds above $C^*$, then $c(a,z)\le C^*$. (c) Under the Inada condition
+($u(d)-u(0) > Kd$ for small $d$, any $K$), $g(s)>0$ implies $c(s)>0$.
+\end{lemma}
+\begin{proof}
+\leanok
+(a) Save $d$ less today and consume $Rd$ less tomorrow: Lemma~\ref{lem:asset_bound_tools}(ii),(iii) and antitone
+increments of $u$. (b) The state $(a-\bar y/R, z)$ has cash $h - \bar y$, so by monotone savings its consumption is
+at least $c-\bar y$; tomorrow's states have cash at least $Ra\ge h-\bar y$, so by monotone consumption (i.i.d.\
+shocks) consumption tomorrow is at least $c-\bar y$. If $c>C^*$, (a) with $p = c-\bar y$ contradicts the Euler gap.
+(c) If $c=0$ and $g = y_1>0$, saving $d\le y_1/4$ less gains $u(d)-u(0)$ and loses at most $Kd$ by the chord-slope
+bound for the concave $V(\cdot,z')$ on $[0,y_1/2]$ (\texttt{ConcaveOn.slope\_anti\_adjacent}).
+\end{proof}
+
+\begin{theorem}[Endogenous asset bound; Schechtman--Escudero, Aiyagari]
+\label{thm:asset_bound}
+\lean{Econ.StochSavings.policy_lt_self, Econ.StochSavings.policy_le_max, Econ.StochSavings.policy_lt_kbar,
+  Econ.StochSavings.measure_gt_eq_zero}
+\leanok
+\uses{lem:asset_bound_steps, thm:policy_cons_mono, thm:stoch_savings_stationary}
+Assume the Inada condition, the Euler gap with gap $0$ for all $c>0$ and with gap $\bar y$ for $c>C^*$. If
+$A>0$, $A\ge \bar y/R$ and $(R-1)A\ge C^*$, then $g(a,z)<a$ whenever $a\ge A$; $g(a,z)\le\max(A,a)$; if $A<\bar k$
+then $g<\bar k$ everywhere (the cap is slack); and every stationary distribution of the policy kernel gives
+$\{a>A\}$ measure zero. The bound $A$ does not depend on $\bar k$.
+\end{theorem}
+\begin{proof}
+\leanok
+Suppose the closed set $N = \{(a,z): a\ge A,\ g(a,z)\ge a\}$ is nonempty and pick $s_0\in N$ minimizing $c$. By
+Lemma~\ref{lem:asset_bound_steps}(b),(c), $0<c_0\le C^*$. Tomorrow, from $a_1 = g(s_0)\ge A$: if $(a_1,z')\in N$ its
+consumption is $\ge c_0$ by minimality; otherwise $g(a_1,z')<a_1$ and consumption exceeds $(R-1)a_1\ge C^*\ge c_0$.
+Lemma~\ref{lem:asset_bound_steps}(a) with $p = c_0$ contradicts the Euler gap at gap $0$. Below $A$, monotone
+savings give $g(a,z)\le g(A,z)<A$. For stationary $\pi$, $\varphi(a) = \max(a-A,0)$ satisfies
+$\int\varphi\,d\pi = \int\varphi\circ g\,d\pi$ while $\varphi(g)\le\varphi(a)$, strictly when $a>A$.
+\end{proof}
+
+\begin{lemma}[Square-root utility]
+\label{lem:sqrt_euler_gap}
+\lean{Econ.sqrt_inada, Econ.sqrt_eulerGap}
+\leanok
+\uses{def:euler_gap}
+$u=\sqrt{\cdot}$ satisfies the Inada condition, and if $0<\beta R<1$ and $y<(1-(\beta R)^2)c$ it has the Euler gap at
+$c$ with income gap $y$. So $C^* = \bar y/(1-(\beta R)^2)$ works, and gap $0$ holds for every $c>0$.
+\end{lemma}
+\begin{proof}
+\leanok
+Inada: $d = t^2$ with $t$ small. Euler gap: at $d=0$, $\sqrt{c-y}+\sqrt{c-y} > \beta R(\sqrt c+\sqrt c)$ since
+$c-y>(\beta R)^2c$; by continuity this persists for small $d>0$, and with
+$\sqrt{c+d}-\sqrt c = d/(\sqrt{c+d}+\sqrt c)$ and the analogous identity it gives the gap.
+\end{proof}
+
+\begin{theorem}[Examples with income risk where the cap is slack]
+\label{thm:asset_bound_examples}
+\lean{Econ.StochSavings.riskyHousehold, Econ.StochSavings.riskyHousehold_assetBound,
+  Econ.AiyagariEconomy.household_cap_slack, Econ.AiyagariEconomy.riskyEconomy,
+  Econ.AiyagariEconomy.risky_cap_slack}
+\leanok
+\uses{thm:asset_bound, lem:sqrt_euler_gap, def:aiyagari_economy}
+(1) $u=\sqrt c$, $R = 11/10$, $\beta=1/2$, i.i.d.\ income $y\in\{0,1\}$, $\bar k=20$: with $C^*=3/2$, $A = 15$, assets
+above $15$ fall, $g<20$, a stationary distribution exists and every stationary distribution lives on $[0,15]$. (2) For an Aiyagari economy at $r>0$ the same
+holds with $\bar y = w(r)\bar e$ and $(1+r)$ in place of $R$. In the economy with $e\in\{0,2\}$ i.i.d., $\beta=1/2$,
+$\alpha=1/2$, $\delta=1/10$, $\bar k = 50$, at $r = 1/10$: $w = 5/4$, $\bar y = 5/2$, $C^* = 4$, $A = 40<50$.
+\end{theorem}
+\begin{proof}
+\leanok
+Instantiate Theorem~\ref{thm:asset_bound} with Lemma~\ref{lem:sqrt_euler_gap}: $1 < \tfrac{279}{400}\cdot\tfrac32$ and
+$\tfrac52<\tfrac{279}{400}\cdot4$; $(R-1)A = C^*$ in both cases.
+\end{proof}
+
+\noindent\emph{Not covered.} $r\le0$; persistent (Markov) income; and a general-equilibrium witness in which both
+boundary conditions of Theorem~\ref{thm:aiyagari_ge} are derived \emph{and} the cap is slack (this needs the
+divergence of supply as $\beta(1+r)\uparrow1$).

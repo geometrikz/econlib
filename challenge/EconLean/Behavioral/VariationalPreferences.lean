@@ -63,7 +63,8 @@ theorem exists_eq_dot_add_cost (hI : IsVariationalFunctional I) (f : S → ℝ) 
 
 omit [DecidableEq S] in
 
-theorem cost_nonneg (hI : IsVariationalFunctional I) {p : S → ℝ} (hp : InDom I p) : 0 ≤ cost I p := by
+theorem cost_nonneg (hI : IsVariationalFunctional I) {p : S → ℝ} (hp : InDom I p) :
+    0 ≤ cost I p := by
   sorry
 
 theorem exists_cost_eq_zero (hI : IsVariationalFunctional I) :

@@ -385,9 +385,8 @@ $q \cdot z^l(p) > 0$.
 \uses{lem:debreu_pieces, lem:debreu_warp}
 Let $z$ satisfy Walras' law on $D \subseteq \Delta^\circ$ with $z_l(p) + c\,p_l > 0$ on $D$ for some $c$ (in particular if $z$
 is bounded below by $-s$ and all prices in $D$ are at least $\varepsilon > 0$, taking $c = \max(s,0)/\varepsilon$). Then $z$
-is a sum of $L$ functions, each satisfying Walras' law and the weak axiom on $D$. Not formalized: that each piece is the
-excess demand of a rational consumer (Debreu's second step); WARP is necessary for that, and sufficient
-for two goods, but not for $L \ge 3$.
+is a sum of $L$ functions, each satisfying Walras' law and the weak axiom on $D$. That each piece is the excess demand
+of a rational consumer (Debreu's second step) is Theorem~\ref{thm:smd_consumers} below.
 \end{theorem}
 \begin{proof}
 \leanok
@@ -412,4 +411,140 @@ Walras' law: $p_0 f - p_1 \cdot p_0 f/p_1 = 0$. $D$ is convex. If $z$ satisfied 
 (Theorem~\ref{thm:warp_convex}), but $f(\frac12) = -\frac1{16} \ne 0$. Weights with $c = 16$: $f(p_0) + 16 p_0 \ge -\frac1{16} + 2$,
 and $-p_0 f(p_0)/p_1 + 16 p_1 > 0$ because $p_0 f(p_0) \le \frac3{16} < \frac14 \le 16 p_1^2$. Apply
 Theorem~\ref{thm:debreu_decomposition}.
+\end{proof}
+
+\subsection{Step 2: each piece is a rational consumer}
+\label{sec:smd_consumers}
+
+Fix a good $l$, a compact set $K \subseteq \Delta^\circ$ of prices, and a weight $a$ continuous and positive on $K$. Write
+$\|p\| = \sqrt{p\cdot p}$, $V(q) = q_l / \|q\|$ (the cosine of $q$ with the $l$-th axis) and
+$y(q) = a(q)\,(e_l - (q_l/\|q\|^2)\,q)$, so Debreu's piece $z^l$ is $y$ with $a(q) = z_l(q) + c\,q_l$.
+
+\begin{definition}[Level sets and utility]
+\label{def:piece_utility}
+\lean{Econ.dirCos, Econ.weightedPiece, Econ.debreuPiece_eq_weightedPiece, Econ.pieceLevelSet, Econ.pieceUtility}
+\leanok
+\uses{def:debreu_piece}
+For $\theta \in \mathbb{R}$ let $C_\theta = \operatorname{conv}\{\,y(q) : q \in K,\ V(q) \le \theta\,\}$, and for a net trade
+$x$ let $u(x) = -\inf\bigl(\{2\} \cup \{\theta : x \in C_\theta\}\bigr)$.
+\end{definition}
+
+\begin{lemma}[Key identity]
+\label{lem:piece_identity}
+\lean{Econ.cost_weightedPiece, Econ.piece_identity, Econ.cs_gap_pos, Econ.cs_gap_nonneg, Econ.dirCos_pos,
+  Econ.dirCos_le_one, Econ.cost_comm}
+\leanok
+\uses{def:piece_utility, lem:sq_cost_lt}
+For positive $p, q$: $p \cdot y(q) = a(q)\,\Phi(p,q)$ with
+\[
+  \Phi(p,q) = p_l - \frac{q_l\,(p\cdot q)}{\|q\|^2}
+  = \|p\|\,\bigl(V(p) - V(q)\bigr) + \frac{q_l}{\|q\|^2}\bigl(\|p\|\,\|q\| - p\cdot q\bigr).
+\]
+On $\Delta^\circ$ the last bracket is $\ge 0$, and $> 0$ for $q \ne p$. Also $0 < V(q) \le 1$.
+\end{lemma}
+\begin{proof}
+\leanok
+Expand $y(q)$ and use $p \cdot e_l = p_l$; the identity is algebra after writing $\|q\|^2 = \sqrt{q\cdot q}^{\,2}$. The bracket is
+positive by strict Cauchy--Schwarz (Lemma~\ref{lem:sq_cost_lt}): $(p\cdot q)^2 < \|p\|^2\|q\|^2$ and $p \cdot q > 0$, so
+$p\cdot q < \|p\|\|q\|$. $V(q) \le 1$ because $q_l^2 \le \sum_i q_i^2$.
+\end{proof}
+
+\begin{lemma}[Strict separation below the level of $p$]
+\label{lem:piece_sep}
+\lean{Econ.exists_comb_of_mem_pieceLevelSet, Econ.cost_comb, Econ.wsum_pos, Econ.cost_pos_of_mem_pieceLevelSet}
+\leanok
+\uses{lem:piece_identity}
+If $p \in K$ and $\theta < V(p)$, every $x \in C_\theta$ has $p \cdot x > 0$.
+\end{lemma}
+\begin{proof}
+\leanok
+Write $x = \sum_i w_i\, y(q_i)$ with $w_i \ge 0$, $\sum w_i = 1$, $V(q_i) \le \theta$. By Lemma~\ref{lem:piece_identity},
+$\Phi(p, q_i) \ge \|p\|(V(p) - \theta) > 0$, so $p \cdot x = \sum_i w_i\, a(q_i)\,\Phi(p,q_i) > 0$ (some $w_i > 0$).
+\end{proof}
+
+\begin{lemma}[Quantitative uniqueness]
+\label{lem:piece_gap}
+\lean{Econ.exists_gap, Econ.continuousOn_weightedPiece}
+\leanok
+\uses{lem:piece_identity}
+Let $p \in K$ and $x \ne y(p)$ with $p \cdot x \le 0$. There is $\delta > 0$ such that $x \notin C_\theta$ for all
+$\theta < V(p) + \delta$.
+\end{lemma}
+\begin{proof}
+\leanok
+Let $\eta = \|x - y(p)\|/2$ and $F = \{q \in K : \|y(q) - y(p)\| \ge \eta\}$, compact and not containing $p$. Let
+$g(q) = \frac{q_l}{\|q\|^2}(\|p\|\|q\| - p\cdot q)$; by compactness $g \ge \mu > 0$ on $F$, $m \le a \le M$ on $K$ with $m > 0$,
+and $\|y(q) - y(p)\| \le B$ on $K$. Put $D = 2BM\|p\|/(m\mu)$ and $\delta = \min\bigl(\mu/(2\|p\|),\, \eta/(D+1)\bigr)$.
+
+Suppose $x = \sum_i w_i y(q_i) \in C_\theta$ with $\theta < V(p) + \delta$. By the identity, $\Phi_i := \Phi(p,q_i) > -\|p\|\delta + g(q_i)$.
+Let $r_i = a(q_i)\Phi_i + M\|p\|\delta \ge 0$. If $q_i \in F$ then $\Phi_i \ge \mu/2$, so $r_i \ge m\mu/2$; hence for every $i$,
+$\|y(q_i) - y(p)\| \le \eta + \frac{2B}{m\mu} r_i$. Since $\sum_i w_i r_i = p \cdot x + M\|p\|\delta \le M\|p\|\delta$,
+\[
+  \|x - y(p)\| \le \sum_i w_i \|y(q_i) - y(p)\| \le \eta + D\delta < 2\eta = \|x - y(p)\|,
+\]
+a contradiction.
+\end{proof}
+
+\begin{theorem}[The piece is a convex consumer's unique choice]
+\label{thm:piece_utility}
+\lean{Econ.bddBelow_levels, Econ.pieceLevelSet_mono, Econ.quasiconcaveOn_pieceUtility, Econ.pieceUtility_self,
+  Econ.pieceUtility_lt}
+\leanok
+\uses{lem:piece_sep, lem:piece_gap}
+$u$ is quasiconcave, $u(y(p)) = -V(p)$ for $p \in K$, and $u(x) < u(y(p))$ for every $x \ne y(p)$ with $p\cdot x \le 0$.
+\end{theorem}
+\begin{proof}
+\leanok
+The level sets of $\theta$ are bounded below by $0$ (as $V > 0$) and increase with $\theta$. Quasiconcavity: if
+$\inf\Theta(x_1), \inf\Theta(x_2) \le t$ then for each $\varepsilon > 0$ pick $\theta_j < t + \varepsilon$ in the two sets; either one is
+the floor $2$, or $x_1, x_2 \in C_{\max\theta_j}$, which is convex, so the mixture is in it. $u(y(p)) = -V(p)$: $y(p) \in C_{V(p)}$,
+and $y(p) \notin C_\theta$ for $\theta < V(p)$ by Lemma~\ref{lem:piece_sep} since $p \cdot y(p) = 0$. Strictness:
+Lemma~\ref{lem:piece_gap} gives $\inf\Theta(x) \ge V(p) + \min(\delta, 1)$ (the floor $2 \ge V(p) + 1$).
+\end{proof}
+
+\begin{theorem}[A rational consumer for each piece]
+\label{thm:consumer_piece}
+\lean{Econ.exists_consumer_weightedPiece}
+\leanok
+\uses{thm:piece_utility}
+There are a quasiconcave $U$ and an endowment $\omega \gg 0$ such that for all $p \in K$ the Walrasian demand of $U$ at
+income $p \cdot \omega$ is exactly $\{\omega + y(p)\}$.
+\end{theorem}
+\begin{proof}
+\leanok
+Let $b$ bound $\|y\|$ on $K$, $\omega = \max(b, 1)\mathbf{1}$, and $U(x) = u(x - \omega)$ (a translate, so quasiconcave). Then
+$\omega + y(p) \ge 0$ and costs exactly $p \cdot \omega$. Any other affordable $x \ge 0$ has $p\cdot(x - \omega) \le 0$ and
+$x - \omega \ne y(p)$, so $U(x) < U(\omega + y(p))$ by Theorem~\ref{thm:piece_utility}.
+\end{proof}
+
+\begin{theorem}[Sonnenschein--Mantel--Debreu, with convex consumers]
+\label{thm:smd_consumers}
+\lean{Econ.sonnenschein_mantel_debreu_quasiconcave}
+\leanok
+\uses{thm:consumer_piece, thm:debreu_decomposition}
+Let $z$ be continuous and satisfy Walras' law on a compact $K \subseteq \Delta^\circ$. Then there are $L$ consumers with
+quasiconcave utilities $U_l$ and endowments $\omega_l \gg 0$ whose Walrasian demands at every $p \in K$ are single bundles
+$x_l(p)$ with $\sum_l (x_l(p) - \omega_l) = z(p)$. Caveat: Debreu's consumers also have continuous, strictly convex, monotone
+preferences. The utilities here provably lack all three ($u = -2$ off the bounded set $C_1$, so they jump and are satiated);
+standard consumers need a different construction (Geanakoplos 1984), which is open.
+\end{theorem}
+\begin{proof}
+\leanok
+$q \mapsto z_l(q)/q_l$ is continuous on the compact $K$, hence $\ge b_l$; with $c = 1 + \sum_l |b_l|$ the weight
+$z_l(q) + c q_l \ge q_l > 0$. Apply Theorem~\ref{thm:consumer_piece} to each Debreu piece and sum
+(Lemma~\ref{lem:debreu_pieces}).
+\end{proof}
+
+\begin{theorem}[A WARP-violating aggregate from two rational consumers]
+\label{thm:zbad_consumers}
+\lean{Econ.SMDExamples.isCompact_DBad, Econ.SMDExamples.continuousOn_zBad,
+  Econ.SMDExamples.zBad_rational_consumers}
+\leanok
+\uses{thm:smd_consumers, thm:zbad_smd}
+The excess demand $z$ of Theorem~\ref{thm:zbad_smd} violates WARP, yet is the aggregate excess demand of two consumers as in
+Theorem~\ref{thm:smd_consumers} on $D$.
+\end{theorem}
+\begin{proof}
+\leanok
+$D$ is closed (an equality and inequalities) and inside $[0,1]^2$, hence compact; $z$ is continuous on $D$ since $p_1 \ge \frac18$.
 \end{proof}

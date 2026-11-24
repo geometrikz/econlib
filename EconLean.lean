@@ -127,6 +127,9 @@ public import EconLean.Econometrics.Asymptotics.GaussianLimits
 public import EconLean.Econometrics.Asymptotics.JTest
 public import EconLean.Econometrics.Structural.BLPContraction
 public import EconLean.Econometrics.GLS
+public import EconLean.Econometrics.TimeSeries.ARMA
+public import EconLean.Econometrics.TimeSeries.Kalman
+public import EconLean.Econometrics.Asymptotics.DeltaMethodVec
 public import EconLean.Macro.Growth.RamseyGlobal
 public import EconLean.Macro.DP.StochasticPlan
 public import EconLean.Macro.DP.InvariantMeasure
@@ -140,9 +143,12 @@ public import EconLean.Audit.Statements.Aiyagari
 public import EconLean.Macro.HA.CDFirm
 public import EconLean.Macro.HA.AiyagariGE
 public import EconLean.Audit.Statements.AiyagariGE
+public import EconLean.Macro.HA.AssetBound
+public import EconLean.Audit.Statements.AssetBound
 public import EconLean.Audit.Statements.HAStochastic
 public import EconLean.Bridges.Aggregation.Tatonnement
 public import EconLean.Bridges.Aggregation.SMD
+public import EconLean.Bridges.Aggregation.SMDConsumer
 public import EconLean.Games.Strategic
 public import EconLean.Games.Potential
 public import EconLean.Games.Supermodular
@@ -178,6 +184,8 @@ public import EconLean.Mechanism.Implementation
 public import EconLean.Matching.StrategyProof
 public import EconLean.Matching.Assortative
 public import EconLean.Matching.Boston
+public import EconLean.Matching.HousingMarket
+public import EconLean.Matching.Contracts
 public import EconLean.Partial.Externalities
 public import EconLean.Partial.PublicGoods
 public import EconLean.Partial.Oligopoly
@@ -188,11 +196,16 @@ public import EconLean.Partial.DiamondParadox
 public import EconLean.SocialChoice.May
 public import EconLean.SocialChoice.MedianVoter
 public import EconLean.Bargaining.Nash
+public import EconLean.Bargaining.Rubinstein
+public import EconLean.Bargaining.RubinsteinGame
 public import EconLean.Cooperative.Shapley
 public import EconLean.Cooperative.Core
+public import EconLean.Cooperative.Assignment
 public import EconLean.Audit.Statements.PartialSocial
 public import EconLean.Audit.Statements.GamesInfoIO
 public import EconLean.Audit.Statements.InfoBatch6
+public import EconLean.Audit.Statements.MatchingBargaining
+public import EconLean.Audit.Statements.Assignment
 public import EconLean.Macro.Consumption.Precautionary
 public import EconLean.Macro.Consumption.PIH
 public import EconLean.Finance.SequentialMarkets
@@ -237,6 +250,11 @@ public import EconLean.Finance.ModiglianiMiller
 public import EconLean.Macro.NK.THANK
 public import EconLean.Macro.Monetary.CashInAdvance
 public import EconLean.Audit.Statements.MacroBatch11
+public import EconLean.Macro.PublicFinance.SaezTopRate
+public import EconLean.Macro.PublicFinance.InverseEuler
+public import EconLean.Macro.Granularity
+public import EconLean.Finance.RareDisasters
+public import EconLean.Audit.Statements.MacroBatch12
 public import EconLean.Behavioral.BeliefRule
 public import EconLean.Behavioral.CognitiveDiscounting
 public import EconLean.Behavioral.DiagnosticExpectations
@@ -271,5 +289,8 @@ public import EconLean.BoundedRationality.KMRChain
 public import EconLean.BoundedRationality.BayesianLearning
 public import EconLean.Behavioral.VariationalPreferences
 public import EconLean.Audit.Statements.BehavioralXI
+public import EconLean.BoundedRationality.Robinson
+public import EconLean.BoundedRationality.PoissonCH
+public import EconLean.Audit.Statements.BehavioralXII
 
 @[expose] public section

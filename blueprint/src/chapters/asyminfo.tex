@@ -218,3 +218,84 @@ the ideal point $\theta + b$ lies between the midpoints of $(y_{i-1}, y_i)$ and 
 $(y_j - x)^2 - (y_i - x)^2 = (y_j - y_i)(y_j + y_i - 2x)$ she prefers $y_i$. Solving $a_N = 1$ gives
 $a_1 = (1 - 2N(N-1)b)/N$, which is positive iff $2N(N-1)b < 1$.
 \end{proof}
+
+
+\section{The informativeness principle}
+\label{sec:informativeness}
+
+\begin{theorem}[Holmström 1979; sufficient-statistic form]
+\label{thm:informativeness}
+\lean{Econ.agentValue, Econ.principalCost, Econ.Implements, Econ.condContract, Econ.agentValue_condContract, Econ.informativeness_principle, Econ.informativeness_strict}
+\leanok
+Contracts specify the agent's utility $\nu(x,y)$ after outcome $x$ and signal $y$, costing the principal
+$\varphi(\nu)$ with $\varphi$ convex on an interval containing the utilities. If $f(x,y \mid a) = g(x \mid a)\,h(y \mid x)$,
+the contract $\bar\nu(x) = \sum_y h(y \mid x)\nu(x,y)$ gives the agent the same expected utility under every action,
+so it implements whatever $\nu$ implements, and costs weakly less under every action; strictly less if $\varphi$ is
+strictly convex and $\nu$ varies with $y$ at an outcome reached with positive probability.
+\end{theorem}
+\begin{proof}
+\leanok
+Sum out $y$ using $\sum_y h(y\mid x) = 1$ for the utilities, and apply (strict) Jensen with weights $h(\cdot \mid x)$
+for the costs, restricting to signals of positive probability in the strict case.
+\end{proof}
+
+\section{Bayes correlated equilibrium}
+\label{sec:bce}
+
+\begin{definition}[BCE, expansions, BNE outcomes]
+\label{def:bce}
+\lean{Econ.IsBCE, Econ.IsExpansion, Econ.playAt, Econ.IsExpansionBNE, Econ.bneOutcome}
+\leanok
+A BCE is a joint law $\nu(\theta, t, a)$ with marginal $\psi(\theta)\pi(t\mid\theta)$ on $(\theta,t)$ such that no
+player told $(t_i, a_i)$ gains by playing $a_i'$. An expansion adds signals $r$ with law $\pi'(r, t\mid\theta)$ whose
+$t$-marginal is $\pi$; a pure strategy profile $\beta_i(t_i, r_i)$ is a BNE if no player gains after any $(t_i, r_i)$.
+\end{definition}
+
+\begin{theorem}[Bergemann--Morris 2016, Theorem 1]
+\label{thm:bce}
+\lean{Econ.sum_bneOutcome_mul, Econ.bneOutcome_isBCE, Econ.obedientExpansion, Econ.isBCE_bneOutcome, Econ.isBCE_iff}
+\leanok
+\uses{def:bce}
+The outcome of every pure-strategy BNE of every expansion is a BCE. Conversely, every BCE is the outcome of the
+obedient BNE of the expansion whose extra signal is the recommended action (a fixed profile at null states). Hence BCE are exactly
+the outcomes that additional information can induce.
+\end{theorem}
+\begin{proof}
+\leanok
+Grouping the obedience sum by the extra signal $r_i$ with $\beta_i(t_i, r_i) = a_i$ writes it as a sum of BNE
+deviation gains, each $\le 0$. Conversely set $\pi' = \nu/\psi$ (a BCE puts no mass on null states) and $\beta_i(t_i, a_i) = a_i$: the BNE condition is
+obedience.
+\end{proof}
+
+\section{Property rights and investment}
+\label{sec:property-rights}
+
+\begin{lemma}[One-dimensional Topkis theorem]
+\label{lem:topkis-1d}
+\lean{Econ.IsInvestmentMax, Econ.monotone_argmax}
+\leanok
+If $F - G$ is nondecreasing, $x$ maximizes $G$ and $y$ maximizes $F$, then $\max(x,y)$ maximizes $F$ and
+$\min(x,y)$ maximizes $G$.
+\end{lemma}
+\begin{proof}
+\leanok
+If $y < x$, add $F(y) \ge F(x)$ to $(F-G)(x) \ge (F-G)(y)$.
+\end{proof}
+
+\begin{theorem}[Hold-up and ownership; Grossman--Hart 1986, Hart--Moore 1990, Hart 1995]
+\label{thm:property-rights}
+\lean{Econ.managerPayoff, Econ.netSurplus, Econ.underinvestment, Econ.ownership_raises_investment, Econ.more_ownership_raises_surplus}
+\leanok
+\uses{lem:topkis-1d}
+With 50:50 Nash bargaining the investing manager gets $(V(i) + v(i) - w)/2 - i$. If investment is
+relationship-specific ($V - v$ nondecreasing on $[0,\infty)$) she invests weakly less than the unique efficient
+level. Owning more assets (raising $v' - v$) weakly raises her investment, and hence, when only her investment
+matters and surplus rises up to the efficient level, weakly raises total surplus. All hypotheses hold jointly for
+$V(i) = 2\log(1+i)$, $v = 0$, $v'(i) = \log(1+i)$: the manager invests $0$ or $\tfrac12$, the efficient level is $1$.
+\end{theorem}
+\begin{proof}
+\leanok
+Both comparisons are instances of the lemma: surplus minus her payoff is $(V - v + w)/2$, and her payoffs under two
+ownership structures differ by $(v' - v)/2$ plus a constant. Specificity under the smaller ownership follows from specificity under the larger one plus $v' - v$
+nondecreasing. Surplus is nondecreasing below the efficient level.
+\end{proof}

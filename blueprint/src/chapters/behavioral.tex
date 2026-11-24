@@ -941,8 +941,7 @@ $p(\theta)p(\theta')/p(\text{class})$ is symmetric within a class.
 \leanok
 Along a fictitious-play path (from date $1$ on, each player best responds to the empirical frequencies of the others'
 past play), if the empirical frequencies converge, the limit is a mixed Nash equilibrium. Always playing a pure Nash
-equilibrium is a fictitious-play path. (Convergence itself, as in Robinson's theorem for zero-sum games, is not
-formalized.)
+equilibrium is a fictitious-play path. Robinson's theorem for zero-sum games is Theorem~\ref{thm:beh-robinson}.
 \end{theorem}
 \begin{proof}
 \leanok
@@ -967,6 +966,43 @@ dominant, as in the stag hunt). The full one-revision chain is treated in Theore
 \leanok
 Linear algebra for the threshold; ceilings separate once $N(1-2p^*)>1$; and the weight on $B$ is
 $p_{AB}/(p_{AB}+p_{BA})\le (C/c)\,\varepsilon^{r_A-r_B}\to0$.
+\end{proof}
+
+\begin{theorem}[Robinson: fictitious play solves zero-sum games]
+\label{thm:beh-robinson}
+\lean{Econ.Robinson.IsSystem, Econ.Robinson.gap, Econ.Robinson.IsSystem.mono, Econ.Robinson.U_bounds, Econ.Robinson.V_bounds, Econ.Robinson.gap_le, Econ.Robinson.eligible_row, Econ.Robinson.eligible_col, Econ.Robinson.U_eq_sum, Econ.Robinson.V_eq_sum, Econ.Robinson.sum_identity, Econ.Robinson.gap_le_of_eligible, Econ.Robinson.Good, Econ.Robinson.sup'_neg, Econ.Robinson.inf'_neg, Econ.Robinson.inf'_add_const, Econ.Robinson.sup'_erase_eq, Econ.Robinson.IsSystem.transpose, Econ.Robinson.gap_transpose, Econ.Robinson.Good.transpose, Econ.Robinson.erase_step, Econ.Robinson.erase_stepJ, Econ.Robinson.eventually_good, Econ.Robinson.rowPay, Econ.Robinson.colPay, Econ.Robinson.IsFPPath, Econ.Robinson.IsFPPath.isSystem, Econ.Robinson.rowFreq, Econ.Robinson.colFreq, Econ.Robinson.exploit, Econ.Robinson.exploit_nonneg, Econ.Robinson.robinson, Econ.Robinson.rowPay_eq, Econ.Robinson.colPay_eq, Econ.Robinson.rowFreq_mem, Econ.Robinson.colFreq_mem, Econ.Robinson.matrixPayoff_eq_left, Econ.Robinson.matrixPayoff_eq_right, Econ.Robinson.payoff_le_max, Econ.Robinson.min_le_payoff, Econ.Robinson.isEpsSaddle_freq, Econ.Robinson.eventually_isEpsSaddle, Econ.Robinson.tendsto_payoff_value, Econ.Robinson.tendsto_max_min_value, Econ.Robinson.argmaxI, Econ.Robinson.argminJ, Econ.Robinson.le_argmaxI, Econ.Robinson.argminJ_le, Econ.Robinson.fpState, Econ.Robinson.fpRow, Econ.Robinson.fpCol, Econ.Robinson.fpState_eq, Econ.Robinson.isFPPath_fp}
+\leanok
+\uses{thm:beh-fictitious}
+In a finite zero-sum matrix game, along any fictitious-play path (each player best responds at every date to the
+other's cumulative past play), the exploitability $\max_k(Aq_t)_k-\min_l(p_tA)_l$ of the empirical frequencies $p_t,q_t$
+tends to $0$. Hence the empirical frequencies are eventually an $\varepsilon$-equilibrium for every $\varepsilon>0$,
+and, as in Robinson's own statement, $\max_k(Aq_t)_k$, $\min_l(p_tA)_l$ and the empirical payoff all converge to the
+value of the game. Fictitious-play paths exist. Brown's alternating process is not formalized.
+\end{theorem}
+\begin{proof}
+\leanok
+Robinson's induction on the size of the submatrix, for vector systems $(U,V)$ with arbitrary initial vectors satisfying
+$\max U(0)\le\min V(0)$. If every row and column is a best response somewhere in $[T-n,T]$, then
+$\max U(T)-\min V(T)\le4an$, by the identity
+$\sum_\tau U(T)_{i_\tau}-\sum_\tau V(T)_{j_\tau}=\sum_\tau U(0)_{i_\tau}-\sum_\tau V(0)_{j_\tau}$. Otherwise some row
+(or, by transposing to $-A^{\mathsf T}$, some column) is never a best response in the window, so there the system is
+one for a smaller submatrix and the gap grows by less than $\varepsilon n/2$. Going back window by window,
+$\max U(t)-\min V(t)\le4at^*+\varepsilon t/2<\varepsilon t$ for large $t$.
+\end{proof}
+
+\begin{theorem}[Camerer--Ho--Chong: Poisson cognitive hierarchy]
+\label{thm:beh-poisson-ch}
+\lean{Econ.BoundedRationality.poissonFreq, Econ.BoundedRationality.poissonFreq_pos, Econ.BoundedRationality.poissonFreq_nonneg, Econ.BoundedRationality.hasSum_poissonFreq, Econ.BoundedRationality.poissonFreq_succ, Econ.BoundedRationality.hasSum_mean_poissonFreq, Econ.BoundedRationality.chBelief, Econ.BoundedRationality.sum_chBelief, Econ.BoundedRationality.chBelief_ratio, Econ.BoundedRationality.hasSum_abs_chBelief_sub, Econ.BoundedRationality.l1_strictAnti, Econ.BoundedRationality.tendsto_l1_chBelief, Econ.BoundedRationality.tendsto_chBelief, Econ.BoundedRationality.poisson_hasSum_l1, Econ.BoundedRationality.poisson_tendsto_l1, Econ.BoundedRationality.poisson_chGuess_strictAnti}
+\leanok
+Poisson level frequencies are positive, sum to one, have mean $\tau$ and satisfy $f(k+1)/f(k)=\tau/(k+1)$. A level-$k$
+player believes the others are spread over the lower levels in the true relative proportions; the $\ell^1$ distance
+(twice the total-variation distance) of these beliefs from the truth is exactly $2(1-\sum_{g<k}f(g))$, which falls
+strictly with $k$ and tends to $0$: higher levels are more accurate.
+Poisson-CH guesses in the $p$-beauty contest fall strictly with the level.
+\end{theorem}
+\begin{proof}
+\leanok
+On levels below $k$ the error is $f(h)(1-F_k)/F_k$, summing to $1-F_k$; above, it is $f(h)$, summing to $1-F_k$.
 \end{proof}
 
 \begin{lemma}[Birth--death chains]

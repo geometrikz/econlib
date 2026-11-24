@@ -25,12 +25,10 @@ preference**. Individual WARP is therefore no restriction on the aggregate
 beyond Walras' law: the witness `zBad` below violates WARP (its equilibrium set
 is not convex) yet decomposes into two WARP-satisfying pieces.
 
-**Not yet formalized.** WARP is necessary for an individual excess demand to
-come from a rational preference, and for two goods also sufficient, but for
-`L ≥ 3` it is not sufficient. Debreu's second step, that each piece `zˡ` is the
-excess demand of a consumer with a rational, continuous, monotone preference
-and some endowment (an integrability / revealed-preference construction). The
-result here is the revealed-preference form of SMD.
+**Step 2** (each piece `zˡ` is the excess demand of a utility-maximizing
+consumer with convex preferences and a nonnegative endowment) is in
+`SMDConsumer.lean`. WARP alone would not suffice for that when `L ≥ 3`; the
+construction there uses the special form of the pieces.
 -/
 module
 

@@ -23,8 +23,9 @@ is free); beliefs are the product of the others' marginal frequencies
   always playing `s` is a fictitious-play path, whose frequencies converge to
   `s` (non-vacuity).
 
-Convergence of the frequencies themselves (Robinson's theorem for zero-sum
-games, Miyasawa's for 2×2 games) is not formalized.
+Robinson's theorem for zero-sum games (exploitability of the empirical
+frequencies tends to `0`) is in `Robinson.lean`, for the matrix-game form of the
+same dynamics. Miyasawa's theorem for 2×2 games is not formalized.
 -/
 module
 

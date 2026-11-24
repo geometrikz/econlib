@@ -164,3 +164,97 @@ $c_i = \sum_{S \ni i} \mu_S < c = \sum_S \mu_S v(S)/v(N)$ for all $i$, and $\lam
 $1 - c_i/c$ on singletons is balanced with $\sum \lambda_S v(S) > v(N)$. So the value is $\le 0$, and
 $x = v(N)\,y$ is in the core.
 \end{proof}
+
+\section{Rubinstein bargaining}
+\label{sec:rubinstein}
+
+\begin{theorem}[Rubinstein 1982; Shaked--Sutton 1984]
+\label{thm:rubinstein}
+\lean{Econ.rubinsteinShare, Econ.one_sub_mul_pos, Econ.rubinstein_stationary, Econ.shaked_sutton_bounds, Econ.rubinsteinShare_mem}
+\leanok
+With discount factors $\delta_1, \delta_2 \in [0,1)$ the proposer shares $x^* = (1-\delta_2)/(1-\delta_1\delta_2)$ and
+$y^* = (1-\delta_1)/(1-\delta_1\delta_2)$ are the unique solution of $x = 1 - \delta_2 y$, $y = 1 - \delta_1 x$. If the sup and inf
+of SPE proposer payoffs satisfy $m_1 \ge 1 - \delta_2 M_2$, $M_1 \le 1 - \delta_2 m_2$ and symmetrically, they all equal these
+shares. (Deriving the four inequalities from strategies is not formalized.)
+\end{theorem}
+\begin{proof}
+\leanok
+Chaining gives $M_1(1 - \delta_1\delta_2) \le 1 - \delta_2 \le m_1(1-\delta_1\delta_2)$, so $M_1 = m_1 = x^*$; likewise for player 2.
+\end{proof}
+
+\begin{theorem}[Comparative statics and frequent offers; Binmore--Rubinstein--Wolinsky 1986]
+\label{thm:rubinstein-limit}
+\lean{Econ.rubinstein_first_mover, Econ.rubinstein_patience, Econ.tendsto_one_sub_exp_div, Econ.rubinstein_limit, Econ.rubinstein_symmetric_limit}
+\leanok
+\uses{thm:rubinstein}
+With a common $\delta$ the proposer gets $1/(1+\delta) > 1/2$; a player's share rises with her own patience and falls
+with her opponent's. With $\delta_i = e^{-r_i\Delta}$ and $\Delta \to 0^+$, player 1's share tends to $r_2/(r_1+r_2)$, the
+asymmetric Nash solution with bargaining powers proportional to $1/r_i$; with $r_1 = r_2$ it tends to $1/2$.
+\end{theorem}
+\begin{proof}
+\leanok
+$x^* = \frac{(1-e^{-r_2\Delta})/\Delta}{(1-e^{-(r_1+r_2)\Delta})/\Delta}$ and $(1 - e^{-a\Delta})/\Delta \to a$ (derivative of $t \mapsto 1 - e^{-at}$ at $0$).
+\end{proof}
+
+\section{The assignment game}
+\label{sec:assignment-game}
+
+\begin{definition}[Assignment game]
+\label{def:assignment-game}
+\lean{Econ.IsPairMatching, Econ.IsMatchingIn, Econ.matchingValue, Econ.isMatchingIn_empty, Econ.assignmentGame, Econ.le_assignmentGame, Econ.exists_optimal_matching, Econ.assignmentGame_singleton, Econ.assignmentGame_nonneg}
+\leanok
+Buyers $B$ and sellers $S$; a pair $(b,s)$ creates surplus $a_{bs}$. A coalition $T \subseteq B \sqcup S$ is worth the
+largest total surplus of a matching among its members (possibly empty).
+\end{definition}
+
+\begin{theorem}[Shapley--Shubik 1971: the core]
+\label{thm:assignment-core}
+\lean{Econ.matching_sum_le, Econ.assignment_inCore_iff, Econ.assignment_weak_duality, Econ.assignLin, Econ.assignLin_convexOn, Econ.assignLin_perm_le, Econ.assignment_isBalanced, Econ.assignment_core_nonempty, Econ.shapley_shubik, Econ.assignment_strong_duality}
+\leanok
+\uses{def:assignment-game, thm:bondareva-shapley}
+A payoff vector is in the core iff it is nonnegative, covers every pair ($u_b + p_s \ge a_{bs}$) and sums to the optimal
+assignment value; every such covering vector pays at least that value. The game is balanced, so the core is
+nonempty, and it is exactly the set of optimal solutions of the dual of the assignment LP.
+\end{theorem}
+\begin{proof}
+\leanok
+Core conditions on singletons and pairs give nonnegativity and covering; conversely the optimal matching of $T$
+is paid for by its members. For balancedness, let $X_{bs} = \sum_T w_T [(b,s) \in \mu_T]$ for optimal matchings $\mu_T$;
+it is doubly substochastic, and $\begin{psmallmatrix} I - \mathrm{diag}(X\mathbf 1) & X \\ X^\top & I - \mathrm{diag}(X^\top \mathbf 1)\end{psmallmatrix}$
+is doubly stochastic on $B \sqcup S$. By Birkhoff--von Neumann it is a mixture of permutation matrices, and the
+buyer--seller entries of each permutation form a matching of everyone, so $\sum_T w_T v(T) = \sum a_{bs} X_{bs} \le v(B \sqcup S)$.
+Nonemptiness follows by Bondareva--Shapley (directly if there are no players).
+\end{proof}
+
+\section{The alternating-offers game}
+\label{sec:rubinstein-game}
+
+\begin{definition}[Alternating-offers game, SPE]
+\label{def:barg-game}
+\lean{Econ.BargProfile, Econ.BargProfile.path, Econ.BargProfile.Agrees, Econ.BargProfile.payoff, Econ.BargProfile.respPayoff, Econ.BargProfile.path_length, Econ.BargProfile.path_succ', Econ.BargProfile.payoff_eq_resp, Econ.BargProfile.payoff_congr, Econ.BargProfile.payoff_le_of, Econ.BargProfile.payoff_nonneg, Econ.BargProfile.payoff_add_le, Econ.pay₁, Econ.pay₂, Econ.IsDev₁, Econ.IsDev₂, Econ.IsBargSPE}
+\leanok
+A history is the list of rejected offers (player 1's share); player 1 proposes after histories of even length,
+player 2 after odd ones. A pure strategy profile gives an offer in $[0,1]$ after every history and a response to every
+offer. Agreement on $x$ after $t$ further periods gives $(\delta_1^t x, \delta_2^t (1-x))$ from the current node; perpetual
+disagreement gives $0$. A profile is a subgame perfect equilibrium if at every proposal node and every response node
+no player gains from changing her own choices.
+\end{definition}
+
+\begin{theorem}[Rubinstein 1982]
+\label{thm:rubinstein-game}
+\lean{Econ.stationaryProfile, Econ.stationary_eqs, Econ.stationary_pay₁, Econ.stationary_pay₂, Econ.dev₁_pay_le, Econ.dev₂_pay_le, Econ.stationary_isBargSPE, Econ.BargProfile.setAcc, Econ.BargProfile.setProp, Econ.BargProfile.setAcc_payoff_next, Econ.BargProfile.setAcc_acc, Econ.BargProfile.setProp_payoff, Econ.setAcc_isDev₁, Econ.setAcc_isDev₂, Econ.setProp_isDev₁, Econ.setProp_isDev₂, Econ.spe_acc₁, Econ.spe_acc₂, Econ.spe_acc₁_le, Econ.spe_acc₂_le, Econ.spe_prop₁, Econ.spe_prop₂, Econ.spePay₁, Econ.spePay₂, Econ.pay_bounds, Econ.spePay_props, Econ.spePay_eq, Econ.bargSPE_eq_stationary, Econ.bargSPE_unique}
+\leanok
+\uses{def:barg-game, thm:rubinstein}
+The stationary profile (offer $x^*$ resp.\ keep $y^*$; accept iff one's share is at least $\delta_1 x^*$ resp.\ $\delta_2 y^*$) is
+a subgame perfect equilibrium, and every pure-strategy SPE coincides with it after every history. In particular
+player 1 offers $x^*$ at once and player 2 accepts.
+\end{theorem}
+\begin{proof}
+\leanok
+Against a stationary opponent every agreement gives the deviator at most the stationary share, so no deviation pays.
+For uniqueness let $M_i, m_i$ be the sup and inf of proposer payoffs over all SPEs and subgames. A responder
+must accept any offer beating her discounted continuation and may accept only offers at least as good; a proposer gets
+at least any accepted offer. These give the Shaked--Sutton inequalities, so all four bounds equal the stationary
+shares; a delayed agreement would give the proposer at most $\delta_i^2$ times her share, so agreement is immediate on the
+stationary offer, and responses are pinned down by the strict comparisons plus the indifferent case.
+\end{proof}

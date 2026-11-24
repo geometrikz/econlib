@@ -347,7 +347,7 @@ design. New foundation items, added to PLAN.md §2: **F25** uniform LLN
 | C2.1 | Convergence toolkit | CMT, Slutsky, O_p/o_p calculus | van der Vaart 2 | Mathlib | M | ME2 | 🟢 |
 | C2.2 | OLS consistency | under SLLN, full-rank moments | Hayashi 2 | Mathlib SLLN | E–M | ME2 | ✅ (i.i.d.) |
 | C2.3 | OLS asymptotic normality | √n (β̂ − β) ⇒ N(0, V) | Hayashi 2 | F27 | M | ME2 | 🟡 |
-| C2.4 | Delta method | scalar and vector | van der Vaart 3 | C2.1 (reuse Coretto) | M | ME2 | 🟢 (scalar done; vector open) |
+| C2.4 | Delta method | scalar and vector | van der Vaart 3 | C2.1 (reuse Coretto) | M | ME2 | ✅ (scalar and multivariate delta method at rate √n, Gaussian form N(0, JΣJᵀ)) |
 | C2.5 | Extremum estimators | consistency (identification + ULLN) | Newey–McFadden 1994 | F25 | M | ME2 | 🟢 (consistency and Z-estimator normality done with ULLN/CLT as hypotheses; ULLN itself F25) |
 | C2.6 | MLE | information equality, Cramér–Rao, asymptotic efficiency | Lehmann–Casella; Newey–McFadden | C2.5 | M–H | ME2 | 🟢 (KL gap from densities, identification, consistency given ULLN, N(0, I⁻¹) limit given the information equality; information equality from densities and Cramér–Rao open) |
 | C2.7 | GMM | consistency, asymptotic normality, efficient weight, J-test | Hansen 1982 (Nobel 2013) | C2.5, F27 | M–H | ME2 | ✅ (linear GMM consistency, asymptotic normality, limit covariance, efficient weight, J limit with tr = l − k; χ² law of J and nonlinear GMM open) |
@@ -378,11 +378,11 @@ design. New foundation items, added to PLAN.md §2: **F25** uniform LLN
 ### C4. Time series
 | ID | Model / result | Key theorems | Source | Deps | Diff | MS | Status |
 |---|---|---|---|---|---|---|---|
-| C4.1 | ARMA | stationarity ⟺ roots outside unit circle; MA(∞) | Hamilton 3; Brockwell–Davis | Mathlib polynomials | M | ME3 | 🟢 |
+| C4.1 | ARMA | stationarity ⟺ roots outside unit circle; MA(∞) | Hamilton 3; Brockwell–Davis | Mathlib polynomials | M | ME3 | ✅ (AR(p) stationarity ⟺ lag roots outside the unit circle via companion eigenvalues and Gelfand radius; bounded MA(∞) solution and uniqueness; ψ-weights, autocovariances and L² stationary solution open) |
 | C4.2 | VAR | companion-form stability; impulse responses | Sims 1980 (Nobel 2011) | B1.9 | M | ME3 | 🟢 (stability, MA(∞), IRFs done for bounded shocks; companion form open) |
 | C4.3 | SVAR identification | recursive, long-run, sign restrictions | Blanchard–Quah 1989; Uhlig 2005 | C4.2 | M | ME3 | ✅ (recursive, Blanchard–Quah, impact and horizon sign restrictions, order condition counterexamples; RWZ rank condition open) |
 | C4.4 | LP = VAR | equivalence of population IRFs | Plagborg-Møller–Wolf 2021 | C4.2 | M | ME3 | 🟢 |
-| C4.5 | Kalman filter | optimal linear filter | Kalman 1960 | Mathlib Gaussian | M | ME3 | 🟢 |
+| C4.5 | Kalman filter | optimal linear filter | Kalman 1960 | Mathlib Gaussian | M | ME3 | 🟢 (one-step Kalman gain optimal and unique, Joseph form, posterior and predicted covariances; multi-period recursion and Riccati steady state open) |
 | C4.6 | Wold decomposition | every covariance-stationary process | Wold 1938 | Hilbert spaces in Mathlib | H | ME3 | 🟢 |
 | C4.7 | Ergodic LLN for stationary series | | Birkhoff | Mathlib ergodic theory (partial) | H | ME3 | 🟡 |
 | C4.8 | Cointegration | Granger representation theorem | Engle–Granger 1987 (Nobel 2003) | C4.1 | H | ME3 | 🟢 |

@@ -13,7 +13,8 @@ additive (`I(f + k) = I(f) + k`), normalized (`I(0) = 0`) and concave
 (`IsVariationalFunctional`: a normalized concave niveloid in the sense of
 Dolecki–Greco). `I` is taken on all of `ℝ^S`, i.e. unbounded utility,
 `u(X) = ℝ`; for bounded `u(X)` MMR's minimal index is the conjugate over
-`u(X)`-valued acts, which is not treated. The heart of the theorem is the variational representation of
+`u(X)`-valued acts, which is not treated. The heart of the theorem is the
+variational representation of
 such a functional, formalized here for a finite state space `S`:
 
     I(f) = min_{p ∈ Δ(S)} ( ⟨p, f⟩ + c(p) ),   c(p) = sup_g ( I(g) − ⟨p, g⟩ ),
@@ -190,7 +191,8 @@ theorem exists_eq_dot_add_cost (hI : IsVariationalFunctional I) (f : S → ℝ) 
 
 omit [DecidableEq S] in
 /-- The ambiguity index is nonnegative. -/
-theorem cost_nonneg (hI : IsVariationalFunctional I) {p : S → ℝ} (hp : InDom I p) : 0 ≤ cost I p := by
+theorem cost_nonneg (hI : IsVariationalFunctional I) {p : S → ℝ} (hp : InDom I p) :
+    0 ≤ cost I p := by
   have := le_cost hp 0
   simpa [dot, hI.zero] using this
 
