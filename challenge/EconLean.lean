@@ -78,6 +78,11 @@ public import EconLean.GE.InfiniteWelfare
 public import EconLean.GE.ValuationEquilibrium
 public import EconLean.GE.ExistenceWitnesses
 public import EconLean.GE.ExistenceAggregateDisposal
+public import EconLean.Foundations.Measure.Sierpinski
+public import EconLean.Foundations.Measure.Lyapunov
+public import EconLean.Foundations.Measure.LyapunovIntegral
+public import EconLean.GE.ContinuumEconomy
+public import EconLean.GE.AumannCore
 
 public import EconLean.Producer.Production
 public import EconLean.Producer.Cost

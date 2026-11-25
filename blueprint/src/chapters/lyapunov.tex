@@ -1,0 +1,341 @@
+\chapter{Nonatomic measures, Lyapunov's theorem and continuum economies}
+\label{chap:lyapunov}
+
+Economies with a continuum of agents (Aumann 1964) model perfect competition: each agent is negligible. The key
+mathematical tool is Lyapunov's (1940) theorem that the range of a finite-dimensional nonatomic vector measure is
+convex. This chapter builds it from Sierpiński's intermediate value theorem for nonatomic measures.
+
+\section{Sierpiński's theorem}
+\label{sec:sierpinski}
+
+\begin{definition}[Nonatomic measure]
+\label{def:nonatomic}
+\lean{Econ.Lyapunov.Nonatomic, Econ.Lyapunov.measureReal_pos_iff, Econ.Lyapunov.Nonatomic.real}
+\leanok
+A measure $\mu$ is nonatomic if every measurable set of x
+
+\begin{lemma}[Small subsets]
+\label{lem:small_subsets}
+\lean{Econ.Lyapunov.Nonatomic.exists_subset_half, Econ.Lyapunov.exists_subset_measureReal_pos_le}
+\leanok
+\uses{def:nonatomic}
+For a finite nonatomic $\mu$, every set of positive measure has a subset of positive measure at most half its measure,
+hence subsets of arbitrarily small positive measure.
+\end{lemma}
+\begin{proof}
+\leanok
+If $0 < \mu(u) < \mu(s)$, one of $u$ and $s \setminus u$ has positive measure at most $\mu(s)/2$. Iterate $k$ times.
+\end{proof}
+
+\begin{theorem}[Sierpiński 1922]
+\label{thm:sierpinski}
+\lean{Econ.Lyapunov.exists_subset_measureReal_eq}
+\leanok
+\uses{lem:small_subsets}
+If $\mu$ is finite and nonatomic, $A$ measurable and $0 \le c \le \mu(A)$, there is a measurable $B \subseteq A$ with
+$\mu(B) = c$.
+\end{theorem}
+\begin{proof}
+\leanok
+Greedy exhaustion: at each stage add a subset $D_k$ of $A \setminus B_k$ with $\mu(B_k) + \mu(D_k) \le c$ and at least half
+the supremum $S_k$ of such sizes. The measures $\mu(B_k)$ increase to $\mu(\bigcup B_k) \le c$, so $\mu(D_k) \to 0$ and
+$S_k \to 0$. If $\mu(\bigcup B_k) < c$, a small positive subset of $A \setminus \bigcup B_k$ would be admissible at every
+stage, contradicting $S_k \to 0$.
+\end{proof}
+
+\begin{corollary}[Fine partitions]
+\label{cor:fine_partition}
+\lean{Econ.Lyapunov.exists_partition_measureReal_le_aux, Econ.Lyapunov.exists_partition_measureReal_le}
+\leanok
+\uses{thm:sierpinski}
+Every measurable set of a finite nonatomic measure space splits into finitely many disjoint measurable pieces of measure
+at most $\delta$.
+\end{corollary}
+\begin{proof}
+\leanok
+Split off a piece of measure exactly $\delta$ and induct.
+\end{proof}
+
+\begin{lemma}[Sums of nonatomic measures]
+\label{lem:nonatomic_sum}
+\lean{Econ.Lyapunov.nonatomic_sum}
+\leanok
+\uses{thm:sierpinski}
+A finite sum of finite nonatomic measures is nonatomic.
+\end{lemma}
+\begin{proof}
+\leanok
+Some summand $\mu_i$ charges $s$; a subset $t$ with $\mu_i(t) = \mu_i(s)/2$ has positive sum-measure, and so does $s \setminus t$.
+\end{proof}
+
+\begin{lemma}[Absolute continuity preserves nonatomicity]
+\label{lem:nonatomic_ac}
+\lean{Econ.Lyapunov.Nonatomic.of_absolutelyContinuous}
+\leanok
+\uses{thm:sierpinski}
+If $\lambda$ and $\nu$ are finite, $\lambda$ is nonatomic and $\nu \ll \lambda$, then $\nu$ is nonatomic. In particular
+measures with densities, $B \mapsto \int_B f\,d\lambda$ for $f \ge 0$ integrable, are nonatomic.
+\end{lemma}
+\begin{proof}
+\leanok
+If $s$ were a $\nu$-atom, halve it repeatedly in $\lambda$-measure (Theorem~\ref{thm:sierpinski}), each time keeping the half
+of full $\nu$-measure. The intersection is $\lambda$-null but has $\nu$-measure $\nu(s) > 0$.
+\end{proof}
+
+\section{Lyapunov's convexity theorem}
+\label{sec:lyapunov}
+
+\begin{lemma}[Few fractional weights]
+\label{lem:vertex}
+\lean{Econ.Lyapunov.exists_few_fractional_aux, Econ.Lyapunov.exists_few_fractional}
+\leanok
+Let $w_l \in \mathbb{R}^\eta$ ($\eta$ finite) for $l$ in a finite set $\iota$ and $d \in [0,1]^\iota$. There is
+$d' \in [0,1]^\iota$ with $\sum_l d'_l w_l = \sum_l d_l w_l$ and at most $|\eta|$ coordinates of $d'$ in $(0,1)$.
+\end{lemma}
+\begin{proof}
+\leanok
+If more than $|\eta|$ coordinates are fractional, the corresponding $w_l$ are linearly dependent; move $d$ along a nontrivial
+relation $g$ until the first fractional coordinate with $g_l \ne 0$ reaches $0$ or $1$. The fractional count drops; induct.
+\end{proof}
+
+\begin{lemma}[One rounding step]
+\label{lem:lyapunov_round}
+\lean{Econ.Lyapunov.FracState, Econ.Lyapunov.measureReal_le_sum, Econ.Lyapunov.FracState.round}
+\leanok
+\uses{lem:vertex, cor:fine_partition, lem:nonatomic_sum}
+A fractional set is a measurable $B \subseteq A$ with disjoint pieces $Q_l \subseteq A \setminus B$ carrying weights
+$d_l \in [0,1]$ such that $\mu(B) + \sum_l d_l \mu(Q_l) = t\mu(A)$. Any fractional set can be replaced by one with a larger
+$B$, at most $|\eta|$ pieces, each of $\nu$-measure at most $\delta$, where $\nu = \sum_i \mu_i$.
+\end{lemma}
+\begin{proof}
+\leanok
+Cut each piece into pieces of $\nu$-measure at most $\delta$ (Corollary~\ref{cor:fine_partition}, $\nu$ nonatomic by
+Lemma~\ref{lem:nonatomic_sum}), apply Lemma~\ref{lem:vertex} to the vectors $\mu(R_k)$, add pieces of weight $1$ to $B$ and
+keep the at most $|\eta|$ fractional ones.
+\end{proof}
+
+\begin{theorem}[Lyapunov 1940]
+\label{thm:lyapunov}
+\lean{Econ.Lyapunov.exists_subset_measureReal_eq_smul, Econ.Lyapunov.range, Econ.Lyapunov.convex_range}
+\leanok
+\uses{lem:lyapunov_round}
+Let $(\mu_i)_{i \in \eta}$ be finitely many finite nonatomic measures. For every measurable $A$ and $t \in [0,1]$ there is a
+measurable $B \subseteq A$ with $\mu_i(B) = t\mu_i(A)$ for all $i$. Hence the range $\{(\mu_i(B))_i\}$ is convex.
+\end{theorem}
+\begin{proof}
+\leanok
+Start from $B = \emptyset$ and the single piece $A$ of weight $t$. After round $k$ (with $\delta = 1/(k+1)$) the fractional
+remainder is at most $|\eta|/(k+1)$ in every coordinate, and the sets $B$ increase, so their union has measure exactly
+$t\mu(A)$. For convexity, given $E, F$ and $a + b = 1$ take $(E \cap F) \cup B_1 \cup B_2$ with $B_1 \subseteq E \setminus F$
+of measure $a\mu(E \setminus F)$ and $B_2 \subseteq F \setminus E$ of measure $b\mu(F \setminus E)$.
+\end{proof}
+
+\section{Lyapunov's theorem for integrals}
+\label{sec:lyapunov_integral}
+
+\begin{theorem}[Lyapunov for indefinite integrals]
+\label{thm:lyapunov_integral}
+\lean{Econ.Lyapunov.exists_subset_setIntegral_eq_smul, Econ.Lyapunov.setIntegral_eq_measureReal_sub,
+  Econ.Lyapunov.partMeasure, Econ.Lyapunov.isFiniteMeasure_partMeasure, Econ.Lyapunov.nonatomic_partMeasure,
+  Econ.Lyapunov.setIntegral_apply_eq_partMeasure}
+\leanok
+\uses{thm:lyapunov, lem:nonatomic_ac}
+Let $\lambda$ be a finite nonatomic measure and $f\colon \Omega \to \mathbb{R}^\eta$ integrable, $\eta$ finite. For every
+measurable $A$ and $t \in [0,1]$ there is a measurable $B \subseteq A$ with $\int_B f\,d\lambda = t \int_A f\,d\lambda$.
+\end{theorem}
+\begin{proof}
+\leanok
+The $2|\eta|$ measures $f_i^{\pm}\lambda$ are finite (as $f$ is integrable) and nonatomic (being absolutely continuous
+with respect to $\lambda$), and $\int_B f_i = f_i^+\lambda(B) - f_i^-\lambda(B)$. Apply Theorem~\ref{thm:lyapunov}.
+\end{proof}
+
+\begin{corollary}[Convex range]
+\label{cor:convex_integral_range}
+\lean{Econ.Lyapunov.integralRange, Econ.Lyapunov.partDiff, Econ.Lyapunov.convex_integralRange}
+\leanok
+\uses{thm:lyapunov_integral}
+The range $\{\int_B f\,d\lambda : B \text{ measurable}\}$ is convex.
+\end{corollary}
+\begin{proof}
+\leanok
+It is the image of the convex range of $(f_i^{\pm}\lambda)_{i}$ under the linear map $v \mapsto (v_{i,+} - v_{i,-})_i$.
+\end{proof}
+
+\begin{lemma}[Gluing]
+\label{lem:gluing}
+\lean{Econ.Lyapunov.exists_subset_piecewise_setIntegral_eq, Econ.Lyapunov.exists_piecewise_integral_eq}
+\leanok
+\uses{thm:lyapunov_integral}
+For integrable $g_1, g_2$, measurable $A$ and $t \in [0,1]$, some measurable $B \subseteq A$ has
+$\int_A (g_1 1_B + g_2 1_{B^c}) = t \int_A g_1 + (1-t)\int_A g_2$.
+\end{lemma}
+\begin{proof}
+\leanok
+Apply Theorem~\ref{thm:lyapunov_integral} to $(g_1, g_2)\colon \Omega \to \mathbb{R}^{\eta \sqcup \eta}$ to get
+$\int_B g_k = t \int_A g_k$; then $\int_{A \setminus B} g_2 = (1-t)\int_A g_2$.
+\end{proof}
+
+\begin{theorem}[Integrals of correspondences are convex; Richter 1963, Aumann 1965]
+\label{thm:convex_selection_integral}
+\lean{Econ.Lyapunov.selectionIntegral, Econ.Lyapunov.convex_selectionIntegral}
+\leanok
+\uses{lem:gluing}
+For a finite nonatomic $\lambda$ and any correspondence $F\colon \Omega \rightrightarrows \mathbb{R}^\eta$, the set
+$\int F = \{\int g : g \text{ integrable}, g(a) \in F(a) \text{ a.e.}\}$ is convex.
+\end{theorem}
+\begin{proof}
+\leanok
+Given selections $g_1, g_2$ and $t$, glue them on the set $B$ of Lemma~\ref{lem:gluing}: $g_1 1_B + g_2 1_{B^c}$ is again
+a selection, with integral $t\int g_1 + (1-t)\int g_2$.
+\end{proof}
+
+\begin{theorem}[Witnesses]
+\label{thm:lyapunov_integral_witness}
+\lean{Econ.Lyapunov.nonatomic_volume_Icc, Econ.Lyapunov.exists_half_integral_id}
+\leanok
+\uses{def:nonatomic, thm:lyapunov_integral}
+Lebesgue measure on $[0,1]$ is nonatomic; hence some measurable $B \subseteq [0,1]$ has $\int_B a\,da = 1/4$.
+\end{theorem}
+\begin{proof}
+\leanok
+$x \mapsto \lambda(s \cap (-\infty, x])$ is $1$-Lipschitz, so by the intermediate value theorem it takes the value
+$\lambda(s)/2$.
+\end{proof}
+
+\section{Exchange economies with a continuum of traders}
+\label{sec:continuum_economy}
+
+Traders form a finite measure space $(\Omega, \mu)$ (Aumann 1964); trader $a$ has preferences $\succsim_a$ on
+$\mathbb{R}^\iota$ and endowment $e(a) \ge 0$, $e$ integrable. An allocation $x$ is feasible if it is integrable,
+nonnegative a.e.\ and $\int x\,d\mu = \int e\,d\mu$. A coalition $S$ (measurable, $\mu(S) > 0$) blocks $x$ if some $y$ with
+$\int_S y = \int_S e$ makes almost every member strictly better off; the core consists of the feasible allocations that no
+coalition blocks.
+
+\begin{theorem}[Walrasian allocations are in the core]
+\label{thm:continuum_we_core}
+\lean{Econ.Continuum.ContinuumEconomy, Econ.Continuum.ContinuumEconomy.Feasible, Econ.Continuum.ContinuumEconomy.Blocks, Econ.Continuum.ContinuumEconomy.InCore, Econ.Continuum.ContinuumEconomy.IsWalrasianEquilibrium, Econ.Continuum.ContinuumEconomy.costCLM, Econ.Continuum.ContinuumEconomy.costCLM_apply, Econ.Continuum.ContinuumEconomy.cost_setIntegral, Econ.Continuum.ContinuumEconomy.IsWalrasianEquilibrium.inCore}
+\leanok
+If $(p, x)$ is a Walrasian equilibrium (almost every $x(a)$ is in trader $a$'s demand at wealth $p \cdot e(a)$), then $x$
+is in the core.
+\end{theorem}
+\begin{proof}
+\leanok
+If $S$ blocks via $y$, then $p \cdot y(a) > p \cdot e(a)$ for almost every $a \in S$, so
+$p \cdot \int_S y > p \cdot \int_S e$ since $\mu(S) > 0$; but $\int_S y = \int_S e$.
+\end{proof}
+
+\begin{theorem}[A continuum witness]
+\label{thm:continuum_witness}
+\lean{Econ.Continuum.ContinuumEconomy.linContinuum, Econ.Continuum.ContinuumEconomy.linContinuum_isWalrasianEquilibrium, Econ.Continuum.ContinuumEconomy.linContinuum_inCore, Econ.Continuum.ContinuumEconomy.linContinuum_blocks_zero, Econ.Continuum.ContinuumEconomy.linContinuum_zero_not_inCore}
+\leanok
+\uses{thm:continuum_we_core}
+Traders uniform on $[0,1]$, each with endowment $(1,1)$ and utility $x_0 + x_1$: autarky is a Walrasian equilibrium at
+prices $(1,1)$, hence in the core, while the grand coalition blocks the zero allocation.
+\end{theorem}
+\begin{proof}
+\leanok
+Every affordable bundle has $y_0 + y_1 \le 2$.
+\end{proof}
+
+
+\section{Aumann's core equivalence theorem}
+\label{sec:aumann_core}
+
+Fix a core allocation $x$. Trader $a$'s \emph{improving net trades} are
+$G(a) = \{z : e(a) + z \ge 0,\ e(a) + z \succ_a x(a)\} \cup \{0\}$.
+
+\begin{lemma}[No negative aggregate improvement]
+\label{lem:aumann_no_neg}
+\lean{Econ.Continuum.ContinuumEconomy.improve, Econ.Continuum.ContinuumEconomy.InCore.not_integral_neg}
+\leanok
+\uses{thm:continuum_we_core}
+If preferences are a.e.\ transitive and strongly monotone and $\{a : y(a) \succ_a x(a)\}$ is null-measurable for every
+a.e.-measurable $y$, no integrable selection $g$ of $G$ has $\int g \ll 0$.
+\end{lemma}
+\begin{proof}
+\leanok
+Let $S$ be (a measurable version of) the set where $g(a) \ne 0$ lies in the first part of $G(a)$; $\int_S g = \int g \ll 0$,
+so $\mu(S) > 0$. Give each member of $S$ the bundle $e(a) + g(a) + w$ with $w = -\int g / \mu(S) \gg 0$. By strong
+monotonicity and transitivity each member strictly prefers it to $x(a)$, and $\int_S$ of it equals $\int_S e$: $S$ blocks.
+\end{proof}
+
+\begin{lemma}[Supporting prices]
+\label{lem:aumann_price}
+\lean{Econ.Continuum.ContinuumEconomy.InCore.exists_price}
+\leanok
+\uses{lem:aumann_no_neg, thm:convex_selection_integral}
+For finite nonatomic $\mu$ there is $p \ge 0$, $p \ne 0$, with $p \cdot \int g \ge 0$ for every integrable selection $g$ of
+$G$.
+\end{lemma}
+\begin{proof}
+\leanok
+$\int G$ is convex (Theorem~\ref{thm:convex_selection_integral}) and misses the open negative orthant; Hahn--Banach separates
+them by a functional $f$ and level $u$. Since $0 \in \int G$ and the orthant is a cone, $u = 0$, $f \le 0$ on the orthant,
+so $f = p \cdot$ with $p \ge 0$, $\sum p > 0$.
+\end{proof}
+
+\begin{lemma}[Price support almost everywhere]
+\label{lem:aumann_support}
+\lean{Econ.Continuum.ContinuumEconomy.ae_price_support, Econ.Continuum.ContinuumEconomy.setIntegral_neg_of_ae_neg}
+\leanok
+\uses{lem:aumann_price}
+If moreover the strict upper set of $x(a)$ is relatively open in $\mathbb{R}^\iota_+$ for a.e.\ $a$, then for a.e.\ $a$,
+every $z \ge 0$ with $z \succ_a x(a)$ has $p \cdot z \ge p \cdot e(a)$.
+\end{lemma}
+\begin{proof}
+\leanok
+For a rational bundle $c \ge 0$, if the traders preferring $c$ to $x(a)$ with $p \cdot c < p \cdot e(a)$ had positive
+measure, the selection $1_T (c - e)$ would have negative value. So each such set is null; there are countably many. If
+$z \succ_a x(a)$ with $p \cdot z < p \cdot e(a)$, by continuity a rational $c$ slightly above $z$ has the same properties.
+\end{proof}
+
+\begin{theorem}[Aumann 1964: core $\subseteq$ Walrasian]
+\label{thm:aumann_core}
+\lean{Econ.Continuum.ContinuumEconomy.InCore.isWalrasianEquilibrium, Econ.Continuum.ContinuumEconomy.not_P_of_cost_le,
+  Econ.Continuum.ContinuumEconomy.eq_zero_of_cost_nonpos, Econ.Continuum.ContinuumEconomy.cost_const_eq}
+\leanok
+\uses{lem:aumann_support}
+Let $\mu$ be finite and nonatomic, with at least one good and $\int e \gg 0$, and let preferences be a.e.\ rational and
+strongly monotone. If $x$ is in the core and satisfies the continuity and measurability conditions above, then $x$ is a
+Walrasian allocation at some $p \gg 0$.
+\end{theorem}
+\begin{proof}
+\leanok
+Monotonicity and price support give $p \cdot x(a) \ge p \cdot e(a)$ a.e., and feasibility forces equality. Cheaper point: if
+$p \cdot e(a) > 0$, a preferred affordable $y$ could be shrunk to $sy$, $s < 1$, still preferred by continuity but strictly
+cheaper than $e(a)$, contradicting price support. Applied to $x(a) + \mathbf{1}_i$ for a trader with $p \cdot e(a) > 0$
+(which exist as $\int e \gg 0$) this gives $p_i > 0$. Traders with $p \cdot e(a) = 0$ have $e(a) = x(a) = 0$ and can afford
+only $0$.
+\end{proof}
+
+\begin{corollary}[Core equivalence]
+\label{cor:aumann_equivalence}
+\lean{Econ.Continuum.ContinuumEconomy.eventually_P_of_continuousPref, Econ.Continuum.ContinuumEconomy.nullMeasurableSet_P,
+  Econ.Continuum.ContinuumEconomy.InCore.isWalrasianEquilibrium_of_continuousPref,
+  Econ.Continuum.ContinuumEconomy.inCore_iff_of_continuousPref}
+\leanok
+\uses{thm:aumann_core}
+With a.e.\ rational, strongly monotone, continuous preferences and jointly measurable strict preference
+$\{(a,u,v) : u \succ_a v\}$, the core equals the set of Walrasian allocations. No convexity is assumed.
+\end{corollary}
+\begin{proof}
+\leanok
+Closed lower sets give relatively open strict upper sets; joint measurability composed with $a \mapsto (a, y(a), x(a))$
+gives the measurability condition. The converse is Theorem~\ref{thm:continuum_we_core}.
+\end{proof}
+
+\begin{theorem}[Witnesses]
+\label{thm:aumann_witness}
+\lean{Econ.Continuum.ContinuumEconomy.linContinuum_inCore_iff, Econ.Continuum.ContinuumEconomy.uBump,
+  Econ.Continuum.ContinuumEconomy.continuous_uBump_uncurry, Econ.Continuum.ContinuumEconomy.continuous_uBump,
+  Econ.Continuum.ContinuumEconomy.stronglyMonotone_uBump, Econ.Continuum.ContinuumEconomy.bumpContinuum,
+  Econ.Continuum.ContinuumEconomy.bumpContinuum_not_convexPref, Econ.Continuum.ContinuumEconomy.bumpContinuum_inCore_iff}
+\leanok
+\uses{cor:aumann_equivalence, thm:lyapunov_integral_witness}
+Core equivalence holds for uniform traders on $[0,1]$ with endowment $(1,1)$ and utility $z_0 + z_1$, and also with the
+non-convex, trader-dependent utility $\max(z_0, z_1) + (1 + a^2)(z_0 + z_1)$.
+\end{theorem}
+\begin{proof}
+\leanok
+All hypotheses are checked directly; for the second, $(1,0)$ and $(0,1)$ are indifferent but their midpoint is worse.
+\end{proof}
