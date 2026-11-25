@@ -13,6 +13,8 @@ public import EconLean.Foundations.Measure.Lyapunov
 public import EconLean.GE.ContinuumEconomy
 public import EconLean.Foundations.Measure.LyapunovIntegral
 public import EconLean.GE.AumannCore
+public import EconLean.GE.ContinuumExistence
+public import EconLean.Foundations.ConvexifiedCorrespondence
 
 @[expose] public section
 
@@ -195,5 +197,76 @@ theorem frozen_aumann_witnesses (x : ℝ → Fin 2 → ℝ) :
   ⟨linContinuum_inCore_iff x, bumpContinuum_inCore_iff x, bumpContinuum_not_convexPref⟩
 
 end AumannCore
+
+section ContinuumExistence
+
+open Continuum ContinuumEconomy Lyapunov Function
+
+variable {Ω ι : Type*} [MeasurableSpace Ω] [Fintype ι] (E : ContinuumEconomy Ω ι)
+
+theorem frozen_exists_partition_measureReal_eq {μ : Measure Ω} [IsFiniteMeasure μ]
+    (hμ : Nonatomic μ) {κ : Type*} [Fintype κ] [Nonempty κ] {A : Set Ω}
+    (hA : MeasurableSet A) (c : κ → ℝ) (hc : ∀ k, 0 ≤ c k) (hsum : ∑ k, c k = μ.real A) :
+    ∃ B : κ → Set Ω, (∀ k, MeasurableSet (B k)) ∧ (∀ k, B k ⊆ A) ∧
+      Pairwise (Disjoint on B) ∧ (∀ a ∈ A, ∃ k, a ∈ B k) ∧ ∀ k, μ.real (B k) = c k :=
+  exists_partition_measureReal_eq hμ hA c hc hsum
+
+theorem frozen_exists_fin_convexComb {V : Type*} [NormedAddCommGroup V] [NormedSpace ℝ V]
+    [FiniteDimensional ℝ V] {s : Set V} (hs : s.Nonempty) {v : V} (hv : v ∈ convexHull ℝ s) :
+    ∃ (w : Fin (Module.finrank ℝ V + 1) → ℝ) (z : Fin (Module.finrank ℝ V + 1) → V),
+      (∀ i, 0 ≤ w i) ∧ ∑ i, w i = 1 ∧ (∀ i, z i ∈ s) ∧ ∑ i, w i • z i = v :=
+  exists_fin_convexComb hs hv
+
+theorem frozen_isClosed_graph_convexHull {X V : Type*} [TopologicalSpace X]
+    [FirstCountableTopology X] [NormedAddCommGroup V] [NormedSpace ℝ V] [FiniteDimensional ℝ V]
+    {Φ : X → Set V} {K : Set V} (hK : IsCompact K) (hsub : ∀ x, Φ x ⊆ K)
+    (h : IsClosed (graph Φ)) : IsClosed (graph fun x => convexHull ℝ (Φ x)) :=
+  isClosed_graph_convexHull hK hsub h
+
+theorem frozen_demand_scaled {u : (ι → ℝ) → ℝ} {m : ℝ} (hm : 0 < m) (p ω : ι → ℝ) :
+    demand (prefOf fun x => u (m⁻¹ • x)) p (cost p (m • ω)) =
+      (m • ·) '' demand (prefOf u) p (cost p ω) :=
+  demand_scaled hm p ω
+
+theorem frozen_convexification_bridge [IsFiniteMeasure E.μ] (hμ : Nonatomic E.μ)
+    {T : Type*} [Fintype T] [MeasurableSpace T] [MeasurableSingletonClass T]
+    (τ : Ω → T) (hτ : Measurable τ) (R : T → (ι → ℝ) → (ι → ℝ) → Prop) (ω : T → ι → ℝ)
+    (hR : ∀ a, E.pref a = R (τ a)) (hω : ∀ a, E.endow a = ω (τ a))
+    (p : ι → ℝ) (xbar : T → ι → ℝ)
+    (hx : ∀ t, xbar t ∈ convexHull ℝ (demand (R t) p (cost p (ω t))))
+    (hclear : ∑ t, E.μ.real (τ ⁻¹' {t}) • xbar t = ∑ t, E.μ.real (τ ⁻¹' {t}) • ω t) :
+    ∃ x : Ω → ι → ℝ, E.IsWalrasianEquilibrium p x :=
+  exists_allocation_isWalrasianEquilibrium_of_mem_convexHull hμ τ hτ R ω hR hω p xbar hx hclear
+
+theorem frozen_continuum_existence_of_types [Nonempty ι] [IsFiniteMeasure E.μ]
+    {T : Type*} [Fintype T] [MeasurableSpace T]
+    [MeasurableSingletonClass T] {τ : Ω → T} (hτ : Measurable τ)
+    {u : T → (ι → ℝ) → ℝ} {ω : T → ι → ℝ}
+    (hpref : ∀ a, E.pref a = prefOf (u (τ a))) (hω : ∀ a, E.endow a = ω (τ a))
+    (hmass : ∀ t, 0 < E.μ.real (τ ⁻¹' {t}))
+    (hu : ∀ t, Continuous (u t)) (hsq : ∀ t, StrictlyQuasiconcave (u t))
+    (hmono : ∀ t, StronglyMonotone (prefOf (u t))) (hω0 : ∀ t, ω t ≠ 0)
+    (he : ∀ i, 0 < (∫ a, E.endow a ∂E.μ) i) :
+    ∃ (p : ι → ℝ) (x : T → ι → ℝ), PositivePrices p ∧
+      E.IsWalrasianEquilibrium p (fun a => x (τ a)) :=
+  exists_isWalrasianEquilibrium_of_types hτ hpref hω hmass hu hsq hmono hω0 he
+
+theorem frozen_isClosed_graph_convexHull_on {X V : Type*} [TopologicalSpace X]
+    [FirstCountableTopology X] [NormedAddCommGroup V] [NormedSpace ℝ V] [FiniteDimensional ℝ V]
+    {Φ : X → Set V} {s : Set X} {K : Set V} (hK : IsCompact K) (hsub : ∀ x ∈ s, Φ x ⊆ K)
+    (h : IsClosed {q : X × V | q.1 ∈ s ∧ q.2 ∈ Φ q.1}) :
+    IsClosed {q : X × V | q.1 ∈ s ∧ q.2 ∈ convexHull ℝ (Φ q.1)} :=
+  isClosed_graph_convexHull_on hK hsub h
+
+theorem frozen_continuum_existence_witnesses :
+    (∃ (p : Fin 2 → ℝ) (x : Fin 2 → Fin 2 → ℝ), PositivePrices p ∧
+      sqrtContinuum.IsWalrasianEquilibrium p (fun a => x (sqrtType a))) ∧
+    (∃ x : ℝ → Fin 2 → ℝ, maxContinuum.IsWalrasianEquilibrium one2 x) ∧
+    ∀ p : Fin 2 → ℝ, PositivePrices p → ∀ (c : Fin 2 → ℝ) (x : ℝ → Fin 2 → ℝ),
+      x =ᵐ[maxContinuum.μ] (fun _ => c) → ¬ maxContinuum.IsWalrasianEquilibrium p x :=
+  ⟨sqrtContinuum_exists_equilibrium, maxContinuum_exists_equilibrium,
+    fun _ hp c _ hx => maxContinuum_no_symmetric_equilibrium hp c hx⟩
+
+end ContinuumExistence
 
 end Econ.Audit

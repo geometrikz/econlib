@@ -339,3 +339,126 @@ non-convex, trader-dependent utility $\max(z_0, z_1) + (1 + a^2)(z_0 + z_1)$.
 \leanok
 All hypotheses are checked directly; for the second, $(1,0)$ and $(0,1)$ are indifferent but their midpoint is worse.
 \end{proof}
+
+\section{Existence in continuum economies}
+\label{sec:continuum_existence}
+
+\begin{lemma}[Splitting a population by prescribed masses]
+\label{lem:split_masses}
+\lean{Econ.Lyapunov.exists_partition_measureReal_eq_fin, Econ.Lyapunov.exists_partition_measureReal_eq}
+\leanok
+\uses{thm:sierpinski}
+Let $\mu$ be finite and nonatomic, $A$ measurable, and $c_k \ge 0$ with $\sum_k c_k = \mu(A)$ over a nonempty finite index
+set. Then $A$ is covered by pairwise disjoint measurable $B_k \subseteq A$ with $\mu(B_k) = c_k$.
+\end{lemma}
+\begin{proof}
+\leanok
+Induction on the number of indices, peeling off a subset of measure $c_0$ by Sierpi\'nski's theorem
+(Theorem~\ref{thm:sierpinski}) and applying the inductive hypothesis to $A \setminus B_0$.
+\end{proof}
+
+\begin{lemma}[Carath\'eodory with a fixed index set]
+\label{lem:caratheodory_fixed}
+\lean{Econ.sum_extend_of_injective, Econ.exists_fin_convexComb}
+\leanok
+Every point of $\operatorname{conv} s$, for nonempty $s$ in a finite-dimensional real space $V$, is a convex combination of
+$\dim V + 1$ points of $s$ (weights may vanish).
+\end{lemma}
+\begin{proof}
+\leanok
+Carath\'eodory gives an affinely independent family, whose cardinality is at most $\dim V + 1$; pad the weights with zeros
+along an injection into $\mathrm{Fin}(\dim V + 1)$.
+\end{proof}
+
+\begin{theorem}[Convexification preserves a closed graph]
+\label{thm:closed_graph_conv}
+\lean{Econ.convexHull_nonempty_iff, Econ.isClosed_graph_convexHull, Econ.isClosed_graph_convexHull_on}
+\leanok
+\uses{lem:caratheodory_fixed}
+If $\Phi$ has a closed graph and all its values lie in one compact $K$, then $x \mapsto \operatorname{conv}(\Phi x)$ has a
+closed graph (also relative to a domain $s$, the form Kakutani's theorem uses); it has nonempty values exactly where
+$\Phi$ does, and convex values always.
+\end{theorem}
+\begin{proof}
+\leanok
+Represent $v_n \in \operatorname{conv}(\Phi x_n)$ by Lemma~\ref{lem:caratheodory_fixed}; the weights and points live in the
+compact set $\Delta \times K^{N}$, so a subsequence converges, the limit points lie in $\Phi x$ by the closed graph, and the
+limit of the combinations is the combination of the limits.
+\end{proof}
+
+\begin{theorem}[Convexification bridge]
+\label{thm:convexification_bridge}
+\lean{Econ.Continuum.ContinuumEconomy.comp_type_eq_sum, Econ.Continuum.ContinuumEconomy.integrable_comp_type,
+  Econ.Continuum.ContinuumEconomy.integral_comp_type, Econ.Continuum.ContinuumEconomy.integral_endow_eq_sum,
+  Econ.Continuum.ContinuumEconomy.exists_allocation_isWalrasianEquilibrium_of_mem_convexHull}
+\leanok
+\uses{lem:split_masses}
+Let a continuum economy have finitely many types, trader $a$ having the preference and endowment of type $\tau(a)$, with
+$\mu$ finite and nonatomic. If at prices $p$ each type $t$ has $\bar x_t \in \operatorname{conv} (\text{demand}_t(p))$ and
+$\sum_t \mu(\tau^{-1} t)\, \bar x_t = \sum_t \mu(\tau^{-1} t)\, \omega_t$, then $p$ supports a Walrasian equilibrium of the
+continuum economy.
+\end{theorem}
+\begin{proof}
+\leanok
+Write $\bar x_t = \sum_k w_{tk} z_{tk}$ with $z_{tk}$ demanded (Lemma~\ref{lem:caratheodory_fixed}), split the traders of
+type $t$ into groups of masses $w_{tk}\mu(\tau^{-1} t)$ (Lemma~\ref{lem:split_masses}), and give group $k$ the bundle
+$z_{tk}$. Each trader demands her bundle, and the aggregate reproduces the convex combination.
+\end{proof}
+
+\begin{theorem}[Existence with finitely many types, strictly convex preferences]
+\label{thm:continuum_existence_types}
+\lean{Econ.Continuum.ContinuumEconomy.demand_scaled,
+  Econ.Continuum.ContinuumEconomy.strictlyQuasiconcave_scaled,
+  Econ.Continuum.ContinuumEconomy.stronglyMonotone_scaled,
+  Econ.Continuum.ContinuumEconomy.exists_isWalrasianEquilibrium_of_types}
+\leanok
+\uses{thm:convexification_bridge}
+A continuum economy with finitely many types of positive mass, each with a continuous, strictly quasiconcave utility
+representing strongly monotone preferences and a nonzero endowment, and with $\int e \gg 0$, has a Walrasian equilibrium at
+strictly positive prices in which all traders of a type consume the same bundle. This is a reduction to the finite
+theorem; nonatomicity is not needed.
+\end{theorem}
+\begin{proof}
+\leanok
+The consumer with utility $x \mapsto u_t(m_t^{-1}x)$ and endowment $m_t \omega_t$ demands $m_t$ times what type $t$ demands,
+so the mass-weighted clearing condition is ordinary clearing in the finite auxiliary economy over the types, where existence
+is MWG 17.B.2 + 17.C.1; give every trader of type $t$ the unscaled bundle.
+\end{proof}
+
+\begin{theorem}[Witness]
+\label{thm:continuum_existence_witness}
+\lean{Econ.Continuum.ContinuumEconomy.sqrtType, Econ.Continuum.ContinuumEconomy.measurable_sqrtType,
+  Econ.Continuum.ContinuumEconomy.sqrtOmega, Econ.Continuum.ContinuumEconomy.sqrtContinuum,
+  Econ.Continuum.ContinuumEconomy.sqrtType_fiber_zero, Econ.Continuum.ContinuumEconomy.sqrtType_fiber_one,
+  Econ.Continuum.ContinuumEconomy.sqrtContinuum_mass_zero, Econ.Continuum.ContinuumEconomy.sqrtContinuum_mass_one,
+  Econ.Continuum.ContinuumEconomy.sqrtContinuum_mass_pos, Econ.Continuum.ContinuumEconomy.sqrtContinuum_endow_integral,
+  Econ.Continuum.ContinuumEconomy.sqrtContinuum_exists_equilibrium}
+\leanok
+\uses{thm:continuum_existence_types}
+Traders uniform on $[0,1]$, utility $\sqrt{x_0} + \sqrt{x_1}$, endowment $(1,2)$ on $[0,1/3]$ and $(2,1)$ on $(1/3,1]$: an
+equilibrium exists at strictly positive prices.
+\end{theorem}
+\begin{proof}
+\leanok
+The types have masses $1/3$ and $2/3$, and the aggregate endowment is $(5/3, 4/3) \gg 0$.
+\end{proof}
+
+\begin{theorem}[The continuum is essential]
+\label{thm:continuum_nonconvex_witness}
+\lean{Econ.Continuum.ContinuumEconomy.uMax, Econ.Continuum.ContinuumEconomy.maxContinuum,
+  Econ.Continuum.ContinuumEconomy.one2, Econ.Continuum.ContinuumEconomy.uMax_le_two,
+  Econ.Continuum.ContinuumEconomy.mem_demand_uMax, Econ.Continuum.ContinuumEconomy.maxContinuum_const_not_demanded,
+  Econ.Continuum.ContinuumEconomy.maxContinuum_no_symmetric_equilibrium,
+  Econ.Continuum.ContinuumEconomy.maxContinuum_exists_equilibrium}
+\leanok
+\uses{thm:convexification_bridge, thm:lyapunov_integral_witness}
+Identical traders uniform on $[0,1]$ with endowment $(1,1)$ and the non-convex utility $\max(x_0, x_1)$: no equilibrium at
+positive prices gives almost everyone the same bundle (so no type-constant allocation works), yet at prices $(1,1)$ there is an equilibrium, in which half the traders
+consume $(2,0)$ and half $(0,2)$.
+\end{theorem}
+\begin{proof}
+\leanok
+An allocation that is a.e.\ constant and feasible is a.e.\ $(1,1)$, but spending all wealth on the cheaper good gives more than $1$ of it. At prices
+$(1,1)$ both $(2,0)$ and $(0,2)$ are demanded and $(1,1)$ is their midpoint; apply
+Theorem~\ref{thm:convexification_bridge}.
+\end{proof}

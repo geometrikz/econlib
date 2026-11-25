@@ -95,8 +95,10 @@ public import EconLean.GE.ExistenceAggregateDisposal
 public import EconLean.Foundations.Measure.Sierpinski
 public import EconLean.Foundations.Measure.Lyapunov
 public import EconLean.Foundations.Measure.LyapunovIntegral
+public import EconLean.Foundations.ConvexifiedCorrespondence
 public import EconLean.GE.ContinuumEconomy
 public import EconLean.GE.AumannCore
+public import EconLean.GE.ContinuumExistence
 public import EconLean.Audit.Statements.Lyapunov
 public import EconLean.Audit.Statements.FixedPoint
 
