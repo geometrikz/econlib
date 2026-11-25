@@ -12,7 +12,11 @@ convex. This chapter builds it from Sierpiński's intermediate value theorem for
 \label{def:nonatomic}
 \lean{Econ.Lyapunov.Nonatomic, Econ.Lyapunov.measureReal_pos_iff, Econ.Lyapunov.Nonatomic.real}
 \leanok
-A measure $\mu$ is nonatomic if every measurable set of x
+A measure $\mu$ is nonatomic if every measurable set $s$ with $\mu(s) > 0$ has a measurable
+subset $t \subseteq s$ with $0 < \mu(t) < \mu(s)$. For a finite measure the real-valued
+measure is positive exactly when the extended one is, so the definition transfers to $\mu$ viewed as
+a real-valued function on sets.
+\end{definition}
 
 \begin{lemma}[Small subsets]
 \label{lem:small_subsets}

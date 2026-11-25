@@ -1,4 +1,4 @@
-% Lean: EconLean/Econometrics/Asymptotics/TestPower.lean
+% Lean: EconLean/Econometrics/Asymptotics/TestPower.lean, OneSidedT.lean
 \chapter{Econometrics: consistency of tests and the \texorpdfstring{$t$}{t}-test}
 \label{chap:econometrics9}
 
@@ -69,4 +69,69 @@ probability tending to one.
 \begin{proof}
 \leanok
 All hypotheses are checked directly; apply Theorems~\ref{thm:wald-consistent} and~\ref{thm:t-test}.
+\end{proof}
+
+\section{The \texorpdfstring{$t$}{t}-test as a Wald test, and one-sided tests}
+\label{sec:one-sided-t}
+
+\begin{lemma}[$t^2 = W$ for one restriction]
+\label{lem:t-sq-wald}
+\lean{Econ.Asymptotics.rowMat, Econ.Asymptotics.rowMat_mul_mul_transpose, Econ.Asymptotics.inv_fin_one_const, Econ.Asymptotics.tStat_sq_eq_waldStat, Econ.Asymptotics.tStat_neg}
+\leanok
+\uses{def:t-stat, def:wald}
+Write the single restriction $r^\top\theta = c$ as the $1\times k$ matrix $R = r^\top$. If $r^\top\hat Vr\ge0$ then
+$t_n^2 = W_n$. Moreover $t_n(-r,-c) = -t_n(r,c)$.
+\end{lemma}
+\begin{proof}
+\leanok
+$R\hat VR^\top$ is the $1\times1$ matrix $(r^\top\hat Vr)$, whose inverse is $((r^\top\hat Vr)^{-1})$ (also when it is $0$,
+by the convention $0^{-1}=0$), so $W_n = n(r^\top\hat\theta-c)^2/(r^\top\hat Vr) = t_n^2$, using
+$\sqrt{r^\top\hat Vr}^{\,2} = r^\top\hat Vr$. The second identity is immediate since $(-r)^\top\hat V(-r) = r^\top\hat Vr$.
+\end{proof}
+
+\begin{lemma}[Statistics drifting to $-\infty$ do not reject]
+\label{lem:diverge-accept}
+\lean{Econ.Asymptotics.tendsto_prob_lt_mul_of_neg}
+\leanok
+If $X_n\to_p x^* < 0$ and $b_n\ge0$ with $b_n\to\infty$, then $P(b_nX_n > a)\to0$ for every $a$.
+\end{lemma}
+\begin{proof}
+\leanok
+Eventually $b_nx^*/2 < a$; on $\{|X_n-x^*| < -x^*/2\}$ we have $X_n < x^*/2$, so $b_nX_n\le b_nx^*/2 < a$. Hence
+$P(b_nX_n > a)\le P(|X_n-x^*|\ge -x^*/2)\to0$.
+\end{proof}
+
+\begin{theorem}[The one-sided $t$-test]
+\label{thm:one-sided-t}
+\lean{Econ.Asymptotics.t_one_sided, Econ.Asymptotics.t_scaled_tendstoInMeasure, Econ.Asymptotics.tStat_eq_scaled, Econ.Asymptotics.t_one_sided_consistent, Econ.Asymptotics.t_one_sided_wrong_side}
+\leanok
+\uses{thm:t-test, lem:diverge-reject, lem:diverge-accept}
+Consider the upper-tailed test rejecting when $t_n > a$. Under $H_0: r^\top\theta_0 = c$ with
+$\sqrt n(\hat\theta_n-\theta_0)\to_d N(0,V)$, $V\succeq0$, $\hat V_n\to_pV$ and $r^\top Vr>0$,
+$P(t_n > a)\to P(N(0,1) > a)$. If $\hat\theta_n\to_p\theta_0$, $\hat V_n\to_p V$ and $r^\top Vr > 0$, then
+$P(t_n > a)\to1$ when $r^\top\theta_0 > c$ and $P(t_n > a)\to0$ when $r^\top\theta_0 < c$.
+\end{theorem}
+\begin{proof}
+\leanok
+Under $H_0$, $t_n\to_d N(0,1)$ by Theorem~\ref{thm:t-test}; the boundary of $\{x > a\}$ is $\{a\}$, which is
+$N(0,1)$-null, so the portmanteau theorem applies. Under the alternatives,
+$t_n = \sqrt n\cdot(r^\top\hat\theta_n-c)/\sqrt{r^\top\hat V_nr}$ and the second factor converges in probability to
+$(r^\top\theta_0-c)/\sqrt{r^\top Vr}$ by the continuous mapping theorem; apply Lemma~\ref{lem:diverge-reject} or
+Lemma~\ref{lem:diverge-accept} with $b_n = \sqrt n$.
+\end{proof}
+
+\begin{theorem}[Example]
+\label{thm:one-sided-t-witness}
+\lean{Econ.Asymptotics.one_sided_t_witness}
+\leanok
+\uses{lem:t-sq-wald, thm:one-sided-t, thm:test-power-witness}
+Testing $\theta_1\le\theta_2$ against $\theta_1 > \theta_2$ ($r = (1,-1)$, $c = 0$) with
+$\sqrt n(\hat\theta_n-\theta_0)\sim N(0,I_2)$ and $\hat V_n = (1+\frac1{n+1})I_2$: $t_n^2 = W_n$; under $\theta_0 = 0$,
+$P(t_n > a)\to P(N(0,1) > a)$; the rejection probability tends to $1$ at $\theta_0 = (1,0)$ and to $0$ at
+$\theta_0 = (0,1)$.
+\end{theorem}
+\begin{proof}
+\leanok
+All hypotheses are checked directly (reusing the example of Theorem~\ref{thm:test-power-witness}); apply
+Lemma~\ref{lem:t-sq-wald} and Theorem~\ref{thm:one-sided-t}.
 \end{proof}

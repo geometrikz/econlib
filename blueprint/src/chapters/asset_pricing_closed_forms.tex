@@ -1,0 +1,82 @@
+% Lean: EconLean/Finance/CampbellShiller.lean, EconLean/Finance/LongRunRisk.lean
+\chapter{Present Values and Long-Run Risk}
+\label{chap:asset_pricing_closed_forms}
+
+Sources: Campbell--Shiller (1988); Cochrane (2008); Bansal--Yaron (2004); Campbell, \emph{Financial Decisions and Markets}.
+
+\section{The Campbell--Shiller identity}
+
+\begin{definition}[Log-linear return identity]
+\label{def:cs}
+\lean{Econ.CampbellShiller.Identity, Econ.CampbellShiller.Bdd, Econ.CampbellShiller.IsProb, Econ.CampbellShiller.mean, Econ.CampbellShiller.cov}
+\leanok
+$r_{t+1}=k+\rho\,pd_{t+1}+\Delta d_{t+1}-pd_t$ with $\rho\in[0,1)$; a path is bounded if $\sup_t|x_t|<\infty$. Means and
+covariances are taken under probability weights on a finite set of states.
+\end{definition}
+
+\begin{theorem}[Present-value identity]
+\label{thm:cs_pv}
+\lean{Econ.CampbellShiller.summable_of_bdd, Econ.CampbellShiller.bdd_r, Econ.CampbellShiller.pd_hasSum, Econ.CampbellShiller.pd_eq}
+\leanok
+\uses{def:cs}
+If $pd$ and $\Delta d$ are bounded, so is $r$, and
+$pd_t=\frac{k}{1-\rho}+\sum_j\rho^j\Delta d_{t+1+j}-\sum_j\rho^jr_{t+1+j}$.
+\end{theorem}
+\begin{proof}
+\leanok
+Iterating $n$ times gives $pd_t=\sum_{j<n}\rho^j(k+\Delta d_{t+1+j}-r_{t+1+j})+\rho^npd_{t+n}$. The remainder is at most
+$M\rho^n\to0$, and the series converges absolutely by comparison with a geometric series.
+\end{proof}
+
+\begin{theorem}[Variance decomposition]
+\label{thm:cs_var}
+\lean{Econ.CampbellShiller.cov_eq, Econ.CampbellShiller.var_decomp, Econ.CampbellShiller.returns_predictable}
+\leanok
+\uses{thm:cs_pv}
+$\mathrm{Var}(pd_t)=\mathrm{Cov}(pd_t,\sum\rho^j\Delta d)-\mathrm{Cov}(pd_t,\sum\rho^jr)$. If $pd_t$ does not forecast
+long-run dividend growth and varies, it forecasts long-run returns with covariance $-\mathrm{Var}(pd_t)<0$.
+\end{theorem}
+\begin{proof}
+\leanok
+State by state, $pd_t$ is a constant plus long-run growth minus long-run returns; covariance is linear.
+\end{proof}
+
+\section{Long-run risk}
+
+\begin{definition}[Bansal--Yaron economy]
+\label{def:lrr}
+\lean{Econ.LongRunRisk.Params, Econ.LongRunRisk.Params.θ, Econ.LongRunRisk.Params.A₁, Econ.LongRunRisk.Params.lamE, Econ.LongRunRisk.Params.xCoeff, Econ.LongRunRisk.Params.logEuler, Econ.LongRunRisk.Params.raInnov, Econ.LongRunRisk.Params.mInnov, Econ.LongRunRisk.Params.premium}
+\leanok
+Epstein--Zin with $\theta=(1-\gamma)/(1-1/\psi)$; $g_{t+1}=\mu+x_t+\sigma\varepsilon_{t+1}$,
+$x_{t+1}=\rho x_t+\varphi_e\sigma e_{t+1}$; $r_{a,t+1}=\kappa_0+\kappa_1z_{t+1}-z_t+g_{t+1}$ with $z_t=A_0+A_1x_t$;
+$m=\theta\log\delta-\frac\theta\psi g+(\theta-1)r_a$.
+\end{definition}
+
+\begin{theorem}[Wealth--consumption loading]
+\label{thm:lrr_A1}
+\lean{Econ.LongRunRisk.Params.one_sub_inv_ne, Econ.LongRunRisk.Params.one_sub_κρ_pos, Econ.LongRunRisk.Params.θ_ne, Econ.LongRunRisk.Params.logEuler_affine, Econ.LongRunRisk.Params.xCoeff_eq_zero_iff, Econ.LongRunRisk.Params.euler_forces_A₁, Econ.LongRunRisk.Params.A₁_pos_iff}
+\leanok
+\uses{def:lrr}
+The conditional mean in the Euler equation is affine in $x$; it is constant (as homoskedasticity requires) iff
+$A_1=(1-1/\psi)/(1-\kappa_1\rho)$, which is positive iff $\psi>1$.
+\end{theorem}
+\begin{proof}
+\leanok
+The slope is $\theta(1-1/\psi-A_1(1-\kappa_1\rho))$ and $\theta\ne0$.
+\end{proof}
+
+\begin{theorem}[Price of long-run risk]
+\label{thm:lrr_price}
+\lean{Econ.LongRunRisk.Params.sdf_innov, Econ.LongRunRisk.Params.lamE_pos_iff, Econ.LongRunRisk.Params.lamE_crra, Econ.LongRunRisk.Params.lamE_strictMono_ρ, Econ.LongRunRisk.Params.premium_eq, Econ.LongRunRisk.Params.wealth_premium_gt, Econ.LongRunRisk.Params.byCalibration, Econ.LongRunRisk.Params.byCalibration_lamE}
+\leanok
+\uses{thm:lrr_A1}
+$m_{t+1}-E_tm_{t+1}=-\gamma\sigma\varepsilon-\lambda_e\sigma e$ with $\lambda_e=(\gamma-1/\psi)\kappa_1\varphi_e/(1-\kappa_1\rho)$,
+positive iff $\gamma>1/\psi$, zero under CRRA, increasing in $\rho$ (fixed $\kappa_1$). Premia are
+$\sigma^2(\gamma\beta_c+\lambda_e\beta_e)$; the wealth portfolio earns more than $\gamma\sigma^2$ when $\gamma>1/\psi$,
+$\psi>1$. At the Bansal--Yaron calibration $17<\lambda_e<17.2$.
+\end{theorem}
+\begin{proof}
+\leanok
+Collect coefficients: $-\theta/\psi+\theta-1=-\gamma$ and $(\theta-1)\kappa_1A_1\varphi_e=-\lambda_e$. The rest is sign
+analysis and numerical evaluation.
+\end{proof}

@@ -162,6 +162,7 @@ public import EconLean.Econometrics.Asymptotics.ChiSquaredTests
 public import EconLean.Econometrics.Asymptotics.GMMWald
 public import EconLean.Econometrics.Asymptotics.FeasibleJWitness
 public import EconLean.Econometrics.Asymptotics.TestPower
+public import EconLean.Econometrics.Asymptotics.OneSidedT
 public import EconLean.Macro.Growth.RamseyGlobal
 public import EconLean.Macro.DP.StochasticPlan
 public import EconLean.Macro.DP.InvariantMeasure
@@ -188,6 +189,8 @@ public import EconLean.Macro.DP.StochasticGrowth
 public import EconLean.Audit.Statements.StochasticGrowth
 public import EconLean.Macro.DP.StochasticBrockMirman
 public import EconLean.Audit.Statements.StochasticBrockMirman
+public import EconLean.Macro.DP.MarkovBrockMirman
+public import EconLean.Audit.Statements.MarkovBrockMirman
 public import EconLean.Audit.Statements.HAStochastic
 public import EconLean.Bridges.Aggregation.Tatonnement
 public import EconLean.Bridges.Aggregation.TatonnementSup
@@ -330,6 +333,9 @@ public import EconLean.Audit.Statements.MacroBatch16
 public import EconLean.Macro.Fiscal.AMSS
 public import EconLean.Macro.Fiscal.LucasStokeyGeneral
 public import EconLean.Audit.Statements.MacroBatch17
+public import EconLean.Finance.CampbellShiller
+public import EconLean.Finance.LongRunRisk
+public import EconLean.Audit.Statements.MacroBatch18
 public import EconLean.Behavioral.BeliefRule
 public import EconLean.Behavioral.CognitiveDiscounting
 public import EconLean.Behavioral.DiagnosticExpectations
