@@ -60,17 +60,17 @@ on $[\lambda,1]$ (three cases), with strict inequality on $[\lambda,1/r']$.
 \section{The financial accelerator}
 
 \begin{definition}[Capital market with a premium]
-\label{def:bgg}
+\label{def:bgg_accel}
 \lean{Econ.BGG.Env, Econ.BGG.Env.IsEq}
 \leanok
 $Af'(K)=R\,s(N/K)$ with $f'$ positive and strictly decreasing and the gross premium $s\ge1$ decreasing in net worth over assets.
 \end{definition}
 
 \begin{theorem}[Net worth and amplification]
-\label{thm:bgg}
+\label{thm:bgg_accel}
 \lean{Econ.BGG.Env.K_strictMono_N, Econ.BGG.Env.premium_anti_N, Econ.BGG.Env.K_indep_N, Econ.BGG.Env.K_strictMono_A, Econ.BGG.Env.amplification, Econ.BGG.Env.existsUnique_K, Econ.BGG.premium_example, Econ.BGG.premium_example_ge}
 \leanok
-\uses{def:bgg}
+\uses{def:bgg_accel}
 With $s$ strictly decreasing, capital rises and the premium falls with net worth; with $s$ constant capital is independent of net
 worth. Capital rises with $A$, and if $N=N_0+\kappa A$ the net-worth channel adds to the direct effect. Under boundary conditions
 the equilibrium exists and is unique. $s(x)=1+m/x$ is an example.

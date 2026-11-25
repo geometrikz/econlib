@@ -11,7 +11,8 @@ a price with a positive mass of cars offered and `p = E[θ | θ ≤ p]`.
 **Unravelling** (`isLemonsEq_iff`): an equilibrium with trade exists only at the lowest
 quality, `p = min supp F`, and only cars of that quality trade. Every car above the worst
 is withdrawn. (Here sellers and buyers value quality equally, `r(θ) = θ`, so the market is thin
-but no surplus is lost; the welfare-loss version with `r(θ) < θ` is not formalized.)
+but no surplus is lost; the welfare-loss version with `r(θ) < θ` is in
+`Information/LemonsGains.lean`.)
 -/
 module
 

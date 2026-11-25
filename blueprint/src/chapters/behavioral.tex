@@ -1,4 +1,4 @@
-% Lean: EconLean/Behavioral/{PresentBias,RankDependent,ReferenceDependence,Temptation,Logit,RationalInattention,RISymmetric,Ambiguity,GilboaSchmeidler,StochasticChoice,Falmagne,GumbelLogit,SocialPreferences,Salience,ShroudedAttributes,ContractDesign}.lean
+% Lean: EconLean/Behavioral/{PresentBias,RankDependent,ReferenceDependence,Temptation,Logit,RationalInattention,RISymmetric,Ambiguity,GilboaSchmeidler,StochasticChoice,Falmagne,GumbelLogit,LevelKForwardGuidance,SocialPreferences,Salience,ShroudedAttributes,ContractDesign}.lean
 \chapter{Behavioral Decision Theory}
 \label{chap:behavioral}
 
@@ -1433,4 +1433,32 @@ $I$ is $1$-Lipschitz in the sup norm, so its strict hypograph is open and convex
 $(f,I(f))$ (geometric Hahn--Banach) gives a supergradient $p$: $I(g)\le I(f)+\langle p,g-f\rangle$. Monotonicity
 makes $p\ge0$ and constant additivity makes $\sum p=1$. Then $c(p)=I(f)-\langle p,f\rangle$, while
 $c(p')\ge I(f)-\langle p',f\rangle$ for every $p'$ by definition.
+\end{proof}
+
+\section{Bounded rationality and forward guidance}
+
+\begin{theorem}[Level-$k$ thinking attenuates forward guidance]
+\label{thm:beh-levelk-fg}
+\lean{Econ.LevelKFG.IsPlan, Econ.LevelKFG.IsRational, Econ.LevelKFG.IsLevelK, Econ.LevelKFG.levelK, Econ.LevelKFG.plan_path, Econ.LevelKFG.plan_eq, Econ.LevelKFG.exists_plan, Econ.LevelKFG.rational_eq, Econ.LevelKFG.rational_clears_after, Econ.LevelKFG.exists_rational, Econ.LevelKFG.levelK_eq, Econ.LevelKFG.exists_levelK, Econ.LevelKFG.gap_mem, Econ.LevelKFG.levelK_lt_rational, Econ.LevelKFG.levelK_strictMono, Econ.LevelKFG.tendsto_levelK, Econ.LevelKFG.levelK_strictAnti_horizon, Econ.LevelKFG.tendsto_levelK_horizon}
+\leanok
+A representative household with discount factor $0<\beta<1$ consumes $c_s$ and, with output $y_s$ (deviations from
+steady state), satisfies the log-linear Euler equation $c_{s+1}=c_s+\sigma r_s$, where the central bank announces a
+one-period rate cut $r_T=-1$ at date $T$, and the present-value budget $\sum_s\beta^s(c_s-y_s)=0$. Believed output is
+zero after $T$. Then $c_s=c_0$ for $s\le T$ and
+$c_0=(1-\beta)\sum_{s\le T}\beta^s y_s+\sigma\beta^{T+1}$.
+\emph{Rational expectations} (believed output equals consumption up to $T$) give $y_s=\sigma$ for all $s\le T$ whatever
+the horizon $T$, with markets clearing after $T$ as well: the forward-guidance puzzle.
+\emph{Level-$k$}: level $0$ expects steady state and level $k+1$ plans against level-$k$ output up to $T$. Then level-$k$
+output on $[0,T]$ is $\sigma\bigl(1-(1-\beta^{T+1})^k\bigr)$: it lies strictly below $\sigma$, strictly increases in
+$k$ and tends to $\sigma$; for fixed $k\ge1$ it strictly decreases in $T$ and tends to $0$ as $T\to\infty$.
+This is a stylized version of Farhi--Werning (2019) and García-Schmidt--Woodford (2019): post-$T$ beliefs are anchored
+at steady state by assumption and each level makes a single date-$0$ plan rather than re-reasoning each period, so the
+closed form is this model's, not the papers'.
+\end{theorem}
+\begin{proof}
+\leanok
+The Euler equation makes $c$ flat up to $T$ and lower by $\sigma$ afterwards; summing the budget as a geometric series
+gives $c_0$. Under rational expectations $y_s=c_0$ on $[0,T]$, so $c_0=(1-\beta^{T+1})c_0+\sigma\beta^{T+1}$ and
+$c_0=\sigma$. For level $k$, $Y_{k+1}=(1-\beta^{T+1})Y_k+\sigma\beta^{T+1}$ with $Y_0=0$; induction gives the closed
+form, and $0<1-\beta^{T+1}<1$ gives monotonicity and the limits.
 \end{proof}

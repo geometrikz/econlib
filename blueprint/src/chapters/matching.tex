@@ -1,4 +1,4 @@
-% Lean: EconLean/Matching/GaleShapley.lean
+% Lean: EconLean/Matching/{GaleShapley,StrategyProof,GroupStrategyProof}.lean
 \chapter{Matching}
 \label{chap:matching}
 
@@ -90,6 +90,22 @@ $m_0 \notin M'$ and $w \in \mu'(M')$ (Roth--Sotomayor 1990, Lemma 3.5). Hence no
 Among the women matched under $\mu'$ to men who improve, take the one whose final proposal arrives latest; her
 last rejected suitor blocks $\mu'$. A profitable misreport by $m$ would give a matching that $m$ strictly prefers
 and that is stable for the reported profile, contradicting the lemma applied to the true profile.
+\end{proof}
+
+
+\begin{theorem}[Group strategy-proofness of DA (Dubins--Freedman 1981; Roth--Sotomayor Thm.~4.10)]
+\label{thm:da-group-strategyproof}
+\lean{Econ.daMatching_groupStrategyproof}
+\leanok
+\uses{thm:da-strategyproof}
+If the men outside a nonempty coalition $C$ and all women report truthfully, no misreport by $C$ makes
+every member of $C$ strictly better off under his true preferences.
+\end{theorem}
+\begin{proof}
+\leanok
+Suppose every $m\in C$ improves. The DA matching $\mu'$ under the reports is stable for the reports. By the blocking
+lemma some pair $(m_0,w)$ blocks $\mu'$ under the true preferences with $m_0$ not improving, so $m_0\notin C$ and
+$m_0$ reports truthfully; then $(m_0,w)$ also blocks $\mu'$ under the reports, a contradiction.
 \end{proof}
 
 \section{Assortative matching}

@@ -208,7 +208,9 @@ public import EconLean.Games.Bayesian
 public import EconLean.Games.Extensive
 public import EconLean.Audit.Statements.Games
 public import EconLean.Games.Repeated
+public import EconLean.Games.Reputation
 public import EconLean.Information.Lemons
+public import EconLean.Information.LemonsGains
 public import EconLean.Information.Agreement
 public import EconLean.Information.Cascades
 public import EconLean.Information.CheapTalk
@@ -236,6 +238,7 @@ public import EconLean.Mechanism.FirstPrice
 public import EconLean.Mechanism.SecondPrice
 public import EconLean.Mechanism.Implementation
 public import EconLean.Matching.StrategyProof
+public import EconLean.Matching.GroupStrategyProof
 public import EconLean.Matching.Assortative
 public import EconLean.Matching.Boston
 public import EconLean.Matching.HousingMarket
@@ -264,6 +267,7 @@ public import EconLean.Audit.Statements.MatchingBargaining
 public import EconLean.Audit.Statements.Assignment
 public import EconLean.Audit.Statements.Batch13
 public import EconLean.Audit.Statements.Batch14
+public import EconLean.Audit.Statements.Batch15
 public import EconLean.Audit.Statements.GlobalGames
 public import EconLean.Audit.Statements.Relational
 public import EconLean.Macro.Consumption.Precautionary
@@ -406,5 +410,7 @@ public import EconLean.Behavioral.RDUNecessity
 public import EconLean.Audit.Statements.BehavioralXXVII
 public import EconLean.Behavioral.GumbelLogit
 public import EconLean.Audit.Statements.BehavioralXXVIII
+public import EconLean.Behavioral.LevelKForwardGuidance
+public import EconLean.Audit.Statements.BehavioralXXIX
 
 @[expose] public section

@@ -32,6 +32,28 @@ offered quality equals $p$; since some quality is offered and the minimum $m \le
 Conversely at $p = m$ only quality $m$ is offered.
 \end{proof}
 
+\begin{definition}[Lemons equilibrium with seller values; MWG \S13.B]
+\label{def:lemons-eq-r}
+\lean{Econ.offeredMassR, Econ.offeredQualityR, Econ.IsLemonsEqR}
+\leanok
+Sellers value quality $\theta$ at $r(\theta)$ and offer at price $p$ iff $r(\theta)\le p$. A price $p$ is an
+equilibrium with trade if a positive mass is offered and $p=\mathbb{E}[\theta\mid r(\theta)\le p]$.
+\end{definition}
+
+\begin{theorem}[Adverse selection withholds good cars (cf.\ MWG Prop.~13.B.1)]
+\label{thm:lemons-gains}
+\lean{Econ.lemonsEqR_price_le_mean, Econ.lemonsEqR_withheld}
+\leanok
+\uses{def:lemons-eq-r}
+If $r$ is nondecreasing, every equilibrium price satisfies $p\le\mathbb{E}[\theta]$; hence every car with
+$r(\theta)>\mathbb{E}[\theta]$ is withheld, and if also $r(\theta)<\theta$ its gains from trade are lost.
+\end{theorem}
+\begin{proof}
+\leanok
+The offered qualities $L$ lie below the withheld ones $H$: with $c=\max L$, $Q_L\le c\,m_L$ and $Q_H\ge c\,m_H$.
+Then $\mathbb{E}[\theta]m_L-Q_L=Q_H m_L-Q_L m_H\ge0$, and $Q_L=p\,m_L$ with $m_L>0$ gives $p\le\mathbb{E}[\theta]$.
+\end{proof}
+
 \section{Signaling}
 \label{sec:spence}
 

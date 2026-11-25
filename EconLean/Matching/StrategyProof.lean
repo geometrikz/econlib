@@ -356,8 +356,8 @@ partner he truly prefers to his partner under truthful reporting.
 
 Scope: as in `Matching/GaleShapley.lean` everybody is acceptable to everybody, so a report is
 a ranking of all women and truncation strategies (declaring women unacceptable) are not in the
-strategy space; and only individual manipulation is covered, not the coalitional version of
-Dubins–Freedman. -/
+strategy space. The coalitional version of Dubins–Freedman is `daMatching_groupStrategyproof` in
+`Matching/GroupStrategyProof.lean`. -/
 theorem daMatching_strategyproof (um um' : M → W → ℝ) (uw : W → M → ℝ)
     (hum : ∀ m, Function.Injective (um m)) (huw : ∀ w, Function.Injective (uw w)) (m : M)
     (hsame : ∀ m'', m'' ≠ m → um' m'' = um m'') :

@@ -341,6 +341,24 @@ The verification theorem bounds the deviation payoff by $W_0$, which is grim tri
 For the folk theorem take $\delta \ge \max_i (M - u_i(a))/(M - u_i(e))$.
 \end{proof}
 
+\begin{theorem}[Reputation bound; Fudenberg--Levine 1989]
+\label{thm:reputation}
+\lean{Econ.reputationPosterior, Econ.predictA, Econ.bounded_surprises, Econ.discounted_ge_of_bad_card, Econ.reputation_bound, Econ.reputation_limit}
+\leanok
+A long-run player is a commitment type playing $a^*$ with prior $\mu_0>0$. Along the path where $a^*$ is always
+played, for any strategy of the normal type the short-run players' probability $p_t$ of $a^*$ satisfies
+$p_t\le\pi$ in at most $\log\mu_0/\log\pi$ periods. Hence if beliefs above $\pi$ give the long-run player at least $v$
+(and always at least $m\le v$), mimicking $a^*$ yields at least $\delta^K v+(1-\delta^K)m$, $K=\lfloor\log\mu_0/\log\pi\rfloor$;
+this tends to $v$ as $\delta\to1$, uniformly in the normal type's strategy and the short-run responses.
+\end{theorem}
+\begin{proof}
+\leanok
+Bayes' rule gives $\mu_{t+1}=\mu_t/p_t$ after $a^*$, so $\mu_0\prod_{t<T}p_t^{-1}=\mu_T\le1$ and $\prod_{t<T}p_t\ge\mu_0$.
+Each surprise period contributes a factor at most $\pi$, so $\pi^k\ge\mu_0$. The discounted payoff is smallest
+when all $k\le K$ bad periods come first, giving $\delta^K v+(1-\delta^K)m$; this is continuous in $\delta$ and
+equals $v$ at $\delta=1$.
+\end{proof}
+
 \section{Potential games}
 \label{sec:potential}
 
