@@ -18,8 +18,8 @@ Main results:
   nonnegative payoff.
 * Witness: the second-price auction is the Clarke mechanism for one indivisible good.
 
-The converse (Green–Laffont: every strategy-proof efficient mechanism is Groves, on rich
-type spaces) is not formalized.
+The converse (Green–Laffont: every strategy-proof efficient mechanism is Groves, on an
+unrestricted domain) is in `Mechanism/GreenLaffont`.
 -/
 module
 

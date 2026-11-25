@@ -217,3 +217,41 @@ $\hat V_n\to_p V$ by Lemma~\ref{lem:avar-hat} and the continuous mapping theorem
 full row rank, so $RVR^\top$ is invertible. $\sqrt n(\hat\theta_n-\theta_0)\to_d AL\sim N(0,V)$ by
 Theorem~\ref{thm:two-step-gmm}. Apply Theorem~\ref{thm:wald}.
 \end{proof}
+
+\section{Overidentified data-level examples}
+\label{sec:chi-squared-witnesses}
+
+\begin{theorem}[Feasible \texorpdfstring{$J$}{J} test in an overidentified design]
+\label{thm:feasible-j-witness}
+\lean{Econ.Asymptotics.FeasibleJ.spike, Econ.Asymptotics.FeasibleJ.zJ, Econ.Asymptotics.FeasibleJ.wJ, Econ.Asymptotics.FeasibleJ.uJ, Econ.Asymptotics.FeasibleJ.sum_spike_mul, Econ.Asymptotics.FeasibleJ.sum_spike_sq_mul, Econ.Asymptotics.FeasibleJ.sum_range_neg_one_pow, Econ.Asymptotics.FeasibleJ.abs_sum_neg_one_pow, Econ.Asymptotics.FeasibleJ.tendsto_avg_neg_one_pow, Econ.Asymptotics.FeasibleJ.tendsto_scaled_sum, Econ.Asymptotics.FeasibleJ.sum_spike_mul_eq_zero, Econ.Asymptotics.FeasibleJ.zJ_zero_two, Econ.Asymptotics.FeasibleJ.zJ_one_three, Econ.Asymptotics.FeasibleJ.wJ_zero_two, Econ.Asymptotics.FeasibleJ.wJ_one_three, Econ.Asymptotics.FeasibleJ.abs_zJ_le, Econ.Asymptotics.FeasibleJ.abs_wJ_le, Econ.Asymptotics.FeasibleJ.sqrt_inv_sq, Econ.Asymptotics.FeasibleJ.sHat_eq, Econ.Asymptotics.FeasibleJ.sCross_eq, Econ.Asymptotics.FeasibleJ.sqrt_sampleMoment_eq, Econ.Asymptotics.FeasibleJ.sum_zJ_zero, Econ.Asymptotics.FeasibleJ.sum_zJ_one, Econ.Asymptotics.FeasibleJ.zJ_one_sq, Econ.Asymptotics.FeasibleJ.tendsto_avg_const, Econ.Asymptotics.FeasibleJ.tendsto_avg_zJ, Econ.Asymptotics.FeasibleJ.tendsto_avg_zJ_mul, Econ.Asymptotics.FeasibleJ.tendsto_avg_zJ_wJ, Econ.Asymptotics.FeasibleJ.tendsto_sq_inv_mul, Econ.Asymptotics.FeasibleJ.tendsto_sqrt_inv_mul, Econ.Asymptotics.FeasibleJ.abs_wJ_sq_zz_le, Econ.Asymptotics.FeasibleJ.abs_wJ_zz_le, Econ.Asymptotics.FeasibleJ.measurable_uJ, Econ.Asymptotics.FeasibleJ.feasible_jtest_witness}
+\leanok
+\uses{thm:jtest-chi-squared}
+Take two instruments $z_i = (1,(-1)^i)$, one regressor $x_i = 1$, $\theta_0 = 0$ and errors
+$u_i = e_i + (\omega_0+(-1)^i\omega_1)/\sqrt n$ with $\omega\sim N(0,I_2)$ and a deterministic spike $e$
+($e_0 = e_1 = \sqrt n/2$, $e_2 = e_3 = -\sqrt n/2$, zero otherwise). With first-step weight $I_2$, every hypothesis of
+the feasible two-step $J$ theorem holds with $G = (1,0)^\top$ and $S = I_2$, and $P(J_n > c)\to P(\chi^2(1) > c)$.
+\end{theorem}
+\begin{proof}
+\leanok
+The spike satisfies $\sum_ie_iz_i = 0$, $\sum_ie_i(w_iz_iz_i^\top) = 0$ and $n^{-1}\sum_ie_i^2z_iz_i^\top = I_2$ for
+$n\ge4$. Hence $\sqrt n\,\hat g_n(\theta_0) = n^{-1}\sum_iw_iz_i\to\omega$,
+$\hat S_n(\theta_0) = I_2 + n^{-2}\sum_iw_i^2z_iz_i^\top\to I_2$, the cross moment
+$(n\sqrt n)^{-1}\sum_iw_iz_iz_i^\top\to0$, and $\hat G_n$ and $n^{-1}\sum_iz_iz_i^\top$ converge because
+$|\sum_{i<n}(-1)^i|\le1$. All limits hold for every $\omega$, so in probability. Apply
+Theorem~\ref{thm:jtest-chi-squared}.
+\end{proof}
+
+\begin{theorem}[Wald test of \texorpdfstring{$\theta_1 = \theta_2$}{theta1 = theta2} after GMM]
+\label{thm:gmm-wald-rect-witness}
+\lean{Econ.Asymptotics.two_step_wald_rect_witness}
+\leanok
+\uses{thm:gmm-wald}
+With three moments and two parameters ($G$ with rows $(1,0)$, $(0,1)$, $(1,1)$), $S = I_3$, the consistent weight
+estimate $\hat S_n = (1+\frac1{n+1})I_3$ and $\sqrt n\,\hat g_n\sim N(0,I_3)$, every hypothesis of
+Theorem~\ref{thm:gmm-wald} holds for $R = (1,-1)$, $c = 0$, and $P(W_n > a)\to P(\chi^2(1) > a)$.
+\end{theorem}
+\begin{proof}
+\leanok
+$G$ and $R^\top$ are injective, $\hat S_n\to I_3$, and $\sqrt n\,\hat g_n$ has the limit law exactly for $n\ge1$; apply
+Theorem~\ref{thm:gmm-wald}.
+\end{proof}

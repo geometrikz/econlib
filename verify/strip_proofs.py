@@ -29,7 +29,7 @@ def sig_end(text):
     """index of the depth-0 ':=' or 'where' ending the signature.
     A `let`/`have` inside the statement owns the next ':=' (e.g. `let k := f x; P k`)."""
     d, pending = 0, 0
-    for m in re.finditer(r'[(\[{⟨]|[)\]}⟩]|:=|\bwhere\b|\b(?:let|have|letI|haveI)\b|\n\s*\|(?=[^|\n]*=>)', text):
+    for m in re.finditer(r'[(\[{⟨]|[)\]}⟩]|:=|\bwhere\b|\b(?:let|have|letI|haveI)\b|\n\s*\|(?=\s[^|\n]*=>)', text):
         t = m.group()
         if t in '([{⟨': d += 1
         elif t in ')]}⟩': d -= 1

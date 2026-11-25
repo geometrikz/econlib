@@ -1,0 +1,72 @@
+% Lean: EconLean/Econometrics/Asymptotics/TestPower.lean
+\chapter{Econometrics: consistency of tests and the \texorpdfstring{$t$}{t}-test}
+\label{chap:econometrics9}
+
+Sources: Hayashi (2000) Prop.~2.3 and \S2.4; Newey and McFadden (1994) \S9; Davidson and MacKinnon (2004) \S4.5.
+
+\begin{lemma}[Divergent statistics reject]
+\label{lem:diverge-reject}
+\lean{Econ.Asymptotics.tendsto_prob_lt_mul_of_pos}
+\leanok
+If $X_n\to_p x^* > 0$ and $b_n\ge0$ with $b_n\to\infty$, then $P(b_nX_n > a)\to1$ for every $a$.
+\end{lemma}
+\begin{proof}
+\leanok
+Once $b_nx^*/2 > a$, the event $b_nX_n\le a$ forces $|X_n - x^*|\ge x^*/2$, whose probability tends to zero.
+\end{proof}
+
+\begin{theorem}[Consistency of the Wald test]
+\label{thm:wald-consistent}
+\lean{Econ.Asymptotics.waldForm, Econ.Asymptotics.waldStat_eq_waldForm, Econ.Asymptotics.continuousAt_waldForm, Econ.Asymptotics.wald_consistent}
+\leanok
+\uses{lem:diverge-reject, def:wald}
+Under a fixed alternative $R\theta_0\ne c$, with $\hat\theta_n\to_p\theta_0$, $\hat V_n\to_p V$ and $RVR^\top$ positive
+definite, $P(W_n > a)\to1$ for every critical value $a$.
+\end{theorem}
+\begin{proof}
+\leanok
+$W_n = n\,q(\hat\theta_n,\hat V_n)$ with $q(\theta,V) = (R\theta-c)^\top(RVR^\top)^{-1}(R\theta-c)$ continuous at
+$(\theta_0,V)$, so $q(\hat\theta_n,\hat V_n)\to_p q(\theta_0,V) > 0$ by positive definiteness. Apply
+Lemma~\ref{lem:diverge-reject} with $b_n = n$.
+\end{proof}
+
+\begin{definition}[$t$ statistic]
+\label{def:t-stat}
+\lean{Econ.Asymptotics.tStat, Econ.Asymptotics.seInv, Econ.Asymptotics.continuous_quad, Econ.Asymptotics.continuousAt_seInv, Econ.Asymptotics.measurable_seInv}
+\leanok
+For $H_0: r^\top\theta = c$, $t_n = \sqrt n(r^\top\hat\theta_n-c)/\sqrt{r^\top\hat V_nr}$. The reciprocal standard error
+is continuous wherever $r^\top Vr > 0$.
+\end{definition}
+
+\begin{theorem}[The $t$-test]
+\label{thm:t-test}
+\lean{Econ.Asymptotics.t_tendsto, Econ.Asymptotics.gaussianReal_frontier_abs, Econ.Asymptotics.t_normal, Econ.Asymptotics.t_consistent}
+\leanok
+\uses{def:t-stat, lem:gaussian-linear, lem:diverge-reject}
+Under $H_0$, if $\sqrt n(\hat\theta_n-\theta_0)\to_d L$, $\hat V_n\to_p V$ and $r^\top Vr > 0$, then
+$t_n\to_d r^\top L/\sqrt{r^\top Vr}$. If $V\succeq0$ and $L\sim N(0,V)$ this limit is $N(0,1)$ and
+$P(|t_n| > a)\to P(|N(0,1)| > a)$. Under a fixed alternative $r^\top\theta_0\ne c$ with $\hat\theta_n\to_p\theta_0$,
+$P(|t_n| > a)\to1$.
+\end{theorem}
+\begin{proof}
+\leanok
+Under $H_0$, $t_n = r^\top\sqrt n(\hat\theta_n-\theta_0)\cdot(r^\top\hat V_nr)^{-1/2}$; continuous mapping and Slutsky
+give the limit. $r^\top L$ is a coordinate of $AL\sim N(0,AVA^\top)$ with $A = r^\top$, so it is $N(0,r^\top Vr)$, and
+rescaling gives $N(0,1)$. The boundary of $\{|x| > a\}$ lies in $\{a,-a\}$, which is null under $N(0,1)$, so the
+portmanteau theorem applies. Under the alternative, $|t_n| = \sqrt n\,|r^\top\hat\theta_n-c|/\sqrt{r^\top\hat V_nr}$
+and Lemma~\ref{lem:diverge-reject} applies with $b_n = \sqrt n$.
+\end{proof}
+
+\begin{theorem}[Example]
+\label{thm:test-power-witness}
+\lean{Econ.Asymptotics.test_power_witness}
+\leanok
+\uses{thm:wald-consistent, thm:t-test}
+Testing $\theta_1 = \theta_2$ with $\sqrt n(\hat\theta_n-\theta_0)\sim N(0,I_2)$ and $\hat V_n = (1+\frac1{n+1})I_2$:
+under $\theta_0 = 0$, $P(|t_n| > a)\to P(|N(0,1)| > a)$; under $\theta_0 = (1,0)$, the $t$- and Wald tests reject with
+probability tending to one.
+\end{theorem}
+\begin{proof}
+\leanok
+All hypotheses are checked directly; apply Theorems~\ref{thm:wald-consistent} and~\ref{thm:t-test}.
+\end{proof}

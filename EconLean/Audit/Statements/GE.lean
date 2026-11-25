@@ -16,6 +16,8 @@ module
 
 public import EconLean.GE.SecondWelfare
 public import EconLean.GE.Existence
+public import EconLean.GE.Replica
+public import EconLean.GE.DebreuScarf
 
 @[expose] public section
 
@@ -157,5 +159,62 @@ theorem frozen_exists_freeDisposalEquilibrium (hB : BrouwerSimplex ι)
     (hc : ∀ a, ContinuousOn (d a) (priceSimplex ι)) :
     ∃ p ∈ priceSimplex ι, E.IsFreeDisposalEquilibrium p (fun a => d a p) :=
   exists_freeDisposalEquilibrium hB hlns hd hc
+
+section Replica
+
+/-! Frozen after the adversarial review of 2026-11-25 (`Audit/REVIEW-replica.md`). -/
+
+theorem frozen_replica_def {I : Type*} (u : I → (ι → ℝ) → ℝ) (ω : I → ι → ℝ)
+    (hω : ∀ i, 0 ≤ ω i) (r : ℕ) (a : I × Fin r) :
+    (replica u ω hω r).pref a = prefOf (u a.1) ∧ (replica u ω hω r).endow a = ω a.1 :=
+  ⟨rfl, rfl⟩
+
+theorem frozen_replica_inCore_equalTreatment {I : Type*} [Fintype I] [DecidableEq I]
+    {u : I → (ι → ℝ) → ℝ} {ω : I → ι → ℝ} {hω : ∀ i, 0 ≤ ω i} {r : ℕ}
+    (hu : ∀ i, Continuous (u i)) (hsq : ∀ i, StrictlyQuasiconcave (u i))
+    (hmono : ∀ i, StronglyMonotone (prefOf (u i))) {x : Allocation (I × Fin r) ι}
+    (hx : (replica u ω hω r).InCore x) (i : I) (q q' : Fin r) : x (i, q) = x (i, q') :=
+  replica_inCore_equalTreatment hu hsq hmono hx i q q'
+
+theorem frozen_linear_replica_unequal_core :
+    (replica (fun (_ : Fin 1) (x : Fin 2 → ℝ) => x 0 + x 1) (fun _ _ => 1)
+      (fun _ _ => zero_le_one) 2).InCore
+      (fun a => if a.2 = 0 then ![2, 0] else ![0, 2]) ∧
+    (fun a : Fin 1 × Fin 2 => if a.2 = 0 then (![2, 0] : Fin 2 → ℝ) else ![0, 2]) (0, 0) ≠
+      (fun a : Fin 1 × Fin 2 => if a.2 = 0 then (![2, 0] : Fin 2 → ℝ) else ![0, 2]) (0, 1) :=
+  GEExamples.linear_replica_unequal_core
+
+end Replica
+
+section DebreuScarf
+
+theorem frozen_walrasian_of_mem_core_replicas {I : Type*} [Fintype I] [DecidableEq I]
+    [Nonempty I] [Nonempty ι] {u : I → (ι → ℝ) → ℝ} {ω : I → ι → ℝ} {hω : ∀ i, 0 ≤ ω i}
+    (hu : ∀ i, Continuous (u i)) (hsq : ∀ i, StrictlyQuasiconcave (u i))
+    (hmono : ∀ i, StronglyMonotone (prefOf (u i))) (hωpos : ∀ i, PositivePrices (ω i))
+    {xs : I → ι → ℝ} (hcore : ∀ r, 0 < r → (replica u ω hω r).InCore fun a => xs a.1) :
+    ∃ p : ι → ℝ, PositivePrices p ∧ ∀ i, xs i ∈ demand (prefOf (u i)) p (cost p (ω i)) :=
+  walrasian_of_mem_core_replicas hu hsq hmono hωpos hcore
+
+theorem frozen_isWalrasianEquilibrium_of_mem_core_replicas {I : Type*} [Fintype I]
+    [DecidableEq I] [Nonempty I] [Nonempty ι] {u : I → (ι → ℝ) → ℝ} {ω : I → ι → ℝ}
+    {hω : ∀ i, 0 ≤ ω i} (hu : ∀ i, Continuous (u i)) (hsq : ∀ i, StrictlyQuasiconcave (u i))
+    (hmono : ∀ i, StronglyMonotone (prefOf (u i))) (hωpos : ∀ i, PositivePrices (ω i))
+    {xs : I → ι → ℝ} (hcore : ∀ r, 0 < r → (replica u ω hω r).InCore fun a => xs a.1) :
+    ∃ p : ι → ℝ, PositivePrices p ∧
+      ∀ r, (replica u ω hω r).IsWalrasianEquilibrium p fun a => xs a.1 :=
+  isWalrasianEquilibrium_of_mem_core_replicas hu hsq hmono hωpos hcore
+
+theorem frozen_mem_core_replicas_iff_walrasian {I : Type*} [Fintype I] [DecidableEq I]
+    [Nonempty I] [Nonempty ι] {u : I → (ι → ℝ) → ℝ} {ω : I → ι → ℝ} {hω : ∀ i, 0 ≤ ω i}
+    (hu : ∀ i, Continuous (u i)) (hsq : ∀ i, StrictlyQuasiconcave (u i))
+    (hmono : ∀ i, StronglyMonotone (prefOf (u i))) (hωpos : ∀ i, PositivePrices (ω i))
+    {xs : I → ι → ℝ} :
+    (∀ r, 0 < r → (replica u ω hω r).InCore fun a => xs a.1) ↔
+      ∃ p : ι → ℝ, PositivePrices p ∧
+        ∀ r, (replica u ω hω r).IsWalrasianEquilibrium p fun a => xs a.1 :=
+  mem_core_replicas_iff_walrasian hu hsq hmono hωpos
+
+end DebreuScarf
 
 end Econ.Audit

@@ -406,3 +406,52 @@ Conversely shift the bonus to have minimum $0$ (this keeps incentives since prob
 agent zero rent. For the bound, subtract the minimum bonus (the differences of probabilities sum to $0$) and compare
 termwise.
 \end{proof}
+
+\section{The intuitive criterion}
+
+\begin{definition}[Intuitive criterion, two types]
+\label{def:intuitive}
+\lean{Econ.FailsIntuitive}
+\leanok
+\uses{def:spence}
+A Spence PBE fails the intuitive criterion if some off-path education $e$ gives the low type less than its equilibrium
+payoff even at the best wage $\theta_H$, while at wage $\theta_H$ the high type strictly gains.
+\end{definition}
+
+\begin{theorem}[Cho--Kreps 1987; MWG \S13.C]
+\label{thm:intuitive}
+\lean{Econ.intuitive_separating, Econ.intuitive_pooling, Econ.riley_passes, Econ.witness_strictMono}
+\leanok
+\uses{def:intuitive, thm:spence-sep, thm:spence-pool}
+With strictly increasing costs, a separating PBE that passes the criterion has $e_L = 0$ and $e_H = e_R$, where
+$c(e_R, \theta_L) - c(0, \theta_L) = \theta_H - \theta_L$ (the Riley outcome). With continuous costs, strict single crossing
+and $p_H < 1$, every pooling PBE fails. The Riley PBE with threshold beliefs passes. Witness: $c(e,\theta) = e/\theta$.
+\end{theorem}
+\begin{proof}
+\leanok
+Separating: $e_H \ge e_R$ by the low type's incentive constraint; if $e_H > e_R$, any $e \in (e_R, e_H)$ is
+equilibrium-dominated for the low type and profitable for the high type. Pooling at $e^*$: with
+$D = (1-p_H)(\theta_H - \theta_L)$, the intermediate value theorem gives $e_0 > e^*$ where the low type's extra cost is
+exactly $D$; by single crossing the high type's is below $D$, and by continuity some $e$ just above $e_0$ works. Riley:
+an off-path $e < e_R$ is not dominated for the low type, and $e > e_R$ is not profitable for the high type.
+\end{proof}
+
+\section{The first-order approach}
+
+\begin{theorem}[Rogerson 1985]
+\label{thm:rogerson}
+\lean{Econ.outputCDF, Econ.expect_abel, Econ.expected_concave, Econ.foa_valid, Econ.mirrlees_monotone, Econ.rogerson, Econ.coinP}
+\leanok
+\uses{thm:moral-hazard}
+Outputs $0, \dots, m$ are ordered from worst to best, with distribution function $F(k \mid a)$. If $F(k \mid \cdot)$ is
+convex in effort (CDFC) and the utility schedule is nondecreasing, expected utility is concave in effort; so with a
+convex cost the first-order condition identifies the agent's optimum. A schedule of the Mirrlees--Holmström form
+$g(w_j) = \lambda + \mu L_j$ with $g$ strictly increasing, $\mu \ge 0$ and $L$ nondecreasing (standing in for $g = 1/u'$
+and MLRP; $\mu \ge 0$ is assumed) is nondecreasing, so the first-order approach is valid for it.
+\end{theorem}
+\begin{proof}
+\leanok
+Summation by parts: $\sum_{j\le m} p_j v_j = v_m F_m - \sum_{k<m} F_k (v_{k+1} - v_k)$, a constant minus nonnegative
+multiples of convex functions. A concave function with zero derivative at $a^*$ is maximized there, by comparing
+slopes on either side.
+\end{proof}

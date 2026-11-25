@@ -303,3 +303,33 @@ the deviator and consensus are unique. Truth-telling supports every $x \in F(\th
 deviations reach exactly the lower contour set, so monotonicity applies. In any other equilibrium all agents but
 at most one can trigger the integer game and get any outcome, so no veto power applies.
 \end{proof}
+
+\section{Green--Laffont}
+
+\begin{definition}[Strategy-proofness, unrestricted domain]
+\label{def:sp-unrestricted}
+\lean{Econ.IsStrategyProof, Econ.IsUnrestrictedDomain, Econ.othersValue, Econ.othersValue_update, Econ.total_split}
+\leanok
+\uses{def:groves}
+A mechanism $(k, t)$ is strategy-proof if truth-telling is dominant for every agent under quasilinear utility. The
+domain is unrestricted if every function $X \to \mathbb R$ is the valuation of some type of each agent.
+\end{definition}
+
+\begin{theorem}[Green--Laffont 1977; MWG Prop.~23.C.5]
+\label{thm:green-laffont}
+\lean{Econ.green_laffont, Econ.green_laffont_groves, Econ.groves_isStrategyProof}
+\leanok
+\uses{def:sp-unrestricted, thm:groves}
+On an unrestricted domain, an efficient strategy-proof mechanism has Groves transfers
+$t_i(\theta) = \sum_{j \ne i} v_j(k(\theta), \theta_j) + h_i(\theta_{-i})$; with Groves mechanisms being strategy-proof,
+these are exactly the efficient strategy-proof mechanisms. (The statement has content when an efficient rule exists on
+the whole domain, essentially for finite $X$; a two-outcome witness shows the hypotheses hold together.)
+\end{theorem}
+\begin{proof}
+\leanok
+Fix the others' reports and let $g(\theta_i) = t_i - \sum_{j\ne i} v_j(k)$. Strategy-proofness between two reports gives
+$g(b) - g(a) \le S_a(k(a)) - S_a(k(b))$, where $S_a$ is total value at true type $a$; so reports with the same outcome
+have the same $g$. For outcomes $x \ne y$ and $\varepsilon > 0$, the type with valuation $-W + \varepsilon 1_x - 1_{\ne x,y}$
+makes $x$ the unique efficient outcome with $y$ a near-tie; comparing it with the analogous type for $y$ bounds the
+difference of $g$ by $\varepsilon$.
+\end{proof}

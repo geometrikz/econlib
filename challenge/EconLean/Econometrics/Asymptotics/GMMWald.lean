@@ -74,4 +74,27 @@ theorem two_step_wald_witness (a : ℝ) :
         atTop (𝓝 (chiSq 1 (Set.Ioi a))) := by
   sorry
 
+theorem two_step_wald_rect_witness (a : ℝ) :
+    let S : Matrix (Fin 3) (Fin 3) ℝ := 1
+    let G : Fin 3 → Fin 2 → ℝ := ![![1, 0], ![0, 1], ![1, 1]]
+    let R : Matrix (Fin 1) (Fin 2) ℝ := !![1, -1]
+    let P : Measure (Fin 3 → ℝ) := (multivariateGaussian 0 S).map ofLp
+    let Shat : ℕ → (Fin 3 → ℝ) → Fin 3 → Fin 3 → ℝ :=
+      fun n _ => Matrix.of.symm ((1 + 1 / ((n : ℝ) + 1)) • S)
+    let g : ℕ → (Fin 3 → ℝ) → Fin 3 → ℝ := fun n ω => (Real.sqrt n)⁻¹ • ω
+    ∃ _ : IsProbabilityMeasure P,
+      S.PosDef ∧ Function.Injective (Matrix.of G *ᵥ ·) ∧
+      TendstoInMeasure P (fun (_ : ℕ) (_ : Fin 3 → ℝ) => G) atTop (fun _ => G) ∧
+      TendstoInMeasure P Shat atTop (fun _ => Matrix.of.symm S) ∧
+      TendstoInDistribution (fun (n : ℕ) ω => Real.sqrt n • g n ω) atTop id (fun _ => P) P ∧
+      Measurable (id : (Fin 3 → ℝ) → Fin 3 → ℝ) ∧
+      P.map id = (multivariateGaussian 0 S).map ofLp ∧
+      R *ᵥ (0 : Fin 2 → ℝ) = 0 ∧ Function.Injective (Rᵀ *ᵥ ·) ∧
+      Tendsto (fun n => P {ω | a < waldStat n R 0
+          (GMM.estimator (Matrix.of (invFn (Shat n ω))) (Matrix.of G)
+            (Matrix.of G *ᵥ 0 + g n ω))
+          (avarHat (G, Shat n ω))})
+        atTop (𝓝 (chiSq 1 (Set.Ioi a))) := by
+  sorry
+
 end Econ.Asymptotics

@@ -145,4 +145,78 @@ theorem two_step_wald_witness (a : ℝ) :
     1 0 (mulVec_zero _) hR).2.2 (by simp) a
   simpa using this
 
+/-- **Non-vacuity with a rectangular restriction.** Three moments, two parameters
+(`l = 3`, `k = 2`, `G` with rows `(1, 0)`, `(0, 1)`, `(1, 1)`), `S = I₃`, the consistent
+non-constant weight estimate `Ŝₙ = (1 + 1/(n+1)) I₃`, and `√n ĝₙ ∼ N(0, I₃)`: every hypothesis
+of `two_step_wald` holds for `H₀ : θ₁ = θ₂` (`R = (1, −1)`, `c = 0`), and the Wald test has
+asymptotic rejection probability `P(χ²(1) > a)`. The measurability hypotheses and `0 < q` are
+discharged in the proof. `Ĝₙ` is constant and `Ŝₙ` deterministic, so the estimated inputs
+are exercised only lightly. -/
+theorem two_step_wald_rect_witness (a : ℝ) :
+    let S : Matrix (Fin 3) (Fin 3) ℝ := 1
+    let G : Fin 3 → Fin 2 → ℝ := ![![1, 0], ![0, 1], ![1, 1]]
+    let R : Matrix (Fin 1) (Fin 2) ℝ := !![1, -1]
+    let P : Measure (Fin 3 → ℝ) := (multivariateGaussian 0 S).map ofLp
+    let Shat : ℕ → (Fin 3 → ℝ) → Fin 3 → Fin 3 → ℝ :=
+      fun n _ => Matrix.of.symm ((1 + 1 / ((n : ℝ) + 1)) • S)
+    let g : ℕ → (Fin 3 → ℝ) → Fin 3 → ℝ := fun n ω => (Real.sqrt n)⁻¹ • ω
+    ∃ _ : IsProbabilityMeasure P,
+      S.PosDef ∧ Function.Injective (Matrix.of G *ᵥ ·) ∧
+      TendstoInMeasure P (fun (_ : ℕ) (_ : Fin 3 → ℝ) => G) atTop (fun _ => G) ∧
+      TendstoInMeasure P Shat atTop (fun _ => Matrix.of.symm S) ∧
+      TendstoInDistribution (fun (n : ℕ) ω => Real.sqrt n • g n ω) atTop id (fun _ => P) P ∧
+      Measurable (id : (Fin 3 → ℝ) → Fin 3 → ℝ) ∧
+      P.map id = (multivariateGaussian 0 S).map ofLp ∧
+      R *ᵥ (0 : Fin 2 → ℝ) = 0 ∧ Function.Injective (Rᵀ *ᵥ ·) ∧
+      Tendsto (fun n => P {ω | a < waldStat n R 0
+          (GMM.estimator (Matrix.of (invFn (Shat n ω))) (Matrix.of G)
+            (Matrix.of G *ᵥ 0 + g n ω))
+          (avarHat (G, Shat n ω))})
+        atTop (𝓝 (chiSq 1 (Set.Ioi a))) := by
+  intro S G R P Shat g
+  have hofLp : Measurable (ofLp : EuclideanSpace ℝ (Fin 3) → Fin 3 → ℝ) :=
+    (PiLp.continuous_ofLp 2 _).measurable
+  have hP : IsProbabilityMeasure P :=
+    (Measure.isProbabilityMeasure_map_iff hofLp.aemeasurable).mpr inferInstance
+  have hG : Function.Injective (Matrix.of G *ᵥ ·) := by
+    intro u v h
+    have h0 := congrFun h 0
+    have h1 := congrFun h 1
+    simp [G, mulVec, dotProduct, Fin.sum_univ_two] at h0 h1
+    funext i; fin_cases i
+    · exact h0
+    · exact h1
+  have hR : Function.Injective (Rᵀ *ᵥ ·) := by
+    intro u v h
+    have h0 := congrFun h 0
+    simp [R, mulVec, dotProduct] at h0
+    funext i; rw [Subsingleton.elim i 0]; exact h0
+  have hGc : TendstoInMeasure P (fun (_ : ℕ) (_ : Fin 3 → ℝ) => G) atTop (fun _ => G) :=
+    tendstoInMeasure_of_tendsto_ae (fun _ => aestronglyMeasurable_const)
+      (Filter.Eventually.of_forall fun _ => tendsto_const_nhds)
+  have hSc : TendstoInMeasure P Shat atTop (fun _ => Matrix.of.symm S) := by
+    refine tendstoInMeasure_of_tendsto_ae (fun _ => aestronglyMeasurable_const)
+      (Filter.Eventually.of_forall fun _ => ?_)
+    have h1 : Tendsto (fun n : ℕ => (1 + 1 / ((n : ℝ) + 1))) atTop (𝓝 1) := by
+      simpa using (tendsto_one_div_add_atTop_nhds_zero_nat).const_add (1 : ℝ)
+    have h2 : Tendsto (fun n : ℕ => (1 + 1 / ((n : ℝ) + 1)) • Matrix.of.symm S) atTop
+        (𝓝 (Matrix.of.symm S)) := by
+      simpa only [one_smul] using h1.smul_const (Matrix.of.symm S)
+    exact h2
+  have hg : TendstoInDistribution (fun (n : ℕ) ω => Real.sqrt n • g n ω) atTop id
+      (fun _ => P) P := by
+    refine ⟨fun n => by fun_prop, by fun_prop, ?_⟩
+    refine tendsto_const_nhds.congr' ?_
+    filter_upwards [Filter.eventually_ge_atTop 1] with n hn
+    have hs : Real.sqrt n ≠ 0 := by
+      rw [Real.sqrt_ne_zero']; exact_mod_cast hn
+    apply Subtype.ext
+    simp only [g, smul_smul, mul_inv_cancel₀ hs, one_smul]
+    rfl
+  refine ⟨hP, PosDef.one, hG, hGc, hSc, hg, measurable_id, Measure.map_id, mulVec_zero R, hR, ?_⟩
+  have := (two_step_wald (θ₀ := (0 : Fin 2 → ℝ)) PosDef.one hG hGc hSc hg
+    (fun _ => aemeasurable_const) (fun _ => aemeasurable_const) (fun n => by fun_prop)
+    measurable_id Measure.map_id R 0 (mulVec_zero R) hR).2.2 (by simp) a
+  simpa using this
+
 end Econ.Asymptotics

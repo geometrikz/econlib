@@ -1,0 +1,131 @@
+% Lean: EconLean/Macro/MoneySearch/LagosWrightBargaining.lean, EconLean/Macro/Credit/DynamicKM.lean, EconLean/Macro/PublicFinance/LucasStokey.lean
+\chapter{Bargaining in Money, Credit Cycles and Tax Smoothing}
+\label{chap:money_credit_fiscal}
+
+Sources: Lagos--Wright (2005); Aruoba--Rocheteau--Waller (2007); Kiyotaki--Moore (1997);
+Brunnermeier--Eisenbach--Sannikov (2013); Lucas--Stokey (1983); Ljungqvist--Sargent ch.~16.
+
+\section{Lagos--Wright with bargaining power}
+
+\begin{definition}[Nash and Kalai payments]
+\label{def:lw_bargain}
+\lean{Econ.LagosWright.Env.nashPay, Econ.LagosWright.Env.nashObj, Econ.LagosWright.Env.kalaiPay, Econ.LagosWright.Env.kalaiObj}
+\leanok
+With buyer power $\theta$ and linear cost, the generalized Nash payment for $q$ is
+$g(q)=\frac{\theta q u'(q)+(1-\theta)u(q)}{\theta u'(q)+1-\theta}$; the Kalai payment is $\theta q+(1-\theta)u(q)$.
+The buyer maximizes $-i\,g(q)+\sigma(u(q)-g(q))$.
+\end{definition}
+
+\begin{lemma}[Slope of the Nash payment at $q^*$]
+\label{lem:lw_nashpay}
+\lean{Econ.LagosWright.Env.nashPay_one, Econ.LagosWright.Env.nashPay_star, Econ.LagosWright.Env.hasDerivAt_nashPay}
+\leanok
+\uses{def:lw_bargain}
+$g=q$ when $\theta=1$, and $g'(q^*)=1+\theta(1-\theta)u''(q^*)(q^*-u(q^*))$.
+\end{lemma}
+\begin{proof}
+\leanok
+Quotient rule, using $u'(q^*)=1$ so the denominator is $1$ at $q^*$.
+\end{proof}
+
+\begin{theorem}[Hold-up at the Friedman rule]
+\label{thm:lw_holdup}
+\lean{Econ.LagosWright.Env.nashObj_deriv_star, Econ.LagosWright.Env.holdup, Econ.LagosWright.Env.holdup_lt}
+\leanok
+\uses{lem:lw_nashpay}
+If $0<\theta<1$, $u''(q^*)<0$ and $u(q^*)>q^*$, then for every $i\ge0$ the buyer's objective has negative slope at
+$q^*$; $q^*$ is not a local maximum, and any best choice on $(0,q^*]$ is strictly below $q^*$.
+\end{theorem}
+\begin{proof}
+\leanok
+$g'(q^*)>1$, so the slope $-ig'+\sigma(1-g')<0$. If $q^*$ were best on $(0,q^*]$, slopes from the left would be
+eventually negative, giving a point to the left with a higher value.
+\end{proof}
+
+\begin{theorem}[Kalai bargaining]
+\label{thm:lw_kalai}
+\lean{Econ.LagosWright.Env.kalai_foc, Econ.LagosWright.Env.kalai_friedman, Econ.LagosWright.Env.kalai_friedman_attained, Econ.LagosWright.Env.kalai_lt_star, Econ.LagosWright.Env.kalai_mono_theta}
+\leanok
+\uses{def:lw_bargain}
+An interior optimum satisfies $\sigma\theta(u'(q)-1)=i(\theta+(1-\theta)u'(q))$. At $i=0$ the optimum is $q^*$ and
+$q^*$ is attained; for $i>0$, $q<q^*$, and $q$ strictly increases with $\theta\le1$.
+\end{theorem}
+\begin{proof}
+\leanok
+Fermat's rule. At $i=0$ the objective is $\theta$ times the baseline Lagos--Wright objective. For $i>0$ solve
+$u'(q)=\theta(\sigma+i)/(\theta(\sigma+i)-i)$, decreasing in $\theta$, and use that $u'$ is strictly decreasing.
+\end{proof}
+
+\section{The intertemporal multiplier}
+
+\begin{definition}[Stylized dynamic Kiyotaki--Moore]
+\label{def:dkm}
+\lean{Econ.DynamicKM.Params, Econ.DynamicKM.Params.φ, Econ.DynamicKM.Params.HoldingsEq, Econ.DynamicKM.Params.PriceEq, Econ.DynamicKM.Params.ImpactEq}
+\leanok
+Holdings $k_{t+1}=\lambda k_t$ with exogenous $\lambda\in[0,1)$; land price $q_t=\psi k_t+q_{t+1}/R$, $R>1$;
+impact $d\,k_0=\bar K(\Delta a+q_0)$; $\varphi=\psi R/(R-\lambda)$.
+\end{definition}
+
+\begin{theorem}[Forward price solution]
+\label{thm:dkm_price}
+\lean{Econ.DynamicKM.Params.R_sub_pos, Econ.DynamicKM.Params.holdings_eq, Econ.DynamicKM.Params.price_eq_aux, Econ.DynamicKM.Params.price_eq, Econ.DynamicKM.Params.persistence}
+\leanok
+\uses{def:dkm}
+Every bounded price path satisfies $q_t=\varphi k_t$, and $q_{t+1}=\lambda q_t$.
+\end{theorem}
+\begin{proof}
+\leanok
+Iterate $n$ times: $q_t=\psi\lambda^t k_0\sum_{s<n}(\lambda/R)^s+q_{t+n}/R^n$. The remainder is bounded by $M/R^n\to0$ and
+the geometric sum tends to $R/(R-\lambda)$.
+\end{proof}
+
+\begin{theorem}[Amplification through persistence]
+\label{thm:dkm_amp}
+\lean{Econ.DynamicKM.Params.φ_ge, Econ.DynamicKM.Params.φ_gt, Econ.DynamicKM.Params.φ_strictMono, Econ.DynamicKM.Params.impact, Econ.DynamicKM.Params.amplification}
+\leanok
+\uses{thm:dkm_price}
+$\varphi\ge\psi$, strictly if $\lambda>0$, and $\varphi$ increases in $\lambda$. If $d>\bar K\varphi$ then
+$k_0=\bar K\Delta a/(d-\bar K\varphi)$, and for $\Delta a>0$, $\lambda>0$:
+$\bar K\Delta a/d<\bar K\Delta a/(d-\bar K\psi)<k_0$.
+\end{theorem}
+\begin{proof}
+\leanok
+Substitute $q_0=\varphi k_0$ into the impact equation; compare denominators.
+\end{proof}
+
+\section{Lucas--Stokey tax smoothing}
+
+\begin{definition}[Primal Ramsey problem]
+\label{def:ls}
+\lean{Econ.LucasStokey.welfare, Econ.LucasStokey.implement, Econ.LucasStokey.tax}
+\leanok
+Over histories $n$ with weights $w_n>0$: welfare $\sum w(l-g-l^{\gamma+1}/(\gamma+1))$, implementability
+$\sum w(l-g-l^{\gamma+1})=b_0$, labour tax $\tau=1-l^\gamma$.
+\end{definition}
+
+\begin{theorem}[Ramsey conditions and perfect tax smoothing]
+\label{thm:ls}
+\lean{Econ.LucasStokey.hasStrictFDerivAt_term, Econ.LucasStokey.ramsey_foc, Econ.LucasStokey.tax_smoothing, Econ.LucasStokey.labour_constant}
+\leanok
+\uses{def:ls}
+At a local maximum on the implementability set there are $(a,b)\ne0$ with
+$a(1-(\gamma+1)l_n^\gamma)+b(1-l_n^\gamma)=0$ for all $n$. If $\gamma\ge1$ the tax is the same at every date and
+state, and (for $l\ge0$) so is labour.
+\end{theorem}
+\begin{proof}
+\leanok
+Lagrange multiplier rule. If $a(\gamma+1)+b=0$ the conditions give $a\gamma=0$, so $a=b=0$; otherwise
+$l_n^\gamma=(a+b)/(a(\gamma+1)+b)$ for every $n$.
+\end{proof}
+
+\begin{theorem}[First best is a Ramsey optimum]
+\label{thm:ls_fb}
+\lean{Econ.LucasStokey.first_best}
+\leanok
+\uses{def:ls}
+With $b_0$ equal to the implementability level at $l\equiv1$, $l\equiv1$ is a local maximum and taxes are zero.
+\end{theorem}
+\begin{proof}
+\leanok
+Bernoulli: $l^{\gamma+1}\ge1+(\gamma+1)(l-1)$ for $l\ge0$, so each term of welfare is maximized at $1$ near $l\equiv1$.
+\end{proof}

@@ -29,7 +29,10 @@ of set betweenness (`setBetweenness`), preference for commitment
 fact that adding an item that is never tempting cannot hurt
 (`W_union_of_not_tempting`). The *sufficiency* half of the representation
 theorem (axioms ⟹ representation) needs the mixture-space machinery on
-lotteries over menus and is left for later.
+lotteries over menus and is not formalized. `TemptationAxioms.lean` shows,
+on an alternative finite-menu route, that set betweenness alone reduces
+every finite menu to its pairs, and that it does not by itself give the GP
+form.
 -/
 module
 

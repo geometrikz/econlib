@@ -226,6 +226,30 @@ $\{x\}$ strictly better than $\{x,y\}$.
 $W(A\cup B)=\max(a,b)-\max(\alpha,\beta)$; check the four cases of which menu attains each maximum.
 \end{proof}
 
+\begin{theorem}[Set betweenness reduces menus to pairs; Kreps' indirect utility]
+\label{thm:beh-gp-pairs}
+\uses{thm:beh-gp}
+\lean{Econ.Temptation.SetBetweenness, Econ.Temptation.StrategicRational, Econ.Temptation.union_between, Econ.Temptation.between_biUnion, Econ.Temptation.eq_maxmin_pairs, Econ.Temptation.eq_of_pairs, Econ.Temptation.GP, Econ.Temptation.GP_of_nonempty, Econ.Temptation.GP_setBetweenness, Econ.Temptation.W_eq_maxmin_pairs, Econ.Temptation.eq_GP_of_pairs, Econ.Temptation.StrategicRational.setBetweenness, Econ.Temptation.eq_sup_singleton, Econ.Temptation.strategicRational_sup, Econ.Temptation.sbNat, Econ.Temptation.sbExample, Econ.Temptation.sbNat_setBetweenness, Econ.Temptation.sbExample_setBetweenness, Econ.Temptation.sbExample_not_GP}
+\leanok
+Let $W$ be a real utility on nonempty finite menus. If $W$ satisfies set betweenness, then
+$W(A)=\max_{x\in A}\min_{y\in A}W(\{x,y\})$ for every finite menu $A$. Hence two such utilities that agree on menus of at
+most two elements agree everywhere, and one that agrees with a Gul--Pesendorfer utility on those menus is that
+Gul--Pesendorfer utility. If $W$ is strategically rational ($A\succsim B\Rightarrow A\sim A\cup B$), then
+$W(A)=\max_{x\in A}W(\{x\})$, and conversely every such indirect utility is strategically rational. Set betweenness alone
+does not yield the Gul--Pesendorfer form: there is a set-betweenness utility on three alternatives whose pair values are
+not those of $\max(u+v)-\max v$ for any $u,v$. This is a finite-menu route, not Gul--Pesendorfer's own proof over
+lotteries.
+\end{theorem}
+\begin{proof}
+\leanok
+By induction, set betweenness puts the value of a finite union between the smallest and largest values of the pieces.
+Writing $A$ as the union of the pairs $\{x^*,y\}$ for a maximizing $x^*$ gives $W(A)\ge\max_x\min_y$. Writing it as the
+union of the pairs $\{x,y_x\}$, with $y_x$ a worst partner of $x$, gives $W(A)\le\max_x\min_y$. For strategic rationality,
+use singletons, and note $W(A)\ge W(\{x\})$ because $\{x\}\cup A=A$. In the example the singletons force $u=(0,2,4)$, and
+each strictly intermediate pair value forces the less valuable item to tempt by a fixed margin; the three margins are
+inconsistent ($1+1\ne1$). Set betweenness of the example is checked by enumeration.
+\end{proof}
+
 \section{Logit and rational inattention}
 \label{sec:beh-ri}
 
@@ -590,6 +614,46 @@ $2p^2G<\theta(1-2p)$: risk seeking for unlikely gains, risk aversion for large s
 \leanok
 The distorted difference is $p(1-p)G(\delta^{k_1}-\delta^{k_2})$, positive iff the winning state is strictly more
 salient, which after cross-multiplying is the stated inequality.
+\end{proof}
+
+\begin{theorem}[Bordalo--Gennaioli--Shleifer: the Allais paradox]
+\label{thm:beh-salience-allais}
+\uses{thm:beh-salience-props}
+\lean{Econ.Salience.rank_eq_sum, Econ.Salience.sigma_self, Econ.Salience.prefers_common_consequence, Econ.Salience.piA, Econ.Salience.L1, Econ.Salience.L2, Econ.Salience.L1c, Econ.Salience.L2c, Econ.Salience.piB, Econ.Salience.L1i, Econ.Salience.L2i, Econ.Salience.piA_isFullProb, Econ.Salience.piB_isFullProb, Econ.Salience.piB_product, Econ.Salience.salience_A, Econ.Salience.salience_Bi, Econ.Salience.ranks_A, Econ.Salience.ranks_Bi, Econ.Salience.allaisA_sum, Econ.Salience.allaisB_sum, Econ.Salience.allaisA_safe, Econ.Salience.allaisB_risky, Econ.Salience.allais_paradox, Econ.Salience.allaisA_eu, Econ.Salience.eu_no_allais, Econ.Salience.allaisB_correlated_iff, Econ.Salience.allaisB_correlated_iff', Econ.Salience.marginals_B}
+\leanok
+In a correlated presentation, two choice problems that differ only in a state where each problem's lotteries pay the same
+are decided the same way by the salient thinker, for every $\theta,\delta$. For the classic Allais lotteries (in
+millions) $L_1=1$ versus $L_2=(5,.10;1,.89;0,.01)$ and $L_1'=(1,.11;0,.89)$ versus $L_2'=(5,.10;0,.90)$ with $L_1'$, $L_2'$
+independent, a salient thinker with $0<\theta<2/3$ and $\delta<1/40$ strictly prefers $L_1$ to $L_2$ and $L_2'$ to $L_1'$,
+a pattern no expected-utility maximizer shows. With $\delta=1$ the choice in the first problem is $L_2$, and in the
+correlated presentation of the second problem the choice agrees with the first.
+\end{theorem}
+\begin{proof}
+\leanok
+The common-consequence state has salience $0$ in both problems and the other saliences coincide, so ranks and the
+distorted differences agree. In the first problem the saliences are $4/(6+\theta)$, $0$, $1/(1+\theta)$, so the state
+where $L_2$ pays $0$ is most salient when $\theta<2/3$, and the distorted difference is $.01-.4\delta$. In the independent
+second problem the state where $L_1'$ pays $0$ and $L_2'$ pays $5$ is most salient, and the distorted difference
+$-.044\delta^2+.099\delta-.445$ is negative for every $\delta$.
+\end{proof}
+
+\begin{theorem}[Bordalo--Gennaioli--Shleifer: the common-ratio effect]
+\label{thm:beh-salience-common-ratio}
+\uses{thm:beh-salience-allais}
+\lean{Econ.Salience.piCA, Econ.Salience.C1, Econ.Salience.C2, Econ.Salience.piCB, Econ.Salience.C1i, Econ.Salience.C2i, Econ.Salience.piCA_isFullProb, Econ.Salience.piCB_isFullProb, Econ.Salience.crB_product, Econ.Salience.marginals_cr, Econ.Salience.salience_CA, Econ.Salience.salience_CB, Econ.Salience.ranks_CA, Econ.Salience.ranks_CB, Econ.Salience.crA_sum, Econ.Salience.crB_sum, Econ.Salience.crA_safe_iff, Econ.Salience.crB_risky, Econ.Salience.common_ratio, Econ.Salience.crA_eu, Econ.Salience.eu_no_common_ratio, Econ.Salience.sum_swap, Econ.Salience.common_ratio_prefers}
+\leanok
+For Kahneman--Tversky's problems (in thousands) $L_1=3$ versus $L_2=(4,.8;0,.2)$ and, with independent lotteries,
+$L_1'=(3,.25;0,.75)$ versus $L_2'=(4,.2;0,.8)$: for every $\theta>0$ the salient thinker strictly prefers $L_1$ to $L_2$ iff
+$\delta<3/4$, and strictly prefers $L_2'$ to $L_1'$ for every $\delta\le1$. So for $0<\delta<3/4$ the salient thinker
+shows the common-ratio pattern, which no expected-utility maximizer shows; with $\delta=1$ the choice in the first problem
+is $L_2$.
+\end{theorem}
+\begin{proof}
+\leanok
+In the first problem the state where $L_2$ pays $0$ has salience $3/(3+\theta)>1/(7+\theta)$, so the distorted difference is
+$.6-.8\delta$. In the second the state where $L_1'$ pays $0$ and $L_2'$ pays $4$ is most salient ($4/(4+\theta)>3/(3+\theta)$),
+and the distorted difference $-.05\delta^2+.6\delta-.6$ is negative for $\delta\le1$. Under expected utility the second
+comparison is the first scaled by $1/4$.
 \end{proof}
 
 \section{Behavioral industrial organization}

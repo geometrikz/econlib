@@ -26,8 +26,8 @@ Main results:
   the low wage; with nondecreasing costs and single crossing at `e*` this also suffices.
 * Witness: with `c e θ = e / θ`, every `eH ∈ [θL(θH − θL), θH(θH − θL)]` is separating.
 
-Refinements (the intuitive criterion selecting the least-cost separating equilibrium) are
-not formalized.
+The intuitive criterion, selecting the least-cost separating equilibrium, is in
+`Information/IntuitiveCriterion`.
 -/
 module
 

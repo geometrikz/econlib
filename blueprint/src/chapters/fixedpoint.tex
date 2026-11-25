@@ -349,3 +349,92 @@ The bundle exhausts the budget. For any affordable $y$: if some $y_i = 0$ then $
 $\sum_i \alpha_i \log(y_i/x_i) \le \sum_i \alpha_i (y_i/x_i - 1) = \frac{\sum_j \alpha_j}{w} p \cdot y - \sum_j \alpha_j \le 0$.
 Uniqueness follows from strict quasiconcavity on the interior. The equilibrium is a direct computation with the formula.
 \end{proof}
+
+\section{Replica economies and equal treatment in the core}
+\label{sec:replica}
+
+\begin{definition}[Replica economy]
+\label{def:replica}
+\lean{Econ.replica}
+\leanok
+Given types $I$ with utilities $u_i$ and endowments $\omega_i \ge 0$, the $r$-fold replica has consumers $(i, q)$,
+$q < r$, with utility $u_i$ and endowment $\omega_i$.
+\end{definition}
+
+\begin{lemma}[Averages under quasiconcavity]
+\label{lem:qc_average}
+\lean{Econ.StrictlyQuasiconcave.convex_upper, Econ.StrictlyQuasiconcave.le_average,
+  Econ.StrictlyQuasiconcave.lt_average}
+\leanok
+If $u$ is strictly quasiconcave, the average of finitely many nonnegative bundles is at least as good as the worst of
+them, and strictly better if the bundles are not all equal.
+\end{lemma}
+\begin{proof}
+\leanok
+Upper level sets in the orthant are convex, so the average lies in them. For the strict part, split the average as
+$\frac1n z_1 + (1-\frac1n) B$ with $B$ the average of the others and $z_1 \ne B$, and apply strict quasiconcavity.
+\end{proof}
+
+\begin{theorem}[Equal treatment in the core, MWG \S18.B]
+\label{thm:equal_treatment}
+\lean{Econ.P_prefOf_of_lt, Econ.lt_of_P_prefOf, Econ.replica_inCore_equalTreatment,
+  Econ.GEExamples.unitEndow, Econ.GEExamples.unitEndow_nonneg, Econ.GEExamples.replica_sqrt_core_equalTreatment,
+  Econ.GEExamples.linear_replica_unequal_core}
+\leanok
+\uses{def:replica, lem:qc_average}
+If every $u_i$ is continuous, strictly quasiconcave and strongly monotone, every core allocation of the $r$-replica
+gives all consumers of the same type the same bundle. Witness: the twofold replica of the two-type square-root economy
+has a core allocation. Strict convexity is needed: with linear utility $x_0 + x_1$ and endowments $(1,1)$, the
+allocation $(2,0), (0,2)$ of the twofold replica is in the core but treats identical consumers differently (any blocking
+coalition $S$ would need $\sum_S u(y_a) > 2|S| = u(\sum_S \omega_a)$, impossible for linear $u$).
+\end{theorem}
+\begin{proof}
+\leanok
+Suppose type $i_0$ is treated unequally. Take a worst-off member of each type and give it the type average $\bar x_i$.
+These averages sum to $\sum_i \omega_i$ by feasibility. By Lemma~\ref{lem:qc_average} everyone weakly gains and type
+$i_0$ strictly gains. Move $\theta \bar x_{i_0}$ from type $i_0$ and split it equally among all members: by continuity
+type $i_0$ still strictly gains for small $\theta > 0$, and by strong monotonicity the others now strictly gain
+($\bar x_{i_0} \ne 0$ since its members are not all at $0$). This coalition blocks.
+\end{proof}
+
+\begin{lemma}[Improving trades]
+\label{lem:improving_trades}
+\lean{Econ.StrictlyQuasiconcave.convex_strictUpper, Econ.betterTrades, Econ.convex_betterTrades,
+  Econ.mixedTrades, Econ.convex_mixedTrades, Econ.tendsto_div_ceil}
+\leanok
+Let $S_i = \{x - \omega_i : x \ge 0,\ x \succ_i x^*_i\}$, convex by strict quasiconcavity, and let $V$ be the set of
+convex combinations $\sum_i a_i z_i$ with $z_i \in S_i$. If each $S_i$ is nonempty, $V$ is convex. Also
+$a r / \lceil a r \rceil \to 1$ for $a > 0$.
+\end{lemma}
+\begin{proof}
+\leanok
+For two combinations with weights $a, b$ and mixing weights $s, t$, use weights $c_i = s a_i + t b_i$ and the points
+$(s a_i z_i + t b_i z'_i)/c_i \in S_i$ (any point of $S_i$ if $c_i = 0$). The limit follows from
+$ar/(ar+1) < ar/\lceil ar \rceil \le 1$.
+\end{proof}
+
+\begin{theorem}[Debreu--Scarf core convergence]
+\label{thm:debreu_scarf}
+\lean{Econ.zero_notMem_mixedTrades, Econ.walrasian_of_mem_core_replicas, Econ.replica_isWalrasianEquilibrium,
+  Econ.isWalrasianEquilibrium_of_mem_core_replicas, Econ.mem_core_replicas_iff_walrasian,
+  Econ.positivePrices_of_mem_demand, Econ.GEExamples.halfEndow, Econ.GEExamples.halfEndow_pos,
+  Econ.GEExamples.sqrt_core_all_replicas}
+\leanok
+\uses{thm:equal_treatment, lem:improving_trades}
+Let utilities be continuous, strictly quasiconcave and strongly monotone, and endowments strictly positive. If the
+allocation giving every copy of type $i$ the bundle $x^*_i$ is in the core of the $r$-replica for every $r \ge 1$, there
+are prices $p \gg 0$ at which each $x^*_i$ is in type $i$'s demand at wealth $p \cdot \omega_i$; hence it is a
+Walrasian equilibrium of every replica. Conversely Walrasian allocations are in every core, so the two are equivalent. The hypotheses hold together in the two-type square-root economy.
+\end{theorem}
+\begin{proof}
+\leanok
+(i) $0 \notin V$: if $\sum_i a_i z_i = 0$, for large $r$ form a coalition with $k_i = \lceil a_i r\rceil \le r$ copies of
+type $i$, each receiving $\omega_i + t_i z_i$ with $t_i = a_i r/k_i \to 1$. By continuity these are still strictly
+preferred to $x^*_i$, they are nonnegative, and $\sum_i k_i t_i z_i = r \sum_i a_i z_i = 0$, so the coalition blocks.
+(ii) Separate $0$ from $V$: $p \ne 0$ with $p \cdot v \ge 0$ on $V$, so $x \succ_i x^*_i$ implies
+$p \cdot x \ge p \cdot \omega_i$. Approaching $x^*_i$ from above by strong monotonicity gives
+$p \cdot x^*_i \ge p \cdot \omega_i$, and feasibility forces equality. Adding a unit of good $k$ gives $p_k \ge 0$. Since
+$\omega_i \gg 0$, wealth is positive; if some affordable $y \succ_i x^*_i$, then $t y$ for $t < 1$ near $1$ is still
+preferred but strictly cheaper than $p \cdot \omega_i$, a contradiction. Finally $p \gg 0$: a free good could be added
+to $x^*_i$ at no cost.
+\end{proof}

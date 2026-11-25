@@ -949,3 +949,133 @@ $N$ unemployment spells wealth is at most $(19/20)^{320}\bar k\le(19/20)^{320}\c
 $k_h\ge4/49$); and after an employment spell at $N-1$, wealth is at least $k_h/100$ with probability $\ge1/100$.
 Apply Theorem~\ref{thm:savings_unique}.
 \end{proof}
+
+\section{Stochastic growth: the invariant distribution of capital}
+\label{sec:stochastic_growth}
+
+In the stochastic Brock--Mirman model (log utility, output $A(z)k^\alpha$, full depreciation, i.i.d.\ productivity)
+the optimal policy is $k'=\alpha\beta A(z)k^\alpha$, so $x=\log k$ follows $x'=\mu(z)+\alpha x$ with
+$\mu(z)=\log(\alpha\beta)+\log A(z)$. Optimality in the stochastic model is not re-proved; the results concern the
+capital process this policy generates.
+
+\begin{lemma}[Chains of lower bounds]
+\label{lem:chain_lower}
+\lean{Econ.le_pow_real_of_chain}
+\leanok
+\uses{lem:monotone_kernel}
+If $\kappa(x,A_0)\ge p$ for all $x$ and $\kappa(y,A_{n+1})\ge q\ge0$ for all $y\in A_n$, then
+$\kappa^{n+1}(x,A_n)\ge pq^n$.
+\end{lemma}
+\begin{proof}
+\leanok
+Induction, using $\kappa^{n+2}=\kappa\circ\kappa^{n+1}$ and the two-step bound of Lemma~\ref{lem:monotone_kernel}.
+\end{proof}
+
+\begin{definition}[Log-capital process]
+\label{def:log_capital}
+\lean{Econ.LogCapital, Econ.LogCapital.xlo, Econ.LogCapital.xhi, Econ.LogCapital.g, Econ.LogCapital.K}
+\leanok
+Given $0\le\alpha<1$, $\mu(0)\le\mu(1)$ and shock probabilities $q(0),q(1)>0$ summing to one, the state
+$(x,z)\in[x_{lo},x_{hi}]\times\{0,1\}$ with $x_{lo}=\mu(0)/(1-\alpha)$, $x_{hi}=\mu(1)/(1-\alpha)$ moves to
+$(\mu(z)+\alpha x, z')$ with $z'\sim q$. The interval is mapped into itself since $x_{lo}=\mu(0)+\alpha x_{lo}$ and
+$x_{hi}=\mu(1)+\alpha x_{hi}$.
+\end{definition}
+
+\begin{theorem}[Existence and uniqueness of the invariant distribution]
+\label{thm:log_capital_unique}
+\lean{Econ.LogCapital.exists_stationary, Econ.LogCapital.stationary_unique,
+  Econ.LogCapital.exists_unique_stationary}
+\leanok
+\uses{def:log_capital, thm:unique_splitting, thm:savings_unique, lem:chain_lower}
+The log-capital process has exactly one stationary distribution.
+\end{theorem}
+\begin{proof}
+\leanok
+Existence: the kernel is Feller on a compact space. Uniqueness: the transition is increasing in $(x,z)$ and the
+shock is i.i.d., so the kernel is monotone. Choose $n$ with $\alpha^n<1/2$ and $D=x_{hi}-x_{lo}$. After $n+1$ bad
+shocks, $x\le x_{lo}+\alpha^nD\le$ midpoint (probability $q(0)^{n+1}$); after $n+1$ good shocks
+$x\ge x_{hi}-\alpha^nD\ge$ midpoint. Splitting holds at $c=(\text{midpoint},0)$; apply
+Theorem~\ref{thm:unique_splitting}.
+\end{proof}
+
+\begin{theorem}[Stationary moments]
+\label{thm:log_capital_moments}
+\lean{Econ.LogCapital.marginal_eq, Econ.LogCapital.integral_x}
+\leanok
+\uses{thm:log_capital_unique}
+Under any stationary $\pi$, $\pi(z)=q(z)$ and $E_\pi[x]=(q(0)\mu(0)+q(1)\mu(1))/(1-\alpha)$.
+\end{theorem}
+\begin{proof}
+\leanok
+$\pi(\{z\})=\int\kappa(s,\{z\})\,d\pi=q(z)$. Stationarity gives $E[x]=E[\mu(z)]+\alpha E[x]$.
+\end{proof}
+
+\begin{theorem}[Stochastic Brock--Mirman]
+\label{thm:brock_mirman_stochastic}
+\lean{Econ.LogCapital.brockMirman, Econ.LogCapital.brockMirman_policy, Econ.LogCapital.brockMirman_mean_log_capital}
+\leanok
+\uses{thm:log_capital_moments}
+With $\mu(z)=\log(\alpha\beta)+\log A(z)$: $\mu(z)+\alpha\log k=\log(\alpha\beta A(z)k^\alpha)$ for $k>0$, and the
+stationary mean of log capital is $(\log(\alpha\beta)+E[\log A])/(1-\alpha)$.
+\end{theorem}
+\begin{proof}
+\leanok
+Properties of $\log$; Theorem~\ref{thm:log_capital_moments} and $q(0)+q(1)=1$.
+\end{proof}
+
+\section{Stochastic Brock--Mirman: optimality of the closed-form policy}
+\label{sec:stochastic_brock_mirman}
+
+\begin{definition}[Stochastic Brock--Mirman problem]
+\label{def:sbm}
+\lean{Econ.StochBrockMirman.Params, Econ.StochBrockMirman.shift, Econ.StochBrockMirman.Params.FeasN,
+  Econ.StochBrockMirman.Params.Feasible, Econ.StochBrockMirman.Params.J, Econ.StochBrockMirman.Params.R,
+  Econ.StochBrockMirman.Params.T, Econ.StochBrockMirman.Params.policyPlan, Econ.StochBrockMirman.example₁}
+\leanok
+Parameters $0<\alpha,\beta<1$, productivity $A(z)>0$, i.i.d.\ shocks with probabilities $q$ on a finite set. A
+contingent plan $\sigma$ assigns next-period capital to each finite history of shocks; it is feasible from $(k,z)$
+if $0<\sigma(h)<A(z_h)k_h^\alpha$ at every node. Its expected $n$-period payoff is
+$J_{n+1}(\sigma,s)=\log(A(z)k^\alpha-\sigma_\emptyset)+\beta\sum_{z'}q(z')J_n(\sigma|_{z'},(\sigma_\emptyset,z'))$.
+\end{definition}
+
+\begin{lemma}[Closed-form Bellman equation]
+\label{lem:sbm_bellman}
+\lean{Econ.StochBrockMirman.Params.V, Econ.StochBrockMirman.Params.a, Econ.StochBrockMirman.Params.sum_qV,
+  Econ.StochBrockMirman.Params.V_eq, Econ.StochBrockMirman.Params.bellman_eq,
+  Econ.StochBrockMirman.Params.bellman_le, Econ.StochBrockMirman.Params.lowerBound}
+\leanok
+\uses{def:sbm}
+Let $B=\alpha/(1-\alpha\beta)$, $K=\log(1-\alpha\beta)+\frac{\alpha\beta}{1-\alpha\beta}\log(\alpha\beta)$,
+$\bar a=(K+E[\log A]/(1-\alpha\beta))/(1-\beta)$, $a(z)=K+\log A(z)/(1-\alpha\beta)+\beta\bar a$ and
+$V(k,z)=a(z)+B\log k$. Then for $0<k'<y=A(z)k^\alpha$,
+$\log(y-k')+\beta\sum_{z'}q(z')V(k',z')\le V(k,z)$ with equality at $k'=\alpha\beta y$; and
+$K+\beta\bar a+\frac1{1-\alpha\beta}\log(y-k')\le V(k,z)$.
+\end{lemma}
+\begin{proof}
+\leanok
+$\sum q V(k',\cdot)=\bar a+B\log k'$ because $\sum q a=\bar a$. With $\theta=\beta B=\alpha\beta/(1-\alpha\beta)$:
+$V(k,z)=\log((1-\alpha\beta)y)+\beta(\bar a+B\log(\alpha\beta y))$. Apply $\log x\le x-1$ to
+$(y-k')/((1-\alpha\beta)y)$ and (times $\theta$) to $k'/(\alpha\beta y)$; the right sides sum to $0$.
+The lower bound uses $\log(y-k')\le\log A(z)+\alpha\log k$.
+\end{proof}
+
+\begin{theorem}[Optimality of $k'=\alpha\beta A(z)k^\alpha$]
+\label{thm:sbm_optimal}
+\lean{Econ.StochBrockMirman.Params.J_succ, Econ.StochBrockMirman.Params.J_add_T_le,
+  Econ.StochBrockMirman.Params.lower_R_le_T, Econ.StochBrockMirman.Params.log_g_bound,
+  Econ.StochBrockMirman.Params.feasN_policyPlan, Econ.StochBrockMirman.Params.J_add_T_policy,
+  Econ.StochBrockMirman.Params.abs_T_policy_le, Econ.StochBrockMirman.Params.stochastic_brockMirman}
+\leanok
+\uses{lem:sbm_bellman, thm:brockMirman_value}
+For $k_0>0$ and any $z_0$, the plan generated by $k'=\alpha\beta A(z)k^\alpha$ is feasible and its expected payoffs
+converge to $V(k_0,z_0)$, while every feasible plan has $J_n\le V(k_0,z_0)+\varepsilon$ eventually.
+\end{theorem}
+\begin{proof}
+\leanok
+By induction on $n$ (over all plans and states): $J_{n+1}=J_n+\beta^nR_n$ with $R_n=E[\log c_n]$;
+$J_n+\beta^nE[V(s_n)]\le V(s_0)$ (Bellman inequality, with equality for the policy plan); and
+$K+\beta\bar a+\frac1{1-\alpha\beta}R_n\le E[V(s_n)]$. These are exactly the scalar inequalities used in the
+deterministic verification theorem with returns unbounded below, which gives $\max(J_n-V,0)\to0$. Along the policy,
+$|\log k_t|\le|\log k_0|+(|\log\alpha\beta|+\sum_z|\log A(z)|)/(1-\alpha)$, so $E[V(s_n)]$ is bounded and
+$\beta^nE[V(s_n)]\to0$.
+\end{proof}

@@ -69,6 +69,8 @@ public import EconLean.GE.ExistenceInterior
 public import EconLean.GE.ExistencePreferences
 public import EconLean.GE.ExistenceRegular
 public import EconLean.GE.CobbDouglas
+public import EconLean.GE.Replica
+public import EconLean.GE.DebreuScarf
 
 public import EconLean.Producer.Production
 public import EconLean.Producer.Cost
@@ -125,6 +127,8 @@ public import EconLean.Econometrics.TimeSeries.YuleWalkerPD
 public import EconLean.Econometrics.Asymptotics.ChiSquared
 public import EconLean.Econometrics.Asymptotics.ChiSquaredTests
 public import EconLean.Econometrics.Asymptotics.GMMWald
+public import EconLean.Econometrics.Asymptotics.FeasibleJWitness
+public import EconLean.Econometrics.Asymptotics.TestPower
 public import EconLean.Macro.Growth.RamseyGlobal
 public import EconLean.Macro.DP.StochasticPlan
 public import EconLean.Macro.DP.InvariantMeasure
@@ -141,6 +145,8 @@ public import EconLean.Macro.HA.Huggett
 public import EconLean.Macro.HA.AiyagariSlack
 public import EconLean.Macro.DP.MonotoneMixing
 public import EconLean.Macro.HA.StationaryUnique
+public import EconLean.Macro.DP.StochasticGrowth
+public import EconLean.Macro.DP.StochasticBrockMirman
 public import EconLean.Bridges.Aggregation.Tatonnement
 public import EconLean.Bridges.Aggregation.TatonnementSup
 public import EconLean.Bridges.Aggregation.SMD
@@ -166,11 +172,14 @@ public import EconLean.Information.PropertyRights
 public import EconLean.Information.GlobalGames
 public import EconLean.Contracts.Relational
 public import EconLean.Contracts.RelationalMH
+public import EconLean.Contracts.FirstOrderApproach
 public import EconLean.Information.Signaling
+public import EconLean.Information.IntuitiveCriterion
 public import EconLean.Information.Screening
 public import EconLean.Information.MoralHazard
 public import EconLean.Mechanism.Revelation
 public import EconLean.Mechanism.VCG
+public import EconLean.Mechanism.GreenLaffont
 public import EconLean.Mechanism.Myerson
 public import EconLean.Mechanism.OptimalMechanism
 public import EconLean.Mechanism.BilateralTrade
@@ -250,6 +259,9 @@ public import EconLean.Macro.Banking.GoldsteinPauzner
 public import EconLean.Macro.Credit.FinancialAccelerator
 public import EconLean.Macro.PublicFinance.AtkinsonStiglitz
 public import EconLean.Macro.PublicFinance.DiamondMirrlees
+public import EconLean.Macro.MoneySearch.LagosWrightBargaining
+public import EconLean.Macro.Credit.DynamicKM
+public import EconLean.Macro.PublicFinance.LucasStokey
 public import EconLean.Behavioral.BeliefRule
 public import EconLean.Behavioral.CognitiveDiscounting
 public import EconLean.Behavioral.DiagnosticExpectations
@@ -286,5 +298,8 @@ public import EconLean.BoundedRationality.AlternatingFP
 public import EconLean.BoundedRationality.KMRDarwin
 public import EconLean.Behavioral.RabinWeizsacker
 public import EconLean.Behavioral.CARACharacterization
+public import EconLean.Behavioral.TemptationAxioms
+public import EconLean.Behavioral.SalienceAllais
+public import EconLean.Behavioral.SalienceCommonRatio
 
 @[expose] public section
