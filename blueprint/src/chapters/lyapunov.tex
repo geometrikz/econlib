@@ -462,3 +462,116 @@ An allocation that is a.e.\ constant and feasible is a.e.\ $(1,1)$, but spending
 $(1,1)$ both $(2,0)$ and $(0,2)$ are demanded and $(1,1)$ is their midpoint; apply
 Theorem~\ref{thm:convexification_bridge}.
 \end{proof}
+
+\section{Existence without convex preferences (Aumann 1966)}
+\label{sec:aumann_existence}
+
+\begin{lemma}[Truncated demand without convexity]
+\label{lem:truncdemand_nonconvex}
+\lean{Econ.AumannExistence.cost_single, Econ.AumannExistence.truncDemand_closed_nonempty,
+  Econ.AumannExistence.truncDemand}
+\leanok
+For a continuous utility $u$, box size $c \ge 0$ and floor $m > 0$, the maximizers of $u$ over
+$\{x \in [0,c]^L \mid p \cdot x \le \max(w, m)\}$ are nonempty and form a closed graph in $(p, w, x)$. No quasiconcavity
+is assumed. The truncated demand of a consumer with endowment $\omega$ at prices $q$ is this set at $w = q\cdot\omega$.
+\end{lemma}
+\begin{proof}
+\leanok
+Berge's maximum theorem: the truncated budget correspondence is continuous with nonempty compact values.
+\end{proof}
+
+\begin{lemma}[Demand explodes near a free good, uniformly in the truncation]
+\label{lem:boundary_uniform}
+\lean{Econ.AumannExistence.eventually_lt_sum_of_mem_truncDemand}
+\leanok
+\uses{lem:truncdemand_nonconvex}
+Let $u$ be continuous and strongly monotone, $m > 0$, and $p_i = 0$. For every $B$ there is a neighbourhood of $p$ such
+that for all $q$ in it and all $c \ge B + 1$, every truncated demand $d$ at $q$ has $\sum_j d_j > B$.
+\end{lemma}
+\begin{proof}
+\leanok
+Let $K = \{d \ge 0 \mid \sum_j d_j \le B\}$, compact. If $d_0 \in K$ is affordable at $p$, then $y = s(d_0 + e_i)$ for some
+$s < 1$ is strictly better than $d_0$, strictly cheaper than the wealth $\max(p\cdot\omega, m) > 0$ (good $i$ is free), and
+lies in every box with $c \ge B + 1$; by continuity $y$ stays affordable and strictly better than $d$ for $(q, d)$ near
+$(p, d_0)$, so such $d$ is not a truncated demand. If $d_0$ is unaffordable at $p$, nearby $d$ is unaffordable at nearby
+$q$. Compactness of $K$ makes the neighbourhood uniform.
+\end{proof}
+
+\begin{lemma}[Uniform lower bound on prices]
+\label{lem:price_floor}
+\lean{Econ.AumannExistence.exists_pos_le_of_notMem}
+\leanok
+If $U$ is a neighbourhood of every boundary point of the price simplex $\Delta$, there is $\pi > 0$ with $q_i \ge \pi$ for
+all $i$ and all $q \in \Delta \setminus U$.
+\end{lemma}
+\begin{proof}
+\leanok
+$\Delta \setminus \operatorname{int} U$ is compact and consists of strictly positive prices; each coordinate attains a
+positive minimum on it.
+\end{proof}
+
+\begin{theorem}[Equilibrium of the convexified economy]
+\label{thm:convexified_equilibrium}
+\lean{Econ.AumannExistence.convex_cost_le, Econ.AumannExistence.convex_le_cost, Econ.AumannExistence.convex_lt_cost,
+  Econ.AumannExistence.sum_eq_cost_one, Econ.AumannExistence.exists_convexifiedEquilibrium}
+\leanok
+\uses{lem:boundary_uniform, lem:price_floor, thm:closed_graph_conv, thm:kakutani}
+Let finitely many types $t$ have masses $m_t > 0$, continuous strongly monotone utilities $u_t$ (not necessarily
+quasiconcave) and endowments $\omega_t \gg 0$. Then there are prices $p \gg 0$ and $\bar x_t \in \operatorname{conv}
+(\text{demand}_t(p, p\cdot\omega_t))$ with $\sum_t m_t \bar x_t = \sum_t m_t \omega_t$.
+\end{theorem}
+\begin{proof}
+\leanok
+Let $S = \sum_t m_t\omega_t$, fix a type $t_0$ and $B = (\sum_i S_i)/m_{t_0}$. Lemmas~\ref{lem:boundary_uniform}
+and~\ref{lem:price_floor} give $\pi > 0$ such that any $q \in \Delta$ with some $q_i < \pi$ has, for every $c \ge B+1$,
+all truncated demands of type $t_0$ of total quantity $> B$. Take $c = B + 1 + W/\pi$ with $W = \sum_t\sum_i \omega_{ti}$.
+Apply Kakutani (Theorem~\ref{thm:kakutani}) on $\Delta \times [0,c]^{T\times L}$ to
+$(p, x) \mapsto \arg\max_{q \in \Delta} q\cdot z(x) \times \prod_t \operatorname{conv} D_t(p)$, where
+$z(x) = \sum_t m_t x_t - S$ and $D_t$ is truncated demand; the graph is closed by Theorem~\ref{thm:closed_graph_conv}.
+At a fixed point, budgets give $p \cdot z \le 0$, so $z \le 0$ by the choice of $p$; then $\sum_i x_{t_0 i} \le B$, and
+since $\operatorname{conv} D_{t_0}(p)$ lies in the convex set $\{\sum_j v_j > B\}$ otherwise, $p_i \ge \pi$ for all $i$.
+Every affordable bundle then has coordinates at most $W/\pi < c$, so truncated demand is true demand; strong monotonicity
+makes budgets bind, so $p\cdot z = 0$ and, as $p \gg 0$, $z = 0$.
+\end{proof}
+
+\begin{theorem}[Aumann's existence theorem, finitely many types]
+\label{thm:aumann_existence}
+\lean{Econ.Continuum.ContinuumEconomy.exists_isWalrasianEquilibrium_of_types_nonconvex}
+\leanok
+\uses{thm:convexified_equilibrium, thm:convexification_bridge}
+A finite nonatomic continuum economy with finitely many types of positive mass, each with a continuous strongly monotone
+utility (no convexity) and endowment $\gg 0$, has a Walrasian equilibrium at strictly positive prices.
+\end{theorem}
+\begin{proof}
+\leanok
+Theorem~\ref{thm:convexified_equilibrium} with masses $\mu(\tau^{-1}t)$, then Theorem~\ref{thm:convexification_bridge}.
+\end{proof}
+
+\begin{remark}[Scope relative to Aumann 1966]
+This covers finitely many types (not a measurable preference map), preferences given by continuous utilities (no loss
+for complete, transitive, continuous preferences, but not Schmeidler's incomplete ones), and endowments $\gg 0$ for every
+type, whereas Aumann and Hildenbrand need only the aggregate endowment $\int e \gg 0$. Strong monotonicity is Aumann's
+desirability assumption.
+\end{remark}
+
+\begin{theorem}[A non-convex economy whose equilibria all split identical traders]
+\label{thm:aumann_existence_witness}
+\lean{Econ.Continuum.ContinuumEconomy.uSq, Econ.Continuum.ContinuumEconomy.sqContinuum,
+  Econ.Continuum.ContinuumEconomy.continuous_uSq, Econ.Continuum.ContinuumEconomy.stronglyMonotone_uSq,
+  Econ.Continuum.ContinuumEconomy.not_quasiconcaveOn_uSq,
+  Econ.Continuum.ContinuumEconomy.sqContinuum_one2_not_demanded,
+  Econ.Continuum.ContinuumEconomy.sqContinuum_no_symmetric_equilibrium,
+  Econ.Continuum.ContinuumEconomy.sqContinuum_exists_equilibrium,
+  Econ.Continuum.ContinuumEconomy.sqContinuum_exists_asymmetric_equilibrium}
+\leanok
+\uses{thm:aumann_existence, thm:lyapunov_integral_witness}
+Traders uniform on $[0,1]$ with endowment $(1,1)$ and utility $x_0^2 + x_1^2$, continuous and strongly monotone on
+$\mathbb{R}^2_+$ but not quasiconcave. An equilibrium at positive prices exists, and in every equilibrium at positive
+prices the allocation is not a.e.\ constant.
+\end{theorem}
+\begin{proof}
+\leanok
+Existence is Theorem~\ref{thm:aumann_existence}. An allocation that is a.e.\ constant and feasible forces the constant
+to be $(1,1)$, but spending
+all wealth $p_0 + p_1$ on the cheaper good gives at least $2$ units, utility at least $4 > 2$.
+\end{proof}

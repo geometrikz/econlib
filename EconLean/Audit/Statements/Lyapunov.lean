@@ -15,6 +15,7 @@ public import EconLean.Foundations.Measure.LyapunovIntegral
 public import EconLean.GE.AumannCore
 public import EconLean.GE.ContinuumExistence
 public import EconLean.Foundations.ConvexifiedCorrespondence
+public import EconLean.GE.AumannExistence
 
 @[expose] public section
 
@@ -268,5 +269,71 @@ theorem frozen_continuum_existence_witnesses :
     fun _ hp c _ hx => maxContinuum_no_symmetric_equilibrium hp c hx⟩
 
 end ContinuumExistence
+
+section AumannExistence
+
+open Continuum ContinuumEconomy Lyapunov AumannExistence Topology Filter
+
+variable {Ω ι : Type*} [MeasurableSpace Ω] [Fintype ι] (E : ContinuumEconomy Ω ι)
+
+theorem frozen_truncDemand_def (u : (ι → ℝ) → ℝ) (ω : ι → ℝ) (c m : ℝ) (q d : ι → ℝ) :
+    d ∈ truncDemand u ω c m q ↔
+      (d ∈ Set.Icc (0 : ι → ℝ) (fun _ => c) ∧ cost q d ≤ max (cost q ω) m) ∧
+        ∀ y, (y ∈ Set.Icc (0 : ι → ℝ) (fun _ => c) ∧ cost q y ≤ max (cost q ω) m) → u y ≤ u d :=
+  Iff.rfl
+
+theorem frozen_eventually_lt_sum_of_mem_truncDemand [DecidableEq ι] {u : (ι → ℝ) → ℝ}
+    (hu : Continuous u) (hmono : StronglyMonotone (prefOf u)) {m : ℝ} (hm : 0 < m)
+    (ω : ι → ℝ) {p : ι → ℝ} {i : ι} (hpi : p i = 0) (B : ℝ) :
+    ∀ᶠ q in 𝓝 p, ∀ c, B + 1 ≤ c → ∀ d ∈ truncDemand u ω c m q, B < ∑ j, d j :=
+  eventually_lt_sum_of_mem_truncDemand hu hmono hm ω hpi B
+
+theorem frozen_exists_convexifiedEquilibrium [Nonempty ι] [DecidableEq ι] {T : Type*}
+    [Fintype T] [Nonempty T] (mass : T → ℝ) (hmass : ∀ t, 0 < mass t)
+    {u : T → (ι → ℝ) → ℝ} (hu : ∀ t, Continuous (u t))
+    (hmono : ∀ t, StronglyMonotone (prefOf (u t)))
+    {ω : T → ι → ℝ} (hω : ∀ t, PositivePrices (ω t)) :
+    ∃ (p : ι → ℝ) (xbar : T → ι → ℝ), PositivePrices p ∧
+      (∀ t, xbar t ∈ convexHull ℝ (demand (prefOf (u t)) p (cost p (ω t)))) ∧
+      ∑ t, mass t • xbar t = ∑ t, mass t • ω t :=
+  exists_convexifiedEquilibrium mass hmass hu hmono hω
+
+theorem frozen_continuum_existence_nonconvex [Nonempty ι] [IsFiniteMeasure E.μ]
+    (hμ : Nonatomic E.μ) {T : Type*} [Fintype T] [Nonempty T] [MeasurableSpace T]
+    [MeasurableSingletonClass T] {τ : Ω → T} (hτ : Measurable τ)
+    {u : T → (ι → ℝ) → ℝ} {ω : T → ι → ℝ}
+    (hpref : ∀ a, E.pref a = prefOf (u (τ a))) (hω : ∀ a, E.endow a = ω (τ a))
+    (hmass : ∀ t, 0 < E.μ.real (τ ⁻¹' {t}))
+    (hu : ∀ t, Continuous (u t)) (hmono : ∀ t, StronglyMonotone (prefOf (u t)))
+    (hωpos : ∀ t, PositivePrices (ω t)) :
+    ∃ (p : ι → ℝ) (x : Ω → ι → ℝ), PositivePrices p ∧ E.IsWalrasianEquilibrium p x :=
+  exists_isWalrasianEquilibrium_of_types_nonconvex E hμ hτ hpref hω hmass hu hmono hωpos
+
+theorem frozen_aumann_existence_witness :
+    (∀ x, sqContinuum.pref x = prefOf uSq) ∧ (∀ x, sqContinuum.endow x = one2) ∧
+    Continuous uSq ∧ StronglyMonotone (prefOf uSq) ∧ ¬ QuasiconcaveOn ℝ (Set.Ici 0) uSq ∧
+    ∃ (p : Fin 2 → ℝ) (x : ℝ → Fin 2 → ℝ), PositivePrices p ∧
+      sqContinuum.IsWalrasianEquilibrium p x ∧
+      ∀ c : Fin 2 → ℝ, ¬ x =ᵐ[sqContinuum.μ] fun _ => c :=
+  ⟨fun _ => rfl, fun _ => rfl, continuous_uSq, stronglyMonotone_uSq, not_quasiconcaveOn_uSq,
+    sqContinuum_exists_asymmetric_equilibrium⟩
+
+theorem frozen_sqContinuum_no_symmetric_equilibrium :
+    ∀ p : Fin 2 → ℝ, PositivePrices p → ∀ (c : Fin 2 → ℝ) (x : ℝ → Fin 2 → ℝ),
+      x =ᵐ[sqContinuum.μ] (fun _ => c) → ¬ sqContinuum.IsWalrasianEquilibrium p x :=
+  fun _ hp c _ hx => sqContinuum_no_symmetric_equilibrium hp c hx
+
+theorem frozen_exists_pos_le_of_notMem [Nonempty ι] {U : Set (ι → ℝ)}
+    (hU : ∀ p ∈ priceSimplex ι, ∀ i, p i = 0 → U ∈ 𝓝 p) :
+    ∃ π > 0, ∀ q ∈ priceSimplex ι, q ∉ U → ∀ i, π ≤ q i :=
+  exists_pos_le_of_notMem hU
+
+theorem frozen_sqContinuum_def :
+    (∀ x : Fin 2 → ℝ, uSq x = x 0 ^ 2 + x 1 ^ 2) ∧
+      sqContinuum.μ = volume.restrict (Set.Icc (0 : ℝ) 1) ∧ one2 = (fun _ => 1) ∧
+      sqContinuum.endow = (fun _ => one2) :=
+  ⟨fun _ => rfl, rfl, rfl, rfl⟩
+
+end AumannExistence
 
 end Econ.Audit

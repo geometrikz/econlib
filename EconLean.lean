@@ -99,6 +99,7 @@ public import EconLean.Foundations.ConvexifiedCorrespondence
 public import EconLean.GE.ContinuumEconomy
 public import EconLean.GE.AumannCore
 public import EconLean.GE.ContinuumExistence
+public import EconLean.GE.AumannExistence
 public import EconLean.Audit.Statements.Lyapunov
 public import EconLean.Audit.Statements.FixedPoint
 
