@@ -38,9 +38,8 @@ for defaults that may vanish (`objective_le0`, `eq_gl_of_optimal0`).
 rules form a compact set and mutual information is continuous
 (`mutualInfo_eq`, using continuity of `x log x` at `0`). Combined with
 Theorem 1 this gives an optimal rule of generalized-logit form
-(`exists_optimal_generalizedLogit`). **Not formalized:** MM's
-characterization of the optimal marginal itself (their Corollary 1 on
-symmetric problems needs convexity of mutual information in the rule).
+(`exists_optimal_generalizedLogit`). The optimal marginal itself (MM Lemma 2,
+sufficiency) and the symmetric-problem logit result are in `RISymmetric.lean`.
 -/
 module
 

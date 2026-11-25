@@ -28,7 +28,8 @@ a fixed, exogenous, full-support `P`. It is **not** yet their theorem
 information written as `min_P E_v KL(p(·|v) ‖ P)`, attained at the marginal,
 (ii) the joint problem over state-contingent rules, and (iii) the fixed point
 `Pᵢ = E_v[pᵢ(v)]`; MM also allow actions never chosen (`Pᵢ = 0`), which the
-hypothesis `∀ i, 0 < P i` rules out. Those steps are left for a follow-up.
+hypothesis `∀ i, 0 < P i` rules out. Those steps are in `RationalInattention.lean`
+(Theorem 1, zero-probability actions) and `RISymmetric.lean` (the optimal marginal).
 `P` need not sum to one here (only positivity is used).
 -/
 module

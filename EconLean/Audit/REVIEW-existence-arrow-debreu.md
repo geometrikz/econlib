@@ -40,3 +40,25 @@ corollary, and corrects the `δ` wording.
 Checks: axioms standard; leanchecker clean; nanoda 31402 declarations, no
 typechecker errors; frozen `frozen_exists_walrasianEquilibrium_arrowDebreu_convex`
 and `frozen_quasiconcaveOn` added.
+
+## Addendum 2 (2026-11-25): local nonsatiation
+
+New `exists_freeDisposalEquilibrium_arrowDebreu` (LNS + quasiconcave utilities;
+p in the simplex, z ≤ 0, p·z = 0: AD 1954's equilibrium notion) and
+`exists_walrasianEquilibrium_arrowDebreu_lns` (a free-disposal firm absorbs the
+excess supply; exact clearing, prices in the simplex). The strongly monotone
+theorem is now derived from the free-disposal one (statement unchanged).
+Witness `leonProdEconomy` (Leontief, not strongly monotone).
+
+Isolated adversarial review: no substantive issues. Fixes applied: Debreu 1959
+cited for the exact-clearing free-disposal form, AD 1954 for z ≤ 0; scope note
+corrected (AD: global nonsatiation + semi-strict convexity, which imply LNS;
+neither assumption set contains the other); blueprint proof moved so the
+Kakutani sketch sits in the free-disposal theorem (no circular references);
+`lns_leon` added to the blueprint. Not done (noted open): weakening the
+free-disposal hypothesis to the aggregate set; a witness in which disposal is
+actually needed (Leontief witness only shows strong monotonicity fails).
+
+Checks: axioms standard; leanchecker clean; nanoda 31350 declarations, no
+typechecker errors; frozen statements added for both new theorems and
+`FreeDisposal`.

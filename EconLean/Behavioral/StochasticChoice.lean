@@ -32,8 +32,8 @@ those outside `A` (`bm_rumP`), so all BM polynomials are nonnegative
 (`bm_rumP_nonneg`, Block–Marschak's necessity theorem).
 
 Falmagne's sufficiency theorem (nonnegative BM polynomials ⇒ RUM) is in
-`Falmagne.lean`. **Not formalized:** McFadden's derivation of logit from
-Gumbel shocks.
+`Falmagne.lean`. McFadden's derivation of logit from Gumbel shocks is in
+`GumbelLogit.lean`.
 -/
 module
 

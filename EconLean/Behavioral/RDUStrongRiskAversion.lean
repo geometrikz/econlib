@@ -30,10 +30,11 @@ Builds on `RankDependent.lean` and `RDURiskAttitude.lean`.
 * Non-vacuity: `triLot`, `isMPS_tri` (a concrete spread on a three-point
   grid), `sq_convex` (`w t = t²` is convex).
 
-**Scope.** Only linear utility of money (Yaari) is covered. Chew–Karni–Safra's
-general RDU result (strong risk aversion iff `w` convex and `u` concave) and
-the equivalence of the integral condition with sequences of elementary
-spreads are not formalized.
+**Scope.** Only linear utility of money (Yaari) is covered here. Chew–Karni–Safra's
+general RDU result (strong risk aversion iff `w` convex and `u` concave) is in
+`RDUConcaveConvex.lean` (sufficiency) and `RDUNecessity.lean` (necessity,
+`cks_iff`). The equivalence of the integral condition with sequences of
+elementary spreads is not formalized.
 -/
 module
 

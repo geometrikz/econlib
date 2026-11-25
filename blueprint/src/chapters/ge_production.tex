@@ -282,20 +282,11 @@ the midpoint of two maximizers is affordable and strictly better. Continuity: Be
 Suppose consumers have continuous, strictly quasiconcave, strongly monotone utilities and endowments $\omega_a \gg 0$, each
 $Y_j$ is closed and convex with $0 \in Y_j$, and $Y = \sum_j Y_j$ has no free lunch and is irreversible. Then a Walrasian
 equilibrium exists at strictly positive prices. Production sets may be unbounded, with constant returns and free
-disposal (Arrow--Debreu 1954, Theorem I, here with strictly quasiconcave preferences).
+disposal.
 \end{theorem}
 \begin{proof}
 \leanok
-In Lean this is the special case of Theorem~\ref{thm:existence_arrow_debreu_convex}, since strictly quasiconcave
-utilities are quasiconcave. The direct argument: bound attainable production by $R$, truncate $Y_j$ to $T_j = Y_j \cap \bar B(0, R+1)$ and consumption to $[0, c]^L$ with
-$c > \sum_i \bar\omega_i + |J| R$. Apply Kakutani on $\Delta \times [0,c]^{A \times L} \times \prod_j T_j$ to the
-correspondence sending $(p, x, y)$ to the price vectors maximizing $q \cdot z$ over $\Delta$, where
-$z = \sum_a x_a - \bar\omega - \sum_j y_j$; the truncated demands at wealth $p \cdot \omega_a + \sum_j \theta_{aj}
-\max(0, p \cdot y_j)$ with floor $m_a = \min_i \omega_{ai}$; and the profit maximizers on $T_j$. At a fixed point
-profits are nonnegative, wealth is at least $p \cdot \omega_a \ge m_a$, and summing budgets gives $p \cdot z \le 0$, so
-$z \le 0$ by price maximization. Hence production is attainable, strictly inside the truncation, and consumption is
-strictly inside the box; by convexity firms maximize on $Y_j$, and consumers maximize on their full budget sets (see
-the lift-back in Theorem~\ref{thm:existence_arrow_debreu_convex}). Strong monotonicity gives $p \gg 0$ and binding budgets, so $p \cdot z = 0$ and $z = 0$.
+Special case of Theorem~\ref{thm:existence_arrow_debreu_convex}, since strictly quasiconcave utilities are quasiconcave.
 \end{proof}
 
 \begin{lemma}[Set-valued truncated demand]
@@ -316,19 +307,69 @@ quasiconcavity every convex combination is at least as good.
 \label{thm:existence_arrow_debreu_convex}
 \lean{Econ.ProductionEconomy.exists_walrasianEquilibrium_arrowDebreu_convex}
 \leanok
-\uses{lem:bound_attainable, lem:trunc_demand_convex}
+\uses{lem:bound_attainable, lem:trunc_demand_convex, thm:free_disposal_equilibrium_ad}
 Suppose consumers have continuous utilities that are quasiconcave on $\mathbb{R}^L_+$ (convex preferences) and strongly
 monotone, and endowments $\omega_a \gg 0$; each $Y_j$ is closed and convex with $0 \in Y_j$; and $Y = \sum_j Y_j$ has no free
 lunch and is irreversible. Then a Walrasian equilibrium exists at strictly positive prices.
 \end{theorem}
 \begin{proof}
 \leanok
-As before, with the consumer part of the Kakutani correspondence now the set-valued truncated demand. In the lift-back
-step, suppose an affordable $x'$ is better than $x_a$. Shrink it to $x'' = \sigma x'$, still better and leaving money
-unspent. With the fixed $\delta = (w - p \cdot x'')/(\sum_i p_i + 1)$ the bundle $t x'' + (1-t) x_a + t\delta \mathbf{1}$ is
-affordable for every $t \in [0, 1]$ and in the box for small $t > 0$; it is at least as good as $t x'' + (1-t) x_a$, which is at least as good as $x_a$ by quasiconcavity, and is
-strictly better by strong monotonicity, contradicting truncated optimality.
+Strong monotonicity implies local nonsatiation, so Theorem~\ref{thm:free_disposal_equilibrium_ad} gives $p$ in the
+simplex, profit maximization, demand, $z \le 0$ and $p \cdot z = 0$. If $p_i = 0$, adding one unit of good $i$ to a
+consumer's bundle is free and strictly better, contradicting demand; so $p \gg 0$, and then $z \le 0$ with
+$p \cdot z = 0$ forces $z = 0$.
 \end{proof}
+
+\begin{theorem}[Free-disposal equilibrium under local nonsatiation; Arrow--Debreu 1954, Theorem I]
+\label{thm:free_disposal_equilibrium_ad}
+\lean{Econ.ProductionEconomy.exists_freeDisposalEquilibrium_arrowDebreu}
+\leanok
+\uses{lem:bound_attainable, lem:trunc_demand_convex}
+Suppose consumers have continuous utilities, quasiconcave on $\mathbb{R}^L_+$ and locally nonsatiated, and endowments
+$\omega_a \gg 0$; each $Y_j$ is closed and convex with $0 \in Y_j$; and $Y = \sum_j Y_j$ has no free lunch and is
+irreversible. Then there are $p$ in the simplex, profit-maximizing $y_j \in Y_j$ and demanded $x_a$ such that
+$z = \sum_a x_a - \bar\omega - \sum_j y_j \le 0$ and $p \cdot z = 0$.
+\end{theorem}
+\begin{proof}
+\leanok
+Bound attainable production by $R$, truncate $Y_j$ to $T_j = Y_j \cap \bar B(0, R+1)$ and consumption to $[0, c]^L$ with
+$c > \sum_i \bar\omega_i + |J| R$. Apply Kakutani on $\Delta \times [0,c]^{A \times L} \times \prod_j T_j$ to the
+correspondence sending $(p, x, y)$ to the price vectors maximizing $q \cdot z$ over $\Delta$, where
+$z = \sum_a x_a - \bar\omega - \sum_j y_j$; the truncated demands at wealth $p \cdot \omega_a + \sum_j \theta_{aj}
+\max(0, p \cdot y_j)$ with floor $m_a = \min_i \omega_{ai}$ (Lemma~\ref{lem:trunc_demand_convex}); and the profit
+maximizers on $T_j$. At a fixed point profits are nonnegative, wealth is at least $p \cdot \omega_a \ge m_a$, and summing
+budgets gives $p \cdot z \le 0$, so $z \le 0$ by price maximization. Hence production is attainable and strictly inside
+the truncation, so by convexity firms maximize on $Y_j$; consumption is strictly inside the box. For demand: if an
+affordable $x'$ beats $x_a$, shrink it to $x''$ leaving money unspent; for small $t > 0$ the mix $t x'' + (1-t) x_a$ is
+no worse than $x_a$ (quasiconcavity), strictly inside the box and strictly affordable, so local nonsatiation gives a
+strictly better bundle in the truncated budget, a contradiction. Local nonsatiation makes budgets bind (Walras' law), so
+$p \cdot z = 0$.
+\end{proof}
+
+\begin{theorem}[Exact clearing with a free-disposal firm]
+\label{thm:existence_arrow_debreu_lns}
+\lean{Econ.ProductionEconomy.exists_walrasianEquilibrium_arrowDebreu_lns}
+\leanok
+\uses{thm:free_disposal_equilibrium_ad}
+If in addition some firm has free disposal, there is a Walrasian equilibrium with prices in the simplex.
+\end{theorem}
+\begin{proof}
+\leanok
+Replace $y_{j_0}$ by $y_{j_0} + z \le y_{j_0}$, which is in $Y_{j_0}$ by free disposal and equally profitable since
+$p \cdot z = 0$; wealth is unchanged and markets now clear exactly.
+\end{proof}
+
+\begin{theorem}[Leontief consumers]
+\label{thm:leon_prod_economy}
+\lean{Econ.GEExamples.quasiconcaveOn_uLeon, Econ.GEExamples.continuous_uLeon, Econ.GEExamples.lns_leon, Econ.GEExamples.not_stronglyMonotone_uLeon,
+  Econ.GEExamples.leonProdEconomy, Econ.GEExamples.leonProdEconomy_aggProd,
+  Econ.GEExamples.leonProdEconomy_not_stronglyMonotone, Econ.GEExamples.leonProdEconomy_exists_equilibrium}
+\leanok
+\uses{thm:existence_arrow_debreu_lns, thm:linear_economy}
+Leontief utility $\min(x_0, x_1)$ is continuous, quasiconcave and locally nonsatiated but not strongly monotone. Two
+Leontief consumers each owning $(1,1)$, with the constant-returns free-disposal firm of
+Theorem~\ref{thm:linear_economy}, form an economy with a Walrasian equilibrium.
+\end{theorem}
 
 \begin{theorem}[Perfect substitutes]
 \label{thm:subst_economy}
@@ -356,3 +397,220 @@ The cone $\{y : y_0 \le 0,\ y_0 + y_1 \le 0\}$ (convert good 0 into good 1 one f
 convex, has constant returns and free disposal, no free lunch, is irreversible and is not strictly convex. Two
 square-root consumers each owning $(1,1)$, one of whom owns this firm, form an economy with a Walrasian equilibrium.
 \end{theorem}
+
+\section{The First Welfare Theorem with infinitely many goods and agents}
+\label{sec:infinite_welfare}
+
+Goods $G$ and agents $A$ are arbitrary sets (for example dates and generations). Bundles and prices are nonnegative,
+and the value of a bundle is $p \cdot y = \sum_g p_g y_g \in [0, \infty]$. An allocation is feasible if each good's
+consumption, summed over agents, equals the aggregate endowment $\bar\omega$. Preferences are \emph{locally nonsatiated
+with respect to value} if every bundle can be strictly improved at an extra cost below any $\varepsilon > 0$. This
+value-metric analogue of local nonsatiation depends on prices and yields Debreu (1954)'s cost-minimisation step.
+
+\begin{theorem}[First Welfare Theorem with finite aggregate value]
+\label{thm:infinite_fwt}
+\lean{Econ.InfiniteWelfare.value, Econ.InfiniteWelfare.Feasible, Econ.InfiniteWelfare.IsEquilibrium,
+  Econ.InfiniteWelfare.ParetoOptimal, Econ.InfiniteWelfare.ValueLNS, Econ.InfiniteWelfare.tsum_value_of_feasible,
+  Econ.InfiniteWelfare.first_welfare_theorem_infinite}
+\leanok
+In a competitive equilibrium with transitive, value-locally nonsatiated preferences, if the aggregate endowment has finite
+value $p \cdot \bar\omega < \infty$, the equilibrium allocation is Pareto optimal (Shell 1971; Balasko--Shell 1980).
+\end{theorem}
+\begin{proof}
+\leanok
+If $y$ Pareto dominates $x$, local nonsatiation gives $p \cdot y_a \ge p \cdot \omega_a$ for every $a$, and the strictly
+better-off agent's bundle is unaffordable, so $p \cdot y_{a_0} > p \cdot \omega_{a_0}$. Since sums of nonnegative terms
+commute, $\sum_a p \cdot y_a = p \cdot \bar\omega = \sum_a p \cdot \omega_a$, which is finite, contradicting the strict
+inequality.
+\end{proof}
+
+\begin{theorem}[The Hilbert hotel: the hypothesis cannot be dropped]
+\label{thm:hilbert_hotel}
+\lean{Econ.InfiniteWelfare.unit, Econ.InfiniteWelfare.value_unit, Econ.InfiniteWelfare.feasible_unit,
+  Econ.InfiniteWelfare.value_add_unit, Econ.InfiniteWelfare.exists_pos_mul_le, Econ.InfiniteWelfare.hotelU,
+  Econ.InfiniteWelfare.hotelPrice, Econ.InfiniteWelfare.hotel_value_le, Econ.InfiniteWelfare.hotelEconomy_isEquilibrium,
+  Econ.InfiniteWelfare.hotelEconomy_valueLNS, Econ.InfiniteWelfare.hotelEconomy_value_top,
+  Econ.InfiniteWelfare.hotelShift, Econ.InfiniteWelfare.hotelShift_feasible,
+  Econ.InfiniteWelfare.hotelEconomy_not_paretoOptimal}
+\leanok
+\uses{thm:infinite_fwt}
+Goods and agents are $\mathbb{N}$; agent $a$ owns one unit of good $a$ and has utility $x_a + x_{a+1}$. At unit prices
+autarky is a competitive equilibrium and preferences are value-locally nonsatiated, but $p \cdot \bar\omega = \infty$, and
+giving agent $0$ goods $0$ and $1$ and every other agent $a$ good $a + 1$ is a Pareto improvement (Shell 1971). This is
+the mechanism behind the inefficiency of the Samuelson economy (Chapter on overlapping generations).
+\end{theorem}
+\begin{proof}
+\leanok
+Every bundle worth at most $1$ gives utility at most $1$. The shifted allocation uses each good exactly once.
+\end{proof}
+
+\begin{theorem}[Summable prices]
+\label{thm:own_good_economy}
+\lean{Econ.InfiniteWelfare.ownU, Econ.InfiniteWelfare.halfPrice, Econ.InfiniteWelfare.halfPrice_pos,
+  Econ.InfiniteWelfare.ownGoodEconomy_isEquilibrium, Econ.InfiniteWelfare.ownGoodEconomy_valueLNS,
+  Econ.InfiniteWelfare.ownGoodEconomy_value_ne_top, Econ.InfiniteWelfare.ownGoodEconomy_paretoOptimal}
+\leanok
+\uses{thm:infinite_fwt}
+With the same endowments, utility $x_a$ and prices $2^{-g}$, autarky is an equilibrium, $p \cdot \bar\omega = 2$, and
+autarky is Pareto optimal. (A sanity check that the hypotheses can hold together; here the conclusion is also
+immediate.)
+\end{theorem}
+\begin{proof}
+\leanok
+Apply Theorem~\ref{thm:infinite_fwt}; $\sum_g 2^{-g} = 2$.
+\end{proof}
+
+\section{The Second Welfare Theorem in infinite-dimensional commodity spaces}
+\label{sec:valuation_equilibrium}
+
+The commodity space $X$ is any real topological vector space, and prices are continuous linear functionals
+$p : X \to \mathbb{R}$ (Debreu 1954's \emph{valuations}). Finitely many agents have consumption sets $C_a \subseteq X$
+and preference relations $\succsim_a$; an allocation is feasible if $x_a \in C_a$ and $\sum_a x_a = \bar\omega$.
+Write $B_a = \{y \in C_a : y \succ_a x_a\}$ and $Z = \sum_a B_a$ for the aggregate better set. $(p, x)$ is a
+\emph{valuation quasi-equilibrium} if $y \in B_a$ implies $p(y) \ge p(x_a)$, and a \emph{valuation equilibrium} if
+it implies $p(y) > p(x_a)$; the implicit transfers $p(x_a)$ sum to $p(\bar\omega)$.
+
+\begin{theorem}[Second Welfare Theorem in a topological vector space]
+\label{thm:swt_tvs}
+\lean{Econ.ValuationEquilibrium.better, Econ.ValuationEquilibrium.Feasible, Econ.ValuationEquilibrium.WeaklyParetoOptimal, Econ.ValuationEquilibrium.aggBetter, Econ.ValuationEquilibrium.IsValuationQuasiEquilibrium, Econ.ValuationEquilibrium.IsValuationEquilibrium, Econ.ValuationEquilibrium.sum_wealth_eq, Econ.ValuationEquilibrium.convex_aggBetter, Econ.ValuationEquilibrium.not_mem_aggBetter, Econ.ValuationEquilibrium.exists_better_lt, Econ.ValuationEquilibrium.second_welfare_theorem_tvs}
+\leanok
+Let $x$ be weakly Pareto optimal, each $B_a$ convex, each $x_a \in \overline{B_a}$ (local nonsatiation at $x$), and
+$\operatorname{int} Z \neq \emptyset$. Then there is a nonzero continuous linear $p$ with $(p, x)$ a valuation
+quasi-equilibrium (Debreu 1954, Thm 2).
+\end{theorem}
+\begin{proof}
+\leanok
+$Z$ is convex and $\bar\omega \notin Z$ by weak optimality, so $\bar\omega \notin \operatorname{int} Z$. Separating the
+point from the open convex set $\operatorname{int} Z$ gives $p$ with $p(\bar\omega) < p(z)$ on $\operatorname{int} Z$,
+hence $p(\bar\omega) \le p(z)$ on $\overline{\operatorname{int} Z} = \overline{Z}$. If $y \in B_a$ had
+$p(y) = p(x_a) - \delta$, choose $y_b \in B_b$ with $p(y_b) < p(x_b) + \delta/(n+1)$ for $b \ne a$ by local
+nonsatiation and continuity; then $y + \sum_{b \ne a} y_b \in Z$ is worth less than $p(\bar\omega)$.
+\end{proof}
+
+\begin{lemma}[Interior points]
+\label{lem:aggbetter_interior}
+\lean{Econ.ValuationEquilibrium.interior_aggBetter_nonempty}
+\leanok
+\uses{thm:swt_tvs}
+If every $B_b$ is nonempty and some $B_a$ has an interior point, then $\operatorname{int} Z \ne \emptyset$.
+\end{lemma}
+\begin{proof}
+\leanok
+$\operatorname{int} B_a + \sum_{b \ne a} y_b$ is an open subset of $Z$.
+\end{proof}
+
+\begin{theorem}[Cheaper point]
+\label{thm:swt_tvs_cheaper}
+\lean{Econ.ValuationEquilibrium.IsValuationQuasiEquilibrium.cost_lt_of_cheaper_point, Econ.ValuationEquilibrium.exists_cheaper_of_mem_interior, Econ.ValuationEquilibrium.second_welfare_theorem_tvs_equilibrium}
+\leanok
+\uses{thm:swt_tvs}
+If $C_a$ is convex, $B_a$ is relatively open in $C_a$ and some $w \in C_a$ has $p(w) < p(x_a)$, then at a valuation
+quasi-equilibrium every $y \in B_a$ has $p(y) > p(x_a)$. If $x_a$ is an interior point of $C_a$, every nonzero
+continuous linear $p$ admits such a cheaper point; so if in addition every $C_a$ is convex, every $B_a$ relatively open
+and every $x_a \in \operatorname{int} C_a$, the supporting valuation is a valuation equilibrium.
+\end{theorem}
+\begin{proof}
+\leanok
+If $p(y) = p(x_a)$, points $y + t(w - y)$ for small $t > 0$ lie in $B_a$ and cost less than $p(x_a)$.
+\end{proof}
+
+\begin{theorem}[A toy economy on $\ell^\infty$]
+\label{thm:linfty_economy}
+\lean{Econ.ValuationEquilibrium.cone, Econ.ValuationEquilibrium.linftyPref, Econ.ValuationEquilibrium.linftyX0, Econ.ValuationEquilibrium.linftyAlloc, Econ.ValuationEquilibrium.linftyX0_apply, Econ.ValuationEquilibrium.linftyAlloc_apply, Econ.ValuationEquilibrium.better_linfty, Econ.ValuationEquilibrium.linftyEconomy_feasible, Econ.ValuationEquilibrium.linftyEconomy_weaklyParetoOptimal, Econ.ValuationEquilibrium.linftyEconomy_convex, Econ.ValuationEquilibrium.linftyEconomy_lns, Econ.ValuationEquilibrium.linftyEconomy_interior, Econ.ValuationEquilibrium.linftyEconomy_aggBetter_interior, Econ.ValuationEquilibrium.linftyEconomy_supported}
+\leanok
+\uses{thm:swt_tvs, lem:aggbetter_interior}
+On $\ell^\infty(\mathbb{N}, \mathbb{R})$ with consumption set the positive cone, two agents caring only about good
+$0$ and good $1$ respectively, $\bar\omega = \mathbf{1}$, and the allocation $(e_0, \mathbf{1} - e_0)$ satisfy all
+hypotheses of Theorem~\ref{thm:swt_tvs}; in particular the ball of radius $\tfrac12$ around $2 \cdot \mathbf{1}$ lies in
+agent $0$'s better set, which is possible because the positive cone of $\ell^\infty$ has interior points (unlike
+$\ell^p$, $p < \infty$; this is why Bewley 1972 works in $\ell^\infty$). In $\ell^\infty$ the supporting valuation may be
+purely finitely additive; Bewley's summable prices are not formalized here.
+\end{theorem}
+\begin{proof}
+\leanok
+Direct verification; local nonsatiation via $x_a + \tfrac{1}{n+1}\mathbf{1} \to x_a$.
+\end{proof}
+
+\begin{theorem}[A toy economy for the equilibrium form]
+\label{thm:common_economy}
+\lean{Econ.ValuationEquilibrium.eval0, Econ.ValuationEquilibrium.eval0_apply, Econ.ValuationEquilibrium.commonPref, Econ.ValuationEquilibrium.better_common, Econ.ValuationEquilibrium.commonC, Econ.ValuationEquilibrium.commonX, Econ.ValuationEquilibrium.commonEconomy_feasible, Econ.ValuationEquilibrium.commonEconomy_weaklyParetoOptimal, Econ.ValuationEquilibrium.commonEconomy_lns, Econ.ValuationEquilibrium.commonEconomy_supported}
+\leanok
+\uses{thm:swt_tvs_cheaper, lem:aggbetter_interior}
+On $\ell^\infty(\mathbb{N}, \mathbb{R})$ with consumption sets the whole space, two agents who both care only about
+good $0$ and the allocation $x = 0$ with $\bar\omega = 0$ satisfy every hypothesis of the equilibrium form, so $x$ is
+a valuation equilibrium for some nonzero valuation.
+\end{theorem}
+\begin{proof}
+\leanok
+Both better sets are the open half-space $\{y : y_0 > 0\}$; no feasible allocation gives both agents positive good $0$.
+\end{proof}
+
+\section{Existence with production: disposal and several firms}
+\label{sec:existence_witnesses}
+
+\begin{theorem}[Disposal can be necessary]
+\label{thm:disposal_needed}
+\lean{Econ.GEExamples.uBad, Econ.GEExamples.continuous_uBad, Econ.GEExamples.quasiconcaveOn_uBad, Econ.GEExamples.lns_uBad, Econ.GEExamples.badEconomy, Econ.GEExamples.badEconomy_aggProd, Econ.GEExamples.badEconomy_no_walrasianEquilibrium, Econ.GEExamples.badEconomy_excess_supply, Econ.GEExamples.badEconomy_negativePrice_equilibrium, Econ.GEExamples.badEconomy_disposal_needed}
+\leanok
+\uses{thm:existence_arrow_debreu}
+One consumer with utility $x_0 - x_1$ (good $1$ is a bad), endowment $(1,1)$, and one firm with $Y = \{0\}$ satisfy all
+hypotheses of the free-disposal existence theorem. At no nonnegative prices is there a Walrasian equilibrium with exact
+market clearing, so every free-disposal equilibrium has strict excess supply; in particular the free-disposal-firm
+hypothesis of Theorem~\ref{thm:existence_arrow_debreu_lns} cannot be dropped. At the price $(1,-1)$, a negative price
+for the bad, autarky is an exact-clearing equilibrium, so the failure comes from the sign restriction on prices.
+\end{theorem}
+\begin{proof}
+\leanok
+Market clearing forces $x = (1,1)$, but $(1,0)$ costs $p_0 \le p_0 + p_1$ and gives utility $1 > 0$.
+\end{proof}
+
+\begin{theorem}[Existence with two firms]
+\label{thm:two_firm_economy}
+\lean{Econ.GEExamples.capSet, Econ.GEExamples.zero_mem_capSet, Econ.GEExamples.isClosed_capSet, Econ.GEExamples.convex_capSet, Econ.GEExamples.twoFirmEconomy, Econ.GEExamples.mem_twoFirmEconomy_aggProd, Econ.GEExamples.twoFirmEconomy_noFreeLunch, Econ.GEExamples.twoFirmEconomy_irreversible, Econ.GEExamples.twoFirmEconomy_aggProd_ne, Econ.GEExamples.capSet_positive_profit, Econ.GEExamples.twoFirmEconomy_exists_equilibrium}
+\leanok
+\uses{thm:existence_arrow_debreu_convex}
+Two square-root consumers; consumer $0$ owns a constant-returns firm and consumer $1$ a capacity-constrained firm producing
+two units of good $1$ per unit of good $0$, up to two units. The second firm earns positive profit, so shares matter, and
+the aggregate technology is strictly larger than either firm's. A Walrasian equilibrium with strictly positive prices
+exists.
+\end{theorem}
+\begin{proof}
+\leanok
+Both technologies are closed, convex and contain $0$; any $y \in Y_1 + Y_2$ with $y \ge 0$ or $-y \in Y_1 + Y_2$ has
+both input components zero, which forces $y = 0$.
+\end{proof}
+
+\section{Exact clearing under aggregate free disposal}
+\label{sec:aggregate_disposal}
+
+\begin{theorem}[Aggregate free disposal suffices]
+\label{thm:existence_agg_fd}
+\lean{Econ.ProductionEconomy.freeDisposal_aggProd_of_firm, Econ.ProductionEconomy.noFreeLunch_of_freeDisposal, Econ.ProductionEconomy.exists_walrasianEquilibrium_arrowDebreu_aggFD}
+\leanok
+\uses{thm:existence_arrow_debreu, thm:existence_arrow_debreu_lns}
+If one firm has free disposal, so does the aggregate technology $Y = \sum_j Y_j$. Under the hypotheses of the
+free-disposal existence theorem (with no free lunch dropped, since free disposal and irreversibility imply it), free
+disposal of $Y$ in the form $Y - \mathbb{R}^L_+ \subseteq Y$ gives a Walrasian equilibrium with exact market clearing and
+prices in the simplex. (Debreu 1959, \S5.7, assumes only $-\Omega \subseteq Y$, which agrees under additivity.)
+\end{theorem}
+\begin{proof}
+\leanok
+Take a free-disposal equilibrium with excess supply $z \le 0$, $p \cdot z = 0$. Then $\sum_j y_j + z \in Y$, so it equals
+$\sum_j y'_j$ with $y'_j \in Y_j$. Each $p \cdot y'_j \le p \cdot y_j$ and the totals agree, so $p \cdot y'_j = p \cdot y_j$:
+the new plans maximize profit and wealth is unchanged, while markets now clear exactly.
+\end{proof}
+
+\begin{theorem}[Aggregate but no individual free disposal]
+\label{thm:disposal_economy}
+\lean{Econ.GEExamples.dispose0, Econ.GEExamples.dispose1, Econ.GEExamples.isClosed_dispose0, Econ.GEExamples.isClosed_dispose1, Econ.GEExamples.convex_dispose0, Econ.GEExamples.convex_dispose1, Econ.GEExamples.not_freeDisposal_dispose0, Econ.GEExamples.not_freeDisposal_dispose1, Econ.GEExamples.disposalEconomy, Econ.GEExamples.disposalEconomy_aggProd, Econ.GEExamples.disposalEconomy_freeDisposal, Econ.GEExamples.disposalEconomy_exists_equilibrium}
+\leanok
+\uses{thm:existence_agg_fd, thm:disposal_needed}
+Two firms, one able to dispose only of good $0$ and the other only of good $1$: neither has free disposal, but their sum
+is the nonpositive orthant. With the consumer of Theorem~\ref{thm:disposal_needed} (good $1$ is a bad), an
+exact-clearing equilibrium with prices in the simplex exists.
+\end{theorem}
+\begin{proof}
+\leanok
+Apply Theorem~\ref{thm:existence_agg_fd}; the orthant has no free lunch and is irreversible.
+\end{proof}
+

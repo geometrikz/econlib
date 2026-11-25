@@ -1,4 +1,4 @@
-% Lean: EconLean/Behavioral/{PresentBias,RankDependent,ReferenceDependence,Temptation,Logit,RationalInattention,Ambiguity,GilboaSchmeidler,StochasticChoice,Falmagne,SocialPreferences,Salience,ShroudedAttributes,ContractDesign}.lean
+% Lean: EconLean/Behavioral/{PresentBias,RankDependent,ReferenceDependence,Temptation,Logit,RationalInattention,RISymmetric,Ambiguity,GilboaSchmeidler,StochasticChoice,Falmagne,GumbelLogit,SocialPreferences,Salience,ShroudedAttributes,ContractDesign}.lean
 \chapter{Behavioral Decision Theory}
 \label{chap:behavioral}
 
@@ -200,6 +200,26 @@ $\sum_k(w(G_p(k+1))-w(G_q(k+1)))\Delta U_k=\sum_k s_k a_k$ with $s_k$ the chord 
 is nonnegative and decreasing by concavity; Abel summation again gives the claim.
 \end{proof}
 
+\begin{theorem}[Chew--Karni--Safra: strong risk aversion iff concave $u$ and convex $w$]
+\label{thm:beh-cks-iff}
+\uses{thm:beh-cks, thm:beh-rdu-strong}
+\lean{Econ.RankDependent.StronglyRiskAverse, Econ.RankDependent.tendsto_slope_ray, Econ.RankDependent.isMPS_affine, Econ.RankDependent.convex_of_stronglyRiskAverse, Econ.RankDependent.baseLot, Econ.RankDependent.spreadLot, Econ.RankDependent.G_baseLot, Econ.RankDependent.G_spreadLot, Econ.RankDependent.isMPS_spread, Econ.RankDependent.concave_of_stronglyRiskAverse, Econ.RankDependent.cks_iff, Econ.RankDependent.hasDerivAt_sq_half, Econ.RankDependent.exp_not_stronglyRiskAverse, Econ.RankDependent.concaveW_not_stronglyRiskAverse, Econ.RankDependent.sq_id_stronglyRiskAverse}
+\leanok
+Call an RDU agent strongly risk averse if it weakly dislikes every mean-preserving spread on every weakly increasing
+outcome grid. If $U$ is differentiable at some $x_0$ with $U'(x_0)>0$, strong risk aversion forces $w$ convex on $[0,1]$.
+If $w$ is differentiable at some $s\in(0,1)$ with $w'(s)>0$, it forces $U$ concave. Hence for increasing $U$ and $w$
+with these regularity points, the agent is strongly risk averse iff $U$ is concave and $w$ is convex. Examples: $w(t)=t^2$
+with linear $U$ is strongly risk averse; $w(t)=t^2$ with $U=\exp$ and $w(t)=2t-t^2$ with linear $U$ are not.
+\end{theorem}
+\begin{proof}
+\leanok
+For $w$: the three-point spreads behind Yaari's converse, on the grid $x_0,x_0+lh,x_0+h$; divide by $h$ and let
+$h\to0^+$, which multiplies Yaari's inequality by $U'(x_0)>0$. For $U$: on the grid $a,m,b,b+1$ with $m=(1-\lambda)a+\lambda b$,
+spread a mass $\delta$ at $m$ (with mass $s$ above it) onto $a$ and $b$ in proportions $1-\lambda,\lambda$. Aversion gives
+$(w(s+\delta\lambda)-w(s))(U(b)-U(m))\le(w(s+\delta)-w(s+\delta\lambda))(U(m)-U(a))$; divide by $\delta$ and let $\delta\to0^+$ to get
+$\lambda(U(b)-U(m))\le(1-\lambda)(U(m)-U(a))$. Sufficiency is Theorem~\ref{thm:beh-cks}.
+\end{proof}
+
 \begin{theorem}[OPT violates FOSD]
 \label{thm:beh-opt}
 \lean{Econ.RankDependent.opt_violates_fosd}
@@ -392,6 +412,28 @@ $[0,\infty)$, so the objective is continuous on the compact set of rules (a prod
 Theorem~\ref{thm:beh-mm}.
 \end{proof}
 
+\begin{theorem}[Mat\v{e}jka--McKay: the optimal marginal; symmetric problems give the logit]
+\label{thm:beh-ri-sym}
+\lean{Econ.RationalInattention.valueF, Econ.RationalInattention.riObjective_le_valueF, Econ.RationalInattention.isRule_gl, Econ.RationalInattention.valueF_le_riObjective_gl, Econ.RationalInattention.isOptimalRule_gl_of_isMax, Econ.RationalInattention.valueF_avg_ge, Econ.RationalInattention.IsSymmetry, Econ.RationalInattention.valueF_comp, Econ.RationalInattention.isSymmetry_mul, Econ.RationalInattention.gl_const, Econ.RationalInattention.softmax_optimal_of_symmetric, Econ.RationalInattention.softmax_optimal_of_transitive, Econ.RationalInattention.guessPrior, Econ.RationalInattention.guessPayoff, Econ.RationalInattention.guessPrior_isPrior, Econ.RationalInattention.guess_isSymmetric, Econ.RationalInattention.guess_softmax_optimal}
+\leanok
+\uses{thm:beh-mm, thm:beh-ri-exist}
+Let $\lambda>0$, the prior be strictly positive, and $F(P)=\sum_\omega g_\omega\,\lambda\log\sum_iP_ie^{v_{\omega i}/\lambda}$
+for probability vectors $P$. Every rule earns at most $F$ of its own marginal, and the generalized-logit rule built on
+any $P$ earns at least $F(P)$; hence if $P$ maximizes $F$ that rule is optimal. Call a permutation $\tau$ of actions a
+symmetry if some permutation $\rho$ of states has $g\circ\rho=g$ and $v_{\rho(\omega)\tau(i)}=v_{\omega i}$. If every action
+can be carried to every other by a symmetry (or by an element of a composition-closed set of symmetries), the multinomial
+logit $p_{\omega i}=e^{v_{\omega i}/\lambda}/\sum_je^{v_{\omega j}/\lambda}$ is an optimal rule. Example: guessing one of
+$n+1$ equally likely states.
+\end{theorem}
+\begin{proof}
+\leanok
+The upper bound is the per-state Gibbs bound with default equal to the marginal; the lower bound uses
+$I(p)\le\sum_\omega g_\omega\mathrm{KL}(p_\omega\|P)$ (Theorem~\ref{thm:beh-mi}). $F$ is concave since $\log$ is and $Z$ is linear in
+$P$, and invariant under symmetries by reindexing actions and states. Averaging any $P$ over a transitive
+composition-closed set $S$ of symmetries gives the uniform vector (right multiplication by $\sigma\in S$ permutes $S$),
+so $F(\text{uniform})\ge F(P)$, and the generalized logit with uniform default is the softmax.
+\end{proof}
+
 \section{Ambiguity}
 \label{sec:beh-ambiguity}
 
@@ -582,6 +624,22 @@ Necessity is Theorem~\ref{thm:beh-bm}. For sufficiency take the chain of Lemma~\
 (Fiorini's flow argument); rankings correspond to orderings of $X$, and ``the set above $a$ is exactly $X\setminus A$''
 is the event that $a$ comes right after $X\setminus A$. So the chain's BM polynomials equal those of $P$, and by
 Möbius inversion (Lemma~\ref{lem:beh-bm-flow}) so do the choice probabilities.
+\end{proof}
+
+\begin{theorem}[McFadden: logit from Gumbel random utility]
+\label{thm:beh-gumbel-logit}
+\lean{Econ.GumbelLogit.hasDerivAt_gumbelAnti, Econ.GumbelLogit.tendsto_gumbelAnti_atBot, Econ.GumbelLogit.tendsto_gumbelAnti_atTop, Econ.GumbelLogit.gumbelInt_nonneg, Econ.GumbelLogit.integrable_gumbelInt, Econ.GumbelLogit.integral_gumbelInt, Econ.GumbelLogit.gumbelCDF, Econ.GumbelLogit.gumbelPDF, Econ.GumbelLogit.gumbel, Econ.GumbelLogit.gumbelPDF_eq, Econ.GumbelLogit.continuous_gumbelPDF, Econ.GumbelLogit.integrable_gumbelPDF, Econ.GumbelLogit.gumbel_Iic, Econ.GumbelLogit.chooses, Econ.GumbelLogit.measurableSet_chooses, Econ.GumbelLogit.gumbel_integrand, Econ.GumbelLogit.gumbel_choice, Econ.GumbelLogit.gumbel_choice_indep, Econ.GumbelLogit.gumbel_choice_sum}
+\leanok
+Let the shocks $\varepsilon_j$ be independent standard Gumbel, with CDF $e^{-e^{-x}}$. Then the probability that $i$
+maximizes $v_j+\varepsilon_j$ is $e^{v_i}/\sum_je^{v_j}$, both for the product measure and for independent random variables
+with Gumbel laws on any probability space; these probabilities sum to one.
+\end{theorem}
+\begin{proof}
+\leanok
+Condition on $\varepsilon_i=t$. The others lie below $t+v_i-v_j$ with probability
+$\prod_{j\ne i}\exp(-e^{-t}e^{v_j-v_i})$, so with $S=\sum_je^{v_j-v_i}$ the choice probability is
+$\int e^{-t}\exp(-Se^{-t})\,dt=\bigl[\exp(-Se^{-t})/S\bigr]_{-\infty}^{\infty}=1/S$. Independence turns the joint law of the
+shocks into the product measure.
 \end{proof}
 
 \section{Social preferences}

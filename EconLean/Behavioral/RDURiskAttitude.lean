@@ -34,7 +34,8 @@ Throughout `w` is a probability weighting function with `w 0 = 0` and
   aversion (`yaari_riskSeeking`).
 
 **Scope.** Strong risk aversion (aversion to mean-preserving spreads, which
-under RDU requires convex `w` and concave `U`) is not formalized.
+under RDU requires convex `w` and concave `U`) is in `RDUStrongRiskAversion.lean`,
+`RDUConcaveConvex.lean` and `RDUNecessity.lean`.
 -/
 module
 

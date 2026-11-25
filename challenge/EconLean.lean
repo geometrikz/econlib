@@ -74,6 +74,10 @@ public import EconLean.GE.DebreuScarf
 public import EconLean.GE.ExistenceProduction
 public import EconLean.GE.ExistenceUnbounded
 public import EconLean.GE.ExistenceArrowDebreu
+public import EconLean.GE.InfiniteWelfare
+public import EconLean.GE.ValuationEquilibrium
+public import EconLean.GE.ExistenceWitnesses
+public import EconLean.GE.ExistenceAggregateDisposal
 
 public import EconLean.Producer.Production
 public import EconLean.Producer.Cost
@@ -310,5 +314,8 @@ public import EconLean.Behavioral.ChoiceFromLists
 public import EconLean.Behavioral.RDURiskAttitude
 public import EconLean.Behavioral.RDUStrongRiskAversion
 public import EconLean.Behavioral.RDUConcaveConvex
+public import EconLean.Behavioral.RISymmetric
+public import EconLean.Behavioral.RDUNecessity
+public import EconLean.Behavioral.GumbelLogit
 
 @[expose] public section

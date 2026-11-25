@@ -56,6 +56,22 @@ namespace ProductionEconomy
 
 variable {α β : Type*} [Fintype α] [Fintype β]
 
+theorem exists_freeDisposalEquilibrium_arrowDebreu [Nonempty ι]
+    (E : ProductionEconomy α β ι) {u : α → (ι → ℝ) → ℝ}
+    (hpref : ∀ a, E.pref a = prefOf (u a)) (hu : ∀ a, Continuous (u a))
+    (hqc : ∀ a, QuasiconcaveOn ℝ (Ici 0) (u a))
+    (hlns : ∀ a, LocallyNonsatiated (prefOf (u a)))
+    (hωa : ∀ a, PositivePrices (E.endow a))
+    (hY0 : ∀ j, (0 : ι → ℝ) ∈ E.prod j) (hYcl : ∀ j, IsClosed (E.prod j))
+    (hYcv : ∀ j, Convex ℝ (E.prod j)) (hnfl : NoFreeLunch E.aggProd)
+    (hirr : Irreversible E.aggProd) :
+    ∃ (p : ι → ℝ) (x : α → ι → ℝ) (y : β → ι → ℝ), p ∈ priceSimplex ι ∧
+      (∀ j, ProfitMax p (E.prod j) (y j)) ∧
+      (∀ a, x a ∈ demand (E.pref a) p (E.wealth p y a)) ∧
+      ∑ a, x a ≤ E.totalEndowment + ∑ j, y j ∧
+      cost p (∑ a, x a - E.totalEndowment - ∑ j, y j) = 0 := by
+  sorry
+
 theorem exists_walrasianEquilibrium_arrowDebreu_convex [Nonempty ι] [Nonempty α]
     (E : ProductionEconomy α β ι) {u : α → (ι → ℝ) → ℝ}
     (hpref : ∀ a, E.pref a = prefOf (u a)) (hu : ∀ a, Continuous (u a))
@@ -65,6 +81,18 @@ theorem exists_walrasianEquilibrium_arrowDebreu_convex [Nonempty ι] [Nonempty �
     (hYcv : ∀ j, Convex ℝ (E.prod j)) (hnfl : NoFreeLunch E.aggProd)
     (hirr : Irreversible E.aggProd) :
     ∃ p x y, PositivePrices p ∧ E.IsWalrasianEquilibrium p x y := by
+  sorry
+
+theorem exists_walrasianEquilibrium_arrowDebreu_lns [Nonempty ι]
+    (E : ProductionEconomy α β ι) {u : α → (ι → ℝ) → ℝ}
+    (hpref : ∀ a, E.pref a = prefOf (u a)) (hu : ∀ a, Continuous (u a))
+    (hqc : ∀ a, QuasiconcaveOn ℝ (Ici 0) (u a))
+    (hlns : ∀ a, LocallyNonsatiated (prefOf (u a)))
+    (hωa : ∀ a, PositivePrices (E.endow a))
+    (hY0 : ∀ j, (0 : ι → ℝ) ∈ E.prod j) (hYcl : ∀ j, IsClosed (E.prod j))
+    (hYcv : ∀ j, Convex ℝ (E.prod j)) (hnfl : NoFreeLunch E.aggProd)
+    (hirr : Irreversible E.aggProd) (hfd : ∃ j, FreeDisposal (E.prod j)) :
+    ∃ p x y, p ∈ priceSimplex ι ∧ E.IsWalrasianEquilibrium p x y := by
   sorry
 
 theorem exists_walrasianEquilibrium_arrowDebreu [Nonempty ι] [Nonempty α]
@@ -153,6 +181,35 @@ theorem substEconomy_aggProd : substEconomy.aggProd = linearSet := by
 
 theorem substEconomy_exists_equilibrium :
     ∃ p x y, PositivePrices p ∧ substEconomy.IsWalrasianEquilibrium p x y := by
+  sorry
+
+theorem quasiconcaveOn_uLeon : QuasiconcaveOn ℝ (Ici 0) uLeon := by
+  sorry
+
+theorem continuous_uLeon : Continuous uLeon := by
+  sorry
+
+theorem not_stronglyMonotone_uLeon : ¬ StronglyMonotone (prefOf uLeon) := by
+  sorry
+
+noncomputable def leonProdEconomy : ProductionEconomy (Fin 2) (Fin 1) (Fin 2) where
+  pref _ := prefOf uLeon
+  endow _ := fun _ => 1
+  endow_nonneg _ _ := by norm_num
+  prod _ := linearSet
+  share a _ := if a = 0 then 1 else 0
+  share_nonneg a _ := by split_ifs <;> norm_num
+  share_sum _ := by simp
+
+theorem leonProdEconomy_aggProd : leonProdEconomy.aggProd = linearSet := by
+  sorry
+
+theorem leonProdEconomy_not_stronglyMonotone (a : Fin 2) :
+    ¬ StronglyMonotone (leonProdEconomy.pref a) := by
+  sorry
+
+theorem leonProdEconomy_exists_equilibrium :
+    ∃ p x y, p ∈ priceSimplex (Fin 2) ∧ leonProdEconomy.IsWalrasianEquilibrium p x y := by
   sorry
 
 end GEExamples

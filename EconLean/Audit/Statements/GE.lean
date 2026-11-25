@@ -21,6 +21,10 @@ public import EconLean.GE.DebreuScarf
 public import EconLean.GE.ExistenceProduction
 public import EconLean.GE.ExistenceUnbounded
 public import EconLean.GE.ExistenceArrowDebreu
+public import EconLean.GE.InfiniteWelfare
+public import EconLean.GE.ValuationEquilibrium
+public import EconLean.GE.ExistenceWitnesses
+public import EconLean.GE.ExistenceAggregateDisposal
 
 @[expose] public section
 
@@ -298,9 +302,225 @@ theorem frozen_exists_walrasianEquilibrium_arrowDebreu_convex {β : Type*} [Fint
     ∃ p x y, PositivePrices p ∧ E.IsWalrasianEquilibrium p x y :=
   E.exists_walrasianEquilibrium_arrowDebreu_convex hpref hu hqc hmono hωa hY0 hYcl hYcv hnfl hirr
 
+theorem frozen_exists_freeDisposalEquilibrium_arrowDebreu {β : Type*} [Fintype β]
+    [Nonempty ι] (E : ProductionEconomy α β ι) {u : α → (ι → ℝ) → ℝ}
+    (hpref : ∀ a, E.pref a = prefOf (u a)) (hu : ∀ a, Continuous (u a))
+    (hqc : ∀ a, QuasiconcaveOn ℝ (Set.Ici 0) (u a))
+    (hlns : ∀ a, LocallyNonsatiated (prefOf (u a)))
+    (hωa : ∀ a, PositivePrices (E.endow a))
+    (hY0 : ∀ j, (0 : ι → ℝ) ∈ E.prod j) (hYcl : ∀ j, IsClosed (E.prod j))
+    (hYcv : ∀ j, Convex ℝ (E.prod j)) (hnfl : NoFreeLunch E.aggProd)
+    (hirr : Irreversible E.aggProd) :
+    ∃ (p : ι → ℝ) (x : α → ι → ℝ) (y : β → ι → ℝ), p ∈ priceSimplex ι ∧
+      (∀ j, ProductionEconomy.ProfitMax p (E.prod j) (y j)) ∧
+      (∀ a, x a ∈ demand (E.pref a) p (E.wealth p y a)) ∧
+      ∑ a, x a ≤ E.totalEndowment + ∑ j, y j ∧
+      cost p (∑ a, x a - E.totalEndowment - ∑ j, y j) = 0 :=
+  E.exists_freeDisposalEquilibrium_arrowDebreu hpref hu hqc hlns hωa hY0 hYcl hYcv hnfl hirr
+
+theorem frozen_exists_walrasianEquilibrium_arrowDebreu_lns {β : Type*} [Fintype β]
+    [Nonempty ι] (E : ProductionEconomy α β ι) {u : α → (ι → ℝ) → ℝ}
+    (hpref : ∀ a, E.pref a = prefOf (u a)) (hu : ∀ a, Continuous (u a))
+    (hqc : ∀ a, QuasiconcaveOn ℝ (Set.Ici 0) (u a))
+    (hlns : ∀ a, LocallyNonsatiated (prefOf (u a)))
+    (hωa : ∀ a, PositivePrices (E.endow a))
+    (hY0 : ∀ j, (0 : ι → ℝ) ∈ E.prod j) (hYcl : ∀ j, IsClosed (E.prod j))
+    (hYcv : ∀ j, Convex ℝ (E.prod j)) (hnfl : NoFreeLunch E.aggProd)
+    (hirr : Irreversible E.aggProd) (hfd : ∃ j, FreeDisposal (E.prod j)) :
+    ∃ p x y, p ∈ priceSimplex ι ∧ E.IsWalrasianEquilibrium p x y :=
+  E.exists_walrasianEquilibrium_arrowDebreu_lns hpref hu hqc hlns hωa hY0 hYcl hYcv hnfl hirr hfd
+
+theorem frozen_freeDisposal (Y : Set (ι → ℝ)) :
+    FreeDisposal Y ↔ ∀ y ∈ Y, ∀ y', y' ≤ y → y' ∈ Y := Iff.rfl
+
 theorem frozen_quasiconcaveOn (s : Set (ι → ℝ)) (u : (ι → ℝ) → ℝ) :
     QuasiconcaveOn ℝ s u ↔ ∀ r, Convex ℝ {x | x ∈ s ∧ r ≤ u x} := Iff.rfl
 
 end ExistenceArrowDebreu
+
+section InfiniteWelfare
+
+open scoped NNReal ENNReal
+
+theorem frozen_infinite_value {G : Type*} (p y : G → ℝ≥0) :
+    InfiniteWelfare.value p y = ∑' g, (p g : ℝ≥0∞) * (y g : ℝ≥0∞) := rfl
+
+theorem frozen_infinite_feasible {A G : Type*} (ωbar : G → ℝ≥0) (y : A → G → ℝ≥0) :
+    InfiniteWelfare.Feasible ωbar y ↔ ∀ g, HasSum (fun a => y a g) (ωbar g) := Iff.rfl
+
+theorem frozen_infinite_isEquilibrium {A G : Type*}
+    (R : A → (G → ℝ≥0) → (G → ℝ≥0) → Prop) (ω : A → G → ℝ≥0) (ωbar p : G → ℝ≥0)
+    (x : A → G → ℝ≥0) :
+    InfiniteWelfare.IsEquilibrium R ω ωbar p x ↔
+      (∀ a, InfiniteWelfare.value p (x a) ≤ InfiniteWelfare.value p (ω a) ∧
+        ∀ y, InfiniteWelfare.value p y ≤ InfiniteWelfare.value p (ω a) → R a (x a) y) ∧
+      InfiniteWelfare.Feasible ωbar x := Iff.rfl
+
+theorem frozen_infinite_paretoOptimal {A G : Type*}
+    (R : A → (G → ℝ≥0) → (G → ℝ≥0) → Prop) (ωbar : G → ℝ≥0) (x : A → G → ℝ≥0) :
+    InfiniteWelfare.ParetoOptimal R ωbar x ↔
+      ¬ ∃ y, InfiniteWelfare.Feasible ωbar y ∧ (∀ a, R a (y a) (x a)) ∧
+        ∃ a, P (R a) (y a) (x a) := Iff.rfl
+
+theorem frozen_infinite_valueLNS {G : Type*} (R : (G → ℝ≥0) → (G → ℝ≥0) → Prop)
+    (p : G → ℝ≥0) :
+    InfiniteWelfare.ValueLNS R p ↔ ∀ y, ∀ ε : ℝ≥0∞, 0 < ε →
+      ∃ z, InfiniteWelfare.value p z ≤ InfiniteWelfare.value p y + ε ∧ P R z y := Iff.rfl
+
+theorem frozen_first_welfare_theorem_infinite {A G : Type*}
+    {R : A → (G → ℝ≥0) → (G → ℝ≥0) → Prop}
+    (htr : ∀ a x y z, R a x y → R a y z → R a x z) {ω : A → G → ℝ≥0} {ωbar : G → ℝ≥0}
+    (hω : InfiniteWelfare.Feasible ωbar ω) {p : G → ℝ≥0}
+    (hlns : ∀ a, InfiniteWelfare.ValueLNS (R a) p)
+    (hfin : InfiniteWelfare.value p ωbar ≠ ∞) {x : A → G → ℝ≥0}
+    (heq : InfiniteWelfare.IsEquilibrium R ω ωbar p x) :
+    InfiniteWelfare.ParetoOptimal R ωbar x :=
+  InfiniteWelfare.first_welfare_theorem_infinite htr hω hlns hfin heq
+
+end InfiniteWelfare
+
+section ValuationEquilibrium
+
+open ValuationEquilibrium
+
+theorem frozen_val_better {X : Type*} (C : Set X) (R : X → X → Prop) (x y : X) :
+    y ∈ better C R x ↔ y ∈ C ∧ P R y x := Iff.rfl
+
+theorem frozen_val_feasible {α X : Type*} [Fintype α] [AddCommGroup X] (C : α → Set X)
+    (ωbar : X) (x : α → X) :
+    ValuationEquilibrium.Feasible C ωbar x ↔ (∀ a, x a ∈ C a) ∧ ∑ a, x a = ωbar := Iff.rfl
+
+theorem frozen_val_weaklyParetoOptimal {α X : Type*} [Fintype α] [AddCommGroup X]
+    (C : α → Set X) (R : α → X → X → Prop) (ωbar : X) (x : α → X) :
+    ValuationEquilibrium.WeaklyParetoOptimal C R ωbar x ↔
+      ¬ ∃ y, ValuationEquilibrium.Feasible C ωbar y ∧ ∀ a, P (R a) (y a) (x a) := Iff.rfl
+
+theorem frozen_val_aggBetter {α X : Type*} [Fintype α] [AddCommGroup X] (C : α → Set X)
+    (R : α → X → X → Prop) (x : α → X) (z : X) :
+    z ∈ aggBetter C R x ↔ ∃ y : α → X, (∀ a, y a ∈ better (C a) (R a) (x a)) ∧ ∑ a, y a = z :=
+  Iff.rfl
+
+theorem frozen_val_isQuasiEquilibrium {α X : Type*} [AddCommGroup X] [Module ℝ X]
+    [TopologicalSpace X] (C : α → Set X) (R : α → X → X → Prop) (p : X →L[ℝ] ℝ) (x : α → X) :
+    IsValuationQuasiEquilibrium C R p x ↔ ∀ a, ∀ y ∈ C a, P (R a) y (x a) → p (x a) ≤ p y :=
+  Iff.rfl
+
+theorem frozen_val_isEquilibrium {α X : Type*} [AddCommGroup X] [Module ℝ X]
+    [TopologicalSpace X] (C : α → Set X) (R : α → X → X → Prop) (p : X →L[ℝ] ℝ) (x : α → X) :
+    IsValuationEquilibrium C R p x ↔ ∀ a, ∀ y ∈ C a, P (R a) y (x a) → p (x a) < p y :=
+  Iff.rfl
+
+theorem frozen_second_welfare_theorem_tvs {α X : Type*} [Fintype α] [AddCommGroup X]
+    [Module ℝ X] [TopologicalSpace X] [IsTopologicalAddGroup X] [ContinuousSMul ℝ X]
+    {C : α → Set X} {R : α → X → X → Prop} {ωbar : X} {x : α → X}
+    (hx : ValuationEquilibrium.Feasible C ωbar x)
+    (hpo : ValuationEquilibrium.WeaklyParetoOptimal C R ωbar x)
+    (hconv : ∀ a, Convex ℝ (better (C a) (R a) (x a)))
+    (hlns : ∀ a, x a ∈ closure (better (C a) (R a) (x a)))
+    (hint : (interior (aggBetter C R x)).Nonempty) :
+    ∃ p : X →L[ℝ] ℝ, p ≠ 0 ∧ IsValuationQuasiEquilibrium C R p x :=
+  second_welfare_theorem_tvs hx hpo hconv hlns hint
+
+theorem frozen_second_welfare_theorem_tvs_equilibrium {α X : Type*} [Fintype α]
+    [AddCommGroup X] [Module ℝ X] [TopologicalSpace X] [IsTopologicalAddGroup X]
+    [ContinuousSMul ℝ X] {C : α → Set X} {R : α → X → X → Prop} {ωbar : X} {x : α → X}
+    (hx : ValuationEquilibrium.Feasible C ωbar x)
+    (hpo : ValuationEquilibrium.WeaklyParetoOptimal C R ωbar x)
+    (hconv : ∀ a, Convex ℝ (better (C a) (R a) (x a)))
+    (hlns : ∀ a, x a ∈ closure (better (C a) (R a) (x a)))
+    (hint : (interior (aggBetter C R x)).Nonempty) (hC : ∀ a, Convex ℝ (C a))
+    (hopen : ∀ a, ∃ U, IsOpen U ∧ better (C a) (R a) (x a) = U ∩ C a)
+    (hxint : ∀ a, x a ∈ interior (C a)) :
+    ∃ p : X →L[ℝ] ℝ, p ≠ 0 ∧ IsValuationEquilibrium C R p x :=
+  second_welfare_theorem_tvs_equilibrium hx hpo hconv hlns hint hC hopen hxint
+
+end ValuationEquilibrium
+
+section ExistenceWitnesses
+
+open GEExamples ProductionEconomy
+
+theorem frozen_uBad (x : Fin 2 → ℝ) : uBad x = x 0 - x 1 := rfl
+
+theorem frozen_badEconomy :
+    badEconomy.pref 0 = prefOf uBad ∧ badEconomy.endow 0 = (fun _ => 1) ∧
+      badEconomy.prod 0 = {0} := ⟨rfl, rfl, rfl⟩
+
+theorem frozen_badEconomy_no_walrasianEquilibrium (p : Fin 2 → ℝ) (hp : 0 ≤ p)
+    (x : Fin 1 → Fin 2 → ℝ) (y : Fin 1 → Fin 2 → ℝ) :
+    ¬ badEconomy.IsWalrasianEquilibrium p x y :=
+  badEconomy_no_walrasianEquilibrium p hp x y
+
+theorem frozen_badEconomy_disposal_needed :
+    ∃ (p : Fin 2 → ℝ) (x : Fin 1 → Fin 2 → ℝ) (y : Fin 1 → Fin 2 → ℝ), p ∈ priceSimplex (Fin 2) ∧
+      (∀ j, ProfitMax p (badEconomy.prod j) (y j)) ∧
+      (∀ a, x a ∈ demand (badEconomy.pref a) p (badEconomy.wealth p y a)) ∧
+      ∑ a, x a ≤ badEconomy.totalEndowment + ∑ j, y j ∧
+      cost p (∑ a, x a - badEconomy.totalEndowment - ∑ j, y j) = 0 ∧
+      ∑ a, x a ≠ badEconomy.totalEndowment + ∑ j, y j :=
+  badEconomy_disposal_needed
+
+theorem frozen_badEconomy_excess_supply (p : Fin 2 → ℝ) (hp : 0 ≤ p) (x : Fin 1 → Fin 2 → ℝ)
+    (y : Fin 1 → Fin 2 → ℝ) (hpm : ∀ j, ProfitMax p (badEconomy.prod j) (y j))
+    (hd : ∀ a, x a ∈ demand (badEconomy.pref a) p (badEconomy.wealth p y a)) :
+    ∑ a, x a ≠ badEconomy.totalEndowment + ∑ j, y j :=
+  badEconomy_excess_supply p hp x y hpm hd
+
+theorem frozen_badEconomy_negativePrice_equilibrium :
+    badEconomy.IsWalrasianEquilibrium ![1, -1] (fun _ => fun _ => 1) 0 :=
+  badEconomy_negativePrice_equilibrium
+
+theorem frozen_capSet (y : Fin 2 → ℝ) : y ∈ capSet ↔ y 0 ≤ 0 ∧ y 1 ≤ -2 * y 0 ∧ y 1 ≤ 2 :=
+  Iff.rfl
+
+theorem frozen_twoFirmEconomy :
+    twoFirmEconomy.prod 0 = linearSet ∧ twoFirmEconomy.prod 1 = capSet := ⟨rfl, rfl⟩
+
+theorem frozen_twoFirmEconomy_exists_equilibrium :
+    ∃ p x y, PositivePrices p ∧ twoFirmEconomy.IsWalrasianEquilibrium p x y :=
+  twoFirmEconomy_exists_equilibrium
+
+end ExistenceWitnesses
+
+section ExistenceAggregateDisposal
+
+open GEExamples ProductionEconomy
+
+theorem frozen_freeDisposal_aggProd_of_firm {α β ι : Type*} [Fintype α] [Fintype β]
+    (E : ProductionEconomy α β ι) {j0 : β} (hj0 : FreeDisposal (E.prod j0)) :
+    FreeDisposal E.aggProd :=
+  E.freeDisposal_aggProd_of_firm hj0
+
+theorem frozen_exists_walrasianEquilibrium_arrowDebreu_aggFD {α β ι : Type*} [Fintype α]
+    [Fintype β] [Fintype ι] [Nonempty ι]
+    (E : ProductionEconomy α β ι) {u : α → (ι → ℝ) → ℝ}
+    (hpref : ∀ a, E.pref a = prefOf (u a)) (hu : ∀ a, Continuous (u a))
+    (hqc : ∀ a, QuasiconcaveOn ℝ (Set.Ici 0) (u a))
+    (hlns : ∀ a, LocallyNonsatiated (prefOf (u a)))
+    (hωa : ∀ a, PositivePrices (E.endow a))
+    (hY0 : ∀ j, (0 : ι → ℝ) ∈ E.prod j) (hYcl : ∀ j, IsClosed (E.prod j))
+    (hYcv : ∀ j, Convex ℝ (E.prod j))
+    (hirr : Irreversible E.aggProd) (hfd : FreeDisposal E.aggProd) :
+    ∃ p x y, p ∈ priceSimplex ι ∧ E.IsWalrasianEquilibrium p x y :=
+  E.exists_walrasianEquilibrium_arrowDebreu_aggFD hpref hu hqc hlns hωa hY0 hYcl hYcv hirr hfd
+
+theorem frozen_disposalEconomy :
+    disposalEconomy.pref 0 = prefOf uBad ∧ disposalEconomy.endow 0 = (fun _ => 1) ∧
+      disposalEconomy.prod 0 = dispose0 ∧ disposalEconomy.prod 1 = dispose1 :=
+  ⟨rfl, rfl, rfl, rfl⟩
+
+theorem frozen_dispose (y : Fin 2 → ℝ) :
+    (y ∈ dispose0 ↔ y 0 ≤ 0 ∧ y 1 = 0) ∧ (y ∈ dispose1 ↔ y 0 = 0 ∧ y 1 ≤ 0) :=
+  ⟨Iff.rfl, Iff.rfl⟩
+
+theorem frozen_disposalEconomy_freeDisposal :
+    FreeDisposal disposalEconomy.aggProd ∧ ∀ j, ¬ FreeDisposal (disposalEconomy.prod j) :=
+  disposalEconomy_freeDisposal
+
+theorem frozen_disposalEconomy_exists_equilibrium :
+    ∃ p x y, p ∈ priceSimplex (Fin 2) ∧ disposalEconomy.IsWalrasianEquilibrium p x y :=
+  disposalEconomy_exists_equilibrium
+
+end ExistenceAggregateDisposal
 
 end Econ.Audit

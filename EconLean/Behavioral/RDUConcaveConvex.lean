@@ -38,10 +38,9 @@ lottery `p` on the outcome grid `x` is `rdu w (fun k => U (x k)) p`.
   value is unchanged by that spread but the distortion `w t = t²` alone makes
   the agent strictly prefer the sure outcome (value `1/4 < 1/2`).
 
-**Scope.** Only the sufficiency half of Chew–Karni–Safra is formalized. Its
-necessity half (strong risk aversion forces `U` concave and `w` convex, which
-in the original uses differentiability) is not; for linear `U` the converse is
-`yaari_strongRiskAverse_iff`.
+**Scope.** Only the sufficiency half of Chew–Karni–Safra is proved here; the
+necessity half and the full equivalence are `RDUNecessity.lean`
+(`cks_iff`). For linear `U` the converse is also `yaari_strongRiskAverse_iff`.
 -/
 module
 

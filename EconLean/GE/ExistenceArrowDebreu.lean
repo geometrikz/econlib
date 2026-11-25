@@ -7,14 +7,22 @@ MWG §17.B and Appendix 17.BB.
 A private ownership economy with
 * consumers with continuous utilities (stated on all of `ℝᴸ`; any utility
   continuous on `ℝᴸ₊` extends) that are **quasiconcave on `ℝᴸ₊`** (convex
-  preferences, not necessarily strictly convex) and strongly monotone, and **strictly positive endowments** `ωₐ ≫ 0` (Arrow–Debreu's
+  preferences, not necessarily strictly convex) and strongly monotone,
+  and **strictly positive endowments** `ωₐ ≫ 0` (Arrow–Debreu's
   survival assumption), and
 * firms with **closed convex** production sets `Yⱼ ∋ 0`, whose sum `Y = ∑ⱼ Yⱼ`
   has no free lunch (`Y ∩ ℝᴸ₊ ⊆ {0}`) and is irreversible (`Y ∩ (−Y) ⊆ {0}`)
 
 has a Walrasian equilibrium at strictly positive prices
 (`exists_walrasianEquilibrium_arrowDebreu_convex`; the strictly quasiconcave case
-is `exists_walrasianEquilibrium_arrowDebreu`). Production sets may be unbounded,
+is `exists_walrasianEquilibrium_arrowDebreu`).
+
+With **local nonsatiation** in place of strong monotonicity, the same argument
+gives a free-disposal equilibrium: prices in the simplex, excess demand
+`z ≤ 0` with `p · z = 0` (`exists_freeDisposalEquilibrium_arrowDebreu`, the
+form of Arrow–Debreu's Theorem I). If some firm can dispose freely, it absorbs
+the excess supply and markets clear exactly
+(`exists_walrasianEquilibrium_arrowDebreu_lns`). Production sets may be unbounded,
 have flat faces, show **constant returns to scale**, or allow **free disposal**;
 supply and demand may both be set-valued, which is why the proof uses Kakutani's
 theorem rather than Brouwer's.
@@ -37,17 +45,20 @@ Proof (the classical truncation argument).
    `z ≤ 0`. So production is attainable and lies strictly inside the
    truncation, consumption strictly inside the box, and by convexity firms
    maximize on `Yⱼ`. Consumers maximize on their whole budget sets: given a
-   better affordable bundle, shrink it to leave money unspent, mix a little of
-   it into `xₐ` (no worse, by quasiconcavity) and add a little of every good
-   (strictly better, by strong monotonicity), all inside the box and the
-   budget. Strong
-   monotonicity then forces `p ≫ 0` and binding budgets, so `p · z = 0` and
-   `z = 0`.
+   better affordable bundle, shrink it to leave money unspent and mix a little
+   of it into `xₐ` (no worse, by quasiconcavity, and strictly inside the box
+   and the budget); local nonsatiation then gives a strictly better bundle
+   still in the truncated budget. Local nonsatiation also makes budgets bind,
+   so `p · z = 0`. Strong monotonicity further forces `p ≫ 0`, hence `z = 0`;
+   under local nonsatiation alone a free-disposal firm absorbs `z`.
 
 Scope. Preferences are convex (quasiconcave utility on `ℝᴸ₊`), continuous and
-strongly monotone, with consumption set `ℝᴸ₊`; Arrow–Debreu allow general
-consumption sets and mere nonsatiation, and obtain `p ≥ 0` with free goods in excess supply. Here
-prices are `≫ 0` and markets clear exactly. Individual endowments
+locally nonsatiated, with consumption set `ℝᴸ₊`. Arrow–Debreu allow general
+consumption sets and assume global nonsatiation together with a semi-strict
+convexity axiom (`x' ≻ x ⇒ t x' + (1 − t) x ≻ x`), which jointly imply local
+nonsatiation; here local nonsatiation is assumed directly with only weak
+convexity, so neither set of assumptions contains the other (Debreu 1959
+weakens nonsatiation to the attainable set). Individual endowments
 must be strictly positive (the canonical survival assumption), unlike the
 compact-production theorems in `GE/ExistenceProduction.lean`.
 
@@ -60,7 +71,12 @@ symmetric consumers the firm may well be inactive in equilibrium.
 `substEconomy` uses the same firm with perfect-substitutes consumers
 `x₀ + x₁`, whose preferences are convex but not strictly convex
 (`not_strictlyQuasiconcave_of_prefOf_eq_uLin`: no representation of them is
-strictly quasiconcave).
+strictly quasiconcave). `leonProdEconomy` has Leontief consumers `min(x₀, x₁)`,
+locally nonsatiated but not strongly monotone
+(`leonProdEconomy_not_stronglyMonotone`), and uses the free-disposal theorem.
+It shows the hypotheses of the strongly monotone theorem can fail; it does not
+show that disposal is actually needed in its equilibrium (a witness where
+some good must be in excess supply is open).
 -/
 module
 
@@ -227,24 +243,28 @@ namespace ProductionEconomy
 
 variable {α β : Type*} [Fintype α] [Fintype β]
 
-/-- **Arrow–Debreu existence theorem with convex production and convex
-preferences** (Arrow–Debreu 1954, Theorem I, with consumption set `ℝᴸ₊` and
-strongly monotone utilities, so prices are `≫ 0` and markets clear exactly).
-Consumers have continuous utilities, quasiconcave on `ℝᴸ₊`, strongly monotone,
-and endowments `ωₐ ≫ 0`;
-production sets are closed and convex with `0 ∈ Yⱼ`, and their sum has no free
-lunch and is irreversible. Production sets may be unbounded, with constant
-returns or free disposal. Then a Walrasian equilibrium exists at strictly
-positive prices. -/
-theorem exists_walrasianEquilibrium_arrowDebreu_convex [Nonempty ι] [Nonempty α]
+/-- **Arrow–Debreu existence of a free-disposal equilibrium** (Arrow–Debreu 1954,
+Theorem I, whose equilibrium notion this is; here with consumption set `ℝᴸ₊`). Consumers have
+continuous utilities, quasiconcave on `ℝᴸ₊` and locally nonsatiated, and
+endowments `ωₐ ≫ 0`; production sets are closed and convex with `0 ∈ Yⱼ`, and
+their sum has no free lunch and is irreversible. Then there are prices `p` in
+the simplex, profit-maximizing plans `yⱼ` and demanded bundles `xₐ` with
+excess demand `z = ∑ₐ xₐ − ω − ∑ⱼ yⱼ ≤ 0` and `p · z = 0`: goods in excess
+supply are free. -/
+theorem exists_freeDisposalEquilibrium_arrowDebreu [Nonempty ι]
     (E : ProductionEconomy α β ι) {u : α → (ι → ℝ) → ℝ}
     (hpref : ∀ a, E.pref a = prefOf (u a)) (hu : ∀ a, Continuous (u a))
-    (hqc : ∀ a, QuasiconcaveOn ℝ (Ici 0) (u a)) (hmono : ∀ a, StronglyMonotone (prefOf (u a)))
+    (hqc : ∀ a, QuasiconcaveOn ℝ (Ici 0) (u a))
+    (hlns : ∀ a, LocallyNonsatiated (prefOf (u a)))
     (hωa : ∀ a, PositivePrices (E.endow a))
     (hY0 : ∀ j, (0 : ι → ℝ) ∈ E.prod j) (hYcl : ∀ j, IsClosed (E.prod j))
     (hYcv : ∀ j, Convex ℝ (E.prod j)) (hnfl : NoFreeLunch E.aggProd)
     (hirr : Irreversible E.aggProd) :
-    ∃ p x y, PositivePrices p ∧ E.IsWalrasianEquilibrium p x y := by
+    ∃ (p : ι → ℝ) (x : α → ι → ℝ) (y : β → ι → ℝ), p ∈ priceSimplex ι ∧
+      (∀ j, ProfitMax p (E.prod j) (y j)) ∧
+      (∀ a, x a ∈ demand (E.pref a) p (E.wealth p y a)) ∧
+      ∑ a, x a ≤ E.totalEndowment + ∑ j, y j ∧
+      cost p (∑ a, x a - E.totalEndowment - ∑ j, y j) = 0 := by
   classical
   -- Step 0: bounds and truncations.
   have hω0 : 0 ≤ E.totalEndowment := sum_nonneg fun a _ => E.endow_nonneg a
@@ -477,7 +497,7 @@ theorem exists_walrasianEquilibrium_arrowDebreu_convex [Nonempty ι] [Nonempty �
     have : 0 < t * (cost p z' - cost p (y j)) := mul_pos ht0' (by linarith)
     linarith
   -- Step 6: consumers maximize on their whole budget sets (quasiconcavity and
-  -- strong monotonicity).
+  -- local nonsatiation).
   have hdem : ∀ a, x a ∈ demand (prefOf (u a)) p (E.wealth p y a) := by
     intro a
     refine ⟨⟨hx0 a, hbud a⟩, fun x' hx' => ?_⟩
@@ -501,20 +521,12 @@ theorem exists_walrasianEquilibrium_arrowDebreu_convex [Nonempty ι] [Nonempty �
       rcases le_or_gt (cost p x') 0 with h | h
       · nlinarith
       · nlinarith
-    have hsp : 0 ≤ ∑ i, p i := sum_nonneg fun i _ => hp0 i
-    set δ := (Wa - cost p x'') / (∑ i, p i + 1) with hδdef
-    have hδ : 0 < δ := div_pos (by linarith) (by linarith)
-    have hδ' : δ * ∑ i, p i ≤ Wa - cost p x'' := by
-      have h1 : δ * (∑ i, p i + 1) = Wa - cost p x'' := div_mul_cancel₀ _ (by linarith)
-      nlinarith
-    set one : ι → ℝ := fun _ => 1 with hone
-    have hcone : cost p one = ∑ i, p i := by simp [cost, one]
-    -- Mix `x''` into `x a` (quasiconcavity: no worse), then add a little of
-    -- every good (strong monotonicity: strictly better), staying affordable.
-    set v : ℝ → ι → ℝ := fun t => t • x'' + (1 - t) • x a + (t * δ) • one with hv
-    have hvc : Continuous v := by fun_prop
-    have hpath : Tendsto v (𝓝[>] 0) (𝓝 (x a)) := by
-      simpa [v] using (hvc.tendsto 0).mono_left nhdsWithin_le_nhds
+    -- Mix `x''` into `x a`: for small `t > 0` the mix is no worse than `x a`
+    -- (quasiconcavity), strictly inside the box and leaves money unspent, so
+    -- local nonsatiation gives a strictly better bundle in the truncated budget.
+    have hwc : Continuous fun t : ℝ => t • x'' + (1 - t) • x a := by fun_prop
+    have hpath : Tendsto (fun t : ℝ => t • x'' + (1 - t) • x a) (𝓝[>] 0) (𝓝 (x a)) := by
+      simpa using (hwc.tendsto 0).mono_left nhdsWithin_le_nhds
     have hopen : IsOpen {w : ι → ℝ | ∀ i, w i < c} := by
       simp only [ofPred_forall]
       exact isOpen_iInter_of_finite fun i => isOpen_lt (continuous_apply i) continuous_const
@@ -522,41 +534,77 @@ theorem exists_walrasianEquilibrium_arrowDebreu_convex [Nonempty ι] [Nonempty �
     obtain ⟨t, ⟨htc, ht1⟩, ht0⟩ := (((hpath.eventually (hopen.mem_nhds (hxc a))).and hlt1).and
       self_mem_nhdsWithin).exists
     have ht0' : (0 : ℝ) < t := ht0
-    have htc' : ∀ i, v t i < c := htc
     set w := t • x'' + (1 - t) • x a with hw
     have hw0 : 0 ≤ w :=
       add_nonneg (smul_nonneg ht0'.le hx''0) (smul_nonneg (by linarith) (hx0 a))
     have huw : u a (x a) ≤ u a w :=
       ((hqc a) (u a (x a)) ⟨hx''0, hσu.le⟩ ⟨hx0 a, le_rfl⟩ ht0'.le (by linarith)
         (by ring)).2
-    have hvw : v t = w + (t * δ) • one := rfl
-    have hbump : 0 ≤ (t * δ) • one := smul_nonneg (by positivity) fun _ => zero_le_one
-    have hwv : w ≤ v t := by rw [hvw]; exact le_add_of_nonneg_right hbump
-    have hne : w ≠ v t := by
-      intro h
-      obtain ⟨i⟩ := ‹Nonempty ι›
-      have e := congrFun h i
-      rw [hvw] at e
-      simp only [Pi.add_apply, Pi.smul_apply, smul_eq_mul, one, mul_one] at e
-      have : 0 < t * δ := mul_pos ht0' hδ
-      linarith
-    have hlt2 : u a w < u a (v t) := lt_of_not_ge (hmono a w (v t) hw0 hwv hne).2
-    have hmemT : v t ∈ truncBudget c (m a) (p, Wa) := by
-      refine ⟨⟨hw0.trans hwv, fun i => (htc' i).le⟩, ?_⟩
-      show cost p (v t) ≤ max Wa (m a)
-      rw [max_eq_left (hwge a)]
-      simp only [v, cost_add_right, cost_smul_right, hcone]
-      have h2 := hbud a
-      have k1 : t * (cost p x'' + δ * ∑ i, p i) ≤ t * Wa :=
-        mul_le_mul_of_nonneg_left (by linarith) ht0'.le
-      have k2 : (1 - t) * cost p (x a) ≤ (1 - t) * Wa :=
-        mul_le_mul_of_nonneg_left h2 (by linarith)
+    have hwW : cost p w < Wa := by
+      rw [hw, cost_add_right, cost_smul_right t p x'', cost_smul_right (1 - t) p (x a)]
+      have h2 : cost p (x a) ≤ Wa := hbud a
+      have k1 := mul_lt_mul_of_pos_left hc'' ht0'
+      have k2 := mul_le_mul_of_nonneg_left h2 (by linarith : (0 : ℝ) ≤ 1 - t)
       nlinarith
+    have hO : IsOpen ({z : ι → ℝ | ∀ i, z i < c} ∩ {z | cost p z < Wa}) :=
+      hopen.inter (isOpen_lt (continuous_cost_right p) continuous_const)
+    obtain ⟨ε, hε, hball⟩ := Metric.isOpen_iff.1 hO w ⟨htc, hwW⟩
+    obtain ⟨y', hy'0, hy'd, hy'P⟩ := hlns a w hw0 ε hε
+    have hy'O := hball (Metric.mem_ball.2 hy'd)
+    have hlt2 : u a w < u a y' := lt_of_not_ge hy'P.2
+    have hmemT : y' ∈ truncBudget c (m a) (p, Wa) := by
+      refine ⟨⟨hy'0, fun i => (hy'O.1 i).le⟩, ?_⟩
+      show cost p y' ≤ max Wa (m a)
+      rw [max_eq_left (hwge a)]
+      exact hy'O.2.le
     have hle := (hxg a).2 _ hmemT
     linarith
-  -- Step 7: budgets bind and prices are strictly positive (strong monotonicity).
-  have hwal : ∀ a, cost p (x a) = E.wealth p y a := fun a =>
-    walras_law (hmono a).locallyNonsatiated (hdem a)
+  -- Step 7: budgets bind (local nonsatiation), so the value of excess demand is 0.
+  have hwal : ∀ a, cost p (x a) = E.wealth p y a := fun a => walras_law (hlns a) (hdem a)
+  have hcz0 : cost p z = 0 := by
+    have hsum := E.sum_wealth p y
+    have : ∑ a, cost p (x a) = ∑ a, E.wealth p y a := sum_congr rfl fun a _ => hwal a
+    rw [hz, cost_sub_right, cost_sub_right, cost_sum, cost_sum]
+    rw [hsum, cost_add_right, cost_sum] at this
+    linarith
+  refine ⟨p, x, y, hpΔ, hprofit, fun a => by rw [hpref a]; exact hdem a, fun i => ?_, hcz0⟩
+  have h := hzle i
+  simp only [hz, Pi.sub_apply, Pi.zero_apply, Finset.sum_apply] at h
+  simp only [Pi.add_apply, Finset.sum_apply]
+  linarith
+
+/-- **Arrow–Debreu existence theorem with convex production and convex
+preferences** (Arrow–Debreu 1954, Theorem I, with consumption set `ℝᴸ₊` and
+strongly monotone utilities, so prices are `≫ 0` and markets clear exactly).
+Consumers have continuous utilities, quasiconcave on `ℝᴸ₊`, strongly monotone,
+and endowments `ωₐ ≫ 0`; production sets are closed and convex with `0 ∈ Yⱼ`,
+and their sum has no free lunch and is irreversible. Production sets may be
+unbounded, with constant returns or free disposal. Then a Walrasian equilibrium
+exists at strictly positive prices. -/
+theorem exists_walrasianEquilibrium_arrowDebreu_convex [Nonempty ι] [Nonempty α]
+    (E : ProductionEconomy α β ι) {u : α → (ι → ℝ) → ℝ}
+    (hpref : ∀ a, E.pref a = prefOf (u a)) (hu : ∀ a, Continuous (u a))
+    (hqc : ∀ a, QuasiconcaveOn ℝ (Ici 0) (u a)) (hmono : ∀ a, StronglyMonotone (prefOf (u a)))
+    (hωa : ∀ a, PositivePrices (E.endow a))
+    (hY0 : ∀ j, (0 : ι → ℝ) ∈ E.prod j) (hYcl : ∀ j, IsClosed (E.prod j))
+    (hYcv : ∀ j, Convex ℝ (E.prod j)) (hnfl : NoFreeLunch E.aggProd)
+    (hirr : Irreversible E.aggProd) :
+    ∃ p x y, PositivePrices p ∧ E.IsWalrasianEquilibrium p x y := by
+  classical
+  obtain ⟨p, x, y, hpΔ, hprofit, hdem', hle, hcz0⟩ :=
+    E.exists_freeDisposalEquilibrium_arrowDebreu hpref hu hqc
+      (fun a => (hmono a).locallyNonsatiated) hωa hY0 hYcl hYcv hnfl hirr
+  have hdem : ∀ a, x a ∈ demand (prefOf (u a)) p (E.wealth p y a) := fun a => by
+    rw [← hpref a]; exact hdem' a
+  set z := ∑ a, x a - E.totalEndowment - ∑ j, y j with hz
+  have hp0 : 0 ≤ p := hpΔ.1
+  have hx0 : ∀ a, 0 ≤ x a := fun a => (hdem a).1.1
+  have hbud : ∀ a, cost p (x a) ≤ E.wealth p y a := fun a => (hdem a).1.2
+  have hzle : z ≤ 0 := fun i => by
+    have := hle i
+    simp only [hz, Pi.sub_apply, Pi.zero_apply, Finset.sum_apply, Pi.add_apply] at this ⊢
+    linarith
+  -- Strong monotonicity: no good is free.
   have hpos : PositivePrices p := by
     intro i
     rcases (hp0 i).lt_or_eq with h | h
@@ -580,13 +628,7 @@ theorem exists_walrasianEquilibrium_arrowDebreu_convex [Nonempty ι] [Nonempty �
         simp [cost, Pi.single_apply, ← h]
       rw [this]; exact hbud a
     exact hP.2 ((hdem a).2 x' hx'B)
-  -- Step 8: markets clear.
-  have hcz0 : cost p z = 0 := by
-    have hsum := E.sum_wealth p y
-    have : ∑ a, cost p (x a) = ∑ a, E.wealth p y a := sum_congr rfl fun a _ => hwal a
-    rw [hz, cost_sub_right, cost_sub_right, cost_sum, cost_sum]
-    rw [hsum, cost_add_right, cost_sum] at this
-    linarith
+  -- Markets clear.
   have hz0 : z = 0 := by
     have hterms : ∀ i ∈ (univ : Finset ι), p i * z i ≤ 0 := fun i _ => by
       have := hzle i
@@ -603,6 +645,48 @@ theorem exists_walrasianEquilibrium_arrowDebreu_convex [Nonempty ι] [Nonempty �
   simp only [hz, Pi.sub_apply, Pi.zero_apply, Finset.sum_apply] at h
   simp only [Pi.add_apply, Finset.sum_apply]
   linarith
+
+/-- **Arrow–Debreu existence under local nonsatiation, with a free-disposal
+firm.** As `exists_freeDisposalEquilibrium_arrowDebreu`; if moreover some firm
+can dispose freely (cf. Debreu 1959 ch. 5, where free disposal `Y ⊇ −Ω` is
+built into aggregate production and markets clear exactly), it absorbs the excess supply at no cost, so markets clear
+exactly. Prices lie in the simplex and may be zero for some goods. -/
+theorem exists_walrasianEquilibrium_arrowDebreu_lns [Nonempty ι]
+    (E : ProductionEconomy α β ι) {u : α → (ι → ℝ) → ℝ}
+    (hpref : ∀ a, E.pref a = prefOf (u a)) (hu : ∀ a, Continuous (u a))
+    (hqc : ∀ a, QuasiconcaveOn ℝ (Ici 0) (u a))
+    (hlns : ∀ a, LocallyNonsatiated (prefOf (u a)))
+    (hωa : ∀ a, PositivePrices (E.endow a))
+    (hY0 : ∀ j, (0 : ι → ℝ) ∈ E.prod j) (hYcl : ∀ j, IsClosed (E.prod j))
+    (hYcv : ∀ j, Convex ℝ (E.prod j)) (hnfl : NoFreeLunch E.aggProd)
+    (hirr : Irreversible E.aggProd) (hfd : ∃ j, FreeDisposal (E.prod j)) :
+    ∃ p x y, p ∈ priceSimplex ι ∧ E.IsWalrasianEquilibrium p x y := by
+  classical
+  obtain ⟨p, x, y, hpΔ, hprofit, hdem, hle, hcz0⟩ :=
+    E.exists_freeDisposalEquilibrium_arrowDebreu hpref hu hqc hlns hωa hY0 hYcl hYcv hnfl hirr
+  obtain ⟨j0, hj0⟩ := hfd
+  set z := ∑ a, x a - E.totalEndowment - ∑ j, y j with hz
+  have hzle : z ≤ 0 := fun i => by
+    have := hle i
+    simp only [hz, Pi.sub_apply, Pi.zero_apply, Finset.sum_apply, Pi.add_apply] at this ⊢
+    linarith
+  set y' : β → ι → ℝ := fun j => y j + if j = j0 then z else 0 with hy'
+  have hcost' : ∀ j, cost p (y' j) = cost p (y j) := fun j => by
+    simp only [hy', cost_add_right]
+    split_ifs
+    · rw [hcz0, add_zero]
+    · simp [cost]
+  have hwealth : ∀ a, E.wealth p y' a = E.wealth p y a := fun a => by
+    simp only [wealth, hcost']
+  refine ⟨p, x, y', hpΔ, fun j => ⟨?_, fun y'' hy'' => ?_⟩, fun a => ?_, ?_⟩
+  · simp only [hy']
+    split_ifs with h
+    · rw [h]; exact hj0 _ (hprofit j0).1 _ (add_le_of_nonpos_right hzle)
+    · simpa using (hprofit j).1
+  · rw [hcost']; exact (hprofit j).2 y'' hy''
+  · rw [hwealth]; exact hdem a
+  · have : ∑ j, y' j = ∑ j, y j + z := by simp [hy', sum_add_distrib]
+    rw [this, hz]; abel
 
 /-- **Arrow–Debreu existence, strictly convex preferences** (the special case
 with strictly quasiconcave utilities). -/
@@ -803,6 +887,70 @@ theorem substEconomy_exists_equilibrium :
     (fun _ => zero_mem_linearSet) (fun _ => isClosed_linearSet) (fun _ => convex_linearSet) ?_ ?_
   · rw [substEconomy_aggProd]; exact fun y hy h0 => noFreeLunch_linearSet hy h0
   · rw [substEconomy_aggProd]; exact fun y hy hny => irreversible_linearSet hy hny
+
+/-- **Leontief preferences** `min(x₀, x₁)` (from `GE/Examples.lean`) are convex
+and locally nonsatiated but **not strongly monotone**: adding good 0 alone
+does not help. -/
+theorem quasiconcaveOn_uLeon : QuasiconcaveOn ℝ (Ici 0) uLeon := by
+  intro r x hx y hy a b ha hb hab
+  refine ⟨(convex_Ici (0 : Fin 2 → ℝ)) hx.1 hy.1 ha hb hab, ?_⟩
+  have h1 : r ≤ uLeon x := hx.2
+  have h2 : r ≤ uLeon y := hy.2
+  simp only [uLeon, le_min_iff] at h1 h2
+  show r ≤ uLeon (a • x + b • y)
+  simp only [uLeon, Pi.add_apply, Pi.smul_apply, smul_eq_mul, le_min_iff]
+  constructor
+  · have := add_le_add (mul_le_mul_of_nonneg_left h1.1 ha) (mul_le_mul_of_nonneg_left h2.1 hb)
+    rw [← add_mul, hab, one_mul] at this; exact this
+  · have := add_le_add (mul_le_mul_of_nonneg_left h1.2 ha) (mul_le_mul_of_nonneg_left h2.2 hb)
+    rw [← add_mul, hab, one_mul] at this; exact this
+
+theorem continuous_uLeon : Continuous uLeon := by unfold uLeon; fun_prop
+
+theorem not_stronglyMonotone_uLeon : ¬ StronglyMonotone (prefOf uLeon) := by
+  intro h
+  have hle : (0 : Fin 2 → ℝ) ≤ ![1, 0] := fun i => by fin_cases i <;> simp
+  have hne : (0 : Fin 2 → ℝ) ≠ ![1, 0] := fun h' => by
+    have := congrFun h' 0; simp at this
+  have := (h 0 ![1, 0] le_rfl hle hne).2
+  exact this (by simp [prefOf, uLeon])
+
+/-- Witness economy with **locally nonsatiated, not strongly monotone**
+preferences: two Leontief consumers each owning `(1, 1)`, consumer `0` owning
+the constant-returns, free-disposal firm `linearSet`. -/
+noncomputable def leonProdEconomy : ProductionEconomy (Fin 2) (Fin 1) (Fin 2) where
+  pref _ := prefOf uLeon
+  endow _ := fun _ => 1
+  endow_nonneg _ _ := by norm_num
+  prod _ := linearSet
+  share a _ := if a = 0 then 1 else 0
+  share_nonneg a _ := by split_ifs <;> norm_num
+  share_sum _ := by simp
+
+theorem leonProdEconomy_aggProd : leonProdEconomy.aggProd = linearSet := by
+  ext z
+  constructor
+  · rintro ⟨y, hy, rfl⟩
+    simpa [leonProdEconomy] using hy 0
+  · intro hz
+    exact ⟨fun _ => z, fun _ => hz, by simp⟩
+
+/-- The strongly monotone theorem cannot be applied to `leonProdEconomy`. -/
+theorem leonProdEconomy_not_stronglyMonotone (a : Fin 2) :
+    ¬ StronglyMonotone (leonProdEconomy.pref a) :=
+  not_stronglyMonotone_uLeon
+
+/-- **Existence with Leontief consumers and constant returns.** (Only existence
+is claimed; prices are in the simplex.) -/
+theorem leonProdEconomy_exists_equilibrium :
+    ∃ p x y, p ∈ priceSimplex (Fin 2) ∧ leonProdEconomy.IsWalrasianEquilibrium p x y := by
+  refine leonProdEconomy.exists_walrasianEquilibrium_arrowDebreu_lns (u := fun _ => uLeon)
+    (fun _ => rfl) (fun _ => continuous_uLeon) (fun _ => quasiconcaveOn_uLeon)
+    (fun _ => lns_leon 0) (fun _ _ => by simp [leonProdEconomy])
+    (fun _ => zero_mem_linearSet) (fun _ => isClosed_linearSet) (fun _ => convex_linearSet) ?_ ?_
+    ⟨0, freeDisposal_linearSet⟩
+  · rw [leonProdEconomy_aggProd]; exact fun y hy h0 => noFreeLunch_linearSet hy h0
+  · rw [leonProdEconomy_aggProd]; exact fun y hy hny => irreversible_linearSet hy hny
 
 end GEExamples
 
