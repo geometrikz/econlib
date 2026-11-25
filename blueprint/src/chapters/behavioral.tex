@@ -137,6 +137,69 @@ to one, and RDU respects FOSD (strictly when $w,u$ are strictly increasing and d
 Abel summation puts RDU in layer form $u_0+\sum_{k<n}w(G_p(k+1))(u_{k+1}-u_k)$, monotone in each $G_p(k)$.
 \end{proof}
 
+\begin{theorem}[Yaari; Chew--Karni--Safra: risk attitudes under RDU]
+\label{thm:beh-rdu-risk}
+\uses{thm:beh-rdu}
+\lean{Econ.RankDependent.binLot, Econ.RankDependent.G_binLot, Econ.RankDependent.rdu_binLot, Econ.RankDependent.eu_binLot, Econ.RankDependent.rdu_le_eu_iff, Econ.RankDependent.eu_le_rdu_iff, Econ.RankDependent.rdu_le_u_mean, Econ.RankDependent.pessimism_of_riskAverse, Econ.RankDependent.sq_pessimistic, Econ.RankDependent.rdu_sq_le_eu, Econ.RankDependent.yaari_riskSeeking}
+\leanok
+Let $w(0)=0$, $w(1)=1$. Then $w(t)\le t$ on $[0,1]$ (pessimism) iff RDU is at most expected utility for every lottery and
+every increasing utility; symmetrically for $w(t)\ge t$. With pessimistic $w$ and concave utility of money $U$, RDU is at
+most $U$ of the mean (weak risk aversion). Conversely, if the agent weakly prefers the mean to every small-stakes lottery
+$(x_0,x_0+h)$ and $U$ is differentiable at $x_0$ with $U'(x_0)>0$, then $w(t)\le t$. In particular a Yaari agent (linear
+$U$) who overweights some probability is strictly risk seeking on some two-outcome lottery.
+\end{theorem}
+\begin{proof}
+\leanok
+In layer form RDU and EU differ only in $w(G_k)$ versus $G_k$ multiplying nonnegative utility increments; the two-outcome
+lottery with $G_1=t$ gives the converse. Jensen's inequality gives the bound by $U$ of the mean. For necessity, divide the
+two-outcome inequality $w(t)(U(x_0+h)-U(x_0))\le U(x_0+th)-U(x_0)$ by $h$ and let $h\downarrow0$: $w(t)U'(x_0)\le
+tU'(x_0)$.
+\end{proof}
+
+\begin{theorem}[Yaari: strong risk aversion iff convex $w$]
+\label{thm:beh-rdu-strong}
+\uses{thm:beh-rdu-risk}
+\lean{Econ.RankDependent.abel_support, Econ.RankDependent.slope_le_slope, Econ.RankDependent.fuchs, Econ.RankDependent.G_antitone, Econ.RankDependent.IsMPS, Econ.RankDependent.yaari_mps, Econ.RankDependent.triLot, Econ.RankDependent.G_triLot_one, Econ.RankDependent.G_triLot_two, Econ.RankDependent.isMPS_tri, Econ.RankDependent.yaari_strongRiskAverse_iff, Econ.RankDependent.sq_convex}
+\leanok
+(Fuchs' weighted majorization inequality.) Let $f$ be convex on $I$, let $x_0\ge\dots\ge x_{n-1}$ and $y_0\ge\dots\ge y_{n-1}$
+lie in $I$, and let $c_k$ be arbitrary real weights with $\sum_{k<m}c_k(x_k-y_k)\ge0$ for all $m\le n$ and
+$\sum_{k<n}c_k(x_k-y_k)=0$. Then $\sum_k c_k(f(x_k)-f(y_k))\ge0$.
+Say $q$ is a mean-preserving spread of $p$ on the grid $x$ if they have equal means and
+$\sum_{k<m}G_q(k+1)\Delta x_k\le\sum_{k<m}G_p(k+1)\Delta x_k$ for all $m$ (for weakly increasing $x$ this is the
+Rothschild--Stiglitz integral condition). For a dual-theory agent (linear utility, weighting $w$ with $w(0)=0$, $w(1)=1$),
+$w$ is convex on $[0,1]$ iff the agent weakly dislikes every mean-preserving spread on every weakly increasing grid.
+\end{theorem}
+\begin{proof}
+\leanok
+For Fuchs, write each term as the chord slope $s_k$ of $f$ between $x_k$ and $y_k$ times $a_k=c_k(x_k-y_k)$; the slopes
+decrease in $k$ on the support of $a$, and Abel summation with nonnegative partial sums and zero total gives the claim.
+In layer form $\mathrm{RDU}=x_0+\sum_k w(G(k+1))\Delta x_k$, so sufficiency is Fuchs with $c=\Delta x$ and $f=w$. For the
+converse, on the grid $(0,\lambda,1)$ the lottery with $G_1=G_2=\lambda t+(1-\lambda)s$ is a spread of the one with
+$G_1=t$, $G_2=s$, and aversion gives $w(\lambda t+(1-\lambda)s)\le\lambda w(t)+(1-\lambda)w(s)$.
+\end{proof}
+
+\begin{theorem}[Chew--Karni--Safra: concave $u$ and convex $w$ give strong risk aversion]
+\label{thm:beh-cks}
+\uses{thm:beh-rdu-strong}
+\lean{Econ.RankDependent.slope_nonneg_of_monotoneOn, Econ.RankDependent.slope_mul_sub, Econ.RankDependent.fuchs_mono, Econ.RankDependent.SSD, Econ.RankDependent.isMPS_ssd, Econ.RankDependent.ssd_weighted, Econ.RankDependent.monotoneOnGrid_le, Econ.RankDependent.cks_ssd, Econ.RankDependent.cks_mps, Econ.RankDependent.sq_monotoneOn, Econ.RankDependent.sqrt_sq_mps, Econ.RankDependent.sqrt_sq_tri, Econ.RankDependent.sq_tri_strict}
+\leanok
+(Weighted Tom\'ic--Weyl.) If $f$ is convex and increasing on $I$, $x,y$ are decreasing sequences in $I$, and
+$\sum_{k<m}c_k(x_k-y_k)\ge0$ for all $m\le n$ (weights of any sign), then $\sum_k c_k(f(x_k)-f(y_k))\ge0$.
+Say $p$ dominates $q$ in second order on the grid $x$ if $\sum_{k<m}G_q(k+1)\Delta x_k\le\sum_{k<m}G_p(k+1)\Delta x_k$ for
+all $m$. If $w$ is convex and increasing on $[0,1]$ with $w(0)=0$, $w(1)=1$, and $U$ is concave and increasing on a set
+containing a weakly increasing grid, then $\mathrm{RDU}_{w,U}(q)\le\mathrm{RDU}_{w,U}(p)$ whenever $p$ dominates $q$ in
+second order, in particular whenever $q$ is a mean-preserving spread of $p$. With $w(t)=t^2$ and linear $U$, the even
+coin on $\{0,1\}$ is worth $1/4$ against $1/2$ for the sure $1/2$, although the means agree.
+\end{theorem}
+\begin{proof}
+\leanok
+Tom\'ic--Weyl is the Abel-summation argument of Fuchs' inequality with chord slopes now nonnegative, so the zero-total
+condition is not needed. Applied with $c=\Delta x$ and $f=w$, it shows that second-order dominance survives the distortion:
+$\sum_{k<m}w(G_q(k+1))\Delta x_k\le\sum_{k<m}w(G_p(k+1))\Delta x_k$. In layer form the RDU difference is
+$\sum_k(w(G_p(k+1))-w(G_q(k+1)))\Delta U_k=\sum_k s_k a_k$ with $s_k$ the chord slope of $U$ on $[x_k,x_{k+1}]$, which
+is nonnegative and decreasing by concavity; Abel summation again gives the claim.
+\end{proof}
+
 \begin{theorem}[OPT violates FOSD]
 \label{thm:beh-opt}
 \lean{Econ.RankDependent.opt_violates_fosd}
@@ -654,6 +717,32 @@ In the first problem the state where $L_2$ pays $0$ has salience $3/(3+\theta)>1
 $.6-.8\delta$. In the second the state where $L_1'$ pays $0$ and $L_2'$ pays $4$ is most salient ($4/(4+\theta)>3/(3+\theta)$),
 and the distorted difference $-.05\delta^2+.6\delta-.6$ is negative for $\delta\le1$. Under expected utility the second
 comparison is the first scaled by $1/4$.
+\end{proof}
+
+\section{Choice from lists}
+\label{sec:beh-lists}
+
+\begin{theorem}[Rubinstein--Salant: choice from lists]
+\label{thm:beh-lists}
+\lean{Econ.ChoiceLists.IsList, Econ.ChoiceLists.IsChoice, Econ.ChoiceLists.PI, Econ.ChoiceLists.LIIA, Econ.ChoiceLists.isList_singleton, Econ.ChoiceLists.choice_singleton, Econ.ChoiceLists.liia_sublist, Econ.ChoiceLists.isList_append, Econ.ChoiceLists.pair_isList, Econ.ChoiceLists.liia_pi, Econ.ChoiceLists.pi_piece, Econ.ChoiceLists.pi_liia, Econ.ChoiceLists.liia_iff_pi, Econ.ChoiceLists.step, Econ.ChoiceLists.rule, Econ.ChoiceLists.IsWeakOrder, Econ.ChoiceLists.ClassConst, Econ.ChoiceLists.step_assoc, Econ.ChoiceLists.foldl_step, Econ.ChoiceLists.step_mem, Econ.ChoiceLists.foldl_mem, Econ.ChoiceLists.rule_mem, Econ.ChoiceLists.step_ge, Econ.ChoiceLists.foldl_ge, Econ.ChoiceLists.rule_isMax, Econ.ChoiceLists.pi_rule, Econ.ChoiceLists.claimT, Econ.ChoiceLists.claimC, Econ.ChoiceLists.pair_mem, Econ.ChoiceLists.assoc3, Econ.ChoiceLists.relOf, Econ.ChoiceLists.deltaOf, Econ.ChoiceLists.relOf_isWeakOrder, Econ.ChoiceLists.deltaOf_first, Econ.ChoiceLists.deltaOf_last, Econ.ChoiceLists.deltaOf_classConst, Econ.ChoiceLists.pair_eq_step, Econ.ChoiceLists.eq_foldl, Econ.ChoiceLists.exists_rule_of_pi, Econ.ChoiceLists.pi_iff_rule, Econ.ChoiceLists.first, Econ.ChoiceLists.first_isChoice, Econ.ChoiceLists.pi_first, Econ.ChoiceLists.first_eq_rule, Econ.ChoiceLists.first_not_rational, Econ.ChoiceLists.satisficing, Econ.ChoiceLists.satisficing_weakOrder, Econ.ChoiceLists.pi_satisficing, Econ.ChoiceLists.satisficing_satisfactory}
+\leanok
+A list is a nonempty finite sequence of distinct alternatives, and a choice function from lists picks an element of each
+list. (1) Such a $D$ satisfies list independence of irrelevant alternatives (deleting an unchosen element leaves the
+choice unchanged) iff it satisfies partition independence, $D(L_1L_2)=D(D(L_1),D(L_2))$ for disjoint lists. (2) $D$
+satisfies partition independence iff there are a complete transitive preference $\succsim$ and a priority indicator
+$\delta$, constant on indifference classes, such that $D$ picks a $\succsim$-maximal element of every list, breaking ties
+in favour of the first maximal element when $\delta$ is ``first'' and the last when it is ``last''. Choosing the first
+element has partition independence but is not rationalizable; satisficing has partition independence.
+\end{theorem}
+\begin{proof}
+\leanok
+(1) Iterating LIIA deletes any set of unchosen elements, which gives PI on the pair of chosen elements; conversely PI keeps
+the chosen element in any block of a partition containing it, and splitting the list just before and after the deleted
+element gives LIIA. (2) The rule is a left fold of a binary choice that is associative when $\succsim$ is a weak order and
+$\delta$ is class-constant, so it has PI. Conversely PI with singleton tails writes $D$ as a left fold of its binary
+choices. Define $a\succsim b$ unless $b$ is chosen from both orders of $\{a,b\}$, and $\delta(a)$ = ``last'' iff $a$ lies in
+a pair where the later element is always chosen. Associativity on three-element lists gives transitivity and that no
+indifference class mixes ``first'' and ``last'' pairs, so the binary choices are those of the rule.
 \end{proof}
 
 \section{Behavioral industrial organization}

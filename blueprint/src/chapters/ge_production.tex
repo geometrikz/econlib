@@ -113,3 +113,246 @@ quasi-equilibrium with transfers is a price equilibrium with transfers.
 Feasibility, profit maximization and the transfer condition carry over; the consumer condition is
 Lemma~\ref{lem:cheaper_point} applied to each consumer.
 \end{proof}
+
+\section{Existence of equilibrium with production}
+\label{sec:existence_production}
+
+\begin{lemma}[Demand blows up at boundary prices]
+\label{lem:demand_unbounded}
+\lean{Econ.RegularUtility.demand_unbounded, Econ.exists_coord_bound}
+\leanok
+\uses{def:regular_utility}
+Let $u$ be regular. If $q_n \gg 0$ converge to $\bar p$ with some $\bar p_l = 0$, wealth $w_n$ stays above some $c > 0$, and
+$x_n$ is demanded at $(q_n, w_n)$, then $\max_k x_{n,k} \to \infty$.
+\end{lemma}
+\begin{proof}
+\leanok
+Otherwise a subsequence of $x_n$ stays in a box and converges to $\bar x \ge 0$. Since $w_n \ge \max(c, q_n \cdot x_n) \to
+W = \max(c, \bar p \cdot \bar x) > 0$ and $\bar p \cdot \bar x \le W$, the improvement property gives $y$ with $u(y) > u(\bar x)$
+and $\bar p \cdot y < W$. Then $y$ is eventually affordable, so $u(y) \le u(x_n) \to u(\bar x)$, a contradiction.
+\end{proof}
+
+\begin{theorem}[Existence with production]
+\label{thm:existence_production}
+\lean{Econ.ProductionEconomy.exists_walrasianEquilibrium_production,
+  Econ.ProductionEconomy.exists_continuous_supply,
+  Econ.ProductionEconomy.exists_walrasianEquilibrium_production_of_unique}
+\leanok
+\uses{lem:demand_unbounded, thm:existence_regular, lem:sum_wealth}
+Suppose consumers have regular utilities, $\bar\omega \gg 0$ (individual endowments may be zero), and firms have compact production
+sets containing $0$ with a profit-maximizing supply function continuous on $p \gg 0$ (for instance, unique profit
+maximizers, by Berge's theorem). Then a Walrasian equilibrium with $p \gg 0$ exists. Compactness stands in for
+Arrow--Debreu's closed, convex, free-disposal sets (it excludes free disposal and constant returns).
+\end{theorem}
+\begin{proof}
+\leanok
+Set $w_a(p) = p\cdot\omega_a + \sum_j \theta_{aj}\, p \cdot s_j(p) \ge p \cdot \omega_a \ge 0$ (profits are nonnegative as
+$0 \in Y_j$); at zero wealth demand is $0$, and it is continuous there since $x_i \le w/p_i$ and $z(p) = \sum_a x_a(p, w_a(p)) - \bar\omega - \sum_j s_j(p)$. It is continuous on $p \gg 0$, satisfies
+Walras' law, and is bounded below since production sets are bounded. Near a boundary price some consumer has
+$\bar p \cdot \omega_a > 0$, so their wealth stays bounded away from $0$ and Lemma~\ref{lem:demand_unbounded} gives the
+boundary condition. The interior existence theorem gives $z(p) = 0$.
+\end{proof}
+
+\begin{theorem}[A disc technology]
+\label{thm:disc_economy}
+\lean{Econ.GEExamples.norm2, Econ.GEExamples.discSet, Econ.GEExamples.discSupply, Econ.GEExamples.norm2_pos,
+  Econ.GEExamples.norm2_sq, Econ.GEExamples.zero_mem_discSet, Econ.GEExamples.discSet_noFreeLunch, Econ.GEExamples.isCompact_discSet,
+  Econ.GEExamples.discSupply_profitMax, Econ.GEExamples.continuousOn_discSupply, Econ.GEExamples.discEconomy,
+  Econ.GEExamples.discEconomy_exists_equilibrium, Econ.GEExamples.discEconomy3,
+  Econ.GEExamples.discEconomy3_endow_two, Econ.GEExamples.discEconomy3_exists_equilibrium}
+\leanok
+\uses{thm:existence_production, thm:sqrt_economy}
+A firm with production set the Euclidean disc of centre $(-1, -2)$ and radius $\sqrt5$ (so $0$ is on its boundary, and
+the disc lies in $y_0 + 2y_1 \le 0$, so no nonzero nonnegative output is possible) has supply $c + \rho\, p/\|p\|_2$. Two square-root consumers owning $(1,0)$ and $(0,1)$ and half the firm each
+form an economy with a Walrasian equilibrium; so does a variant with a third consumer who owns no goods and the whole
+firm.
+\end{theorem}
+\begin{proof}
+\leanok
+Profit maximization is Cauchy--Schwarz: $p\cdot(y - c) \le \|p\|_2 \|y - c\|_2 \le \|p\|_2\,\rho$. Apply
+Theorem~\ref{thm:existence_production}.
+\end{proof}
+
+\section{Existence with unbounded production sets}
+\label{sec:existence_unbounded}
+
+The aggregate production set is $Y = \sum_j Y_j$. It has \emph{no free lunch} if $Y \cap \mathbb{R}^L_+ \subseteq \{0\}$
+and is \emph{irreversible} if $Y \cap (-Y) \subseteq \{0\}$.
+
+\begin{lemma}[Inaction, no free lunch and irreversibility]
+\label{lem:eq_zero_of_sum_nonneg}
+\lean{Econ.ProductionEconomy.aggProd, Econ.ProductionEconomy.eq_zero_of_sum_nonneg}
+\leanok
+If $0 \in Y_j$ for all $j$ and $Y$ has no free lunch and is irreversible, then $y_j \in Y_j$ and $\sum_j y_j \ge 0$
+imply every $y_j = 0$.
+\end{lemma}
+\begin{proof}
+\leanok
+No free lunch gives $\sum_j y_j = 0$. For each $k$, $y_k \in Y$ (others at $0$) and $-y_k = \sum_{j \ne k} y_j \in Y$, so
+$y_k = 0$ by irreversibility.
+\end{proof}
+
+\begin{lemma}[Attainable production is bounded]
+\label{lem:bound_attainable}
+\lean{Econ.ProductionEconomy.exists_bound_attainable}
+\leanok
+\uses{lem:eq_zero_of_sum_nonneg}
+If each $Y_j$ is closed and convex with $0 \in Y_j$, and $Y$ has no free lunch and is irreversible, then for every $c$ the
+set of $(y_j)_j \in \prod_j Y_j$ with $\sum_j y_j \ge c$ is bounded (Debreu 1959, ch.~5).
+\end{lemma}
+\begin{proof}
+\leanok
+Otherwise take such $y^n$ with $\|y^n\| > n+1$ and a limit point $d$ of $y^n/\|y^n\|$, so $\|d\| = 1$. Each
+$y^n_j/\|y^n\|$ lies on the segment from $0$ to $y^n_j$, hence in $Y_j$, and so $d_j \in Y_j$. Also
+$\sum_j y^n_j/\|y^n\| \ge c/\|y^n\| \to 0$, so $\sum_j d_j \ge 0$, and the previous lemma gives $d = 0$, a
+contradiction.
+\end{proof}
+
+\begin{lemma}[Unique profit maximizers after truncation]
+\label{lem:profit_trunc_unique}
+\lean{Econ.ProductionEconomy.truncSet, Econ.ProductionEconomy.isClosed_truncSet,
+  Econ.ProductionEconomy.isBounded_truncSet, Econ.ProductionEconomy.profitMax_trunc_subsingleton}
+\leanok
+If $Y_j$ is strictly convex and $p \gg 0$, then $p \cdot y$ has at most one maximizer on $Y_j \cap \{z : \sum_i z_i^2 \le
+\rho\}$, a compact set.
+\end{lemma}
+\begin{proof}
+\leanok
+The midpoint $m$ of two distinct maximizers lies in the interior of $Y_j$ and satisfies $\sum_i m_i^2 < \rho$ (parallelogram
+identity), so $m + tp$ is feasible for small $t > 0$ and has higher profit.
+\end{proof}
+
+\begin{theorem}[Existence with unbounded production]
+\label{thm:existence_unbounded}
+\lean{Econ.ProductionEconomy.exists_walrasianEquilibrium_unbounded}
+\leanok
+\uses{lem:bound_attainable, lem:profit_trunc_unique, thm:existence_production}
+Suppose consumers have regular utilities and $\bar\omega \gg 0$, each $Y_j$ is closed and strictly convex with $0 \in Y_j$,
+and $Y = \sum_j Y_j$ has no free lunch and is irreversible. Then a Walrasian equilibrium exists at strictly positive
+prices. Production sets need not be bounded. Strict convexity is much stronger than Arrow--Debreu's convexity: it forces
+full-dimensional $Y_j$ and excludes constant returns, linear activities and free disposal. This theorem and
+Theorem~\ref{thm:existence_production} are not nested.
+\end{theorem}
+\begin{proof}
+\leanok
+Bound attainable production by $R$ (with $c = -\bar\omega$) and truncate each $Y_j$ to the ball $\sum_i z_i^2 \le \rho$ with
+$\rho = L R^2 + 1$. The truncated economy has compact production sets with unique supply, so it has an equilibrium. Its
+production is attainable, hence strictly inside the ball. If some $z \in Y_j$ were more profitable than $y_j$, the points
+$y_j + t(z - y_j)$ for small $t > 0$ would lie in the truncated set and be more profitable, a contradiction.
+\end{proof}
+
+\begin{theorem}[An unbounded technology]
+\label{thm:parabola_economy}
+\lean{Econ.GEExamples.parabolaSet, Econ.GEExamples.zero_mem_parabolaSet, Econ.GEExamples.isClosed_parabolaSet,
+  Econ.GEExamples.strictConvex_parabolaSet, Econ.GEExamples.noFreeLunch_parabolaSet,
+  Econ.GEExamples.irreversible_parabolaSet, Econ.GEExamples.not_isBounded_parabolaSet,
+  Econ.GEExamples.parabolaEconomy, Econ.GEExamples.parabolaEconomy_aggProd,
+  Econ.GEExamples.parabolaEconomy_exists_equilibrium}
+\leanok
+\uses{thm:existence_unbounded, thm:sqrt_economy}
+The set $\{y : y_1 \le -y_0 - y_0^2\}$ is closed, strictly convex, unbounded, contains $0$, and has no free lunch and is
+irreversible. Two square-root consumers owning $(1,0)$ and $(0,1)$, one of whom owns this firm, form an economy with a
+Walrasian equilibrium.
+\end{theorem}
+
+\section{The Arrow--Debreu theorem with convex production}
+\label{sec:existence_arrow_debreu}
+
+\begin{lemma}[Continuous truncated demand]
+\label{lem:trunc_demand}
+\lean{Econ.truncBudget, Econ.continuous_cost_right, Econ.isClosed_truncBudget, Econ.convex_truncBudget,
+  Econ.isClosed_graph_truncBudget, Econ.continuousCorrespondence_truncBudget, Econ.exists_continuous_truncDemand}
+\leanok
+For $c \ge 0$ and $m > 0$, the truncated budget $\{x \in [0,c]^L : p \cdot x \le \max(w, m)\}$ is a continuous
+correspondence of $(p, w)$ with nonempty compact convex values. For continuous strictly quasiconcave $u$, its maximizer
+is unique and continuous in $(p, w)$.
+\end{lemma}
+\begin{proof}
+\leanok
+Upper hemicontinuity: closed graph inside a fixed box. Lower hemicontinuity: shrink an affordable bundle $y$ to $ty$ with
+$t < 1$, which costs strictly less than $\max(w, m) > 0$, a strict inequality that survives perturbation. Uniqueness:
+the midpoint of two maximizers is affordable and strictly better. Continuity: Berge.
+\end{proof}
+
+\begin{theorem}[Arrow--Debreu existence with convex production]
+\label{thm:existence_arrow_debreu}
+\lean{Econ.ProductionEconomy.exists_walrasianEquilibrium_arrowDebreu}
+\leanok
+\uses{thm:existence_arrow_debreu_convex}
+Suppose consumers have continuous, strictly quasiconcave, strongly monotone utilities and endowments $\omega_a \gg 0$, each
+$Y_j$ is closed and convex with $0 \in Y_j$, and $Y = \sum_j Y_j$ has no free lunch and is irreversible. Then a Walrasian
+equilibrium exists at strictly positive prices. Production sets may be unbounded, with constant returns and free
+disposal (Arrow--Debreu 1954, Theorem I, here with strictly quasiconcave preferences).
+\end{theorem}
+\begin{proof}
+\leanok
+In Lean this is the special case of Theorem~\ref{thm:existence_arrow_debreu_convex}, since strictly quasiconcave
+utilities are quasiconcave. The direct argument: bound attainable production by $R$, truncate $Y_j$ to $T_j = Y_j \cap \bar B(0, R+1)$ and consumption to $[0, c]^L$ with
+$c > \sum_i \bar\omega_i + |J| R$. Apply Kakutani on $\Delta \times [0,c]^{A \times L} \times \prod_j T_j$ to the
+correspondence sending $(p, x, y)$ to the price vectors maximizing $q \cdot z$ over $\Delta$, where
+$z = \sum_a x_a - \bar\omega - \sum_j y_j$; the truncated demands at wealth $p \cdot \omega_a + \sum_j \theta_{aj}
+\max(0, p \cdot y_j)$ with floor $m_a = \min_i \omega_{ai}$; and the profit maximizers on $T_j$. At a fixed point
+profits are nonnegative, wealth is at least $p \cdot \omega_a \ge m_a$, and summing budgets gives $p \cdot z \le 0$, so
+$z \le 0$ by price maximization. Hence production is attainable, strictly inside the truncation, and consumption is
+strictly inside the box; by convexity firms maximize on $Y_j$, and consumers maximize on their full budget sets (see
+the lift-back in Theorem~\ref{thm:existence_arrow_debreu_convex}). Strong monotonicity gives $p \gg 0$ and binding budgets, so $p \cdot z = 0$ and $z = 0$.
+\end{proof}
+
+\begin{lemma}[Set-valued truncated demand]
+\label{lem:trunc_demand_convex}
+\lean{Econ.StrictlyQuasiconcave.quasiconcaveOn, Econ.truncDemand_props}
+\leanok
+\uses{lem:trunc_demand}
+For continuous $u$ quasiconcave on $\mathbb{R}^L_+$, the maximizers of $u$ on the truncated budget set are nonempty and
+convex and have a closed graph in $(p, w, x)$. Strictly quasiconcave utilities are quasiconcave on $\mathbb{R}^L_+$.
+\end{lemma}
+\begin{proof}
+\leanok
+Berge gives upper hemicontinuity with compact values, hence a closed graph. Two maximizers have equal utility, so by
+quasiconcavity every convex combination is at least as good.
+\end{proof}
+
+\begin{theorem}[Arrow--Debreu existence with convex preferences]
+\label{thm:existence_arrow_debreu_convex}
+\lean{Econ.ProductionEconomy.exists_walrasianEquilibrium_arrowDebreu_convex}
+\leanok
+\uses{lem:bound_attainable, lem:trunc_demand_convex}
+Suppose consumers have continuous utilities that are quasiconcave on $\mathbb{R}^L_+$ (convex preferences) and strongly
+monotone, and endowments $\omega_a \gg 0$; each $Y_j$ is closed and convex with $0 \in Y_j$; and $Y = \sum_j Y_j$ has no free
+lunch and is irreversible. Then a Walrasian equilibrium exists at strictly positive prices.
+\end{theorem}
+\begin{proof}
+\leanok
+As before, with the consumer part of the Kakutani correspondence now the set-valued truncated demand. In the lift-back
+step, suppose an affordable $x'$ is better than $x_a$. Shrink it to $x'' = \sigma x'$, still better and leaving money
+unspent. With the fixed $\delta = (w - p \cdot x'')/(\sum_i p_i + 1)$ the bundle $t x'' + (1-t) x_a + t\delta \mathbf{1}$ is
+affordable for every $t \in [0, 1]$ and in the box for small $t > 0$; it is at least as good as $t x'' + (1-t) x_a$, which is at least as good as $x_a$ by quasiconcavity, and is
+strictly better by strong monotonicity, contradicting truncated optimality.
+\end{proof}
+
+\begin{theorem}[Perfect substitutes]
+\label{thm:subst_economy}
+\lean{Econ.GEExamples.quasiconcaveOn_uLin, Econ.GEExamples.not_strictlyQuasiconcave_uLin,
+  Econ.GEExamples.not_strictlyQuasiconcave_of_prefOf_eq_uLin,
+  Econ.GEExamples.stronglyMonotone_uLin, Econ.GEExamples.substEconomy, Econ.GEExamples.substEconomy_aggProd,
+  Econ.GEExamples.substEconomy_exists_equilibrium}
+\leanok
+\uses{thm:existence_arrow_debreu_convex, thm:linear_economy}
+The utility $x_0 + x_1$ is continuous, quasiconcave and strongly monotone, and no utility representing it is strictly quasiconcave. Two such consumers
+each owning $(1,1)$, with the constant-returns firm of Theorem~\ref{thm:linear_economy}, form an economy with a Walrasian
+equilibrium.
+\end{theorem}
+
+\begin{theorem}[Constant returns and free disposal]
+\label{thm:linear_economy}
+\lean{Econ.GEExamples.linearSet, Econ.GEExamples.zero_mem_linearSet, Econ.GEExamples.isClosed_linearSet,
+  Econ.GEExamples.convex_linearSet, Econ.GEExamples.smul_mem_linearSet, Econ.GEExamples.freeDisposal_linearSet,
+  Econ.GEExamples.noFreeLunch_linearSet, Econ.GEExamples.irreversible_linearSet,
+  Econ.GEExamples.linearSet_not_strictConvex, Econ.GEExamples.linearEconomy, Econ.GEExamples.linearEconomy_aggProd,
+  Econ.GEExamples.linearEconomy_exists_equilibrium}
+\leanok
+\uses{thm:existence_arrow_debreu, thm:sqrt_economy}
+The cone $\{y : y_0 \le 0,\ y_0 + y_1 \le 0\}$ (convert good 0 into good 1 one for one, dispose freely) is closed,
+convex, has constant returns and free disposal, no free lunch, is irreversible and is not strictly convex. Two
+square-root consumers each owning $(1,1)$, one of whom owns this firm, form an economy with a Walrasian equilibrium.
+\end{theorem}

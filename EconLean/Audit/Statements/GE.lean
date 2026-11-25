@@ -18,6 +18,9 @@ public import EconLean.GE.SecondWelfare
 public import EconLean.GE.Existence
 public import EconLean.GE.Replica
 public import EconLean.GE.DebreuScarf
+public import EconLean.GE.ExistenceProduction
+public import EconLean.GE.ExistenceUnbounded
+public import EconLean.GE.ExistenceArrowDebreu
 
 @[expose] public section
 
@@ -216,5 +219,88 @@ theorem frozen_mem_core_replicas_iff_walrasian {I : Type*} [Fintype I] [Decidabl
   mem_core_replicas_iff_walrasian hu hsq hmono hωpos
 
 end DebreuScarf
+
+section ExistenceProduction
+
+theorem frozen_exists_walrasianEquilibrium_production {β : Type*} [Fintype β] [Nonempty ι]
+    (E : ProductionEconomy α β ι) {u : α → (ι → ℝ) → ℝ} (hpref : ∀ a, E.pref a = prefOf (u a))
+    (hreg : ∀ a, RegularUtility (u a))
+    (hω : PositivePrices E.totalEndowment) (hY0 : ∀ j, (0 : ι → ℝ) ∈ E.prod j)
+    (hYc : ∀ j, IsCompact (E.prod j)) {s : β → (ι → ℝ) → (ι → ℝ)}
+    (hs : ∀ j p, PositivePrices p → ProductionEconomy.ProfitMax p (E.prod j) (s j p))
+    (hsc : ∀ j, ContinuousOn (s j) {p | PositivePrices p}) :
+    ∃ p x y, PositivePrices p ∧ E.IsWalrasianEquilibrium p x y :=
+  E.exists_walrasianEquilibrium_production hpref hreg hω hY0 hYc hs hsc
+
+theorem frozen_exists_walrasianEquilibrium_production_of_unique {β : Type*} [Fintype β]
+    [Nonempty ι] (E : ProductionEconomy α β ι) {u : α → (ι → ℝ) → ℝ}
+    (hpref : ∀ a, E.pref a = prefOf (u a)) (hreg : ∀ a, RegularUtility (u a))
+    (hω : PositivePrices E.totalEndowment)
+    (hY0 : ∀ j, (0 : ι → ℝ) ∈ E.prod j) (hYc : ∀ j, IsCompact (E.prod j))
+    (huniq : ∀ j p, PositivePrices p →
+      {y | ProductionEconomy.ProfitMax p (E.prod j) y}.Subsingleton) :
+    ∃ p x y, PositivePrices p ∧ E.IsWalrasianEquilibrium p x y :=
+  E.exists_walrasianEquilibrium_production_of_unique hpref hreg hω hY0 hYc huniq
+
+end ExistenceProduction
+
+section ExistenceUnbounded
+
+theorem frozen_aggProd {β : Type*} [Fintype β] (E : ProductionEconomy α β ι) (z : ι → ℝ) :
+    z ∈ E.aggProd ↔ ∃ y : β → ι → ℝ, (∀ j, y j ∈ E.prod j) ∧ ∑ j, y j = z := Iff.rfl
+
+theorem frozen_noFreeLunch (Y : Set (ι → ℝ)) :
+    NoFreeLunch Y ↔ ∀ y ∈ Y, 0 ≤ y → y = 0 := Iff.rfl
+
+theorem frozen_irreversible (Y : Set (ι → ℝ)) :
+    Irreversible Y ↔ ∀ y ∈ Y, -y ∈ Y → y = 0 := Iff.rfl
+
+theorem frozen_exists_bound_attainable {β : Type*} [Fintype β] (E : ProductionEconomy α β ι)
+    (hY0 : ∀ j, (0 : ι → ℝ) ∈ E.prod j) (hYcl : ∀ j, IsClosed (E.prod j))
+    (hYcv : ∀ j, Convex ℝ (E.prod j)) (hnfl : NoFreeLunch E.aggProd)
+    (hirr : Irreversible E.aggProd) (c : ι → ℝ) :
+    ∃ R, ∀ y : β → ι → ℝ, (∀ j, y j ∈ E.prod j) → c ≤ ∑ j, y j → ‖y‖ ≤ R :=
+  E.exists_bound_attainable hY0 hYcl hYcv hnfl hirr c
+
+theorem frozen_exists_walrasianEquilibrium_unbounded {β : Type*} [Fintype β] [Nonempty ι]
+    (E : ProductionEconomy α β ι) {u : α → (ι → ℝ) → ℝ} (hpref : ∀ a, E.pref a = prefOf (u a))
+    (hreg : ∀ a, RegularUtility (u a)) (hω : PositivePrices E.totalEndowment)
+    (hY0 : ∀ j, (0 : ι → ℝ) ∈ E.prod j) (hYcl : ∀ j, IsClosed (E.prod j))
+    (hYsc : ∀ j, StrictConvex ℝ (E.prod j)) (hnfl : NoFreeLunch E.aggProd)
+    (hirr : Irreversible E.aggProd) :
+    ∃ p x y, PositivePrices p ∧ E.IsWalrasianEquilibrium p x y :=
+  E.exists_walrasianEquilibrium_unbounded hpref hreg hω hY0 hYcl hYsc hnfl hirr
+
+end ExistenceUnbounded
+
+section ExistenceArrowDebreu
+
+theorem frozen_exists_walrasianEquilibrium_arrowDebreu {β : Type*} [Fintype β] [Nonempty ι]
+    [Nonempty α] (E : ProductionEconomy α β ι) {u : α → (ι → ℝ) → ℝ}
+    (hpref : ∀ a, E.pref a = prefOf (u a)) (hu : ∀ a, Continuous (u a))
+    (hsq : ∀ a, StrictlyQuasiconcave (u a)) (hmono : ∀ a, StronglyMonotone (prefOf (u a)))
+    (hωa : ∀ a, PositivePrices (E.endow a))
+    (hY0 : ∀ j, (0 : ι → ℝ) ∈ E.prod j) (hYcl : ∀ j, IsClosed (E.prod j))
+    (hYcv : ∀ j, Convex ℝ (E.prod j)) (hnfl : NoFreeLunch E.aggProd)
+    (hirr : Irreversible E.aggProd) :
+    ∃ p x y, PositivePrices p ∧ E.IsWalrasianEquilibrium p x y :=
+  E.exists_walrasianEquilibrium_arrowDebreu hpref hu hsq hmono hωa hY0 hYcl hYcv hnfl hirr
+
+theorem frozen_exists_walrasianEquilibrium_arrowDebreu_convex {β : Type*} [Fintype β]
+    [Nonempty ι] [Nonempty α] (E : ProductionEconomy α β ι) {u : α → (ι → ℝ) → ℝ}
+    (hpref : ∀ a, E.pref a = prefOf (u a)) (hu : ∀ a, Continuous (u a))
+    (hqc : ∀ a, QuasiconcaveOn ℝ (Set.Ici 0) (u a))
+    (hmono : ∀ a, StronglyMonotone (prefOf (u a)))
+    (hωa : ∀ a, PositivePrices (E.endow a))
+    (hY0 : ∀ j, (0 : ι → ℝ) ∈ E.prod j) (hYcl : ∀ j, IsClosed (E.prod j))
+    (hYcv : ∀ j, Convex ℝ (E.prod j)) (hnfl : NoFreeLunch E.aggProd)
+    (hirr : Irreversible E.aggProd) :
+    ∃ p x y, PositivePrices p ∧ E.IsWalrasianEquilibrium p x y :=
+  E.exists_walrasianEquilibrium_arrowDebreu_convex hpref hu hqc hmono hωa hY0 hYcl hYcv hnfl hirr
+
+theorem frozen_quasiconcaveOn (s : Set (ι → ℝ)) (u : (ι → ℝ) → ℝ) :
+    QuasiconcaveOn ℝ s u ↔ ∀ r, Convex ℝ {x | x ∈ s ∧ r ≤ u x} := Iff.rfl
+
+end ExistenceArrowDebreu
 
 end Econ.Audit

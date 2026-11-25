@@ -71,6 +71,9 @@ public import EconLean.GE.ExistenceRegular
 public import EconLean.GE.CobbDouglas
 public import EconLean.GE.Replica
 public import EconLean.GE.DebreuScarf
+public import EconLean.GE.ExistenceProduction
+public import EconLean.GE.ExistenceUnbounded
+public import EconLean.GE.ExistenceArrowDebreu
 
 public import EconLean.Producer.Production
 public import EconLean.Producer.Cost
@@ -262,6 +265,8 @@ public import EconLean.Macro.PublicFinance.DiamondMirrlees
 public import EconLean.Macro.MoneySearch.LagosWrightBargaining
 public import EconLean.Macro.Credit.DynamicKM
 public import EconLean.Macro.PublicFinance.LucasStokey
+public import EconLean.Macro.Fiscal.AMSS
+public import EconLean.Macro.Fiscal.LucasStokeyGeneral
 public import EconLean.Behavioral.BeliefRule
 public import EconLean.Behavioral.CognitiveDiscounting
 public import EconLean.Behavioral.DiagnosticExpectations
@@ -301,5 +306,9 @@ public import EconLean.Behavioral.CARACharacterization
 public import EconLean.Behavioral.TemptationAxioms
 public import EconLean.Behavioral.SalienceAllais
 public import EconLean.Behavioral.SalienceCommonRatio
+public import EconLean.Behavioral.ChoiceFromLists
+public import EconLean.Behavioral.RDURiskAttitude
+public import EconLean.Behavioral.RDUStrongRiskAversion
+public import EconLean.Behavioral.RDUConcaveConvex
 
 @[expose] public section

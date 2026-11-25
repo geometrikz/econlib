@@ -1,0 +1,82 @@
+% Lean: EconLean/Macro/Fiscal/AMSS.lean, EconLean/Macro/Fiscal/LucasStokeyGeneral.lean
+\chapter{Fiscal Policy under Uncertainty}
+\label{chap:fiscal_uncertainty}
+
+Sources: Barro (1979); Aiyagari--Marcet--Sargent--Sepp\"al\"a (2002); Lucas--Stokey (1983); Chari--Kehoe (1999);
+Ljungqvist--Sargent ch.~16--17.
+
+\section{Tax smoothing with and without state-contingent debt}
+
+\begin{definition}[Two-period government problem]
+\label{def:amss}
+\lean{Econ.AMSS.Env, Econ.AMSS.Env.tax₀RF, Econ.AMSS.Env.taxRF, Econ.AMSS.Env.costRF, Econ.AMSS.Env.tax₀CM, Econ.AMSS.Env.taxCM, Econ.AMSS.Env.costCM}
+\leanok
+Risk-free debt $b$ at price $1/R$: $\tau_0=g_0+b_0-b/R$, $\tau_s=g_s+b$. Arrow securities $b_s$ at prices $\pi_s/R$:
+$\tau_0=g_0+b_0-\sum_s\pi_sb_s/R$, $\tau_s=g_s+b_s$. Cost $C(\tau_0)+\beta\sum_s\pi_sC(\tau_s)$.
+\end{definition}
+
+\begin{theorem}[Barro / AMSS: martingale taxes]
+\label{thm:amss_rf}
+\lean{Econ.AMSS.Env.euler_rf, Econ.AMSS.Env.martingale_quad, Econ.AMSS.Env.rf_spread, Econ.AMSS.Env.quad_optimum}
+\leanok
+\uses{def:amss}
+At an optimum with risk-free debt, $C'(\tau_0)=\beta R\sum_s\pi_sC'(\tau_s)$; with quadratic cost and $\beta R=1$,
+$\tau_0=E\tau_1$. Tomorrow's taxes differ across states by the spending difference. With quadratic cost the optimum is
+$b^*=R(g_0+b_0-Eg)/(1+R)$.
+\end{theorem}
+\begin{proof}
+\leanok
+Fermat's rule in $b$. For the explicit optimum, the cost difference is $\frac{\kappa}{2}\frac{1+R}{R^2}(b-b^*)^2\ge0$.
+\end{proof}
+
+\begin{theorem}[Complete markets: constant taxes]
+\label{thm:amss_cm}
+\lean{Econ.AMSS.Env.euler_cm, Econ.AMSS.Env.cm_constant, Econ.AMSS.Env.costCM_const, Econ.AMSS.Env.cm_le_rf}
+\leanok
+\uses{def:amss}
+With $\beta R=1$, at an optimum $C'(\tau_s)=C'(\tau_0)$ for every state with $\pi_s>0$, so with strictly increasing $C'$
+the tax is constant. A state-independent portfolio is the risk-free bond, so complete markets do at least as well.
+\end{theorem}
+\begin{proof}
+\leanok
+Vary one Arrow security at a time; use $\sum_s\pi_s=1$ for the comparison.
+\end{proof}
+
+\section{Lucas--Stokey with general utility}
+
+\begin{definition}[Primal problem with separable utility]
+\label{def:lsg}
+\lean{Econ.LucasStokeyGeneral.Prefs, Econ.LucasStokeyGeneral.Prefs.welfare, Econ.LucasStokeyGeneral.Prefs.implement, Econ.LucasStokeyGeneral.Prefs.tax, Econ.LucasStokeyGeneral.Prefs.Phi}
+\leanok
+Utility $u(c)-v(l)$, $c=l-g$, with $u,v$ twice differentiable on $(0,\infty)$. Implementability
+$\sum w(u'(c)c-v'(l)l)$ fixed; tax $1-v'(l)/u'(c)$; node equation
+$\Phi_{a,b}(g,l)=a(u''c+u'-v''l-v')+b(u'-v')$.
+\end{definition}
+
+\begin{theorem}[History independence]
+\label{thm:lsg}
+\lean{Econ.LucasStokeyGeneral.Prefs.hasStrictFDerivAt_wsum, Econ.LucasStokeyGeneral.Prefs.hasStrictDerivAt_welfareTerm, Econ.LucasStokeyGeneral.Prefs.hasStrictDerivAt_implTerm, Econ.LucasStokeyGeneral.Prefs.ramsey_foc, Econ.LucasStokeyGeneral.Prefs.history_independence}
+\leanok
+\uses{def:lsg}
+At an interior local maximum on the implementability set there are $(a,b)\ne0$, the same at every history, with
+$\Phi_{a,b}(g_n,l_n)=0$. If the node equation has a unique interior root, histories with the same $g$ have the same labour,
+consumption and tax.
+\end{theorem}
+\begin{proof}
+\leanok
+Lagrange multiplier rule (Fritz John form) applied coordinate by coordinate, dividing by $w_n>0$.
+\end{proof}
+
+\begin{theorem}[Non-vacuity]
+\label{thm:lsg_witness}
+\lean{Econ.LucasStokeyGeneral.Prefs.hasStrictDerivAt_isoV, Econ.LucasStokeyGeneral.Prefs.quasilinear, Econ.LucasStokeyGeneral.Prefs.quasilinear_welfare, Econ.LucasStokeyGeneral.Prefs.quasilinear_implement, Econ.LucasStokeyGeneral.Prefs.nonvacuous, Econ.LucasStokeyGeneral.Prefs.distortionary_witness}
+\leanok
+\uses{def:lsg, thm:ls_fb}
+The quasilinear specification is an instance; its first best is a Ramsey optimum. With $\gamma=1$ and any constant
+$c\in(1/2,1)$, $l\equiv c$ is a Ramsey optimum with binding constraint and tax $1-c>0$.
+\end{theorem}
+\begin{proof}
+\leanok
+With $\delta=l-c$, $A=\sum w\delta$, $Q=\sum w\delta^2$: the constraint gives $(1-2c)A=Q$, and the welfare change is
+$(1-c)A-Q/2$; multiplying by $2c-1>0$ gives $-Q/2\le0$.
+\end{proof}
