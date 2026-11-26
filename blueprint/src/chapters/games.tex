@@ -359,6 +359,25 @@ when all $k\le K$ bad periods come first, giving $\delta^K v+(1-\delta^K)m$; thi
 equals $v$ at $\delta=1$.
 \end{proof}
 
+\begin{theorem}[Nash folk theorem with minmax punishments; Fudenberg--Tirole Thm.~5.1, pure case]
+\label{thm:minmax-folk}
+\lean{Econ.IsRepeatedNash, Econ.firstDev, Econ.minmaxTrigger, Econ.minmaxTrigger_isNash, Econ.minmax_folk, Econ.bestDevPayoff, Econ.pureMinmax, Econ.pureMinmax_le_of_isNash, Econ.nash_folk_pureMinmax}
+\leanok
+\uses{thm:folk}
+Play $a$ until the first deviation; after a unilateral deviation by $i$, play the punishment profile
+$p^i$ forever. If $u_i(s_i,p^i_{-i})\le v_i$ for all $s_i$ and $(1-\delta)u_i(s_i,a_{-i})+\delta v_i\le u_i(a)$,
+this is a Nash equilibrium of the repeated game. Hence in a finite game every pure profile giving each
+player strictly more than her pure minmax value $\min_{b_{-i}}\max_{s_i}u_i(s_i,b_{-i})$ is the path
+of a Nash equilibrium for all $\delta$ close to $1$.
+\end{theorem}
+\begin{proof}
+\leanok
+Against a deviation $\tau$ by $i$, let $W_t=u_i(a)$ before the first deviation and $v_i$ after. Before it,
+conforming keeps $W$ constant and deviating yields at most $(1-\delta)u_i(s_i,a_{-i})+\delta v_i\le u_i(a)$;
+after it the others play $p^i_{-i}$, so the stage payoff is at most $v_i$. The verification theorem bounds
+the deviation payoff by $W_0=u_i(a)$. The threshold for $\delta$ is as in the Nash-reversion folk theorem.
+\end{proof}
+
 \section{Potential games}
 \label{sec:potential}
 

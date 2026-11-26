@@ -579,3 +579,67 @@ Existence is Theorem~\ref{thm:aumann_existence}. An allocation that is a.e.\ con
 to be $(1,1)$, but spending
 all wealth $p_0 + p_1$ on the cheaper good gives at least $2$ units, utility at least $4 > 2$.
 \end{proof}
+
+\section{Large finite economies: approximate equilibria (Starr 1969)}
+\label{sec:approx_equilibrium}
+
+\begin{lemma}[Rounding weights to group sizes]
+\label{lem:rounding_counts}
+\lean{Econ.ApproxEquilibrium.exists_counts, Econ.ApproxEquilibrium.exists_assign}
+\leanok
+For weights $w_0, \dots, w_M \ge 0$ summing to $1$ and $n \in \mathbb{N}$ there are $c_k \in \mathbb{N}$ with
+$\sum_k c_k = n$ and $|c_k - n w_k| \le M + 1$; and $n$ agents can be assigned to groups of sizes $c_k$, so that
+$\sum_j g_{f(j)} = \sum_k c_k g_k$.
+\end{lemma}
+\begin{proof}
+\leanok
+Round $n w_k$ down for $k < M$ (error $< 1$) and give the remainder to $k = M$, whose error is the sum of the $M$
+other rounding errors, each in $[0,1)$.
+Assign agents through the bijection $\mathrm{Fin}\,n \simeq \sum_k \mathrm{Fin}\,c_k$.
+\end{proof}
+
+\begin{theorem}[Approximate equilibria of replica economies, no convexity]
+\label{thm:approx_equilibrium_replica}
+\lean{Econ.ApproxEquilibrium.exists_approxEquilibrium_replica}
+\leanok
+\uses{thm:convexified_equilibrium, lem:caratheodory_fixed, lem:rounding_counts}
+Let finitely many types have continuous strongly monotone utilities (not necessarily quasiconcave) and endowments
+$\omega_t \gg 0$. There are prices $p \gg 0$ and a constant $C$ such that for every $n$, the economy with $n$ agents of
+each type has an allocation in which every agent consumes a bundle demanded at $p$ and
+$|\sum_a x_{a,i} - \sum_a \omega_{a,i}| \le C$ for every good $i$. Per capita excess demand is $O(1/n)$.
+\end{theorem}
+\begin{proof}
+\leanok
+Take the convexified equilibrium with unit masses (Theorem~\ref{thm:convexified_equilibrium}): $\sum_t \bar x_t =
+\sum_t \omega_t$ with $\bar x_t \in \operatorname{conv}(\text{demand}_t(p))$. Write $\bar x_t = \sum_k w_{tk} z_{tk}$ with
+$L + 1$ demanded bundles (Lemma~\ref{lem:caratheodory_fixed}), and give $z_{tk}$ to $c_{tk}$ agents of type $t$ with
+$|c_{tk} - n w_{tk}| \le L + 1$ (Lemma~\ref{lem:rounding_counts}). The excess demand in good $i$ is
+$\sum_{t,k} (c_{tk} - n w_{tk}) z_{tk,i}$, bounded by $C = \sum_{t,k,i} (L+1)|z_{tk,i}|$.
+\end{proof}
+
+\begin{theorem}[Witness: exact equilibrium can fail, approximate ones exist]
+\label{thm:approx_equilibrium_witness}
+\lean{Econ.ApproxEquilibrium.sqReplica_exists_approxEquilibrium,
+  Econ.ApproxEquilibrium.positivePrices_of_mem_demand_uSq, Econ.ApproxEquilibrium.mem_demand_uSq,
+  Econ.ApproxEquilibrium.sqReplica_odd_no_equilibrium}
+\leanok
+\uses{thm:approx_equilibrium_replica, thm:aumann_existence_witness}
+With utility $x_0^2 + x_1^2$ and endowment $(1,1)$, the replicas have approximate equilibria at a common price with
+uniformly bounded aggregate excess demand, but for every odd number of agents there is no exact equilibrium at any
+prices.
+\end{theorem}
+\begin{proof}
+\leanok
+The first part is Theorem~\ref{thm:approx_equilibrium_replica}. Demand exists only at $p \gg 0$ (otherwise a free good
+makes utility unbounded), and every demanded bundle is a corner, $(w/p_0, 0)$ with $p_0 \le p_1$ or $(0, w/p_1)$ with
+$p_1 \le p_0$, since $x_0^2 + x_1^2$ is strictly convex along the budget line. If $p_0 \ne p_1$ all agents choose the
+same corner and one good is not consumed; if $p_0 = p_1$ each agent consumes $0$ or $2$ units of good $0$, an even total
+that cannot equal an odd $n$.
+\end{proof}
+
+\begin{remark}[Scope]
+This is a replica analogue of Starr's theorem, proved by Carath\'eodory and rounding. Here $C$ grows with the number of
+types; Starr's bound, via Shapley--Folkman, depends only on the number of goods and the non-convexity of preferences, and
+holds for arbitrary finite economies. That general form is not formalized. The allocation optimizes exactly but need not
+be feasible; Starr's quasi-equilibrium is feasible with at most $L$ agents off their demand.
+\end{remark}

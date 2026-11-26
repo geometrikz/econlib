@@ -1144,3 +1144,101 @@ converge to $V(k_0,z_0)$, while every feasible plan has $J_n\le V(k_0,z_0)+\vare
 \leanok
 The argument of Theorem~\ref{thm:sbm_optimal}, with conditional expectations given today's shock.
 \end{proof}
+
+\section{Heterogeneous firms: Hopenhayn (1992)}
+\label{sec:hopenhayn}
+
+\begin{definition}[Hopenhayn model, finite states]
+\label{def:hop_model}
+\lean{Econ.Hopenhayn.Model, Econ.Hopenhayn.Model.ρ, Econ.Hopenhayn.Model.EQ, Econ.Hopenhayn.Model.bellman,
+  Econ.Hopenhayn.example₁}
+\leanok
+Productivity $x$ takes finitely many values and follows a Markov chain $Q$. At output price $p$ a firm earns
+$\pi(p,x)$ (net of the fixed operating cost) and produces $s(p,x)>0$; $\pi(\cdot,x)$ is continuous, and strictly
+increasing at positive prices; output and demand are positive at positive prices. After producing, a firm dies with probability $\delta\in(0,1]$; a survivor either exits (value $0$) or
+continues and draws $x'\sim Q(x,\cdot)$. Entrants pay $c_e>0$, draw $x\sim\nu$, and produce at once. Demand $D(p)>0$.
+\end{definition}
+
+\begin{lemma}[Incumbent value]
+\label{lem:hop_value}
+\lean{Econ.Hopenhayn.Model.bellman_contracting, Econ.Hopenhayn.Model.V, Econ.Hopenhayn.Model.V_fixed,
+  Econ.Hopenhayn.Model.V_eq, Econ.Hopenhayn.Model.V_unique, Econ.Hopenhayn.Model.fixedPoint_mem,
+  Econ.Hopenhayn.Model.abs_EQ_sub_le, Econ.Hopenhayn.Model.EQ_mono, Econ.Hopenhayn.Model.le_V,
+  Econ.Hopenhayn.Model.V_nonpos}
+\leanok
+\uses{def:hop_model}
+$V_p(x)=\pi(p,x)+\beta(1-\delta)\max\{E[V_p(x')\mid x],0\}$ has a unique solution. $V_p\ge\pi(p,\cdot)$, and if
+$\pi(p,\cdot)\le0$ then $V_p\le0$.
+\end{lemma}
+\begin{proof}
+\leanok
+The operator is a $\beta(1-\delta)$-contraction in the sup norm, since $\max\{\cdot,0\}$ is $1$-Lipschitz and $Q$ is
+stochastic. Properties preserved by the operator on a closed set pass to the fixed point (limit of iterates).
+\end{proof}
+
+\begin{lemma}[Values and the price]
+\label{lem:hop_price}
+\lean{Econ.Hopenhayn.Model.V_monotone_price, Econ.Hopenhayn.Model.V_strictMono_price, Econ.Hopenhayn.Model.dist_V_le,
+  Econ.Hopenhayn.Model.continuous_π, Econ.Hopenhayn.Model.continuous_V, Econ.Hopenhayn.Model.entryValue,
+  Econ.Hopenhayn.Model.exists_ν_pos, Econ.Hopenhayn.Model.entryValue_strictMono,
+  Econ.Hopenhayn.Model.continuous_entryValue, Econ.Hopenhayn.Model.exists_unique_entry_price}
+\leanok
+\uses{lem:hop_value}
+$V_p$ is continuous in $p$ and strictly increasing for $p>0$:
+$\|V_p-V_{p'}\|\le\|\pi_p-\pi_{p'}\|/(1-\beta(1-\delta))$ and $V_{p'}-V_p\ge\pi_{p'}-\pi_p$. Hence the expected entry
+value $\sum_x\nu(x)V_p(x)$ is continuous and strictly increasing. If $p_{lo},p_{hi}>0$, $\pi(p_{lo},\cdot)\le0$ and
+$\sum_x\nu(x)\pi(p_{hi},x)\ge c_e$, there is exactly one positive price with $\sum_x\nu(x)V_p(x)=c_e$.
+\end{lemma}
+\begin{proof}
+\leanok
+The distance bound is the perturbation bound for fixed points of contractions; monotonicity uses the closed set
+$\{v\le V_{p'}\}$. Apply the intermediate value theorem on $[p_{lo},p_{hi}]$.
+\end{proof}
+
+\begin{theorem}[Cutoff exit rule]
+\label{thm:hop_cutoff}
+\lean{Econ.Hopenhayn.Model.stays, Econ.Hopenhayn.Model.stays_isUpperSet}
+\leanok
+\uses{lem:hop_value}
+If $\pi(p,\cdot)$ is increasing in productivity and $Q$ maps increasing functions to increasing functions, the set
+of states in which a surviving firm continues, $\{x: E[V_p(x')\mid x]\ge0\}$, is an upper set. (Indifferent firms continue; equilibrium uniqueness below is for this tie-breaking rule.)
+\end{theorem}
+\begin{proof}
+\leanok
+The operator preserves the closed set of increasing functions, so $V_p$ is increasing, and so is $E[V_p(x')\mid x]$.
+\end{proof}
+
+\begin{lemma}[Stationary firm distribution]
+\label{lem:hop_stationary}
+\lean{Econ.Hopenhayn.Model.A, Econ.Hopenhayn.Model.A_nonneg, Econ.Hopenhayn.Model.sum_A_le,
+  Econ.Hopenhayn.Model.IsStationary, Econ.Hopenhayn.Model.eq_zero_of_fixed, Econ.Hopenhayn.Model.L,
+  Econ.Hopenhayn.Model.L_injective, Econ.Hopenhayn.Model.nonneg_of_stationary, Econ.Hopenhayn.Model.μ₁,
+  Econ.Hopenhayn.Model.L_μ₁, Econ.Hopenhayn.Model.μ₁_stationary, Econ.Hopenhayn.Model.ν_le_μ₁,
+  Econ.Hopenhayn.Model.exists_unique_stationary, Econ.Hopenhayn.Model.stationary_nonneg,
+  Econ.Hopenhayn.Model.supply₁, Econ.Hopenhayn.Model.supply₁_pos}
+\leanok
+\uses{thm:hop_cutoff}
+With $A_p(x,x')=(1-\delta)\mathbf 1[\text{continue at }x]Q(x,x')$, for every price $p$ and entry mass $M$ the equation
+$\mu(x')=\sum_x\mu(x)A_p(x,x')+M\nu(x')$ has exactly one solution, $M\mu_1$; $\mu_1\ge\nu\ge0$.
+\end{lemma}
+\begin{proof}
+\leanok
+Rows of $A_p$ sum to at most $1-\delta<1$, so $d=dA_p$ forces $\|d\|_1\le(1-\delta)\|d\|_1$, i.e.\ $d=0$. The map
+$\mu\mapsto\mu-\mu A_p$ is injective, hence surjective in finite dimensions. Nonnegativity: the negative part
+$n=\min(\mu,0)$ satisfies $nA_p\le n$, and summing gives $(1-\delta)\sum n\le\sum n$, so $n=0$.
+\end{proof}
+
+\begin{theorem}[Hopenhayn: existence and uniqueness of stationary equilibrium]
+\label{thm:hop_equilibrium}
+\lean{Econ.Hopenhayn.Model.IsEquilibrium, Econ.Hopenhayn.Model.exists_unique_equilibrium,
+  Econ.Hopenhayn.Model.IsEquilibrium.nonneg, Econ.Hopenhayn.example₁_equilibrium}
+\leanok
+\uses{lem:hop_price, lem:hop_stationary}
+Under the boundary conditions of Lemma~\ref{lem:hop_price} there is exactly one triple $(p,M,\mu)$ with $p>0$, free entry
+$\sum_x\nu(x)V_p(x)=c_e$, $M>0$, $\mu$ stationary, and $\sum_x\mu(x)s(p,x)=D(p)$; in it $\mu\ge0$.
+\end{theorem}
+\begin{proof}
+\leanok
+Free entry pins down $p$; stationarity gives $\mu=M\mu_1(p)$; market clearing gives $M=D(p)/\sum_x\mu_1(p,x)s(p,x)$,
+whose denominator is positive.
+\end{proof}

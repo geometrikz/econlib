@@ -1,0 +1,120 @@
+% Lean: EconLean/Econometrics/Asymptotics/LocalPower.lean
+\chapter{Econometrics: local power and the noncentral \texorpdfstring{$\chi^2$}{chi-squared}}
+\label{chap:econometrics10}
+
+Sources: Hayashi (2000) \S2.4; Newey and McFadden (1994) \S9.2; van der Vaart (1998) Ch.~14--15;
+Davidson and MacKinnon (2004) \S4.8.
+
+Under \emph{local (Pitman) alternatives} the true parameter $\theta_n$ drifts to the null at rate $1/\sqrt n$:
+$\sqrt n(r^\top\theta_n - c)\to h$ (one restriction) or $\sqrt n(R\theta_n-c)\to h$. This covers the textbook
+$\theta_n = \theta_0+\delta/\sqrt n$ with $r^\top\theta_0 = c$ and $h = r^\top\delta$. Throughout,
+$\sqrt n(\hat\theta_n-\theta_n)\to_d L$ and $\hat V_n\to_p V$.
+
+\begin{lemma}[Deterministic limits]
+\label{lem:det-in-measure}
+\lean{Econ.Asymptotics.tendstoInMeasure_of_tendsto_const}
+\leanok
+A convergent deterministic sequence converges in probability to its limit.
+\end{lemma}
+\begin{proof}
+\leanok
+It converges pointwise, hence in probability on a finite measure space.
+\end{proof}
+
+\begin{theorem}[The $t$ statistic under local alternatives]
+\label{thm:t-local}
+\lean{Econ.Asymptotics.t_local_tendsto, Econ.Asymptotics.t_local_normal}
+\leanok
+\uses{def:t-stat, thm:t-test, lem:det-in-measure}
+If $\sqrt n(r^\top\theta_n-c)\to h$ and $\sigma^2 = r^\top Vr > 0$, then $t_n\to_d (r^\top L+h)/\sigma$. If moreover
+$V\succeq0$ and $L\sim N(0,V)$, the limit is $N(h/\sigma,1)$, so $P(t_n > a)\to P(N(h/\sigma,1) > a)$ and
+$P(|t_n| > a)\to P(|N(h/\sigma,1)| > a)$.
+\end{theorem}
+\begin{proof}
+\leanok
+$t_n = \bigl(r^\top\sqrt n(\hat\theta_n-\theta_n) + \sqrt n(r^\top\theta_n-c)\bigr)\cdot(r^\top\hat V_nr)^{-1/2}$. The pair of the
+drift and the reciprocal standard error converges in probability to $(h, 1/\sigma)$, so Slutsky gives the limit.
+$r^\top L/\sigma\sim N(0,1)$ by Theorem~\ref{thm:t-test}; shifting by $h/\sigma$ gives $N(h/\sigma,1)$. The boundaries of
+$\{x>a\}$ and $\{|x|>a\}$ are finite, hence null, and the portmanteau theorem applies.
+\end{proof}
+
+\begin{lemma}[Monotone local power]
+\label{lem:local-power-mono}
+\lean{Econ.Asymptotics.gaussianReal_Ioi_mono, Econ.Asymptotics.t_local_power_mono}
+\leanok
+$\mu\mapsto P(N(\mu,1) > a)$ is nondecreasing. Hence the asymptotic local power $P(N(h/\sigma,1) > a)$ of the
+upper-tailed test is nondecreasing in $h$, and at least the asymptotic size when $h\ge0$.
+\end{lemma}
+\begin{proof}
+\leanok
+$N(\mu,1)$ is the law of $Z+\mu$, and $\{a < Z+\mu\}\subseteq\{a < Z+\mu'\}$ when $\mu\le\mu'$.
+\end{proof}
+
+\begin{theorem}[The Wald statistic under local alternatives]
+\label{thm:wald-local}
+\lean{Econ.Asymptotics.wald_local_tendsto}
+\leanok
+\uses{def:wald, thm:wald, lem:det-in-measure}
+If $\sqrt n(R\theta_n-c)\to h$ and $RVR^\top$ is invertible, then $W_n\to_d(RL+h)^\top(RVR^\top)^{-1}(RL+h)$.
+\end{theorem}
+\begin{proof}
+\leanok
+$\sqrt n(R\hat\theta_n-c) = R\sqrt n(\hat\theta_n-\theta_n)+\sqrt n(R\theta_n-c)$ and
+$W_n = \sqrt n(R\hat\theta_n-c)^\top(R\hat V_nR^\top)^{-1}\sqrt n(R\hat\theta_n-c)$; apply Slutsky with the pair
+(drift, weight) converging in probability to $(h,(RVR^\top)^{-1})$.
+\end{proof}
+
+\begin{definition}[Noncentral $\chi^2$]
+\label{def:nc-chi-squared}
+\lean{Econ.Asymptotics.ncChiSq, Econ.Asymptotics.ncChiSq_reindex}
+\leanok
+\uses{def:chi-squared}
+For $\mu\in\mathbb R^\iota$, $\chi^2(\mu)$ is the law of $\sum_i(Z_i+\mu_i)^2$ with $Z_i$ independent standard normals.
+It is invariant under reindexing the coordinates.
+\end{definition}
+
+\begin{lemma}[Properties of the noncentral $\chi^2$]
+\label{lem:nc-chi-squared-props}
+\lean{Econ.Asymptotics.ncChiSq_zero, Econ.Asymptotics.ncChiSq_fin_singleton, Econ.Asymptotics.ncChiSq_singleton}
+\leanok
+\uses{def:nc-chi-squared, lem:chi-squared-props}
+$\chi^2(0) = \chi^2(|\iota|)$, and for $\iota\neq\emptyset$, $\chi^2(\mu)$ has no atoms.
+\end{lemma}
+\begin{proof}
+\leanok
+The first is the definition of $\chi^2(|\iota|)$. For the second, reindex to $\mathrm{Fin}(n+1)$ and split off the first
+coordinate: for fixed other coordinates, $\sum_i(z_i+\mu_i)^2 = c$ forces $z_0+\mu_0 = \pm\sqrt t$, a null set for $N(0,1)$;
+integrate by Fubini.
+\end{proof}
+
+\begin{theorem}[The local Wald limit is noncentral $\chi^2$]
+\label{thm:wald-local-ncchi}
+\lean{Econ.Asymptotics.noncentrality_eq, Econ.Asymptotics.map_wald_local_limit, Econ.Asymptotics.wald_local_power}
+\leanok
+\uses{thm:wald-local, lem:nc-chi-squared-props, lem:gaussian-linear}
+Let $V\succeq0$, $L\sim N(0,V)$ and $M = RVR^\top$ positive definite, with square root $S = M^{1/2}$. Then
+$(RL+h)^\top M^{-1}(RL+h)\sim\chi^2(S^{-1}h)$, with noncentrality $\|S^{-1}h\|^2 = h^\top M^{-1}h$. With at least one
+restriction, $P(W_n > a)\to P(\chi^2(S^{-1}h) > a)$.
+\end{theorem}
+\begin{proof}
+\leanok
+$RL\sim N(0,M)$, which is the law of $SZ$ for $Z$ standard normal. Since $SZ+h = S(Z+S^{-1}h)$ and
+$SM^{-1}S = SS^{-1}S^{-1}S = I$, the quadratic form equals $\|Z+S^{-1}h\|^2$. For the noncentrality,
+$(S^{-1})^\top S^{-1} = (SS)^{-1} = M^{-1}$ as $S$ is symmetric. The power follows from Theorem~\ref{thm:wald-local} by the
+portmanteau theorem, since $\chi^2(S^{-1}h)$ has no atoms.
+\end{proof}
+
+\begin{theorem}[Example]
+\label{thm:local-power-witness}
+\lean{Econ.Asymptotics.local_power_witness}
+\leanok
+\uses{thm:t-local, lem:local-power-mono, thm:wald-local-ncchi, thm:test-power-witness}
+Testing $\theta_1 = \theta_2$ along $\theta_n = \delta/\sqrt n$, $\delta = (1,0)$, with
+$\sqrt n(\hat\theta_n-\theta_n)\sim N(0,I_2)$ and $\hat V_n = (1+\frac1{n+1})I_2$: $h = 1$, $\sigma = \sqrt2$; the
+upper-tailed $t$-test has local power $P(N(1/\sqrt2,1) > a)$, at least its size, the two-sided test
+$P(|N(1/\sqrt2,1)| > a)$, and the Wald test $P(\chi^2(\mu) > a)$ with $\|\mu\|^2 = 1/2$.
+\end{theorem}
+\begin{proof}
+\leanok
+All hypotheses are checked directly; the drift is eventually exactly $h$.
+\end{proof}

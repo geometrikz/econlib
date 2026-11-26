@@ -100,6 +100,7 @@ public import EconLean.GE.ContinuumEconomy
 public import EconLean.GE.AumannCore
 public import EconLean.GE.ContinuumExistence
 public import EconLean.GE.AumannExistence
+public import EconLean.GE.ApproximateEquilibrium
 public import EconLean.Audit.Statements.Lyapunov
 public import EconLean.Audit.Statements.FixedPoint
 
@@ -163,6 +164,7 @@ public import EconLean.Econometrics.Asymptotics.GMMWald
 public import EconLean.Econometrics.Asymptotics.FeasibleJWitness
 public import EconLean.Econometrics.Asymptotics.TestPower
 public import EconLean.Econometrics.Asymptotics.OneSidedT
+public import EconLean.Econometrics.Asymptotics.LocalPower
 public import EconLean.Macro.Growth.RamseyGlobal
 public import EconLean.Macro.DP.StochasticPlan
 public import EconLean.Macro.DP.InvariantMeasure
@@ -191,6 +193,8 @@ public import EconLean.Macro.DP.StochasticBrockMirman
 public import EconLean.Audit.Statements.StochasticBrockMirman
 public import EconLean.Macro.DP.MarkovBrockMirman
 public import EconLean.Audit.Statements.MarkovBrockMirman
+public import EconLean.Macro.Firms.Hopenhayn
+public import EconLean.Audit.Statements.Hopenhayn
 public import EconLean.Audit.Statements.HAStochastic
 public import EconLean.Bridges.Aggregation.Tatonnement
 public import EconLean.Bridges.Aggregation.TatonnementSup
@@ -209,6 +213,7 @@ public import EconLean.Games.Extensive
 public import EconLean.Audit.Statements.Games
 public import EconLean.Games.Repeated
 public import EconLean.Games.Reputation
+public import EconLean.Games.MinmaxFolk
 public import EconLean.Information.Lemons
 public import EconLean.Information.LemonsGains
 public import EconLean.Information.Agreement
@@ -239,6 +244,7 @@ public import EconLean.Mechanism.SecondPrice
 public import EconLean.Mechanism.Implementation
 public import EconLean.Matching.StrategyProof
 public import EconLean.Matching.GroupStrategyProof
+public import EconLean.Matching.RuralHospitals
 public import EconLean.Matching.Assortative
 public import EconLean.Matching.Boston
 public import EconLean.Matching.HousingMarket
@@ -268,6 +274,7 @@ public import EconLean.Audit.Statements.Assignment
 public import EconLean.Audit.Statements.Batch13
 public import EconLean.Audit.Statements.Batch14
 public import EconLean.Audit.Statements.Batch15
+public import EconLean.Audit.Statements.Batch16
 public import EconLean.Audit.Statements.GlobalGames
 public import EconLean.Audit.Statements.Relational
 public import EconLean.Macro.Consumption.Precautionary
@@ -340,6 +347,9 @@ public import EconLean.Audit.Statements.MacroBatch17
 public import EconLean.Finance.CampbellShiller
 public import EconLean.Finance.LongRunRisk
 public import EconLean.Audit.Statements.MacroBatch18
+public import EconLean.Macro.NK.Rotemberg
+public import EconLean.Finance.HeKrishnamurthy
+public import EconLean.Audit.Statements.MacroBatch19
 public import EconLean.Behavioral.BeliefRule
 public import EconLean.Behavioral.CognitiveDiscounting
 public import EconLean.Behavioral.DiagnosticExpectations
@@ -412,5 +422,7 @@ public import EconLean.Behavioral.GumbelLogit
 public import EconLean.Audit.Statements.BehavioralXXVIII
 public import EconLean.Behavioral.LevelKForwardGuidance
 public import EconLean.Audit.Statements.BehavioralXXIX
+public import EconLean.Behavioral.DeGroot
+public import EconLean.Audit.Statements.BehavioralXXX
 
 @[expose] public section

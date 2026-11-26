@@ -1,0 +1,79 @@
+% Lean: EconLean/Macro/NK/Rotemberg.lean, EconLean/Finance/HeKrishnamurthy.lean
+\chapter{Price Adjustment Costs and Intermediary Asset Pricing}
+\label{chap:pricing_intermediaries}
+
+Sources: Rotemberg (1982); Woodford, \emph{Interest and Prices} ch.~3; Gal\'i ch.~3; He--Krishnamurthy (2013).
+
+\section{Rotemberg pricing}
+
+\begin{definition}[Firm's quadratic loss]
+\label{def:rot}
+\lean{Econ.Rotemberg.loss}
+\leanok
+$\sum_{s<T}\beta^{s+1}[(q_{s+1}-p_{s+1}-mc_{s+1})^2+c(q_{s+1}-q_s)^2]$; the firm takes the aggregate path $p$ as given.
+\end{definition}
+
+\begin{theorem}[First-order condition]
+\label{thm:rot_foc}
+\lean{Econ.Rotemberg.hasDerivAt_update, Econ.Rotemberg.hasDerivAt_loss, Econ.Rotemberg.foc, Econ.Rotemberg.isLocalMin_of_foc}
+\leanok
+\uses{def:rot}
+At an interior date $n=m+1<T$ the derivative of the loss in $q_n$ is
+$2\beta^n[(q_n-p_n-mc_n)+c(q_n-q_{n-1})-\beta c(q_{n+1}-q_n)]$. A local minimum makes it vanish, and conversely (for
+$c\ge0$) a zero makes $q_n$ a minimizer.
+\end{theorem}
+\begin{proof}
+\leanok
+Only the terms $s=m$ and $s=m+1$ depend on $q_n$. Sufficiency: the derivative is
+$2\beta^n(1+c+\beta c)(x-q_n)$, so by the mean value theorem the loss rises in both directions.
+\end{proof}
+
+\begin{theorem}[Rotemberg NKPC and the Calvo bridge]
+\label{thm:rot_nkpc}
+\lean{Econ.Rotemberg.nkpc, Econ.Rotemberg.calvo_equiv, Econ.Rotemberg.calvo_bridge, Econ.Rotemberg.steady_inflation, Econ.Rotemberg.optimal_exists}
+\leanok
+\uses{thm:rot_foc}
+In a symmetric equilibrium $\pi_n=\beta\pi_{n+1}+\frac1c mc_n$. With $c=\theta/((1-\theta)(1-\beta\theta))$ this is
+exactly the Calvo NKPC. Steady inflation $p_n=n\bar\pi$ with $mc=c(1-\beta)\bar\pi$ is an equilibrium.
+\end{theorem}
+\begin{proof}
+\leanok
+Set $q=p$ in the first-order condition and divide by $c$; the slope identity is algebra; the witness satisfies the
+first-order condition, which is sufficient.
+\end{proof}
+
+\section{Intermediary asset pricing}
+
+\begin{definition}[Equity-constrained intermediary]
+\label{def:hk}
+\lean{Econ.HeKrishnamurthy.Env, Econ.HeKrishnamurthy.Env.capital, Econ.HeKrishnamurthy.Env.obj, Econ.HeKrishnamurthy.Env.premium, Econ.HeKrishnamurthy.Env.IsEq}
+\leanok
+Capital $K=w+\min(W,mw)$; holding $x$ yields $x\mu-\gamma\sigma^2x^2/(2K)$; equilibrium: holding the unit supply is
+optimal.
+\end{definition}
+
+\begin{theorem}[Risk premium]
+\label{thm:hk_premium}
+\lean{Econ.HeKrishnamurthy.Env.capital_pos, Econ.HeKrishnamurthy.Env.isMax_iff, Econ.HeKrishnamurthy.Env.isEq_iff, Econ.HeKrishnamurthy.Env.premium_constrained, Econ.HeKrishnamurthy.Env.premium_unconstrained, Econ.HeKrishnamurthy.Env.sharpe_eq, Econ.HeKrishnamurthy.Env.exists_eq, Econ.HeKrishnamurthy.Env.both_regions}
+\leanok
+\uses{def:hk}
+The optimal holding is $K\mu/(\gamma\sigma^2)$, so $\mu=\gamma\sigma^2/K$: $\gamma\sigma^2/((1+m)w)$ when
+$mw<W$, and $\gamma\sigma^2/(w+W)$ otherwise.
+\end{theorem}
+\begin{proof}
+\leanok
+Complete the square: the objective is its maximum minus $\gamma\sigma^2(x-x^*)^2/(2K)$.
+\end{proof}
+
+\begin{theorem}[Intermediary wealth as a state variable]
+\label{thm:hk_state}
+\lean{Econ.HeKrishnamurthy.Env.capital_strictMono, Econ.HeKrishnamurthy.Env.premium_strictAnti, Econ.HeKrishnamurthy.Env.constrained_elasticity, Econ.HeKrishnamurthy.Env.unconstrained_redistribution, Econ.HeKrishnamurthy.Env.constrained_redistribution_matters}
+\leanok
+\uses{thm:hk_premium}
+The premium falls strictly with intermediary wealth. When constrained it has unit elasticity, and shifting wealth to
+intermediaries at fixed total wealth lowers it; when unconstrained only total wealth matters.
+\end{theorem}
+\begin{proof}
+\leanok
+Capital is strictly increasing in $w$; the rest follows from the two closed forms.
+\end{proof}

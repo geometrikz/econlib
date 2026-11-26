@@ -16,6 +16,7 @@ public import EconLean.GE.AumannCore
 public import EconLean.GE.ContinuumExistence
 public import EconLean.Foundations.ConvexifiedCorrespondence
 public import EconLean.GE.AumannExistence
+public import EconLean.GE.ApproximateEquilibrium
 
 @[expose] public section
 
@@ -335,5 +336,48 @@ theorem frozen_sqContinuum_def :
   ⟨fun _ => rfl, rfl, rfl, rfl⟩
 
 end AumannExistence
+
+section ApproxEquilibrium
+
+open ApproxEquilibrium Continuum.ContinuumEconomy
+
+theorem frozen_exists_counts {M : ℕ} (w : Fin (M + 1) → ℝ) (hw0 : ∀ k, 0 ≤ w k)
+    (hw1 : ∑ k, w k = 1) (n : ℕ) :
+    ∃ cnt : Fin (M + 1) → ℕ, ∑ k, cnt k = n ∧ ∀ k, |(cnt k : ℝ) - n * w k| ≤ M + 1 :=
+  exists_counts w hw0 hw1 n
+
+theorem frozen_exists_assign {N n : ℕ} (cnt : Fin N → ℕ) (h : ∑ k, cnt k = n) {V : Type*}
+    [AddCommMonoid V] (g : Fin N → V) :
+    ∃ f : Fin n → Fin N, ∑ j, g (f j) = ∑ k, cnt k • g k :=
+  exists_assign cnt h g
+
+theorem frozen_exists_approxEquilibrium_replica {ι : Type*} [Fintype ι] [Nonempty ι]
+    [DecidableEq ι] {T : Type*} [Fintype T] [Nonempty T] {u : T → (ι → ℝ) → ℝ}
+    (hu : ∀ t, Continuous (u t)) (hmono : ∀ t, StronglyMonotone (prefOf (u t)))
+    {ω : T → ι → ℝ} (hω : ∀ t, PositivePrices (ω t)) :
+    ∃ (p : ι → ℝ) (C : ℝ), PositivePrices p ∧ ∀ n : ℕ, ∃ x : T × Fin n → ι → ℝ,
+      (∀ a, x a ∈ demand (prefOf (u a.1)) p (cost p (ω a.1))) ∧
+      ∀ i, |∑ a : T × Fin n, x a i - ∑ a : T × Fin n, ω a.1 i| ≤ C :=
+  exists_approxEquilibrium_replica hu hmono hω
+
+theorem frozen_sqReplica_witness :
+    (∃ (p : Fin 2 → ℝ) (C : ℝ), PositivePrices p ∧ ∀ n : ℕ, ∃ x : Fin 1 × Fin n → Fin 2 → ℝ,
+      (∀ a, x a ∈ demand (prefOf uSq) p (cost p one2)) ∧
+      ∀ i, |∑ a : Fin 1 × Fin n, x a i - ∑ _a : Fin 1 × Fin n, one2 i| ≤ C) ∧
+    ∀ n : ℕ, Odd n → ∀ (p : Fin 2 → ℝ) (x : Fin 1 × Fin n → Fin 2 → ℝ),
+      (∀ a, x a ∈ demand (prefOf uSq) p (cost p one2)) → ∑ a, x a ≠ ∑ _a : Fin 1 × Fin n, one2 :=
+  ⟨sqReplica_exists_approxEquilibrium, fun _ hn p x hx => sqReplica_odd_no_equilibrium hn p x hx⟩
+
+theorem frozen_mem_demand_uSq {p : Fin 2 → ℝ} {d : Fin 2 → ℝ}
+    (hd : d ∈ demand (prefOf uSq) p (cost p one2)) :
+    (d 1 = 0 ∧ d 0 = (p 0 + p 1) / p 0 ∧ p 0 ≤ p 1) ∨
+      (d 0 = 0 ∧ d 1 = (p 0 + p 1) / p 1 ∧ p 1 ≤ p 0) :=
+  mem_demand_uSq hd
+
+theorem frozen_positivePrices_of_mem_demand_uSq {p : Fin 2 → ℝ} {w : ℝ} {d : Fin 2 → ℝ}
+    (hd : d ∈ demand (prefOf uSq) p w) : PositivePrices p :=
+  positivePrices_of_mem_demand_uSq hd
+
+end ApproxEquilibrium
 
 end Econ.Audit

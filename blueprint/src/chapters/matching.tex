@@ -1,4 +1,4 @@
-% Lean: EconLean/Matching/{GaleShapley,StrategyProof,GroupStrategyProof}.lean
+% Lean: EconLean/Matching/{GaleShapley,StrategyProof,GroupStrategyProof,RuralHospitals}.lean
 \chapter{Matching}
 \label{chap:matching}
 
@@ -108,6 +108,24 @@ lemma some pair $(m_0,w)$ blocks $\mu'$ under the true preferences with $m_0$ no
 $m_0$ reports truthfully; then $(m_0,w)$ also blocks $\mu'$ under the reports, a contradiction.
 \end{proof}
 
+
+\begin{theorem}[Men-optimal is women-pessimal; rural hospitals (Knuth 1976; McVitie--Wilson 1970; Roth 1984)]
+\label{thm:rural-hospitals}
+\lean{Econ.daMatching_womenPessimal, Econ.card_matched_men_eq, Econ.matched_eq_daMatching, Econ.rural_hospitals}
+\leanok
+\uses{thm:da-strategyproof}
+Every woman weakly prefers her partner in any stable matching to her partner in the men-optimal
+stable matching. Consequently (everybody acceptable, sides of any sizes) all stable matchings match
+the same set of men and the same set of women.
+\end{theorem}
+\begin{proof}
+\leanok
+If $w$ is matched to $m$ under the men-optimal $\mu$ but strictly prefers $m$ to her $\nu$-partner,
+then $m$ weakly prefers $\mu$ to $\nu$, strictly since $\nu(m)\ne w$, so $(m,w)$ blocks $\nu$.
+Hence matched men under $\nu$ are matched under $\mu$, and matched women under $\mu$ are matched
+under $\nu$. Each matching matches equally many men and women, so
+$|W_\nu|=|M_\nu|\le|M_\mu|=|W_\mu|\le|W_\nu|$ and both inclusions are equalities.
+\end{proof}
 \section{Assortative matching}
 
 \begin{theorem}[Becker 1973]

@@ -86,6 +86,7 @@ public import EconLean.GE.ContinuumEconomy
 public import EconLean.GE.AumannCore
 public import EconLean.GE.ContinuumExistence
 public import EconLean.GE.AumannExistence
+public import EconLean.GE.ApproximateEquilibrium
 
 public import EconLean.Producer.Production
 public import EconLean.Producer.Cost
@@ -145,6 +146,7 @@ public import EconLean.Econometrics.Asymptotics.GMMWald
 public import EconLean.Econometrics.Asymptotics.FeasibleJWitness
 public import EconLean.Econometrics.Asymptotics.TestPower
 public import EconLean.Econometrics.Asymptotics.OneSidedT
+public import EconLean.Econometrics.Asymptotics.LocalPower
 public import EconLean.Macro.Growth.RamseyGlobal
 public import EconLean.Macro.DP.StochasticPlan
 public import EconLean.Macro.DP.InvariantMeasure
@@ -164,6 +166,7 @@ public import EconLean.Macro.HA.StationaryUnique
 public import EconLean.Macro.DP.StochasticGrowth
 public import EconLean.Macro.DP.StochasticBrockMirman
 public import EconLean.Macro.DP.MarkovBrockMirman
+public import EconLean.Macro.Firms.Hopenhayn
 public import EconLean.Bridges.Aggregation.Tatonnement
 public import EconLean.Bridges.Aggregation.TatonnementSup
 public import EconLean.Bridges.Aggregation.SMD
@@ -180,6 +183,7 @@ public import EconLean.Games.Bayesian
 public import EconLean.Games.Extensive
 public import EconLean.Games.Repeated
 public import EconLean.Games.Reputation
+public import EconLean.Games.MinmaxFolk
 public import EconLean.Information.Lemons
 public import EconLean.Information.LemonsGains
 public import EconLean.Information.Agreement
@@ -209,6 +213,7 @@ public import EconLean.Mechanism.SecondPrice
 public import EconLean.Mechanism.Implementation
 public import EconLean.Matching.StrategyProof
 public import EconLean.Matching.GroupStrategyProof
+public import EconLean.Matching.RuralHospitals
 public import EconLean.Matching.Assortative
 public import EconLean.Matching.Boston
 public import EconLean.Matching.HousingMarket
@@ -286,6 +291,8 @@ public import EconLean.Macro.Fiscal.AMSS
 public import EconLean.Macro.Fiscal.LucasStokeyGeneral
 public import EconLean.Finance.CampbellShiller
 public import EconLean.Finance.LongRunRisk
+public import EconLean.Macro.NK.Rotemberg
+public import EconLean.Finance.HeKrishnamurthy
 public import EconLean.Behavioral.BeliefRule
 public import EconLean.Behavioral.CognitiveDiscounting
 public import EconLean.Behavioral.DiagnosticExpectations
@@ -333,5 +340,6 @@ public import EconLean.Behavioral.RISymmetric
 public import EconLean.Behavioral.RDUNecessity
 public import EconLean.Behavioral.GumbelLogit
 public import EconLean.Behavioral.LevelKForwardGuidance
+public import EconLean.Behavioral.DeGroot
 
 @[expose] public section

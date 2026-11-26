@@ -1,4 +1,4 @@
-% Lean: EconLean/Behavioral/{PresentBias,RankDependent,ReferenceDependence,Temptation,Logit,RationalInattention,RISymmetric,Ambiguity,GilboaSchmeidler,StochasticChoice,Falmagne,GumbelLogit,LevelKForwardGuidance,SocialPreferences,Salience,ShroudedAttributes,ContractDesign}.lean
+% Lean: EconLean/Behavioral/{PresentBias,RankDependent,ReferenceDependence,Temptation,Logit,RationalInattention,RISymmetric,Ambiguity,GilboaSchmeidler,StochasticChoice,Falmagne,GumbelLogit,LevelKForwardGuidance,DeGroot,SocialPreferences,Salience,ShroudedAttributes,ContractDesign}.lean
 \chapter{Behavioral Decision Theory}
 \label{chap:behavioral}
 
@@ -1461,4 +1461,30 @@ The Euler equation makes $c$ flat up to $T$ and lower by $\sigma$ afterwards; su
 gives $c_0$. Under rational expectations $y_s=c_0$ on $[0,T]$, so $c_0=(1-\beta^{T+1})c_0+\sigma\beta^{T+1}$ and
 $c_0=\sigma$. For level $k$, $Y_{k+1}=(1-\beta^{T+1})Y_k+\sigma\beta^{T+1}$ with $Y_0=0$; induction gives the closed
 form, and $0<1-\beta^{T+1}<1$ gives monotonicity and the limits.
+\end{proof}
+
+\section{Naive social learning}
+
+\begin{theorem}[DeGroot consensus and the influence vector]
+\label{thm:beh-degroot}
+\lean{Econ.DeGroot.IsStochastic, Econ.DeGroot.IsPrimitive, Econ.DeGroot.IsInfluence, Econ.DeGroot.normalize, Econ.DeGroot.spread_mul_le, Econ.DeGroot.consensus, Econ.DeGroot.influence, Econ.DeGroot.influence_unique, Econ.DeGroot.isStochastic_normalize, Econ.DeGroot.influence_degree, Econ.DeGroot.consensus_degree, Econ.DeGroot.primitive_of_pos, Econ.DeGroot.half_stochastic, Econ.DeGroot.half_primitive, Econ.DeGroot.normalize_ones, Econ.DeGroot.swap_stochastic, Econ.DeGroot.swap_influence, Econ.DeGroot.swap_not_primitive, Econ.DeGroot.swap_not_converge}
+\leanok
+Let $T$ be a row-stochastic $n\times n$ listening matrix ($n\ge1$) that is primitive: some power $T^k$ has all
+entries positive. Beliefs update by $p\mapsto Tp$. Then $T^t\to\mathbf 1\pi^\top$ entrywise, where $\pi$ is a
+strictly positive probability vector with $\pi^\top T=\pi^\top$, unique among probability vectors; hence every
+agent's belief converges to $\pi\cdot p$ (DeGroot 1974; Golub--Jackson 2010). If $T$ is the row-normalization of a
+symmetric nonnegative weight matrix $g$ with positive degrees $d_i=\sum_j g_{ij}$, then $\pi_i=d_i/\sum_m d_m$, so
+the consensus is the degree-weighted average of initial beliefs. Aperiodicity cannot be dropped: with two agents who
+only listen to each other, beliefs from $(1,0)$ alternate forever. The equivalence of primitivity with strong
+connectivity plus aperiodicity, and the general converse, are not formalized.
+\end{theorem}
+\begin{proof}
+\leanok
+If every entry of a stochastic $A$ is at least $\delta$, then
+$(Ap)_i-(Ap)_{i'}\le(1-n\delta)(\max p-\min p)$ (write $A_{ij}=\delta+(A_{ij}-\delta)$). Positivity of $T^k$ passes to
+$T^{k+1}$, so with $K=k+1\ge1$ and $\delta=\min_{ij}(T^K)_{ij}>0$ the spread of $T^tp$ is nonincreasing and shrinks
+by $1-n\delta<1$ every $K$ steps. The maximum decreases and the minimum increases to a common limit, which squeezes every
+coordinate. Applying this to unit vectors gives $(T^t)_{ij}\to\pi_j$; limits of $T^{t+1}=T^tT$ give $\pi^\top T=\pi^\top$,
+and $\pi=\pi T^k$ gives positivity. Any stationary probability $\pi'$ satisfies $\pi'=\pi'T^t\to\pi$. For the
+undirected case, $\sum_i\frac{d_i}{D}\frac{g_{ij}}{d_i}=\frac{1}{D}\sum_i g_{ji}=\frac{d_j}{D}$.
 \end{proof}
